@@ -1,0 +1,25 @@
+{
+  "name": "odin",
+  "version": "0.0.0",
+  "description": "Node.js Canvas/WebGL Javascript Game Framework",
+  "main": "index.js",
+  "readmeFilename": "README.md",
+  "keywords": [
+    "odin",
+    "odin",
+    "application",
+    "framework",
+    "game",
+    "engine"
+  ],
+  "author": "Nathan Faucett",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "socket.io": "~0.9.16"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3"
+  }
+}
