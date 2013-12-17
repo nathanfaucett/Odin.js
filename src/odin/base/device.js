@@ -1,14 +1,12 @@
 define(
     function() {
         "use strict";
-
-
-        var userAgent = navigator.userAgent.toLowerCase(),
-            audio = new Audio,
-            video = document.createElement("video");
         
         
         function Device() {
+			var userAgent = navigator.userAgent.toLowerCase(),
+				audio = new Audio,
+				video = document.createElement("video");
 			
             this.userAgent = userAgent;
 
@@ -21,7 +19,7 @@ define(
             
             this.webgl = (function() {
                 var canvas = document.createElement("canvas"),
-                    names = ["webgl", "webkit-3d", "moz-webgl", "experimental-webgl", "3d"],
+                    names = ["3d", "moz-webgl", "experimental-webgl", "webkit-3d", "webgl"],
                     has, i;
 
                 for (i = names.length; i--;) {

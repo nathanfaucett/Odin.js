@@ -4,16 +4,18 @@ define([
         "odin/base/time",
         "odin/core/game/config",
         "odin/core/game/game",
-        "odin/core/game/loop",
         "odin/core/rendering/canvas",
         "odin/core/rendering/canvas_renderer_2d",
+        "odin/core/rendering/webgl_renderer_2d",
         "odin/core/game_object",
         "odin/core/components/component",
         "odin/core/scene",
         "odin/core/input/input",
-        "odin/core/input/handler"
+        "odin/core/input/handler",
+		"odin/core/assets/assets",
+		"odin/core/assets/asset_loader"
     ],
-    function(Class, Device, Time, Config, Game, Loop, Canvas, CanvasRenderer2D, GameObject, Component, Scene, Input, Handler) {
+    function(Class, Device, Time, Config, Game, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
         "use strict";
 
 
@@ -27,8 +29,6 @@ define([
 
             Game.call(this, opts);
 
-            this._loop = new Loop(loop, this);
-
             this.io = undefined;
 			this._sessionid = undefined;
 
@@ -37,8 +37,15 @@ define([
 
             this.scene = undefined;
             this.camera = undefined;
-
+			
             this.canvas = new Canvas(opts.width, opts.height);
+			
+			this.CanvasRenderer2D = undefined;
+			this.WebGLRenderer2D = undefined;
+			
+			this._optsCanvasRenderer2D = opts.CanvasRenderer2D;
+			this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
+			
             this.renderer = undefined;
         }
 		
@@ -48,14 +55,14 @@ define([
         ClientGame.prototype.init = function() {
             this.canvas.init();
 			
-            this._loop.resume();
+            this._loop.init();
             this.emit("init");
 			
             return this;
         };
 
 
-        ClientGame.prototype.connect = function() {
+        ClientGame.prototype.connect = function(handler) {
             var self = this,
                 socket;
 
@@ -68,11 +75,17 @@ define([
                 socket.emit("client_device", Device);
             });
 
-            socket.on("server_ready", function(game) {
+            socket.on("server_ready", function(game, assets) {
                 self.fromJSON(game);
-                socket.emit("client_ready");
-
-                self.emit("connect", socket);
+				Assets.fromJSON(assets);
+				
+				AssetLoader.load(function() {
+					
+					socket.emit("client_ready");
+	
+					self.emit("connect", socket);
+					if (handler) handler.call(self, socket);
+				});
             });
 
             socket.on("server_sync_input", function() {
@@ -82,8 +95,8 @@ define([
 			
             socket.on("server_sync_scene", function(jsonScene) {
 				var scene = self.scene;
-				
 				if (!scene) return;
+				
 				scene.fromSYNC(jsonScene);
             });
 
@@ -95,14 +108,14 @@ define([
 
             socket.on("server_setCamera", function(camera_id) {
                 if (!self.scene) {
-                    console.warn("Socket server_setCamera: can't set camera without an active scene, use ServerGame.setScene first");
+                    console.warn("Socket:server_setCamera: can't set camera without an active scene, use ServerGame.setScene first");
                     return;
                 }
                 var camera = self.scene.findByServerId(camera_id),
                     canvas = self.canvas;
 
                 if (!camera) {
-                    console.warn("Socket server_setCamera: can't find camera in active scene");
+                    console.warn("Socket:server_setCamera: can't find camera in active scene");
                     return;
                 }
                 self.setCamera(camera);
@@ -149,31 +162,28 @@ define([
                 scene.removeGameObject(scene.findByServerId(gameObject_id));
             });
 
-            socket.on("server_removeComponent", function(scene_id, gameObject_id, componentType) {
+            socket.on("server_removeComponent", function(scene_id, gameObject_id, component_type) {
                 var scene = self.findByServerId(scene_id);
                 if (!scene) return;
 
                 var gameObject = scene.findByServerId(gameObject_id);
                 if (!gameObject) return;
-
-                gameObject.removeComponent(gameObject.get(componentType));
+				
+                gameObject.removeComponent(gameObject.getComponent(component_type));
             });
 
             return this;
         };
 
 
-        ClientGame.prototype.suspend = function() {
-
-            this._loop.suspend();
-            return this;
-        };
-
-
-        ClientGame.prototype.resume = function() {
-
-            this._loop.resume();
-            return this;
+        ClientGame.prototype.disconnect = function() {
+            var socket = this.io;
+			
+			socket.disconnect();
+			socket.removeAllListeners();
+			this._sessionid = undefined;
+			
+			return this;
         };
 
 
@@ -187,6 +197,7 @@ define([
 
             if (index !== -1) {
                 this.scene = scene;
+				this.emit("setScene", scene);
             } else {
                 console.warn("ClientGame.setScene: Scene is not a member of Game");
             }
@@ -222,6 +233,7 @@ define([
                 if (lastCamera) lastCamera._active = false;
 
                 this.updateRenderer();
+				this.emit("setCamera", this.camera);
             } else {
                 console.warn("ClientGame.setCamera: GameObject does't have a Camera or a Camera2D Component");
             }
@@ -240,13 +252,13 @@ define([
             gameObject = camera.gameObject;
 
             if (gameObject.camera) {
-
+				console.warn("Game.updateRenderer: no renderer for camera component yet");
             } else if (gameObject.camera2d) {
                 if (!Config.forceCanvas && Device.webgl) {
-                    this.renderer = CanvasRenderer2D;
+                    this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
                     console.log("Game.updateRenderer: setting up WebGLRenderer2D");
                 } else if (Device.canvas) {
-                    this.renderer = CanvasRenderer2D;
+                    this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
                     console.log("Game.updateRenderer: setting up CanvasRenderer2D");
                 } else {
                     throw new Error("Game.updateRenderer: Could not get a renderer for this device");
@@ -269,7 +281,7 @@ define([
             fpsLast = 0,
             fpsTime = 0;
 
-        function loop(ms) {
+        ClientGame.prototype.loop = function(ms) {
             var camera = this.camera,
                 scene = this.scene,
                 gameObjects,

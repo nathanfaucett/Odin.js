@@ -125,21 +125,21 @@ define([
                 case "mousedown":
 
                     mouseFirst = true;
-                    this.buttons.on("mouse" + e.button);
+                    this.buttons.on(MOUSE_BUTTONS[e.button]);
                     updateMousePosition(this, e);
                     this.emit("mousedown");
                     break;
 
                 case "mouseup":
 
-                    this.buttons.off("mouse" + e.button);
+                    this.buttons.off(MOUSE_BUTTONS[e.button]);
                     updateMousePosition(this, e);
                     this.emit("mouseup");
                     break;
 
                 case "mouseout":
 
-                    this.buttons.off("mouse" + e.button);
+                    this.buttons.off(MOUSE_BUTTONS[e.button]);
                     updateMousePosition(this, e);
                     this.emit("mouseout");
                     break;
@@ -194,20 +194,25 @@ define([
 
                 case "keydown":
 
-                    this.buttons.on(keyCodes[e.keyCode]);
+                    this.buttons.on(KEY_CODES[e.keyCode]);
                     this.emit("keydown");
                     break;
 
                 case "keyup":
 
-                    this.buttons.off(keyCodes[e.keyCode]);
+                    this.buttons.off(KEY_CODES[e.keyCode]);
                     this.emit("keyup");
                     break;
             }
         }
-
-
-        var keyCodes = {
+        
+        var MOUSE_BUTTONS = {
+            "0": "mouse0",
+            "1": "mouse1",
+            "2": "mouse2"
+        }
+        
+        var KEY_CODES = {
             8: "backspace",
             9: "tab",
             13: "enter",
@@ -254,7 +259,7 @@ define([
             222: "singlequote"
         };
 
-        for (var i = 48; i <= 90; i++) keyCodes[i] = String.fromCharCode(i).toLowerCase();
+        for (var i = 48; i <= 90; i++) KEY_CODES[i] = String.fromCharCode(i).toLowerCase();
 
 
         return new Handler;

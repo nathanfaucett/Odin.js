@@ -1,6 +1,3 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class",
         "odin/math/mathf",
@@ -19,7 +16,7 @@ define([
         function Transform(opts) {
             opts || (opts = {});
 
-            Component.call(this);
+            Component.call(this, "Transform", opts.sync, opts.json);
 
             this.root = this;
             this.depth = 0;
@@ -267,8 +264,7 @@ define([
 		
 		var VEC = new Vec3;
 		Transform.prototype.toSYNC = function(json){
-			json || (json = this._SYNC);
-			Component.prototype.toSYNC.call(this, json);
+			json = Component.prototype.toSYNC.call(this, json);
 			
 			if (this.parent) {
 				json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);

@@ -303,8 +303,6 @@ define([
         WebGLRenderer.prototype.render = function(scene, camera) {
             if (!this._context) return;
             var gl = this.context,
-                webgl = this._webgl,
-                lastCamera = this._lastCamera,
                 lastBackground = this._lastBackground,
                 background = camera.backgroundColor,
                 components = scene.components,
@@ -317,7 +315,7 @@ define([
                 lastBackground.copy(background);
                 gl.clearColor(background.r, background.g, background.b, 1);
             }
-            if (lastCamera !== camera) {
+            if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
                     w = canvas.pixelWidth,
                     h = canvas.pixelHeight;
@@ -325,20 +323,17 @@ define([
                 camera.set(w, h);
                 gl.viewport(0, 0, w, h);
 
-                if (canvas.fullScreen) {
-                    if (this._lastResizeFn) canvas.off("resize", this._lastResizeFn);
+                if (this._lastResizeFn) canvas.off("resize", this._lastResizeFn);
 
-                    this._lastResizeFn = function() {
-                        var w = this.pixelWidth,
-                            h = this.pixelHeight;
+                this._lastResizeFn = function() {
+                    var w = this.pixelWidth,
+                        h = this.pixelHeight;
 
-                        camera.set(w, h);
-                        gl.viewport(0, 0, w, h);
-                    };
+                    camera.set(w, h);
+                    gl.viewport(0, 0, w, h);
+                };
 
-                    canvas.on("resize", this._lastResizeFn);
-                }
-
+                canvas.on("resize", this._lastResizeFn);
                 this._lastCamera = camera;
             }
 

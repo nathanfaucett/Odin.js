@@ -1,6 +1,3 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class"
     ],
@@ -8,12 +5,15 @@ define([
         "use strict";
 
 
-        function Component(type) {
+        function Component(type, sync, json) {
 
             Class.call(this);
 			
             this._type = type || this.constructor.name || "UnknownComponent";
             this._name = (this._type).toLowerCase();
+			
+			this.sync = sync != undefined ? !!sync : true;
+			this.json = json != undefined ? !!json : true;
 			
             this.gameObject = undefined;
         }
@@ -21,7 +21,6 @@ define([
 		
 		Component._types = {};
 		Component.prototype._type = undefined;
-		
 		Component.prototype._onExtend = function(child) {
 			
 			Component._types[child.name] = child;
@@ -65,8 +64,7 @@ define([
 
 
 		Component.prototype.toSYNC = function(json){
-			json || (json = this._SYNC);
-			Class.prototype.toSYNC.call(this, json);
+			json = Class.prototype.toSYNC.call(this, json);
 			
 			return json;
 		};
@@ -85,6 +83,9 @@ define([
 			json._type = this._type;
 			json._name = this._name;
 			
+			json.sync = this.sync;
+			json.json = this.json;
+			
 			return json;
 		};
 		
@@ -94,6 +95,9 @@ define([
 			
 			this._type = json._type;
 			this._name = json._name;
+			
+			this.sync = json.sync;
+			this.json = json.json;
 			
 			return this;
 		};

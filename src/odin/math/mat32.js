@@ -6,7 +6,6 @@ define(
         var sqrt = Math.sqrt,
             cos = Math.cos,
             sin = Math.sin,
-            tan = Math.tan,
             atan2 = Math.atan2;
 
         /**

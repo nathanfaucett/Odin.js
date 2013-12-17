@@ -17,7 +17,8 @@ define(
 			
             this.FAKE_LAG = 0.1;
 			
-			this.SCENE_SYNC_RATE = 0.25;
+			this.MAX_SERVER_STATES = 10;
+			this.SCENE_SYNC_RATE = 0.5;
 			
             this.MIN_DELTA = 0.000001;
             this.MAX_DELTA = 1;

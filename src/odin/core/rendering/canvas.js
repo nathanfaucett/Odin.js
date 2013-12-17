@@ -108,12 +108,14 @@ define([
 
 
         Canvas.prototype.destroy = function() {
-            if (!this.element) return;
+            if (!this.element) return this;
 
             removeEvent(window, "resize orientationchange", this._handleResize, this);
             document.body.removeChild(this.element);
             this.element = undefined;
             canvas.off("resize");
+            
+            return this;
         };
 
         /**
@@ -123,10 +125,12 @@ define([
         * @param Number width
         */
         Canvas.prototype.setFullscreen = function(value) {
-            if (!this.element || this.fullScreen === value) return;
+            if (!this.element || this.fullScreen === value) return this;
 
             this.fullScreen = !! value;
             this._handleResize();
+            
+            return this;
         };
 
         /**
@@ -136,13 +140,15 @@ define([
         * @param Number width
         */
         Canvas.prototype.setWidth = function(width) {
-            if (!this.element || this.width === width) return;
+            if (!this.element || this.width === width) return this;
 
             this.width = width;
             this.fullScreen = false;
             this.aspect = this.width / this.height;
 
             this._handleResize();
+            
+            return this;
         };
 
         /**
@@ -152,13 +158,41 @@ define([
         * @param Number height
         */
         Canvas.prototype.setHeight = function(height) {
-            if (!this.element || this.height === height) return;
+            if (!this.element || this.height === height) return this;
 
             this.height = height;
             this.fullScreen = false;
             this.aspect = this.width / this.height;
 
             this._handleResize();
+            
+            return this;
+        };
+
+        /**
+        * @method style
+        * @memberof Canvas
+        * @brief sets style of html element
+        * @param Number height
+        */
+        Canvas.prototype.style = function(key, value) {
+            if (!this.element) return this;
+
+            this.element.style[key] = value;
+            return this;
+        };
+
+        /**
+        * @method setBackgroundColor
+        * @memberof Canvas
+        * @brief sets html background color
+        * @param Number height
+        */
+        Canvas.prototype.setBackgroundColor = function(color) {
+            if (!this.element) return this;
+
+            this.element.style.background = color;
+            return this;
         };
 
 
@@ -186,19 +220,19 @@ define([
 
             this.pixelWidth = floor(width);
             this.pixelHeight = floor(height);
-
+            
             element.width = width;
             element.height = height;
 
-            style.marginLeft = -floor(width * 0.5) - 1 + "px";
-            style.marginTop = -floor(height * 0.5) - 1 + "px";
+            style.marginLeft = -floor(width * 0.5) - 1 +"px";
+            style.marginTop = -floor(height * 0.5) - 1 +"px";
 
-            style.width = floor(width) + "px";
-            style.height = floor(height) + "px";
+            style.width = floor(width) +"px";
+            style.height = floor(height) +"px";
 
-            document.getElementById(VIEWPORT).setAttribute("content", viewportScale.replace(SCALE_REG, "-scale=" + Device.invPixelRatio));
-            document.getElementById(VIEWPORT_WIDTH).setAttribute("content", "width=" + w);
-            document.getElementById(VIEWPORT_HEIGHT).setAttribute("content", "height=" + h);
+            document.getElementById(VIEWPORT).setAttribute("content", viewportScale.replace(SCALE_REG, "-scale="+ Device.invPixelRatio));
+            document.getElementById(VIEWPORT_WIDTH).setAttribute("content", "width="+ w);
+            document.getElementById(VIEWPORT_HEIGHT).setAttribute("content", "height="+ h);
             window.scrollTo(1, 1);
 
             this.emit("resize");

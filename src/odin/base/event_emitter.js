@@ -3,7 +3,8 @@ define(
         "use strict";
 		
 		
-		var shift = Array.prototype.shift;
+		var shift = Array.prototype.shift,
+			SPLITER = /[ ,]+/;
 		
 		
 		function EventEmitter() {
@@ -13,8 +14,14 @@ define(
 		
 		
 		EventEmitter.prototype.on = EventEmitter.prototype.addEventListener = function(type, listener, ctx) {
+			var types = type.split(SPLITER),
+				events = this._events,
+				i;
 			
-			(this._events[type] || (this._events[type] = [])).push({listener: listener, ctx: ctx || this});
+			for (i = types.length; i--;) {
+				type = types[i];
+				(events[type] || (events[type] = [])).push({listener: listener, ctx: ctx || this});
+			}
 			
 			return this;
 		};
@@ -43,29 +50,33 @@ define(
 		
 		
 		EventEmitter.prototype.off = EventEmitter.prototype.removeEventListener = function(type, listener, ctx) {
-			var events, event,
-				i;
+			var types = type.split(SPLITER),
+				thisEvents = this._events, events, event,
+				i, j;
 		
-			if (!type) {
-				events = this._events;
-				for (i in events) events[i].length = 0;
-				return this;
-			}
-			
-			events = this._events[type];
-			if (!events) return this;
-		
-			if (!listener) {
-				events.length = 0;
-			} else {
-				ctx || (ctx = this);
+			for (i = types.length; i--;) {
+				type = types[i];
 				
-				for (i = events.length; i--;) {
-					event = events[i];
-		
-					if (event.listener === listener && event.ctx === ctx) {
-						events.splice(i, 1);
-						break;
+				if (!type) {
+					for (i in thisEvents) thisEvents[i].length = 0;
+					return this;
+				}
+				
+				events = thisEvents[type];
+				if (!events) return this;
+			
+				if (!listener) {
+					events.length = 0;
+				} else {
+					ctx || (ctx = this);
+					
+					for (j = events.length; j--;) {
+						event = events[j];
+			
+						if (event.listener === listener && event.ctx === ctx) {
+							events.splice(j, 1);
+							break;
+						}
 					}
 				}
 			}

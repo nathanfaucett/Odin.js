@@ -4,9 +4,6 @@ define([
     ],
     function(Class, Component) {
         "use strict";
-
-		
-		var Component_types = Component._types;
 		
 		
         /**
@@ -20,9 +17,12 @@ define([
             opts || (opts = {});
 
             Class.call(this);
-
+			
+			this.sync = opts.sync != undefined ? !!opts.sync : true;
+			this.json = opts.json != undefined ? !!opts.json : true;
+			
             this.scene = undefined;
-
+			
             this.tags = [];
 
             this.components = [];
@@ -121,6 +121,7 @@ define([
 
 
         GameObject.prototype.addComponent = function(component, others) {
+			if (typeof(component) === "string") component = new Component._types[component];
             if (!(component instanceof Component)) {
                 console.warn("GameObject.addComponent: can't add passed argument, it is not instance of Component");
                 return this;
@@ -128,7 +129,7 @@ define([
             var name = component._name,
                 components = this.components,
 				index = components.indexOf(component),
-                i, j;
+                comp, i, j;
 
             if (index === -1) {
                 if (component.gameObject) component = component.clone();
@@ -142,15 +143,18 @@ define([
 				
                 if (!others) {
                     for (i = components.length; i--;) {
-                        component = components[i];
-                        if (!component) continue;
+                        comp = components[i];
+                        if (!comp) continue;
 
                         for (j = components.length; j--;) {
 							name = components[j]._name;
-                            component[name] = components[j];
+                            comp[name] = components[j];
                         }
                     }
                 }
+				
+				this.emit("add"+ component._type, component);
+				this.emit("addComponent", component);
 				
                 if (this.scene) this.scene._addComponent(component);
             } else {
@@ -185,6 +189,7 @@ define([
 
 
         GameObject.prototype.removeComponent = function(component, others) {
+			if (typeof(component) === "string") component = this.getComponent(component);
             if (!(component instanceof Component)) {
                 console.warn("GameObject.removeComponent: can't remove passed argument, it is not instance of Component");
                 return this;
@@ -202,7 +207,6 @@ define([
 						if (!comp) continue;
 	
 						for (j = components.length; j--;) {
-							
 							if (name === components[j]._name) comp[name] = undefined;
 						}
 					}
@@ -214,6 +218,9 @@ define([
 
                 component.gameObject = undefined;
                 this[name] = undefined;
+				
+				this.emit("remove"+ component._type, component);
+				this.emit("removeComponent", component);
 				
                 if (this.scene) this.scene._removeComponent(component);
             } else {
@@ -249,6 +256,12 @@ define([
         };
 
 
+        GameObject.prototype.getComponent = function(type) {
+			
+            return this._componentHash[type] || this[type] || this[type.toLowerCase()];
+        };
+
+
         GameObject.prototype.hasComponent = function(type) {
 			var components = this.components,
 				i;
@@ -271,18 +284,18 @@ define([
 
 
 		GameObject.prototype.toSYNC = function(json){
-			json || (json = this._SYNC);
-			Class.prototype.toSYNC.call(this, json);
+			json = Class.prototype.toSYNC.call(this, json);
 			var components = this.components,
 				jsonComponents = json.components || (json.components = []),
+				component,
 				i;
 			
-			for (i = components.length; i--;) jsonComponents[i] = components[i].toSYNC(jsonComponents[i]);
+			for (i = components.length; i--;) if ((component = components[i]).sync) jsonComponents[i] = component.toSYNC(jsonComponents[i]);
 			return json;
 		};
 		
 		
-		GameObject.prototype.fromSYNC = function(json){
+		GameObject.prototype.fromSYNC = function(json, alpha){
 			Class.prototype.fromSYNC.call(this, json);
 			var components = this.components,
 				jsonComponents = json.components || (json.components = []),
@@ -290,13 +303,13 @@ define([
 				i;
 			
 			for (i = jsonComponents.length; i--;) {
-				jsonComponent = jsonComponents[i];
+				if (!(jsonComponent = jsonComponents[i])) continue;
 				
 				if ((component = this.findComponentByServerId(jsonComponent._id))) {
-					component.fromSYNC(jsonComponent);
+					component.fromSYNC(jsonComponent, alpha);
 				} else {
-					if (!(type = Component_types[jsonComponent._type])) continue;
-					this.addComponent(new type().fromSYNC(jsonComponent));
+					if (!(type = Component._types[jsonComponent._type])) continue;
+					this.addComponent(new type().fromSYNC(jsonComponent, alpha));
 				}
 			}
 			
@@ -311,9 +324,10 @@ define([
 				jsonComponents = json.components || (json.components = []),
 				tags = this.tags,
 				jsonTags = json.tags || (json.tags = []),
+				component,
 				i;
 			
-			for (i = components.length; i--;) jsonComponents[i] = components[i].toJSON(jsonComponents[i]);
+			for (i = components.length; i--;) if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
 			for (i = tags.length; i--;) jsonTags[i] = tags[i];
 			
 			return json;
@@ -330,8 +344,8 @@ define([
 				i;
 			
 			for (i = jsonComponents.length; i--;) {
-				jsonComponent = jsonComponents[i];
-				if (!(type = Component_types[jsonComponent._type])) continue;
+				if (!(jsonComponent = jsonComponents[i])) continue;
+				if (!(type = Component._types[jsonComponent._type])) continue;
 				
 				if ((component = this.findComponentByServerId(jsonComponent._id))) {
 					component.fromJSON(jsonComponent);

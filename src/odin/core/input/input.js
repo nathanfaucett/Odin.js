@@ -20,7 +20,13 @@ define([
 			BUTTON = Axis.BUTTON,
 			MOUSE = Axis.MOUSE,
 			MOUSE_WHEEL = Axis.MOUSE_WHEEL,
-			JOYSTICK = Axis.JOYSTICK;
+			JOYSTICK = Axis.JOYSTICK,
+			
+			MOUSE_BUTTONS = {
+				"0": "mouse0",
+				"1": "mouse1",
+				"2": "mouse2"
+			}
 		
 
         function Input() {
@@ -39,6 +45,12 @@ define([
 			this.touchesMoveNeedsUpdate = false;
             this.acceleration = new Vec3;
             
+			this.frameCount = 0;
+			this._frameCount = undefined;
+            
+			this.time = 0;
+			this._time = undefined;
+			
             this._SYNC = {};
         }
 		
@@ -46,8 +58,11 @@ define([
 
 
 		Input.prototype.update = function() {
-            var axes = this.axes.axes, buttons = this.buttons._buttonHash, button, altButton,
+            var axes = this.axes, buttons = this.buttons.hash, button, altButton,
 				axis, value, sensitivity, pos, neg, tmp, dt = Time.delta, i;
+			
+			this.frameCount = this._frameCount ? this._frameCount : Time.frameCount;
+			this.time = this._time ? this._time : Time.stamp();
 			
             this.mouseMoveNeedsUpdate = true;
 			this.touchesMoveNeedsUpdate = true;
@@ -57,7 +72,7 @@ define([
 				value = axis.value;
 				sensitivity = axis.sensitivity;
 				
-				switch( axis.type ){
+				switch(axis.type) {
 					
 					case BUTTON:
 					
@@ -85,7 +100,7 @@ define([
 				if (neg) value -= sensitivity * dt;
 				if (pos) value += sensitivity * dt;
 				
-				if (!pos && !neg) {
+				if (!pos && !neg && value !== 0) {
 					tmp = abs(value);
 					value -= clamp(sign(value) * axis.gravity * dt, -tmp, tmp);
 				}
@@ -99,58 +114,79 @@ define([
         
         
         Input.prototype.axis = function(name) {
-            var axis = this.axes._axisHash[name];
+            var axis = this.axes.hash[name];
             return axis ? axis.value : 0;
         };
         
         
         Input.prototype.mouseButton = function(id) {
-            var button = this.buttons.mouse(id);
+            var button = this.buttons.hash[MOUSE_BUTTONS[id]];
             
             return button && button.value;
         };
         
         
         Input.prototype.mouseButtonDown = function(id) {
-            var button = this.buttons.mouse(id);
+            var button = this.buttons.hash[MOUSE_BUTTONS[id]];
             
-            return button && button.value && (button.frameDown >= Time.frameCount);
+            return button && button.value && (button.frameDown >= this.frameCount);
         };
         
         
         Input.prototype.mouseButtonUp = function(id) {
-            var button = this.buttons.mouse(id);
+            var button = this.buttons.hash[MOUSE_BUTTONS[id]];
             
-            return button && (button.frameUp >= Time.frameCount)
+            return button && (button.frameUp >= this.frameCount)
+        };
+        
+        
+        Input.prototype.anyKey = function() {
+            var buttons = this.buttons,
+				i;
+			
+			for (i = buttons.length; i--;) if (buttons[i].value) return true;
+			return false;
+        };
+        
+        
+        Input.prototype.anyKeyDown = function() {
+            var buttons = this.buttons,
+				button,
+				i;
+			
+			for (i = buttons.length; i--;) if ((button = buttons[i]).value && (button.frameDown >= this.frameCount)) return true;
+			return false;
         };
         
         
         Input.prototype.key = function(name) {
-            var button = this.buttons.get(name);
+            var button = this.buttons.hash[name];
             
             return button && button.value;
         };
         
         
         Input.prototype.keyDown = function(name) {
-            var button = this.buttons.get(name);
+            var button = this.buttons.hash[name];
             
-            return button && button.value && (button.frameDown >= Time.frameCount);
+            return button && button.value && (button.frameDown >= this.frameCount);
         };
         
         
         Input.prototype.keyUp = function(name) {
-            var button = this.buttons.get(name);
+            var button = this.buttons.hash[name];
             
-            return button && (button.frameUp >= Time.frameCount);
+            return button && (button.frameUp >= this.frameCount);
         };
         
 
 		Input.prototype.toSYNC = function(json) {
 			json || (json = this._SYNC);
             
+			json._frameCount = Time.frameCount;
+			json._time = Time.stamp();
+			
             json.buttons = this.buttons.toSYNC(json.buttons);
-            json.axes = this.axes.toSYNC(json.axes);
             
             json.mousePosition = this.mousePosition.toJSON(json.mousePosition);
             json.mouseDelta = this.mouseDelta.toJSON(json.mouseDelta);
@@ -164,8 +200,10 @@ define([
 
 		Input.prototype.fromSYNC = function(json) {
 			
+			this._frameCount = json._frameCount;
+			this._time = json._time;
+			
             this.buttons.fromSYNC(json.buttons);
-            this.axes.fromSYNC(json.axes);
             
             this.mousePosition.fromJSON(json.mousePosition);
             this.mouseDelta.fromJSON(json.mouseDelta);

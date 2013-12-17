@@ -138,6 +138,7 @@ define([
 			
 			if (this.game) component.init();
             this.emit("add" + type, component);
+            this.emit("addComponent", component);
         };
 		
 		
@@ -191,6 +192,7 @@ define([
             types.sort(component.sort);
 			
             this.emit("remove" + type, component);
+            this.emit("removeComponent", component);
         };
 		
 		
@@ -204,21 +206,33 @@ define([
 			
 			return this._gameObjectServerHash[id];
 		};
+		
+		
+		Scene.prototype.findComponentById = function(id) {
+			
+			return this._componentHash[id];
+		};
+		
+		
+		Scene.prototype.findComponentByServerId = function(id) {
+			
+			return this._componentHashServer[id];
+		};
 
 
 		Scene.prototype.toSYNC = function(json) {
-			json || (json = this._SYNC);
-			Class.prototype.toSYNC.call(this, json);
+			json = Class.prototype.toSYNC.call(this, json);
 			var gameObjects = this.gameObjects,
 				jsonGameObjects = json.gameObjects || (json.gameObjects = []),
+				gameObject,
 				i;
 			
-			for (i = gameObjects.length; i--;) jsonGameObjects[i] = gameObjects[i].toSYNC(jsonGameObjects[i]);
+			for (i = gameObjects.length; i--;) if ((gameObject = gameObjects[i]).sync) jsonGameObjects[i] = gameObject.toSYNC(jsonGameObjects[i]);
 			return json;
 		};
 
 
-		Scene.prototype.fromSYNC = function(json) {
+		Scene.prototype.fromSYNC = function(json, alpha) {
 			Class.prototype.fromSYNC.call(this, json);
 			var gameObjects = this.gameObjects,
 				jsonGameObjects = json.gameObjects,
@@ -226,9 +240,9 @@ define([
 				i;
 			
 			for (i = jsonGameObjects.length; i--;) {
-				jsonGameObject = jsonGameObjects[i];
+				if (!(jsonGameObject = jsonGameObjects[i])) continue;
 				
-				if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject);
+				if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject, alpha);
 			}
 			
 			return this;
@@ -240,9 +254,10 @@ define([
 			Class.prototype.toJSON.call(this, json);
 			var gameObjects = this.gameObjects,
 				jsonGameObjects = json.gameObjects || (json.gameObjects = []),
+				gameObject,
 				i;
 			
-			for (i = gameObjects.length; i--;) jsonGameObjects[i] = gameObjects[i].toJSON(jsonGameObjects[i]);
+			for (i = gameObjects.length; i--;) if ((gameObject = gameObjects[i]).json) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
 			return json;
 		};
 
@@ -255,7 +270,7 @@ define([
 				i;
 			
 			for (i = jsonGameObjects.length; i--;) {
-				jsonGameObject = jsonGameObjects[i];
+				if (!(jsonGameObject = jsonGameObjects[i])) continue;
 				
 				if ((gameObject = this.findByServerId(jsonGameObject._id))) {
 					gameObject.fromJSON(jsonGameObject);

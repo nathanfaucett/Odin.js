@@ -22,6 +22,7 @@ define([
 
             this.canvas = undefined;
             this.context = undefined;
+			this._context = false;
 
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
@@ -31,10 +32,17 @@ define([
 
 
         CanvasRenderer2D.prototype.init = function(canvas) {
+			if (this.canvas) this.clear();
 
             this.canvas = canvas;
-            this.context = canvas.element.getContext("2d");
-
+            
+            try {
+                this.context = canvas.element.getContext("2d");
+            } catch(e) {
+                return this;
+            }
+			this._context = true;
+            
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground.set(0, 0, 0);
@@ -43,20 +51,23 @@ define([
         };
 
 
-        CanvasRenderer2D.prototype.destroy = function() {
+        CanvasRenderer2D.prototype.clear = function() {
 
             this.canvas = undefined;
             this.context = undefined;
+			this._context = false;
 
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground.set(0, 0, 0);
+			
+			return this;
         };
 
 
         CanvasRenderer2D.prototype.render = function(scene, camera) {
+            if (!this._context) return;
             var ctx = this.context,
-                lastCamera = this._lastCamera,
                 lastBackground = this._lastBackground,
                 background = camera.backgroundColor,
                 components = scene.components,
@@ -67,37 +78,35 @@ define([
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
                 lastBackground.copy(background);
+                this.canvas.setBackgroundColor(lastBackground.toRGB());
             }
-            if (lastCamera !== camera) {
+            if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
                     w = canvas.pixelWidth,
                     h = canvas.pixelHeight,
                     hw = w * 0.5,
                     hh = h * 0.5;
-                    
+                
                 camera.set(w, h);
-
+                
                 ctx.translate(hw, hh);
                 ctx.scale(hw, -hh);
+                
+                if (this._lastResizeFn) canvas.off("resize", this._lastResizeFn);
 
-                if (canvas.fullScreen) {
-                    if (this._lastResizeFn) canvas.off("resize", this._lastResizeFn);
+                this._lastResizeFn = function() {
+                    var w = this.pixelWidth,
+                        h = this.pixelHeight,
+                        hw = w * 0.5,
+                        hh = h * 0.5;
+                    
+                    camera.set(w, h);
+                    
+                    ctx.translate(hw, hh);
+                    ctx.scale(hw, -hh);
+                };
 
-                    this._lastResizeFn = function() {
-                        var w = this.pixelWidth,
-                            h = this.pixelHeight,
-                            hw = w * 0.5,
-                            hh = h * 0.5;
-                        
-                        camera.set(w, h);
-                        
-                        ctx.translate(hw, hh);
-                        ctx.scale(hw, -hh);
-                    };
-
-                    canvas.on("resize", this._lastResizeFn);
-                }
-
+                canvas.on("resize", this._lastResizeFn);
                 this._lastCamera = camera;
             }
             
@@ -118,26 +127,26 @@ define([
         var MAT = new Mat32;
         CanvasRenderer2D.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
             var ctx = this.context,
-                imageAsset = sprite2d.image,
-                image, mvp;
+                texture = sprite2d.texture,
+                mvp;
 
             MAT.mmul(camera.projection, transform2d.modelView);
             mvp = MAT.elements;
-
-            if (imageAsset) {
-                image = imageAsset.data;
+            
+            if (texture) {
+                texture = texture.raw;
             } else {
-                image = DEFAULT_IMAGE;
+                texture = DEFAULT_IMAGE;
             }
 
             ctx.save();
 
             ctx.transform(mvp[0], -mvp[2], -mvp[1], mvp[3], mvp[4], mvp[5]);
-            
-            ctx.globalAlpha = sprite2d.alpha;
+            ctx.scale(1, -1);
+            if (sprite2d.alpha !== 1) ctx.globalAlpha = sprite2d.alpha;
 
             ctx.drawImage(
-                image,
+                texture,
                 sprite2d.x, sprite2d.y,
                 sprite2d.w, sprite2d.h,
                 sprite2d.width * -0.5,
@@ -150,6 +159,6 @@ define([
         };
 
 
-        return new CanvasRenderer2D;
+        return CanvasRenderer2D;
     }
 );

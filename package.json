@@ -2,8 +2,11 @@
   "name": "odin",
   "version": "0.0.0",
   "description": "Node.js Canvas/WebGL Javascript Game Framework",
-  "main": "index.js",
-  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nathanfaucett/odin.git"
+  },
+  "main": "src/odin/odin_server.js",
   "keywords": [
     "odin",
     "odin",
@@ -14,6 +17,7 @@
   ],
   "author": "Nathan Faucett",
   "license": "BSD-2-Clause",
+  "readmeFilename": "README.md",
   "dependencies": {
     "socket.io": "~0.9.16"
   },

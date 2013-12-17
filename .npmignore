@@ -1,7 +1,7 @@
 node_modules
 node_modules/*
 node_modules/**/*
-examples    
+examples
 examples/*
 examples/**/*
 .npmignore

@@ -3,9 +3,10 @@ if (typeof define !== "function") {
 }
 define([
         "odin/base/class",
+        "odin/core/game/loop",
         "odin/core/scene"
     ],
-    function(Class, Scene) {
+    function(Class, Loop, Scene) {
         "use strict";
 
 
@@ -13,6 +14,8 @@ define([
             opts || (opts = {});
 
             Class.call(this);
+			
+			this._loop = new Loop(this.loop, this);
 			
             this.scenes = [];
             this._sceneHash = {};
@@ -96,6 +99,26 @@ define([
 		Game.prototype.findByServerId = function(id){
 			
 			return this._sceneServerHash[id];
+		};
+		
+		
+		Game.prototype.pause = function() {
+
+            this._loop.pause();
+            return this;
+        };
+
+
+        Game.prototype.resume = function() {
+
+            this._loop.resume();
+            return this;
+        };
+		
+		
+		Game.prototype.loop = function(ms){
+			
+			this.emit("update", ms);
 		};
 
 

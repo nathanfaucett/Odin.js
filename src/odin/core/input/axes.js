@@ -12,10 +12,10 @@ define([
 		
 
         function Axes() {
-            
-            this.axes = [];
-            this._axisHash = {};
 			
+			Array.call(this);
+			
+			this.hash = {};
 			this._SYNC = {};
 			
 			this.add({
@@ -71,6 +71,9 @@ define([
 				type: MOUSE_WHEEL
 			});
         }
+		
+		Axes.prototype = Object.create(Array.prototype);
+		Axes.prototype.constructor = Axes;
 
 
         Axes.prototype.add = function(name, opts) {
@@ -78,16 +81,16 @@ define([
 				opts = name;
 				name = opts.name;
 			}
-            if (this._axisHash[name]) {
-				console.warn("Axes.add: Axes already have Axis name "+ name);
+            if (this.hash[name]) {
+				console.warn("Axes.add: Axes already have Axis named "+ name);
 				return undefined;
 			}
 			opts || (opts = {});
 			opts.name = name;
 			var axis = new Axis(opts);
 			
-			this.axes.push(axis);
-			this._axisHash[name] = axis;
+			this.push(axis);
+			this.hash[name] = axis;
 			
 			return axis;
         };
@@ -95,23 +98,22 @@ define([
 
         Axes.prototype.get = function(name) {
 			
-			return this._axisHash[name];
+			return this.hash[name];
         };
 
 		
 		Axes.prototype.toSYNC = function(json) {
 			json || (json = this._SYNC);
-			var axes = this.axes,
-				jsonAxes = json.axes || (json.axes = []),
+			var jsonAxes = json.axes || (json.axes = []),
 				i;
 			
-			for (i = axes.length; i--;) jsonAxes[i] = axes[i].toSYNC(jsonAxes[i]);
+			for (i = this.length; i--;) jsonAxes[i] = this[i].toSYNC(jsonAxes[i]);
 			return json;
 		};
 
 
 		Axes.prototype.fromSYNC = function(json) {
-			var axisHash = this._axisHash,
+			var axisHash = this.hash,
 				jsonAxes = json.axes || (json.axes = []),
 				axis, jsonAxis,
 				i;
@@ -132,17 +134,16 @@ define([
 
 		Axes.prototype.toJSON = function(json) {
 			json || (json = {});
-			var axes = this.axes,
-				jsonAxes = json.axes || (json.axes = []),
+			var jsonAxes = json.axes || (json.axes = []),
 				i;
 			
-			for (i = axes.length; i--;) jsonAxes[i] = axes[i].toJSON(jsonAxes[i]);
+			for (i = this.length; i--;) jsonAxes[i] = this[i].toJSON(jsonAxes[i]);
 			return json;
 		};
 
 
 		Axes.prototype.fromJSON = function(json) {
-			var axisHash = this._axisHash,
+			var axisHash = this.hash,
 				jsonAxes = json.axes || (json.axes = []),
 				axis, jsonAxis,
 				i;

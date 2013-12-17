@@ -40,6 +40,7 @@ define([
 				scene.game = this.game;
 				this.scene = scene;
 				this.socket.emit("server_setScene", scene._id);
+				this.emit("setScene", scene);
 			} else {
 				console.warn("Client.setScene: Scene is not a member of Game");
 			}
@@ -71,6 +72,7 @@ define([
                 if (lastCamera) lastCamera._active = false;
 				
 				this.socket.emit("server_setCamera", gameObject._id);
+				this.emit("setCamera", this.camera);
             } else {
 				console.warn("Client.setCamera: GameObject does't have a Camera or a Camera2D Component");
 			}

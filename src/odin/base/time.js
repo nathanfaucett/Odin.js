@@ -8,10 +8,10 @@ define(
 			defineProperty = Object.defineProperty,
             START_MS = Date.now(),
             START = START_MS * 0.001,
+			delta = 1 / 60,
             fixedDelta = delta,
             globalFixed = delta,
-            scale = 1,
-			delta = 1 / 60;
+            scale = 1;
 
 		
 		performance.now = (

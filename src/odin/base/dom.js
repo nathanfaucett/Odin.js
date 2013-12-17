@@ -101,7 +101,7 @@ define(
 				if (gl) break;
 			}
 			
-			console.warn("Dom.getWebGLContext: could not get a WebGL Context "+ error.message || "");
+			if (error) console.warn("Dom.getWebGLContext: could not get a WebGL Context "+ error.message || "");
 			
 			return gl;
 		};

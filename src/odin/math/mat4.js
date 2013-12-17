@@ -6,12 +6,10 @@ define([
         "use strict";
 
 
-        var abs = Math.abs,
-            sqrt = Math.sqrt,
+        var sqrt = Math.sqrt,
             cos = Math.cos,
             sin = Math.sin,
             tan = Math.tan,
-            EPSILON = Mathf.EPSILON,
             degsToRads = Mathf.degsToRads;
 
         /**

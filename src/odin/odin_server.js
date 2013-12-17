@@ -1,5 +1,5 @@
 define(
-    function() {
+    function(require) {
         "use strict";
 
 		
@@ -10,6 +10,10 @@ define(
 			this.ObjectPool = require("odin/base/object_pool");
 			this.requestAnimationFrame = require("odin/base/request_animation_frame");
 			this.Time = require("odin/base/time");
+			
+			this.Asset = require("odin/core/assets/asset");
+			this.Assets = require("odin/core/assets/assets");
+			this.Texture = require("odin/core/assets/texture");
 			
 			this.Camera = require("odin/core/components/camera");
 			this.Camera2D = require("odin/core/components/camera2d");

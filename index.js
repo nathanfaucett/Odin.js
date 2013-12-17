@@ -1,1 +1,0 @@
-module.exports = require("./src/odin/odin_server");

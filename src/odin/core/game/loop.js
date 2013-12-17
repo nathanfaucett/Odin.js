@@ -6,75 +6,80 @@ define([
 	],
     function(requestAnimationFrame) {
         "use strict";
-
-		
-        var L_STARTED = Loop.L_STARTED = 1,
-            L_PAUSED = Loop.L_PAUSED = 2,
-            L_RUNNING = Loop.L_RUNNING = 3,
-            L_IDLE = Loop.L_IDLE = 4,
-
-            R_RUNNING = Loop.R_RUNNING = 1,
-            R_IDLE = Loop.R_IDLE = 2;
 		
 
         function Loop(callback, ctx) {
+			ctx || (ctx = this);
 
             this._loopState = L_PAUSED;
-            this._runState = R_IDLE;
+            this._runState = R_PAUSED;
 
             this.callback = callback;
             this.ctx = ctx || this;
+			
+			var self = this;
+			this._run = function(ms) {
+				
+				self._runState = R_RUNNING;
+	
+				if (callback) {
+					callback.call(ctx, ms);
+	
+					if (self._loopState === L_RUNNING) {
+						self._pump();
+					} else {
+						self.pause();
+					}
+				}
+	
+				self._runState = R_PAUSED;
+			}
         }
 
 
-        Loop.prototype._run = function(ms) {
-
-            this._runState = R_RUNNING;
-
-            if (this.callback) {
-                this.callback.call(this.ctx, ms);
-
-                if (this._loopState === L_STARTED) {
-                    this._pump();
-                } else {
-                    this.suspend();
-                }
+        Loop.prototype.init = Loop.prototype.resume = function() {
+            if (!this.callback) {
+                console.warn("Loop.resume: can't run loop without callback");
+                return;
             }
 
-            this._runState = R_IDLE;
+            this._loopState = L_RUNNING;
+
+            if (this._runState === R_PAUSED) this._pump();
+        };
+
+
+        Loop.prototype.pause = function() {
+
+            this._loopState = L_PAUSED;
+        };
+
+
+        Loop.prototype.isRunning = function() {
+
+            return this._loopState === L_RUNNING;
+        };
+
+
+        Loop.prototype.isPaused = function() {
+
+            return this._loopState === L_PAUSED;
         };
 
 
         Loop.prototype._pump = function() {
 
-            requestAnimationFrame(this._run.bind(this));
+            requestAnimationFrame(this._run);
         };
 
+		
+        var L_RUNNING = Loop.L_RUNNING = 1,
+            L_PAUSED = Loop.L_PAUSED = 2,
 
-        Loop.prototype.suspend = function() {
+            R_RUNNING = Loop.R_RUNNING = 1,
+            R_PAUSED = Loop.R_PAUSED = 2;
 
-            this._loopState = L_PAUSED;
-        };
-
-
-        Loop.prototype.resume = function() {
-            if (!this.callback) {
-                console.warn("Loop.resume: can\'t run loop without callback");
-                return;
-            }
-
-            this._loopState = L_STARTED;
-
-            if (this._runState === R_IDLE) this._pump();
-        };
-
-
-        Loop.prototype.isStarted = function() {
-
-            return this._loopState === L_STARTED;
-        };
-
-
+			
         return Loop;
     }
 );

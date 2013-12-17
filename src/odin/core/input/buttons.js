@@ -5,76 +5,57 @@ define([
     function(Time, Button) {
         "use strict";
 		
-		
-		var MOUSE0 = "mouse0",
-			MOUSE1 = "mouse1",
-			MOUSE2 = "mouse2";
-		
 
         function Buttons() {
 			
-			this.buttons = [];
-			this._buttonHash = {};
+			Array.call(this);
+			
+			this.hash = {};
+			this._SYNC = {};
 			
 			this.add("mouse0");
 			this.add("mouse1");
 			this.add("mouse2");
-			
-			this._SYNC = {};
         }
+		
+		Buttons.prototype = Object.create(Array.prototype);
+		Buttons.prototype.constructor = Buttons;
 
 
         Buttons.prototype.add = function(name) {
-            if (this._buttonHash[name]) {
+            if (this.hash[name]) {
 				console.warn("Buttons.add: Buttons already have Button name "+ name);
 				return undefined;
 			}
 			var button = new Button(name);
 			
-			this.buttons.push(button);
-			this._buttonHash[name] = button;
+			this.push(button);
+			this.hash[name] = button;
 			
 			return button;
-        };
-		
-		
-        Buttons.prototype.mouse = function(id) {
-			
-			switch (id) {
-				case 0:
-					return this._buttonHash[MOUSE0];
-				case 1:
-					return this._buttonHash[MOUSE1];
-				case 2:
-					return this._buttonHash[MOUSE2];
-				default:
-					break;
-			}
-			
-			return undefined;
         };
 
 
         Buttons.prototype.get = function(name) {
 			
-			return this._buttonHash[name];
+			return this.hash[name];
         };
 
 
         Buttons.prototype.on = function(name) {
-            var button = this._buttonHash[name] || this.add(name);
+            var button = this.hash[name] || this.add(name);
 
             if (button._first) {
                 button.frameDown = Time.frameCount + 1;
                 button.timeDown = Time.stamp();
                 button._first = false;
-            }
+			}
             button.value = true;
         };
 
 
         Buttons.prototype.off = function(name) {
-            var button = this._buttonHash[name] || this.add(name);
+            var button = this.hash[name] || this.add(name);
 
             button.frameUp = Time.frameCount + 1;
             button.timeUp = Time.stamp();
@@ -85,17 +66,16 @@ define([
 		
 		Buttons.prototype.toSYNC = function(json) {
 			json || (json = this._SYNC);
-			var buttons = this.buttons,
-				jsonButtons = json.buttons || (json.buttons = []),
+			var jsonButtons = json.buttons || (json.buttons = []),
 				i;
 			
-			for (i = buttons.length; i--;) jsonButtons[i] = buttons[i].toSYNC(jsonButtons[i]);
+			for (i = this.length; i--;) jsonButtons[i] = this[i].toSYNC(jsonButtons[i]);
 			return json;
 		};
 
 		
 		Buttons.prototype.fromSYNC = function(json) {
-			var buttonHash = this._buttonHash,
+			var buttonHash = this.hash,
 				jsonButtons = json.buttons || (json.buttons = []),
 				button, jsonButton,
 				i;
@@ -116,17 +96,16 @@ define([
 		
 		Buttons.prototype.toJSON = function(json) {
 			json || (json = {});
-			var buttons = this.buttons,
-				jsonButtons = json.buttons || (json.buttons = []),
+			var jsonButtons = json.buttons || (json.buttons = []),
 				i;
 			
-			for (i = buttons.length; i--;) jsonButtons[i] = buttons[i].toJSON(jsonButtons[key]);
+			for (i = this.length; i--;) jsonButtons[i] = this[i].toJSON(jsonButtons[key]);
 			return json;
 		};
 
 		
 		Buttons.prototype.fromJSON = function(json) {
-			var buttonHash = this._buttonHash,
+			var buttonHash = this.hash,
 				jsonButtons = json.buttons || (json.buttons = []),
 				button, jsonButton,
 				i;

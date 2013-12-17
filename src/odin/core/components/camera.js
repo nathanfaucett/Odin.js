@@ -1,6 +1,3 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class",
         "odin/math/mathf",
@@ -19,7 +16,7 @@ define([
         function Camera(opts) {
             opts || (opts = {});
 
-            Component.call(this);
+            Component.call(this, "Camera", opts.sync, opts.json);
 			
 			this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
 
@@ -198,8 +195,7 @@ define([
 
 		
 		Camera.prototype.toSYNC = function(json){
-			json || (json = this._SYNC);
-			Component.prototype.toSYNC.call(this, json);
+			json = Component.prototype.toSYNC.call(this, json);
 			
 			json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;

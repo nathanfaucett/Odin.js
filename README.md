@@ -1,9 +1,9 @@
-Odin.js
+Odin
 =======
 
 Node.js Canvas/WebGL Javascript Game Framework
 
-[Examples](http://lonewolfgames.github.io/Odin.js/) - [Documentation](http://lonewolfgames.github.io/Odin.js/doc/)
+[Examples](http://nathanfaucett.github.io/odin/) - [Documentation](http://nathanfaucett.github.io/odin/doc)
 
 
 ## How to install with npm
@@ -11,14 +11,14 @@ Node.js Canvas/WebGL Javascript Game Framework
 // install the odin.js package
 // npm package is not updated as much as the github repository
 // right now it is better to download from github
-$ sudo npm install odin -g
+$ npm install odin -g
 ```
 
 
 ### Game
 a Game Class is the base for everything in your app, also check documentation for ClientGame and ServerGame
 ```
-var MyGame = new Game({ /*options*/ }); // options effect Config.js
+var MyGame = new ClientGame({ /*options*/ }); // options effect Config.js
 
 // to renderer a game we need an active scene and a camera component that is within the scene
 var camera = new GameObject({

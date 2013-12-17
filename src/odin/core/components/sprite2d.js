@@ -1,43 +1,41 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class",
         "odin/base/time",
         "odin/math/vec2",
-        "odin/core/components/component"
+        "odin/core/components/component",
+        "odin/core/assets/assets"
     ],
-    function(Class, Time, Vec2, Component) {
+    function(Class, Time, Vec2, Component, Assets) {
         "use strict";
 
 
         function Sprite2D(opts) {
             opts || (opts = {});
 
-            Component.call(this);
+            Component.call(this, "Sprite2D", opts.sync, opts.json);
 
-            this.visible = opts.visible !== undefined ? !! opts.visible : true;
+            this.visible = opts.visible != undefined ? !! opts.visible : true;
 
-            this.z = opts.z !== undefined ? opts.z : 0;
+            this.z = opts.z != undefined ? opts.z : 0;
 
-            this.alpha = opts.alpha !== undefined ? opts.alpha : 1;
+            this.alpha = opts.alpha != undefined ? opts.alpha : 1;
 
-            this.image = opts.image !== undefined ? opts.image : undefined;
+            this.texture = opts.texture != undefined ? opts.texture : undefined;
 
             this.width = opts.width || 1;
             this.height = opts.height || 1;
 
             this.x = opts.x || 0;
             this.y = opts.y || 0;
-            this.w = opts.w || 64;
-            this.h = opts.h || 64;
+            this.w = opts.w || 1;
+            this.h = opts.h || 1;
 
-            this.animations = opts.animations;
+            this.animations = opts.animations != undefined ? opts.animations : undefined;
             this.animation = "idle";
 
-            this.mode = opts.mode !== undefined ? opts.mode : Sprite2D.LOOP;
+            this.mode = opts.mode != undefined ? opts.mode : LOOP;
 
-            this.rate = opts.rate !== undefined ? opts.rate : 1;
+            this.rate = opts.rate != undefined ? opts.rate : 1;
 
             this._time = 0;
             this._frame = 0;
@@ -57,7 +55,7 @@ define([
 
             this.alpha = other.alpha;
 
-            this.image = other.image
+            this.texture = other.texture;
 
             this.width = other.width;
             this.height = other.height;
@@ -86,31 +84,29 @@ define([
         Sprite2D.prototype.play = function(name, mode, rate) {
             if (!this.animations) return;
 
-            if ((!this.playing || this.animation !== name) && this.animations.data[name]) {
+            if ((!this.playing || this.animation !== name) && this.animations.raw[name]) {
                 this.animation = name;
                 this.rate = rate || this.rate;
 
-                if (this.mode === Sprite2D.ONCE) {
-                    this._frame = 0;
-                }
+                if (this.mode === ONCE) this._frame = 0;
 
                 switch (mode) {
 
-                    case Sprite2D.PINGPONG:
+                    case PING_PONG:
                     case "pingpong":
-                        this.mode = Sprite2D.PINGPONG;
+                        this.mode = PING_PONG;
                         break;
 
-                    case Sprite2D.ONCE:
+                    case ONCE:
                     case "once":
-                        this.mode = Sprite2D.ONCE;
+                        this.mode = ONCE;
                         this._frame = 0;
                         break;
 
-                    case Sprite2D.LOOP:
+                    case LOOP:
                     case "loop":
                     default:
-                        this.mode = Sprite2D.LOOP;
+                        this.mode = LOOP;
                         break;
                 }
 
@@ -129,7 +125,7 @@ define([
 
         Sprite2D.prototype.update = function() {
             var animations = this.animations,
-                animation = animations && animations.data ? animations.data[this.animation] : undefined;
+                animation = animations && animations.raw ? animations.raw[this.animation] : undefined;
 
             if (!animation) return;
 
@@ -154,7 +150,7 @@ define([
                         this.h = currentFrame[3];
                     }
 
-                    if (mode === Sprite2D.PINGPONG) {
+                    if (mode === PING_PONG) {
                         if (order === 1) {
                             if (frame >= frames) {
                                 this._order = -1;
@@ -170,9 +166,9 @@ define([
                         }
                     } else {
                         if (frame >= frames) {
-                            if (mode === Sprite2D.LOOP) {
+                            if (mode === LOOP) {
                                 this._frame = 0;
-                            } else if (mode === Sprite2D.ONCE) {
+                            } else if (mode === ONCE) {
                                 this.stop();
                             }
                         } else {
@@ -185,10 +181,7 @@ define([
 
 
         Sprite2D.prototype.toSYNC = function(json) {
-			json || (json = {});
-			Component.prototype.toSYNC.call(this, json);
-            var image = this.image,
-                animations = this.animations;
+			json = Component.prototype.toSYNC.call(this, json);
 
             json.visible = this.visible;
 
@@ -198,22 +191,24 @@ define([
 
             json.width = this.width;
             json.height = this.height;
-
-            json.x = this.x;
-            json.y = this.y;
-            json.w = this.w;
-            json.h = this.h;
             
-            json.animation = this.animation;
-
-            json.mode = this.mode;
-            json.rate = this.rate;
-
-            json._time = this._time;
-            json._frame = this._frame;
-            json._order = this._order;
-
-            json.playing = this.playing;
+			if (this.animations) {
+				json.animation = this.animation;
+	
+				json.x = this.x;
+				json.y = this.y;
+				json.w = this.w;
+				json.h = this.h;
+				
+				json.mode = this.mode;
+				json.rate = this.rate;
+	
+				json._time = this._time;
+				json._frame = this._frame;
+				json._order = this._order;
+	
+				json.playing = this.playing;
+			}
 
             return json;
         };
@@ -228,26 +223,27 @@ define([
 
             this.alpha = json.alpha;
 
-            //this.image = json.image ? Assets.get(json.image) : undefined;
-
             this.width = json.width;
             this.height = json.height;
 
-            this.x = json.x;
-            this.y = json.y;
-            this.w = json.w;
-            this.h = json.h;
-
-            this.animation = json.animation;
-
-            this.mode = json.mode;
-            this.rate = json.rate;
-
-            this._time = json._time;
-            this._frame = json._frame;
-            this._order = json._order;
-
-            this.playing = json.playing;
+			if (this.animations) {
+				
+				this.animation = json.animation;
+				
+				this.x = json.x;
+				this.y = json.y;
+				this.w = json.w;
+				this.h = json.h;
+				
+				this.mode = json.mode;
+				this.rate = json.rate;
+	
+				this._time = json._time;
+				this._frame = json._frame;
+				this._order = json._order;
+	
+				this.playing = json.playing;
+			}
 
             return this;
         };
@@ -256,8 +252,6 @@ define([
         Sprite2D.prototype.toJSON = function(json) {
 			json || (json = {});
 			Component.prototype.toJSON.call(this, json);
-            var image = this.image,
-                animations = this.animations;
 
             json.visible = this.visible;
 
@@ -265,7 +259,7 @@ define([
 
             json.alpha = this.alpha;
 
-            json.image = image ? image.name : undefined;
+            json.texture = this.texture ? this.texture.name : undefined;
 
             json.width = this.width;
             json.height = this.height;
@@ -275,7 +269,7 @@ define([
             json.w = this.w;
             json.h = this.h;
 
-            json.animations = animations ? animations.name : undefined;
+            json.animations = this.animations ? this.animations.name : undefined;
             json.animation = this.animation;
 
             json.mode = this.mode;
@@ -299,8 +293,8 @@ define([
             this.z = json.z;
 
             this.alpha = json.alpha;
-
-            //this.image = json.image ? Assets.get(json.image) : undefined;
+			
+			this.texture = json.texture ? Assets.hash[json.texture] : undefined;
 
             this.width = json.width;
             this.height = json.height;
@@ -310,7 +304,7 @@ define([
             this.w = json.w;
             this.h = json.h;
 
-            this.animations = json.animations ? Assets.get(json.animations) : undefined;
+            this.animations = json.animations ? Assets.hash[json.animations] : undefined;
             this.animation = json.animation;
 
             this.mode = json.mode;
@@ -332,9 +326,9 @@ define([
         };
 
 
-        Sprite2D.ONCE = 1;
-        Sprite2D.LOOP = 2;
-        Sprite2D.PINGPONG = 3;
+        var ONCE = Sprite2D.ONCE = 1,
+			LOOP = Sprite2D.LOOP = 2,
+			PING_PONG = Sprite2D.PING_PONG = 3;
 
 
         return Sprite2D;

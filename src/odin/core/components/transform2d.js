@@ -1,6 +1,3 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class",
         "odin/math/mathf",
@@ -20,7 +17,7 @@ define([
         function Transform2D(opts) {
             opts || (opts = {});
 
-            Component.call(this);
+            Component.call(this, "Transform2D", opts.sync, opts.json);
 
             this.root = this;
             this.depth = 0;
@@ -28,9 +25,9 @@ define([
             this.parent = undefined;
             this.children = [];
 
-            this.position = opts.position !== undefined ? opts.position : new Vec2;
-            this.rotation = opts.rotation !== undefined ? opts.rotation : 0;
-            this.scale = opts.scale !== undefined ? opts.scale : new Vec2(1, 1);
+            this.position = opts.position != undefined ? opts.position : new Vec2;
+            this.rotation = opts.rotation != undefined ? opts.rotation : 0;
+            this.scale = opts.scale != undefined ? opts.scale : new Vec2(1, 1);
 			
             this.matrix = new Mat32;
             this.matrixWorld = new Mat32;
@@ -268,8 +265,7 @@ define([
 		
 		var VEC = new Vec2;
 		Transform2D.prototype.toSYNC = function(json){
-			json || (json = this._SYNC);
-			Component.prototype.toSYNC.call(this, json);
+			json = Component.prototype.toSYNC.call(this, json);
 			
 			if (this.parent) {
 				json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
@@ -288,8 +284,8 @@ define([
 		Transform2D.prototype.fromSYNC = function(json){
 			
 			this.position.fromJSON(json.position);
-            this.scale.fromJSON(json.scale);
-            this.rotation = json.rotation;
+			this.scale.fromJSON(json.scale);
+			this.rotation = json.rotation;
 
 			return this;
 		};
@@ -323,7 +319,6 @@ define([
                 i;
 
             transform.depth = depth;
-
             for (i = children.length; i--;) updateDepth(children[i], depth + 1);
         }
 

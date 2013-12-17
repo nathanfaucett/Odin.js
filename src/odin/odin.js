@@ -13,6 +13,11 @@ define(
 			this.requestAnimationFrame = require("odin/base/request_animation_frame");
 			this.Time = require("odin/base/time");
 			
+			this.Asset = require("odin/core/assets/asset");
+			this.AssetLoader = require("odin/core/assets/asset_loader");
+			this.Assets = require("odin/core/assets/assets");
+			this.Texture = require("odin/core/assets/texture");
+			
 			this.Camera = require("odin/core/components/camera");
 			this.Camera2D = require("odin/core/components/camera2d");
 			this.Component = require("odin/core/components/component");
@@ -25,6 +30,9 @@ define(
 			
 			this.Handler = require("odin/core/input/handler");
 			this.Input = require("odin/core/input/input");
+			
+			this.CanvasRenderer2D = require("odin/core/rendering/canvas_renderer_2d");
+			this.WebGLRenderer2D = require("odin/core/rendering/webgl_renderer_2d");
 			
 			this.GameObject = require("odin/core/game_object");
 			this.Scene = require("odin/core/scene");

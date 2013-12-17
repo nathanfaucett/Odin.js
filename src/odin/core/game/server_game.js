@@ -1,19 +1,17 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
 define([
         "odin/base/class",
         "odin/base/time",
         "odin/core/game/config",
         "odin/core/game/game",
-        "odin/core/game/loop",
-        "odin/core/game/client"
+        "odin/core/game/client",
+        "odin/core/assets/assets"
     ],
-    function(Class, Time, Config, Game, Loop, Client) {
-        //"use strict";
+    function(Class, Time, Config, Game, Client, Assets) {
+        "use strict";
 		
 		
 		var http = require("http"),
+			https = require("https"),
 			io = require("socket.io"),
 			fs = require("fs"),
 			url = require("url"),
@@ -30,9 +28,12 @@ define([
 			
             Game.call(this, opts);
 			
-			this._loop = new Loop(loop, this);
+			if (opts.credentials) {
+				this._server = new https.Server(opts.credentials, handler);
+			} else {
+				this._server = new http.Server(handler);
+			}
 			
-			this._server = new http.Server(handler.bind(this));
 			this.io = io.listen(this._server);
 			
 			this.clients = [];
@@ -52,7 +53,7 @@ define([
 					
 					gameObject.on("removeComponent", function(component) {
 						
-						sockets.emit("server_removeComponent", scene._id, gameObject._id, component);
+						sockets.emit("server_removeComponent", scene._id, gameObject._id, component._type);
 					});
 				});
 				
@@ -95,7 +96,7 @@ define([
 				socket.on("client_device", function(device){
 					
 					client = self.createClient(socket, device);
-					socket.emit("server_ready", self.toJSON());
+					socket.emit("server_ready", self.toJSON(), Assets.toJSON());
 				});
 				
 				socket.on("client_ready", function(){
@@ -117,7 +118,7 @@ define([
 				});
 			});
 			
-			this._loop.resume();
+			this._loop.init();
 			this._server.listen(Config.port, Config.host);
 			
 			this.emit("init");
@@ -173,20 +174,6 @@ define([
 			
 			return this._clientHash[id];
         };
-		
-		
-		ServerGame.prototype.suspend = function() {
-
-            this._loop.suspend();
-            return this;
-        };
-
-
-        ServerGame.prototype.resume = function() {
-
-            this._loop.resume();
-            return this;
-        };
 
 
         var frameCount = 0,
@@ -197,8 +184,8 @@ define([
             fpsLast = 0,
             fpsTime = 0,
 			lastUpdate = 0;
-
-        function loop(ms) {
+			
+        ServerGame.prototype.loop = function(ms) {
             var clients = this.clients,
 				needsUpdate = false,
 				client, socket, scene,
@@ -242,10 +229,23 @@ define([
 					socket.emit("server_sync_input");
 				}
 				
+				client.input.update();
 				client.emit("update");
+				
 				if ((scene = client.scene)) {
 					scene.update();
-					if (needsUpdate) socket.emit("server_sync_scene", scene.toSYNC());
+					if (needsUpdate) {
+						
+						if (Config.debug) {
+							var scene = scene.toSYNC();
+							
+							setTimeout(function() {
+								socket.emit("server_sync_scene", scene);
+							}, Config.FAKE_LAG * 1000);
+						} else {
+							socket.emit("server_sync_scene", scene.toSYNC());
+						}
+					}
 				}
 			}
 

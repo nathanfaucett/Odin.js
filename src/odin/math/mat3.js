@@ -3,8 +3,7 @@ define(
         "use strict";
 
 
-        var sqrt = Math.sqrt,
-            cos = Math.cos,
+        var cos = Math.cos,
             sin = Math.sin;
 
         /**

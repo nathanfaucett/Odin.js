@@ -19,7 +19,10 @@ requirejs(
 		});
 		
 		var scene = new Scene;
-		var lastInput;
+		
+		Assets.add(
+			new Texture({name: "img_player", src: "./content/images/player.png"})
+		);
 		
 		game.addScene(scene);
 		
@@ -28,10 +31,12 @@ requirejs(
 					components: [
 						new Transform2D,
 						new Sprite2D({
+							texture: Assets.hash["img_player"],
 							x: 0,
 							y: 0,
-							w: 1,
-							h: 1
+							w: 64,
+							h: 64,
+							sync: false
 						})
 					]
 				}),
@@ -47,10 +52,7 @@ requirejs(
 			client.setScene(scene);
 			client.setCamera(camera);
 			
-			client.userData.player = player;
-			client.userData.camera = camera;
-			
-			client.socket.emit("player_id", player._id);
+			client.socket.emit("player", player._id);
 			
 			client.on("update", function(){
 				var input = this.input,
