@@ -1,12 +1,11 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
         "odin/core/game/loop",
-        "odin/core/scene"
+        "odin/core/scene",
+        "odin/core/game/log"
     ],
-    function(Class, Loop, Scene) {
+    function(Class, Loop, Scene, Log) {
         "use strict";
 
 
@@ -27,7 +26,7 @@ define([
 
         Game.prototype.addScene = function(scene) {
             if (!(scene instanceof Scene)) {
-                console.warn("Game.addScene: can't add argument to Game, it's not an instance of Scene");
+                Log.warn("Game.addScene: can't add argument to Game, it's not an instance of Scene");
                 return this;
             }
             var scenes = this.scenes,
@@ -44,7 +43,7 @@ define([
 				
 				this.emit("addScene", scene);
             } else {
-                console.warn("Game.addScene: Scene is already a member of Game");
+                Log.warn("Game.addScene: Scene is already a member of Game");
             }
 
             return this;
@@ -60,7 +59,7 @@ define([
 		
         Game.prototype.removeScene = function(scene) {
             if (!(scene instanceof Scene)) {
-                console.warn("Game.removeScene: can't remove argument from Game, it's not an instance of Scene");
+                Log.warn("Game.removeScene: can't remove argument from Game, it's not an instance of Scene");
                 return this;
             }
             var scenes = this.scenes,
@@ -76,7 +75,7 @@ define([
 				
 				this.emit("removeScene", scene);
             } else {
-                console.warn("Game.removeScene: Scene not a member of Game");
+                Log.warn("Game.removeScene: Scene not a member of Game");
             }
 
             return this;

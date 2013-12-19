@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/event_emitter",
         "odin/base/device",
@@ -78,7 +79,7 @@ define([
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
                 lastBackground.copy(background);
-                this.canvas.setBackgroundColor(lastBackground.toRGB());
+                ctx.fillStyle = background.toRGB();
             }
             if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
@@ -110,7 +111,7 @@ define([
                 this._lastCamera = camera;
             }
             
-            ctx.clearRect(-1, -1, 2, 2);
+            ctx.fillRect(-1, -1, 2, 2);
 
             for (i = sprite2ds.length; i--;) {
                 sprite2d = sprite2ds[i];

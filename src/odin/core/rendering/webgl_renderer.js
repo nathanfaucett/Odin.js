@@ -1,13 +1,16 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
-        "base/event_emitter",
-        "base/device",
-        "base/dom",
-        "math/mathf",
-        "math/mat4",
-        "math/color",
-        "core/rendering/shaders/shader"
+        "odin/base/event_emitter",
+        "odin/base/device",
+        "odin/base/dom",
+        "odin/core/game/log",
+        "odin/math/mathf",
+        "odin/math/vec2",
+        "odin/math/mat32",
+        "odin/math/mat4",
+        "odin/math/color"
     ],
-    function(EventEmitter, Device, Dom, Mathf, Mat4, Color, Shader) {
+    function(EventEmitter, Device, Dom, Log, Mathf, Vec2, Mat32, Mat4, Color) {
         "use strict";
 
 
@@ -24,7 +27,30 @@ define([
             isPowerOfTwo = Mathf.isPowerOfTwo,
 
             WHITE_TEXTURE = new Uint8Array([255, 255, 255, 255]),
-            ENUM_WHITE_TEXTURE = -1;
+            ENUM_WHITE_TEXTURE = -1,
+			
+			SPRITE_VERTICES = [
+				new Vec2(0.5, 0.5),
+				new Vec2(-0.5, 0.5),
+				new Vec2(-0.5, -0.5),
+				new Vec2(0.5, -0.5)
+			],
+			SPRITE_UVS = [
+				new Vec2(1, 0),
+				new Vec2(0, 0),
+				new Vec2(0, 1),
+				new Vec2(1, 1)
+			],
+			SPRITE_INDICES = [
+				0, 1, 2,
+                0, 2, 3
+			],
+            ENUM_SPRITE_BUFFER = -1,
+			
+			ENUM_SPRITE_SHADER = -1,
+			ENUM_BASIC_SHADER = -2,
+			
+			EMPTY_ARRAY = [];
 
         /**
         * @class WebGLRenderer
@@ -37,32 +63,19 @@ define([
             opts || (opts = {});
 
             EventEmitter.call(this);
-
-            /**
-            * @property Object attributes
-            * @memberof WebGLRenderer
-            */
-            this.attributes = opts.attributes || {
+			
+			this.canvas = undefined;
+            this.context = undefined;
+			this._context = false;
+			
+            this.attributes = merge(opts.attributes || {}, {
                 alpha: true,
                 antialias: true,
                 depth: true,
                 premulipliedAlpha: true,
                 preserveDrawingBuffer: false,
                 stencil: true
-            };
-
-            /**
-            * @property Canvas canvas
-            * @memberof WebGLRenderer
-            */
-            this.canvas = undefined;
-
-            /**
-            * @property WebGLRenderingContext context
-            * @memberof WebGLRenderer
-            */
-            this.context = undefined;
-            this._context = false;
+            });
 
             this._webgl = {
                 gpu: {
@@ -92,57 +105,57 @@ define([
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground = new Color;
+			
+			this._lastBlending = undefined;
         }
 
         EventEmitter.extend(WebGLRenderer, EventEmitter);
 
-        /**
-        * @method init
-        * @memberof WebGLRenderer
-        * @brief inits renderer context from a canvas element
-        * @param Canvas canvas
-        */
+		
         WebGLRenderer.prototype.init = function(canvas) {
+			if (this.canvas) this.clear();
             var element = canvas.element;
-
+			
+			this.canvas = canvas;
             this.context = getWebGLContext(element, this.attributes);
-            this._context = true;
+			
+			if (!this.context) return this;
+			this._context = true;
 
             addEvent(element, "webglcontextlost", this._handleWebGLContextLost, this);
             addEvent(element, "webglcontextrestored", this._handleWebGLContextRestored, this);
-
-            this.canvas = canvas;
+			
             this.setDefaults();
+			
+			return this;
         };
 
-        /**
-        * @method destroy
-        * @memberof WebGLRenderer
-        * @brief destroys renderer context, canvas, and data using that context
-        */
-        WebGLRenderer.prototype.destroy = function() {
+		
+        WebGLRenderer.prototype.clear = function() {
+			if (!this.canvas) return this;
             var canvas = this.canvas,
                 element = canvas.element,
                 webgl = this._webgl,
                 ext = webgl.ext;
 
+            this.canvas = undefined;
             this.context = undefined;
-            this._context = false;
+			this._context = false;
 
             removeEvent(element, "webglcontextlost", this._handleWebGLContextLost, this);
             removeEvent(element, "webglcontextrestored", this._handleWebGLContextRestored, this);
 
             this._lastCamera = undefined;
-            this._lastResizeFn = undefined;
             this._lastBackground.setRGB(0, 0, 0);
+			this._lastBlending = undefined;
 
             ext.compressedTextureS3TC = ext.standardDerivatives = ext.textureFilterAnisotropic = ext.textureFloat = undefined;
             webgl.lastBuffer = webgl.lastShader = webgl.lastTexture = undefined;
-            webgl.textures = {};
-            webgl.buffers = {};
-            webgl.shaders = {};
-
-            this.canvas = undefined;
+            clear(webgl.textures);
+            clear(webgl.buffers);
+            clear(webgl.shaders);
+			
+			return this;
         };
 
         /**
@@ -227,7 +240,7 @@ define([
             gl.cullFace(gl.BACK);
             gl.enable(gl.CULL_FACE);
 
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
             gl.enable(gl.BLEND);
             gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
@@ -240,59 +253,74 @@ define([
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, WHITE_TEXTURE);
             gl.bindTexture(gl.TEXTURE_2D, null);
             webgl.textures[ENUM_WHITE_TEXTURE] = texture;
+			
+			buildBuffer(this, {
+				_id: ENUM_SPRITE_BUFFER,
+				vertices: SPRITE_VERTICES,
+				uvs: SPRITE_UVS,
+				indices: SPRITE_INDICES
+				
+			});
+			buildShader(this, {
+				_id: ENUM_SPRITE_SHADER,
+				vertexShader: spriteVertexShader(precision),
+				fragmentShader: spriteFragmentShader(precision)
+			});
+			buildShader(this, {
+				_id: ENUM_BASIC_SHADER,
+				vertexShader: basicVertexShader(precision),
+				fragmentShader: basicFragmentShader(precision)
+			});
+			
+			return this;
         };
 
         /**
         * @method setBlending
         * @memberof WebGLRenderer
-        * @brief sets blending mode ( empty - default, 0 - none, 1 - additive, 2 - subtractive, or 3 - muliply  )
+        * @brief sets blending mode (empty - default, 0 - none, 1 - additive, 2 - subtractive, or 3 - muliply )
         * @param Number blending
         */
-        WebGLRenderer.prototype.setBlending = function() {
-            var lastBlending;
+        WebGLRenderer.prototype.setBlending = function(blending) {
+			var gl = this.context;
 
-            return function(blending) {
-                var gl = this.context;
+			if (blending !== this._lastBlending) {
 
-                if (blending !== lastBlending) {
+				switch (blending) {
+					case 0:
+						gl.disable(gl.BLEND);
+						break;
 
-                    switch (blending) {
-                        case 0:
-                            gl.disable(gl.BLEND);
-                            break;
+					case 1:
+						gl.enable(gl.BLEND);
+						gl.blendEquation(gl.FUNC_ADD);
+						gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+						break;
 
-                        case 1:
-                            gl.enable(gl.BLEND);
-                            gl.blendEquation(gl.FUNC_ADD);
-                            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-                            break;
+					case 2:
+						gl.enable(gl.BLEND);
+						gl.blendEquation(gl.FUNC_ADD);
+						gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_COLOR);
+						break;
 
-                        case 2:
-                            gl.enable(gl.BLEND);
-                            gl.blendEquation(gl.FUNC_ADD);
-                            gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_COLOR);
-                            break;
+					case 3:
+						gl.enable(gl.BLEND);
+						gl.blendEquation(gl.FUNC_ADD);
+						gl.blendFunc(gl.ZERO, gl.SRC_COLOR);
+						break;
 
-                        case 3:
-                            gl.enable(gl.BLEND);
-                            gl.blendEquation(gl.FUNC_ADD);
-                            gl.blendFunc(gl.ZERO, gl.SRC_COLOR);
-                            break;
+					default:
+						gl.enable(gl.BLEND);
+						gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+						gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+						break;
+				}
 
-                        default:
-                            gl.enable(gl.BLEND);
-                            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-                            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-                            break;
-                    }
-
-                    lastBlending = blending;
-                }
-            };
-        }();
+				this._lastBlending = blending;
+			}
+		};
 
 
-        var EMPTY_ARRAY = [];
         /**
         * @method render
         * @memberof WebGLRenderer
@@ -306,9 +334,9 @@ define([
                 lastBackground = this._lastBackground,
                 background = camera.backgroundColor,
                 components = scene.components,
-                meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                meshFilter,
-                transform,
+                sprite2ds = components.Sprite2D || EMPTY_ARRAY,
+                sprite2d,
+                transform2d,
                 i;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
@@ -338,54 +366,77 @@ define([
             }
 
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+			
+			for (i = sprite2ds.length; i--;) {
+                sprite2d = sprite2ds[i];
+                transform2d = sprite2d.transform2d;
 
-            for (i = meshFilters.length; i--;) {
-                meshFilter = meshFilters[i];
-                transform = meshFilter.transform;
+                if (!transform2d) continue;
 
-                if (!meshFilter.mesh || !transform) continue;
-
-                this.renderMeshFilter(meshFilter.gameObject, camera, transform, meshFilter);
+                transform2d.updateModelView(camera.view);
+                this.renderSprite2D(camera, transform2d, sprite2d);
             }
         };
 
 
-        WebGLRenderer.prototype.renderMeshFilter = function(gameObject, camera, transform, meshFilter) {
+        var MAT = new Mat32,
+			MAT4 = new Mat4;
+        WebGLRenderer.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
             var gl = this.context,
                 webgl = this._webgl,
+				texture = sprite2d.texture,
                 lastBuffer = webgl.lastBuffer,
                 lastShader = webgl.lastShader,
-                mesh = meshFilter.mesh,
-
-                material = meshFilter.material,
-                shader = material.shader,
-
-                glMesh = buildMesh(this, mesh),
-                glShader = buildShader(this, mesh, shader);
-
+				lastTexture = webgl.lastTexture,
+				
+				glShader = webgl.shaders[ENUM_SPRITE_SHADER],
+				glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
+				glTexture = buildTexture(this, texture),
+				uniforms = glShader.uniforms,
+				raw, w, h;
+			
+            MAT.mmul(camera.projection, transform2d.modelView);
+			MAT4.fromMat32(MAT);
+			
+			if (texture && texture.raw) {
+				raw = texture.raw;
+				w = 1 / raw.width;
+                h = 1 / raw.height;
+			} else {
+				return;
+			}
+			
             if (lastShader !== glShader) {
                 gl.useProgram(glShader.program);
                 webgl.lastShader = glShader;
             }
-
-            if (lastBuffer !== glMesh) {
-                bindBuffers(gl, glShader, glMesh);
-                webgl.lastBuffer = glMesh;
+            if (lastBuffer !== glBuffer) {
+				bindBuffers(gl, glShader, glBuffer)
+                webgl.lastBuffer = glBuffer;
             }
-
-            bindUniforms(this, gameObject, shader, glShader, mesh, glMesh, material, transform, camera);
-
-            if (glMesh.indexBuffer) {
-                gl.drawElements(gl.TRIANGLES, glMesh.indices, gl.UNSIGNED_SHORT, 0);
+			gl.uniformMatrix4fv(uniforms.uMatrix, false, MAT4.elements);
+			gl.uniform4f(uniforms.uCrop, sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h);
+			gl.uniform1f(uniforms.uAlpha, sprite2d.alpha);
+			
+			if (lastTexture !== glTexture) {
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, glTexture);
+				gl.uniform1i(uniforms.uTexture, 0);
+				
+				webgl.lastTexture = glTexture;
+			}
+			
+            if (glBuffer.index) {
+                gl.drawElements(gl.TRIANGLES, glBuffer.indices, gl.UNSIGNED_SHORT, 0);
             } else {
-                gl.drawArrays(gl.TRIANGLES, 0, glMesh.vertices);
+                gl.drawArrays(gl.TRIANGLES, 0, glBuffer.vertices);
             }
         };
 
 
         WebGLRenderer.prototype._handleWebGLContextLost = function(e) {
             e.preventDefault();
-            console.warn("WebGLRenderer: webgl context was lost");
+            Log.warn("WebGLRenderer: webgl context was lost");
 
             this._context = false;
             this.emit("webglcontextlost", e);
@@ -393,356 +444,145 @@ define([
 
 
         WebGLRenderer.prototype._handleWebGLContextRestored = function(e) {
-            console.log("WebGLRenderer: webgl context was restored");
+            Log.log("WebGLRenderer: webgl context was restored");
 
             this.setDefaults();
             
             this._context = true;
             this.emit("webglcontextrestored", e);
         };
-
-
-        function bindBuffers(gl, glShader, glMesh) {
+		
+		
+		function bindBuffers(gl, glShader, glBuffer) {
             var attributes = glShader.attributes,
                 FLOAT = gl.FLOAT,
                 ARRAY_BUFFER = gl.ARRAY_BUFFER;
 
-            if (glMesh.vertexBuffer && attributes.aVertexPosition > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.vertexBuffer);
+            if (glBuffer.vertex && attributes.aVertexPosition > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.vertex);
                 gl.enableVertexAttribArray(attributes.aVertexPosition);
-                gl.vertexAttribPointer(attributes.aVertexPosition, 3, FLOAT, false, 0, 0);
+                gl.vertexAttribPointer(attributes.aVertexPosition, 2, FLOAT, false, 0, 0);
             }
 
-            if (glMesh.normalBuffer && attributes.aVertexNormal > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.normalBuffer);
-                gl.enableVertexAttribArray(attributes.aVertexNormal);
-                gl.vertexAttribPointer(attributes.aVertexNormal, 3, FLOAT, false, 0, 0);
-            }
-
-            if (glMesh.tangentBuffer && attributes.aVertexTangent > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.tangentBuffer);
-                gl.enableVertexAttribArray(attributes.aVertexTangent);
-                gl.vertexAttribPointer(attributes.aVertexTangent, 4, FLOAT, false, 0, 0);
-            }
-
-            if (glMesh.colorBuffer && attributes.aVertexColor > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.colorBuffer);
+            if (glBuffer.color && attributes.aVertexColor > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.color);
                 gl.enableVertexAttribArray(attributes.aVertexColor);
                 gl.vertexAttribPointer(attributes.aVertexColor, 2, FLOAT, false, 0, 0);
             }
 
-            if (glMesh.uvBuffer && attributes.aVertexUv > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.uvBuffer);
+            if (glBuffer.uv && attributes.aVertexUv > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.uv);
                 gl.enableVertexAttribArray(attributes.aVertexUv);
                 gl.vertexAttribPointer(attributes.aVertexUv, 2, FLOAT, false, 0, 0);
             }
 
-            if (glMesh.boneWeightBuffer && attributes.aBoneWeight > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.boneWeightBuffer);
-                gl.enableVertexAttribArray(attributes.aBoneWeight);
-                gl.vertexAttribPointer(attributes.aBoneWeight, 3, FLOAT, false, 0, 0);
-            }
-
-            if (glMesh.boneIndexBuffer && attributes.aBoneIndex > -1) {
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.boneIndexBuffer);
-                gl.enableVertexAttribArray(attributes.aBoneIndex);
-                gl.vertexAttribPointer(attributes.aBoneIndex, 3, FLOAT, false, 0, 0);
-            }
-
-            if (glMesh.indexBuffer) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glMesh.indexBuffer);
-        };
-        
-
-        function bindUniforms(renderer, gameObject, shader, glShader, mesh, glMesh, material, transform, camera) {
-            var gl = renderer.context,
-                webgl = renderer._webgl,
-                lastTexture = webgl.lastTexture,
-
-                options = shader.options,
-                uniforms = glShader.uniforms,
-                color = material.color,
-                whiteTexture = webgl.textures[ENUM_WHITE_TEXTURE],
-
-                mainTexture = material.mainTexture,
-                mainTextureImage = mainTexture && mainTexture.image ? mainTexture.image.data : undefined,
-                mainTextureOffset = material.mainTextureOffset,
-                mainTextureScale = material.mainTextureScale,
-
-                glTexture, index = 0,
-
-                uBone = uniforms.uBone,
-                bones = gameObject.animation ? gameObject.animation.bones : mesh.bones,
-
-                key, i;
-
-            if (uniforms.uModelView) {
-                transform.updateModelView(camera);
-                gl.uniformMatrix4fv(uniforms.uModelView, false, transform.modelView.elements);
-            } else {
-                gl.uniformMatrix4fv(uniforms.uModel, false, transform.matrixWorld.elements);
-                gl.uniformMatrix4fv(uniforms.uView, false, camera.view.elements);
-            }
-            gl.uniformMatrix4fv(uniforms.uProj, false, camera.projection.elements);
-
-            if (uBone && bones.length) {
-                for (i = uBone.length; i--;) gl.uniformMatrix4fv(uBone[i], false, bones[i].matrixBone.elements);
-            }
-
-            gl.uniform4f(uniforms.uMainTextureOffset, mainTextureOffset.x, mainTextureOffset.y, mainTextureScale.x, mainTextureScale.y);
-
-            if (mainTexture) {
-                glTexture = buildTexture(renderer, mainTexture, mainTextureImage);
-                gl.uniform4f(uniforms.uColor, 1, 1, 1, material.alpha);
-
-                if (lastTexture !== glTexture) {
-                    gl.activeTexture(gl.TEXTURE0 + index);
-                    gl.bindTexture(gl.TEXTURE_2D, glTexture);
-                    gl.uniform1i(uniforms.uMainTexture, index);
-
-                    webgl.lastTexture = glTexture;
-                }
-                index++;
-            } else {
-                gl.uniform4f(uniforms.uColor, color.r, color.g, color.b, material.alpha);
-
-                if (lastTexture !== whiteTexture) {
-                    gl.activeTexture(gl.TEXTURE0 + index);
-                    gl.bindTexture(gl.TEXTURE_2D, whiteTexture);
-                    gl.uniform1i(uniforms.uMainTexture, index);
-
-                    webgl.lastTexture = whiteTexture;
-                }
-                index++;
-            }
-        };
-
-        var buildMesh_COMPILE_ARRAY = [];
-
-        function buildMesh(renderer, mesh) {
-            var gl = renderer.context,
+            if (glBuffer.index) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer.index);
+        }
+		
+		
+		var COMPILE_ARRAY = [];
+		function buildBuffer(renderer, buffer) {
+			if (!buffer) return undefined;
+			var gl = renderer.context,
                 webgl = renderer._webgl,
                 buffers = webgl.buffers,
-                glMesh = buffers[mesh._id];
-
-            if (!mesh._needsUpdate) return glMesh;
-
-            glMesh = glMesh || (buffers[mesh._id] = {});
-
-            var compileArray = buildMesh_COMPILE_ARRAY,
-                DRAW = mesh.dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW,
+                glBuffer = buffers[buffer._id];
+			
+			if (glBuffer && !buffer._needsUpdate) return glBuffer;
+			glBuffer = glBuffer || (buffers[buffer._id] = {});
+			
+			var compileArray = COMPILE_ARRAY,
+                DRAW = buffer.dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW,
                 ARRAY_BUFFER = gl.ARRAY_BUFFER,
                 ELEMENT_ARRAY_BUFFER = gl.ELEMENT_ARRAY_BUFFER,
                 items, item,
                 i, il;
-
-            items = mesh.vertices;
+			
+			items = buffer.vertices;
             if (items.length) {
-
                 compileArray.length = 0;
-                for (i = 0, il = items.length; i < il; i++) {
-                    item = items[i];
-                    compileArray.push(item.x, item.y, item.z);
-                }
-
-                if (compileArray.length) {
-                    glMesh.vertexBuffer = glMesh.vertexBuffer || gl.createBuffer();
-                    gl.bindBuffer(ARRAY_BUFFER, glMesh.vertexBuffer);
-                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
-                }
-
-                glMesh.vertices = items.length;
-            }
-
-            items = mesh.normals;
-            if (items.length) {
-
-                compileArray.length = 0;
-                for (i = 0, il = items.length; i < il; i++) {
-                    item = items[i];
-                    compileArray.push(item.x, item.y, item.z);
-                }
-
-                if (compileArray.length) {
-                    glMesh.normalBuffer = glMesh.normalBuffer || gl.createBuffer();
-                    gl.bindBuffer(ARRAY_BUFFER, glMesh.normalBuffer);
-                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
-                }
-            }
-
-            items = mesh.tangents;
-            if (items.length) {
-
-                compileArray.length = 0;
-                for (i = 0, il = items.length; i < il; i++) {
-                    item = items[i];
-                    compileArray.push(item.x, item.y, item.z, item.w);
-                }
-
-                if (compileArray.length) {
-                    glMesh.tangentBuffer = glMesh.tangentBuffer || gl.createBuffer();
-                    gl.bindBuffer(ARRAY_BUFFER, glMesh.tangentBuffer);
-                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
-                }
-            }
-
-            items = mesh.colors;
-            if (items.length) {
-
-                compileArray.length = 0;
-                for (i = 0, il = items.length; i < il; i++) {
-                    item = items[i];
-                    compileArray.push(item.r, item.g, item.b);
-                }
-
-                if (compileArray.length) {
-                    glMesh.colorBuffer = glMesh.colorBuffer || gl.createBuffer();
-                    gl.bindBuffer(ARRAY_BUFFER, glMesh.colorBuffer);
-                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
-                }
-            }
-
-            items = mesh.uvs;
-            if (items.length) {
-
-                compileArray.length = 0;
+				
                 for (i = 0, il = items.length; i < il; i++) {
                     item = items[i];
                     compileArray.push(item.x, item.y);
                 }
-
                 if (compileArray.length) {
-                    glMesh.uvBuffer = glMesh.uvBuffer || gl.createBuffer();
-                    gl.bindBuffer(ARRAY_BUFFER, glMesh.uvBuffer);
+                    glBuffer.vertex = glBuffer.vertex || gl.createBuffer();
+                    gl.bindBuffer(ARRAY_BUFFER, glBuffer.vertex);
+                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
+                }
+
+                glBuffer.vertices = items.length;
+            }
+			
+			items = buffer.uvs;
+            if (items.length) {
+                compileArray.length = 0;
+				
+                for (i = 0, il = items.length; i < il; i++) {
+                    item = items[i];
+                    compileArray.push(item.x, item.y);
+                }
+                if (compileArray.length) {
+                    glBuffer.uv = glBuffer.uv || gl.createBuffer();
+                    gl.bindBuffer(ARRAY_BUFFER, glBuffer.uv);
                     gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
                 }
             }
-
-            items = mesh.boneIndices;
+			
+			items = buffer.indices || buffer.faces;
             if (items.length) {
-
-                glMesh.boneIndexBuffer = glMesh.boneIndexBuffer || gl.createBuffer();
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.boneIndexBuffer);
-                gl.bufferData(ARRAY_BUFFER, new Float32Array(items), DRAW);
-            }
-
-            items = mesh.boneWeights;
-            if (items.length) {
-
-                glMesh.boneWeightBuffer = glMesh.boneWeightBuffer || gl.createBuffer();
-                gl.bindBuffer(ARRAY_BUFFER, glMesh.boneWeightBuffer);
-                gl.bufferData(ARRAY_BUFFER, new Float32Array(items), DRAW);
-            }
-
-            items = mesh.faces;
-            if (items.length) {
-
-                glMesh.indexBuffer = glMesh.indexBuffer || gl.createBuffer();
-                gl.bindBuffer(ELEMENT_ARRAY_BUFFER, glMesh.indexBuffer);
+                glBuffer.index = glBuffer.index || gl.createBuffer();
+                gl.bindBuffer(ELEMENT_ARRAY_BUFFER, glBuffer.index);
                 gl.bufferData(ELEMENT_ARRAY_BUFFER, new Int16Array(items), DRAW);
 
-                glMesh.indices = items.length;
+                glBuffer.indices = items.length;
             }
-
-            webgl.lastBuffer = glMesh;
-            mesh._needsUpdate = false;
-
-            return glMesh;
+			
+			return glBuffer;
         }
-
-        var buildShader_main = "\n void main( void ){\n",
-            buildShader_footer = "\n}";
-
-        function buildShader(renderer, mesh, shader) {
+		
+		
+		function buildShader(renderer, shader) {
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 shaders = webgl.shaders,
                 glShader = shaders[shader._id];
-
-            if (!shader._needsUpdate && glShader) return glShader;
-
-            glShader = glShader || (shaders[shader._id] = {});
-
-            var precision = webgl.gpu.precision,
-                useBones = mesh.bones.length && mesh.useBones,
-
-                header = "precision " + precision + " float;\n",
-                main = buildShader_main,
-                footer = buildShader_footer,
-                options = shader.options,
-
-                vertexShader = header,
-                fragmentShader = header,
-                other, used = false,
-                key;
-
-            vertexShader += shader.vertexShaderHeader;
-            if (useBones) vertexShader += Shader.bonesHeader(mesh.bones.length);
-
-            vertexShader += main;
-
-            if (options.lighting) {
-                vertexShader += Shader.modelView;
-            } else {
-                vertexShader += Shader.modelView_uModelView;
-            }
-            if (useBones) vertexShader += Shader.bonesMain;
-
-            vertexShader += Shader.vertexPosition;
-
-            vertexShader += shader.vertexShaderMain;
-            vertexShader += footer;
-
-            fragmentShader += shader.fragmentShaderHeader;
-            fragmentShader += main;
-            fragmentShader += shader.fragmentShaderMain;
-            fragmentShader += footer;
-
-            for (key in shaders) {
-                other = shaders[key];
-                if (key == shader._id) continue;
-
-                if (vertexShader === other.vertexShader && fragmentShader === other.fragmentShader) {
-                    vertexShader = other.vertexShader;
-                    fragmentShader = other.fragmentShader;
-                    glShader.program = other.program;
-                    glShader.attributes = other.attributes;
-                    glShader.uniforms = other.uniforms;
-                    used = true;
-                }
-            }
-
-            glShader.vertexShader = vertexShader;
-            glShader.fragmentShader = fragmentShader;
-
-            if (!used) {
-                glShader.program = createProgram(gl, glShader.vertexShader, glShader.fragmentShader);
-
-                glShader.attributes = {};
-                glShader.uniforms = {};
-
-                parseUniformsAttributes(gl, glShader.program, vertexShader, fragmentShader, glShader.attributes, glShader.uniforms);
-            }
-            shader._needsUpdate = false;
-
-            return glShader;
+			
+			if (glShader && !shader._needsUpdate) return glShader;
+			glShader = glShader || (shaders[shader._id] = {});
+			
+			var program = glShader.program = createProgram(gl, shader.vertexShader, shader.fragmentShader);
+			
+			glShader.vertex = shader.vertexShader;
+			glShader.fragment = shader.fragmentShader;
+			
+			parseUniformsAttributes(gl, program, shader.vertexShader, shader.fragmentShader,
+				glShader.attributes || (glShader.attributes = {}),
+				glShader.uniforms || (glShader.uniforms = {})
+			);
+			
+			return glShader;
         }
 
-        function buildTexture(renderer, texture, image) {
-            if (!image) return renderer._webgl.textures[ENUM_WHITE_TEXTURE];
+
+        function buildTexture(renderer, texture) {
+            if (!texture || !texture.raw) return renderer._webgl.textures[ENUM_WHITE_TEXTURE];
 
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 textures = webgl.textures,
-                glTexture = textures[texture._id];
+                glTexture = textures[texture._id],
+				raw = texture.raw;
 
-            if (!texture._needsUpdate) return glTexture || textures[ENUM_WHITE_TEXTURE];
-
+            if (glTexture && !texture._needsUpdate) return glTexture;
             glTexture = glTexture || (textures[texture._id] = gl.createTexture());
+			
             var ext = webgl.ext,
                 gpu = webgl.gpu,
                 TFA = ext.textureFilterAnisotropic,
 
-                isPOT = isPowerOfTwo(image.width) && isPowerOfTwo(image.height),
+                isPOT = isPowerOfTwo(raw.width) && isPowerOfTwo(raw.height),
                 anisotropy = clamp(texture.anisotropy, 1, gpu.maxAnisotropy),
 
                 TEXTURE_2D = gl.TEXTURE_2D,
@@ -761,7 +601,7 @@ define([
 
             gl.bindTexture(TEXTURE_2D, glTexture);
 
-            gl.texImage2D(TEXTURE_2D, 0, FORMAT, FORMAT, gl.UNSIGNED_BYTE, image);
+            gl.texImage2D(TEXTURE_2D, 0, FORMAT, FORMAT, gl.UNSIGNED_BYTE, raw);
 
             gl.texParameteri(TEXTURE_2D, gl.TEXTURE_MAG_FILTER, MAG_FILTER);
             gl.texParameteri(TEXTURE_2D, gl.TEXTURE_MIN_FILTER, MIN_FILTER);
@@ -769,7 +609,7 @@ define([
             gl.texParameteri(TEXTURE_2D, gl.TEXTURE_WRAP_S, WRAP);
             gl.texParameteri(TEXTURE_2D, gl.TEXTURE_WRAP_T, WRAP);
 
-            if (TFA) gl.texParameterf(gl.TEXTURE_2D, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+            if (TFA) gl.texParameterf(TEXTURE_2D, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
             if (isPOT) gl.generateMipmap(TEXTURE_2D);
 
             webgl.lastTexture = glTexture;
@@ -777,6 +617,23 @@ define([
 
             return glTexture;
         }
+		
+		
+		function merge(obj, add) {
+			var key;
+			
+			for (key in add) if (obj[key] == undefined) obj[key] = add[key];
+			
+			return obj;
+		}
+		
+		function clear(obj) {
+			var key;
+			
+			for (key in obj) delete obj[key];
+			
+			return obj;
+		}
 
 
         return WebGLRenderer;

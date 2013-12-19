@@ -1,10 +1,9 @@
-if (typeof define !== "function") {
-    var define = require("amdefine")(module);
-}
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
-		"odin/base/request_animation_frame"
+		"odin/base/request_animation_frame",
+		"odin/core/game/log"
 	],
-    function(requestAnimationFrame) {
+    function(requestAnimationFrame, Log) {
         "use strict";
 		
 
@@ -39,7 +38,7 @@ define([
 
         Loop.prototype.init = Loop.prototype.resume = function() {
             if (!this.callback) {
-                console.warn("Loop.resume: can't run loop without callback");
+                Log.warn("Loop.resume: can't run loop without callback");
                 return;
             }
 

@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function() {
         "use strict";
@@ -25,7 +26,7 @@ define(
 
             /**
              * @property Number PI
-             * @brief The infamous 3.1415926535897
+             * @brief The infamous 3.1415926535897932384626433832795028841968
              * @memberof Mathf
              */
             this.PI = PI;

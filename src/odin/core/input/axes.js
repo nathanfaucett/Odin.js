@@ -1,7 +1,9 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/core/input/axis",
+		"odin/core/game/log"
     ],
-    function(Axis) {
+    function(Axis, Log) {
         "use strict";
         
 		
@@ -82,7 +84,7 @@ define([
 				name = opts.name;
 			}
             if (this.hash[name]) {
-				console.warn("Axes.add: Axes already have Axis named "+ name);
+				Log.warn("Axes.add: Axes already have Axis named "+ name);
 				return undefined;
 			}
 			opts || (opts = {});

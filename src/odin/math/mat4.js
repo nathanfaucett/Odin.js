@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/math/mathf",
         "odin/math/vec3"
@@ -1394,36 +1395,6 @@ define([
         };
 
         /**
-         * @method fromArray
-         * @memberof Mat4
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Mat4.prototype.fromArray = function(array) {
-            var te = this.elements;
-
-            te[0] = array[0];
-            te[1] = array[1];
-            te[2] = array[2];
-            te[3] = array[3];
-            te[4] = array[4];
-            te[5] = array[5];
-            te[6] = array[6];
-            te[7] = array[7];
-            te[8] = array[8];
-            te[9] = array[9];
-            te[10] = array[10];
-            te[11] = array[11];
-            te[12] = array[12];
-            te[13] = array[13];
-            te[14] = array[14];
-            te[15] = array[15];
-
-            return this;
-        };
-
-        /**
          * @method fromJSON
          * @memberof Mat4
          * @brief sets values from JSON object
@@ -1455,39 +1426,27 @@ define([
         };
 
         /**
-         * @method toArray
-         * @memberof Mat4
-         * @brief returns array of this
-         * @return Object
-         */
-        Mat4.prototype.toArray = function() {
-            var te = this.elements;
-
-            return [
-                te[0], te[1], te[2], te[3],
-                te[4], te[5], te[6], te[7],
-                te[8], te[9], te[10], te[11],
-                te[12], te[13], te[14], te[15]
-            ];
-        };
-
-        /**
          * @method toJSON
          * @memberof Mat4
          * @brief returns json object of this
          * @return Object
          */
         Mat4.prototype.toJSON = function() {
-            var te = this.elements;
-
-            return {
-                elements: [
-                    te[0], te[1], te[2], te[3],
-                    te[4], te[5], te[6], te[7],
-                    te[8], te[9], te[10], te[11],
-                    te[12], te[13], te[14], te[15]
-                ]
-            };
+            json || (json = {});
+            var te = this.elements,
+                je = json.elements || (json.elements = []);
+            
+            je[0] = te[0];
+            je[1] = te[1];
+            je[2] = te[2];
+            je[3] = te[3];
+            je[4] = te[4];
+            je[5] = te[5];
+            je[6] = te[6];
+            je[7] = te[7];
+            je[8] = te[8];
+            
+            return json;
         };
 
         /**

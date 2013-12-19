@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function() {
         "use strict";
@@ -416,24 +417,6 @@ define(
         };
 
         /**
-         * @method fromArray
-         * @memberof Mat2
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Mat2.prototype.fromArray = function(array) {
-            var te = this.elements;
-
-            te[0] = array[0];
-            te[1] = array[1];
-            te[2] = array[2];
-            te[3] = array[3];
-
-            return this;
-        };
-
-        /**
          * @method fromJSON
          * @memberof Mat2
          * @brief sets values from JSON object
@@ -453,35 +436,22 @@ define(
         };
 
         /**
-         * @method toArray
-         * @memberof Mat2
-         * @brief returns array of this
-         * @return Object
-         */
-        Mat2.prototype.toArray = function() {
-            var te = this.elements;
-
-            return [
-                te[0], te[1],
-                te[2], te[3],
-            ];
-        };
-
-        /**
          * @method toJSON
          * @memberof Mat2
          * @brief returns json object of this
          * @return Object
          */
-        Mat2.prototype.toJSON = function() {
-            var te = this.elements;
-
-            return {
-                elements: [
-                    te[0], te[1],
-                    te[2], te[3]
-                ]
-            };
+        Mat2.prototype.toJSON = function(json) {
+            json || (json = {});
+            var te = this.elements,
+                je = json.elements || (json.elements = []);
+            
+            je[0] = te[0];
+            je[1] = te[1];
+            je[2] = te[2];
+            je[3] = te[3];
+            
+            return json;
         };
 
         /**

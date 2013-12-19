@@ -1,5 +1,8 @@
-define(
-    function() {
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+define([
+		"odin/core/game/log"
+	],
+    function(Log) {
         "use strict";
 
 
@@ -101,7 +104,7 @@ define(
 				if (gl) break;
 			}
 			
-			if (error) console.warn("Dom.getWebGLContext: could not get a WebGL Context "+ error.message || "");
+			if (error) Log.warn("Dom.getWebGLContext: could not get a WebGL Context "+ error.message || "");
 			
 			return gl;
 		};
@@ -114,7 +117,7 @@ define(
             gl.compileShader(shader);
 
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.warn("Dom.createShader: problem compiling shader " + gl.getShaderInfoLog(shader));
+                Log.warn("Dom.createShader: problem compiling shader " + gl.getShaderInfoLog(shader));
                 gl.deleteShader(shader);
                 return undefined;
             }
@@ -140,7 +143,7 @@ define(
             gl.useProgram(program);
 
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                console.warn("Dom.createProgram: problem compiling Program " + gl.getProgramInfoLog(program));
+                Log.warn("Dom.createProgram: problem compiling Program " + gl.getProgramInfoLog(program));
                 gl.deleteProgram(program);
                 return undefined;
             }

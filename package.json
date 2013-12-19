@@ -19,7 +19,8 @@
   "license": "BSD-2-Clause",
   "readmeFilename": "README.md",
   "dependencies": {
-    "socket.io": "~0.9.16"
+    "socket.io": "",
+    "amdefine": ""
   },
   "devDependencies": {
     "grunt": "~0.4.2",

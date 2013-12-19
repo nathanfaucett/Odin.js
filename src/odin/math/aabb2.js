@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/math/mathf",
         "odin/math/vec2"
@@ -261,12 +262,13 @@ define([
          * @brief returns json object
          * @return Object
          */
-        AABB2.prototype.toJSON = function() {
-
-            return {
-                min: this.min.toJSON(),
-                max: this.max.toJSON()
-            };
+        AABB2.prototype.toJSON = function(json) {
+            json || (json = {});
+            
+            json.min = this.min.toJSON(json.min);
+            json.max = this.max.toJSON(json.max);
+            
+            return json;
         };
 
         /**

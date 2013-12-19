@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/math/mathf",
         "odin/math/vec3"

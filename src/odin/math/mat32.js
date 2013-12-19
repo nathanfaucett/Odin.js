@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function() {
         "use strict";
@@ -687,26 +688,6 @@ define(
         };
 
         /**
-         * @method fromArray
-         * @memberof Mat32
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Mat32.prototype.fromArray = function(array) {
-            var te = this.elements;
-
-            te[0] = array[0];
-            te[1] = array[1];
-            te[2] = array[2];
-            te[3] = array[3];
-            te[4] = array[4];
-            te[5] = array[5];
-
-            return this;
-        };
-
-        /**
          * @method fromJSON
          * @memberof Mat32
          * @brief sets values from JSON object
@@ -728,35 +709,24 @@ define(
         };
 
         /**
-         * @method toArray
-         * @memberof Mat32
-         * @brief returns array of this
-         * @return Object
-         */
-        Mat32.prototype.toArray = function() {
-            var te = this.elements;
-
-            return [
-                te[0], te[1], te[2],
-                te[3], te[4], te[5]
-            ];
-        };
-
-        /**
          * @method toJSON
          * @memberof Mat32
          * @brief returns json object of this
          * @return Object
          */
         Mat32.prototype.toJSON = function() {
-            var te = this.elements;
-
-            return {
-                elements: [
-                    te[0], te[1], te[2],
-                    te[3], te[4], te[5]
-                ]
-            };
+            json || (json = {});
+            var te = this.elements,
+                je = json.elements || (json.elements = []);
+            
+            je[0] = te[0];
+            je[1] = te[1];
+            je[2] = te[2];
+            je[3] = te[3];
+            je[4] = te[4];
+            je[5] = te[5];
+            
+            return json;
         };
 
         /**

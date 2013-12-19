@@ -1,12 +1,14 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
         "odin/math/mathf",
         "odin/math/vec3",
         "odin/math/quat",
         "odin/math/mat4",
-        "odin/core/components/component"
+        "odin/core/components/component",
+		"odin/core/game/log"
     ],
-    function(Class, Mathf, Vec3, Quat, Mat4, Component) {
+    function(Class, Mathf, Vec3, Quat, Mat4, Component, Log) {
         "use strict";
 
 
@@ -133,7 +135,7 @@ define([
 
         Transform.prototype.addChild = function(child) {
             if (!(child instanceof Transform)) {
-                console.warn("Transform.add: can\'t add passed argument, it is not instance of Transform");
+                Log.warn("Transform.add: can\'t add passed argument, it is not instance of Transform");
                 return this;
             }
             var children = this.children,
@@ -158,7 +160,7 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                console.warn("Transform.add: child is not a member of this Transform");
+                Log.warn("Transform.add: child is not a member of this Transform");
             }
 
             return this;
@@ -193,7 +195,7 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                console.warn("Transform.remove: child is not a member of this Transform");
+                Log.warn("Transform.remove: child is not a member of this Transform");
             }
 
             return this;

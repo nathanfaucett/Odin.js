@@ -21,7 +21,14 @@ requirejs(
 		var scene = new Scene;
 		
 		Assets.add(
-			new Texture({name: "img_player", src: "./content/images/player.png"})
+			new Texture({
+				name: "img_player",
+				src: "./content/images/player.png"
+			}),
+			new SpriteSheet({
+				name: "ss_player",
+				src: "./content/spritesheets/player.json"
+			})
 		);
 		
 		game.addScene(scene);
@@ -57,12 +64,20 @@ requirejs(
 			client.on("update", function(){
 				var input = this.input,
 					transform2d = player.transform2d,
-					dt = 2 * Time.delta;
+					dt = 2 * Time.delta,
+					touch = input.touches[0],
+					w = this.camera.width * 0.25,
+					h = this.camera.height * 0.25,
 					x = dt * input.axis("horizontal"),
 					y = dt * input.axis("vertical");
 				
-				transform2d.position.x += x;
-				transform2d.position.y += y;
+				if (touch) {
+					transform2d.position.x += dt * (touch.delta.x / w);
+					transform2d.position.y += dt * (touch.delta.y / h);
+				} else {
+					transform2d.position.x += x;
+					transform2d.position.y += y;
+				}
 			});
 			
 			client.on("disconnect", function(){

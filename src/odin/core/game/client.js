@@ -1,9 +1,11 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
 		"odin/core/input/input",
-		"odin/core/scene"
+		"odin/core/scene",
+		"odin/core/game/log"
     ],
-    function(Class, Input, Scene) {
+    function(Class, Input, Scene, Log) {
         "use strict";
 
 
@@ -30,7 +32,7 @@ define([
 		
 		Client.prototype.setScene = function(scene) {
 			if (!(scene instanceof Scene)) {
-                console.warn("Client.setScene: can't add passed argument, it is not instance of Scene");
+                Log.warn("Client.setScene: can't add passed argument, it is not instance of Scene");
                 return this;
             }
             var scenes = this.game.scenes,
@@ -42,7 +44,7 @@ define([
 				this.socket.emit("server_setScene", scene._id);
 				this.emit("setScene", scene);
 			} else {
-				console.warn("Client.setScene: Scene is not a member of Game");
+				Log.warn("Client.setScene: Scene is not a member of Game");
 			}
 
             return this;
@@ -55,13 +57,13 @@ define([
                 index;
 
             if (!scene) {
-                console.warn("Client.setCamera: can't set camera without an active scene, use Client.setScene first");
+                Log.warn("Client.setCamera: can't set camera without an active scene, use Client.setScene first");
                 return this;
             }
 
             index = scene.gameObjects.indexOf(gameObject);
             if (index === -1) {
-                console.warn("Client.setCamera: GameObject is not a member of the active Scene, adding it...");
+                Log.warn("Client.setCamera: GameObject is not a member of the active Scene, adding it...");
                 scene.addGameObject(gameObject);
             }
 
@@ -74,7 +76,7 @@ define([
 				this.socket.emit("server_setCamera", gameObject._id);
 				this.emit("setCamera", this.camera);
             } else {
-				console.warn("Client.setCamera: GameObject does't have a Camera or a Camera2D Component");
+				Log.warn("Client.setCamera: GameObject does't have a Camera or a Camera2D Component");
 			}
 
             return this;

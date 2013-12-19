@@ -1,8 +1,10 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
 		"odin/base/class",
-		"odin/core/game_object"
+		"odin/core/game_object",
+        "odin/core/game/log"
 	],
-    function(Class, GameObject) {
+    function(Class, GameObject, Log) {
         "use strict";
 		
 		
@@ -68,7 +70,7 @@ define([
 
         Scene.prototype.destroy = function() {
             if (!this.game) {
-                console.warn("Scene.destroy: can't destroy Scene if it's not added to a Game");
+                Log.warn("Scene.destroy: can't destroy Scene if it's not added to a Game");
                 return this;
             }
 
@@ -83,7 +85,7 @@ define([
 		
 		Scene.prototype.addGameObject = function(gameObject) {
 			if (!(gameObject instanceof GameObject)) {
-				console.warn("Scene.addGameObject: can't add argument to Scene, it's not an instance of GameObject");
+				Log.warn("Scene.addGameObject: can't add argument to Scene, it's not an instance of GameObject");
 				return this;
 			}
 			var gameObjects = this.gameObjects,
@@ -107,7 +109,7 @@ define([
 				
                 this.emit("addGameObject", gameObject);
 			} else {
-				console.warn("Scene.addGameObject: GameObject is already a member of Scene");
+				Log.warn("Scene.addGameObject: GameObject is already a member of Scene");
 			}
 			
 			return this;
@@ -144,7 +146,7 @@ define([
 		
 		Scene.prototype.removeGameObject = function(gameObject) {
 			if (!(gameObject instanceof GameObject)) {
-				console.warn("Scene.removeGameObject: can't remove argument from Scene, it's not an instance of GameObject");
+				Log.warn("Scene.removeGameObject: can't remove argument from Scene, it's not an instance of GameObject");
 				return this;
 			}
 			var gameObjects = this.gameObjects,
@@ -164,7 +166,7 @@ define([
 
                 this.emit("removeGameObject", gameObject);
 			} else {
-				console.warn("Scene.removeGameObject: GameObject is not a member of Scene");
+				Log.warn("Scene.removeGameObject: GameObject is not a member of Scene");
 			}
 			
 			return this;

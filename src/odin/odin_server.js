@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function(require) {
         "use strict";
@@ -13,6 +14,7 @@ define(
 			
 			this.Asset = require("odin/core/assets/asset");
 			this.Assets = require("odin/core/assets/assets");
+			this.SpriteSheet = require("odin/core/assets/sprite_sheet");
 			this.Texture = require("odin/core/assets/texture");
 			
 			this.Camera = require("odin/core/components/camera");
@@ -24,6 +26,7 @@ define(
 			
 			this.Game = require("odin/core/game/game");
 			this.ServerGame = require("odin/core/game/server_game");
+			this.Log = require("odin/core/game/log");
 			
 			this.Input = require("odin/core/input/input");
 			

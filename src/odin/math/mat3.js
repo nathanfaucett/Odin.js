@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function() {
         "use strict";
@@ -670,29 +671,6 @@ define(
         };
 
         /**
-         * @method fromArray
-         * @memberof Mat3
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Mat3.prototype.fromArray = function(array) {
-            var te = this.elements;
-
-            te[0] = array[0];
-            te[1] = array[1];
-            te[2] = array[2];
-            te[3] = array[3];
-            te[4] = array[4];
-            te[5] = array[5];
-            te[6] = array[6];
-            te[7] = array[7];
-            te[8] = array[8];
-
-            return this;
-        };
-
-        /**
          * @method fromJSON
          * @memberof Mat3
          * @brief sets values from JSON object
@@ -717,38 +695,28 @@ define(
         };
 
         /**
-         * @method toArray
-         * @memberof Mat3
-         * @brief returns array of this
-         * @return Object
-         */
-        Mat3.prototype.toArray = function() {
-            var te = this.elements;
-
-            return [
-                te[0], te[1], te[2],
-                te[3], te[4], te[5],
-                te[6], te[7], te[8]
-            ];
-        };
-
-        /**
          * @method toJSON
          * @memberof Mat3
          * @brief returns json object of this
          * @param Array array
          * @return Object
          */
-        Mat3.prototype.toJSON = function() {
-            var te = this.elements;
-
-            return {
-                elements: [
-                    te[0], te[1], te[2],
-                    te[3], te[4], te[5],
-                    te[6], te[7], te[8]
-                ]
-            };
+        Mat3.prototype.toJSON = function(json) {
+            json || (json = {});
+            var te = this.elements,
+                je = json.elements || (json.elements = []);
+            
+            je[0] = te[0];
+            je[1] = te[1];
+            je[2] = te[2];
+            je[3] = te[3];
+            je[4] = te[4];
+            je[5] = te[5];
+            je[6] = te[6];
+            je[7] = te[7];
+            je[8] = te[8];
+            
+            return json;
         };
 
         /**

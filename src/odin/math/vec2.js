@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(
     function() {
         "use strict";
@@ -723,21 +724,6 @@ define(
         Vec2.prototype.scaleFromMat32 = Vec2.prototype.scaleFromMat2;
 
         /**
-         * @method fromArray
-         * @memberof Vec2
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Vec2.prototype.fromArray = function(array) {
-
-            this.x = array[0];
-            this.y = array[1];
-
-            return this;
-        };
-
-        /**
          * @method fromJSON
          * @memberof Vec2
          * @brief sets values from JSON object
@@ -750,17 +736,6 @@ define(
             this.y = json.y;
 
             return this;
-        };
-
-        /**
-         * @method toArray
-         * @memberof Vec2
-         * @brief returns array of this
-         * @return Object
-         */
-        Vec2.prototype.toArray = function() {
-
-            return [this.x, this.y];
         };
 
         /**

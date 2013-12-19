@@ -1,12 +1,14 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
         "odin/base/time",
         "odin/core/game/config",
         "odin/core/game/game",
+        "odin/core/game/log",
         "odin/core/game/client",
         "odin/core/assets/assets"
     ],
-    function(Class, Time, Config, Game, Client, Assets) {
+    function(Class, Time, Config, Game, Log, Client, Assets) {
         "use strict";
 		
 		
@@ -96,6 +98,7 @@ define([
 				socket.on("client_device", function(device){
 					
 					client = self.createClient(socket, device);
+					Log.log("ServerGame: New Client\n", Log.object(device));
 					socket.emit("server_ready", self.toJSON(), Assets.toJSON());
 				});
 				
@@ -133,7 +136,7 @@ define([
 				client;
 			
 			if (clientHash[id]) {
-				console.warn("ServerGame.createClient: Server already has Client with id "+ id);
+				Log.warn("ServerGame.createClient: Server already has Client with id "+ id);
 				return undefined;
 			}
 			
@@ -159,7 +162,7 @@ define([
 				index = clients.indexOf(client);
 			
 			if (!client || index === -1) {
-				console.warn("ServerGame.removeClient: Server dosen't have Client with id "+ id);
+				Log.warn("ServerGame.removeClient: Server dosen't have Client with id "+ id);
 				return undefined;
 			}
 			
@@ -234,18 +237,7 @@ define([
 				
 				if ((scene = client.scene)) {
 					scene.update();
-					if (needsUpdate) {
-						
-						if (Config.debug) {
-							var scene = scene.toSYNC();
-							
-							setTimeout(function() {
-								socket.emit("server_sync_scene", scene);
-							}, Config.FAKE_LAG * 1000);
-						} else {
-							socket.emit("server_sync_scene", scene.toSYNC());
-						}
-					}
+					if (needsUpdate) socket.emit("server_sync_scene", scene.toSYNC());
 				}
 			}
 

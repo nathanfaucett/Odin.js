@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/math/mathf"
     ],
@@ -627,23 +628,7 @@ define([
          * @param Vec4 v
          * @return this
          */
-        Color.prototype.fromVec4 = Color.prototype.fromVec3
-
-        /**
-         * @method fromArray
-         * @memberof Color
-         * @brief sets values from array
-         * @param Array array
-         * @return this
-         */
-        Color.prototype.fromArray = function(array) {
-
-            this.r = array[0];
-            this.g = array[1];
-            this.b = array[2];
-
-            return this;
-        };
+        Color.prototype.fromVec4 = Color.prototype.fromVec3;
 
         /**
          * @method fromJSON
@@ -659,17 +644,6 @@ define([
             this.b = json.b;
 
             return this;
-        };
-
-        /**
-         * @method toArray
-         * @memberof Color
-         * @brief returns array of this
-         * @return Object
-         */
-        Color.prototype.toArray = function() {
-
-            return [this.r, this.g, this.b];
         };
 
         /**

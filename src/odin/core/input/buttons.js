@@ -1,8 +1,10 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
 		"odin/base/time",
-        "odin/core/input/button"
+        "odin/core/input/button",
+		"odin/core/game/log"
     ],
-    function(Time, Button) {
+    function(Time, Button, Log) {
         "use strict";
 		
 
@@ -24,7 +26,7 @@ define([
 
         Buttons.prototype.add = function(name) {
             if (this.hash[name]) {
-				console.warn("Buttons.add: Buttons already have Button name "+ name);
+				Log.warn("Buttons.add: Buttons already have Button name "+ name);
 				return undefined;
 			}
 			var button = new Button(name);

@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/object_pool",
         "odin/core/input/touch"
@@ -6,7 +7,8 @@ define([
         "use strict";
 		
 		
-		var TOUCH_POOL = new ObjectPool(Touch);
+		var TOUCH_POOL = new ObjectPool(Touch),
+			OBJECT_POOL = new ObjectPool(Object);
 		
 		
         function Touches() {
@@ -63,9 +65,12 @@ define([
 		Touches.prototype.toSYNC = function(json) {
 			json || (json = this._SYNC);
 			var jsonTouches = json.touches || (json.touches = []),
-				i;
+				i = this.length;
 			
-			for (i = this.length; i--;) jsonTouches[i] = this[i].toSYNC(jsonTouches[i]);
+			jsonTouches.length = 0;
+			OBJECT_POOL.clear();
+			
+			for (;i--;) jsonTouches[i] = this[i].toSYNC(OBJECT_POOL.create());
 			
 			return json;
 		};
@@ -73,20 +78,12 @@ define([
 		
 		Touches.prototype.fromSYNC = function(json) {
 			var jsonTouches = json.touches,
-				touch, i, j, tl;
-	
-			for (i = jsonTouches.length, tl = this.length, j = tl; i--;) {
-				if (i < tl) {
-					this.splice(j--, 1);
-					TOUCH_POOL.removeObject(this[j]);
-				}
-				
-				if ((touch = this[i])) {
-					touch.fromSYNC(jsonTouches[i]);
-				} else {
-					this[i] = TOUCH_POOL.create().fromSYNC(jsonTouches[i]);
-				}
-			}
+				touch, i = jsonTouches.length;
+			
+			this.length = 0;
+			TOUCH_POOL.clear();
+			
+			for (; i--;) this[i] = TOUCH_POOL.create().fromSYNC(jsonTouches[i]);
 			
 			return this;
 		};

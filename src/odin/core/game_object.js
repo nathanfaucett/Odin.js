@@ -1,8 +1,10 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
-        "odin/core/components/component"
+        "odin/core/components/component",
+        "odin/core/game/log"
     ],
-    function(Class, Component) {
+    function(Class, Component, Log) {
         "use strict";
 		
 		
@@ -22,6 +24,12 @@ define([
 			this.json = opts.json != undefined ? !!opts.json : true;
 			
             this.scene = undefined;
+			
+			this.camera = undefined;
+			this.camera2d = undefined;
+			this.sprite2d = undefined;
+			this.transform = undefined;
+			this.transform2d = undefined;
 			
             this.tags = [];
 
@@ -67,7 +75,7 @@ define([
 
         GameObject.prototype.destroy = function() {
             if (!this.scene) {
-                console.warn("GameObject.destroy: can't destroy GameObject if it's not added to a Scene");
+                Log.warn("GameObject.destroy: can't destroy GameObject if it's not added to a Scene");
                 return this;
             }
 			
@@ -123,7 +131,7 @@ define([
         GameObject.prototype.addComponent = function(component, others) {
 			if (typeof(component) === "string") component = new Component._types[component];
             if (!(component instanceof Component)) {
-                console.warn("GameObject.addComponent: can't add passed argument, it is not instance of Component");
+                Log.warn("GameObject.addComponent: can't add passed argument, it is not instance of Component");
                 return this;
             }
             var name = component._name,
@@ -158,7 +166,7 @@ define([
 				
                 if (this.scene) this.scene._addComponent(component);
             } else {
-                console.warn("GameObject.addComponent: GameObject already has a(n) " + type + " Component");
+                Log.warn("GameObject.addComponent: GameObject already has a(n) " + type + " Component");
             }
 
             return this;
@@ -191,7 +199,7 @@ define([
         GameObject.prototype.removeComponent = function(component, others) {
 			if (typeof(component) === "string") component = this.getComponent(component);
             if (!(component instanceof Component)) {
-                console.warn("GameObject.removeComponent: can't remove passed argument, it is not instance of Component");
+                Log.warn("GameObject.removeComponent: can't remove passed argument, it is not instance of Component");
                 return this;
             }
             var name = component._name,
@@ -224,7 +232,7 @@ define([
 				
                 if (this.scene) this.scene._removeComponent(component);
             } else {
-                console.warn("GameObject.removeComponent: GameObject does not have a(n) " + type + " Component");
+                Log.warn("GameObject.removeComponent: GameObject does not have a(n) " + type + " Component");
             }
 
             return this;

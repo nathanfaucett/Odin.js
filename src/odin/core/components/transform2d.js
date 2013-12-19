@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
         "odin/math/mathf",
@@ -5,8 +6,9 @@ define([
         "odin/math/mat32",
         "odin/math/mat4",
         "odin/core/components/component",
+		"odin/core/game/log"
     ],
-    function(Class, Mathf, Vec2, Mat32, Mat4, Component) {
+    function(Class, Mathf, Vec2, Mat32, Mat4, Component, Log) {
         "use strict";
 
 
@@ -134,7 +136,7 @@ define([
 
         Transform2D.prototype.addChild = function(child) {
             if (!(child instanceof Transform2D)) {
-                console.warn("Transform2D.add: can\'t add passed argument, it is not instance of Transform2D");
+                Log.warn("Transform2D.add: can\'t add passed argument, it is not instance of Transform2D");
                 return this;
             }
             var children = this.children,
@@ -159,7 +161,7 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                console.warn("Transform2D.add: child is not a member of this Transform2D");
+                Log.warn("Transform2D.add: child is not a member of this Transform2D");
             }
 
             return this;
@@ -194,7 +196,7 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                console.warn("Transform2D.remove: child is not a member of this Transform2D");
+                Log.warn("Transform2D.remove: child is not a member of this Transform2D");
             }
 
             return this;
@@ -262,7 +264,7 @@ define([
             return b.depth - a.depth;
         };
 
-		
+
 		var VEC = new Vec2;
 		Transform2D.prototype.toSYNC = function(json){
 			json = Component.prototype.toSYNC.call(this, json);

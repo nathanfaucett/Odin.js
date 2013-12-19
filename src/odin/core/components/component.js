@@ -1,7 +1,9 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
-        "odin/base/class"
+        "odin/base/class",
+		"odin/core/game/log"
     ],
-    function(Class) {
+    function(Class, Log) {
         "use strict";
 
 
@@ -44,7 +46,7 @@ define([
 
         Component.prototype.destroy = function() {
             if (!this.gameObject) {
-                console.warn("Component.destroy: can't destroy Component if it's not added to a GameObject");
+                Log.warn("Component.destroy: can't destroy Component if it's not added to a GameObject");
                 return this;
             }
 

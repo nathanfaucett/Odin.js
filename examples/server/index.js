@@ -22,11 +22,19 @@ require({
 					player.on("update", function() {
 						var transform2d = this.transform2d,
 							dt = 2 * Time.delta,
+							touch = Input.touches[0],
+							w = game.camera.width * 0.25,
+							h = game.camera.height * 0.25,
 							x = dt * Input.axis("horizontal"),
 							y = dt * Input.axis("vertical");
 						
-						transform2d.position.x += x;
-						transform2d.position.y += y;
+						if (touch) {
+							transform2d.position.x += dt * (touch.delta.x / w);
+							transform2d.position.y += dt * (touch.delta.y / h);
+						} else {
+							transform2d.position.x += x;
+							transform2d.position.y += y;
+						}
 					});
 				});
 			});
