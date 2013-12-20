@@ -5,40 +5,51 @@ define([
     function(Config) {
         "use strict";
 		
+		
+		var has = Object.prototype.hasOwnProperty;
+		
 
         function Log() {}
 		
 		
 		Log.prototype.debug = Log.prototype.info = Log.prototype.log = function() {
-			if (!Config.debug && !Config.logInfo) return;
+			if (!Config.debug) return;
 			
 			console.log.apply(console, arguments);
 		};
 		
 		
 		Log.prototype.warn = function() {
-			if (!Config.debug && !Config.logWarn) return;
+			if (!Config.debug) return;
 			
 			console.warn.apply(console, arguments);
 		};
 		
 		
 		Log.prototype.error = function() {
-			if (!Config.debug && !Config.logError) return;
+			if (!Config.debug) return;
 			
 			console.error.apply(console, arguments);
 		};
-		
-		
+
+
 		Log.prototype.object = function(obj) {
-			var str = "", key, value;
+			if (!Config.debug) return "";
+			var str = "", key, value, type,
+				values = arguments[1] || (arguments[1] = []);
 			
 			for (key in obj) {
-				value = obj[key];
+				if (!has.call(obj, key)) continue;
 				
-				if (typeof(value) === "object") {
+				value = obj[key];
+				if (~values.indexOf(value)) continue;
+				
+				type = typeof(value);
+				
+				if (type === "object") {
+					values.push(value);
 					str += "\t"+ key +" = "+ this.object(value);
-				} else {
+				} else if (type !== "function") {
 					str += "\t"+ key +" = "+ value +"\n";
 				}
 			}
@@ -46,7 +57,7 @@ define([
 			return str;
 		};
 
-			
+
         return new Log;
     }
 );

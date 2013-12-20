@@ -41,13 +41,13 @@ define([
             this.camera = undefined;
 			
             this.canvas = new Canvas(opts.width, opts.height);
-			
+
 			this.CanvasRenderer2D = undefined;
 			this.WebGLRenderer2D = undefined;
-			
+
 			this._optsCanvasRenderer2D = opts.CanvasRenderer2D;
 			this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
-			
+
             this.renderer = undefined;
         }
 		
@@ -253,20 +253,25 @@ define([
 			
             if (!camera) return;
             gameObject = camera.gameObject;
-
-            if (gameObject.camera) {
-				Log.warn("Game.updateRenderer: no renderer for camera component yet");
-            } else if (gameObject.camera2d) {
-                if (!Config.forceCanvas && Device.webgl) {
-                    this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
-                    Log.log("Game: setting up WebGLRenderer2D");
-                } else if (Device.canvas) {
-                    this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
-                    Log.log("Game: setting up CanvasRenderer2D");
-                } else {
-                    throw new Error("Game.updateRenderer: Could not get a renderer for this device");
-                }
-            }
+			
+			if (Config.renderer && this[Config.renderer]) {
+				this.renderer = this[Config.renderer];
+				Log.log("Game: setting up "+ Config.renderer);
+			} else {
+				if (gameObject.camera) {
+					Log.warn("Game.updateRenderer: no renderer for camera component yet");
+				} else if (gameObject.camera2d) {
+					if (!Config.forceCanvas && Device.webgl) {
+						this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
+						Log.log("Game: setting up WebGLRenderer2D");
+					} else if (Device.canvas) {
+						this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
+						Log.log("Game: setting up CanvasRenderer2D");
+					} else {
+						Log.error("Game.updateRenderer: Could not get a renderer for this device");
+					}
+				}
+			}
 
             if (lastRenderer === this.renderer) return;
             if (lastRenderer) lastRenderer.destroy();

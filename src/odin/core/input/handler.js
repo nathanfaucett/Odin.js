@@ -120,11 +120,11 @@ define([
             
         function handleMouse(e) {
             e.preventDefault();
-
+            
             switch (e.type) {
 
                 case "mousedown":
-
+                    
                     mouseFirst = true;
                     this.buttons.on(MOUSE_BUTTONS[e.button]);
                     updateMousePosition(this, e);
@@ -176,7 +176,7 @@ define([
                 offsetY = element.offsetTop || 0,
                 x = (e.pageX || e.clientX) - offsetX,
                 y = (e.pageY || e.clientY) - offsetY;
-
+                
             mouseLast.x = !mouseFirst ? x : position.x;
             mouseLast.y = !mouseFirst ? y : position.y;
 
@@ -184,7 +184,7 @@ define([
             position.y = y;
 
             delta.x = position.x - mouseLast.x;
-            delta.y = -(position.y - mouseLast.y);
+            delta.y = position.y - mouseLast.y;
         }
 
 

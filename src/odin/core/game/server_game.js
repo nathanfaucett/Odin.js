@@ -82,11 +82,12 @@ define([
 				socket_io = this.io;
 			
 			socket_io.set("log level", (Config.debug ? 2 : 0));
-			socket_io.on("connection", function(socket){
+			
+			socket_io.on("connection", function(socket) {
 				var id = socket.id,
-					client;
+					client = self.createClient(socket);
 				
-				socket.on("disconnect", function(){
+				socket.on("disconnect", function() {
 					
 					client = self.removeClient(socket);
 					if (client) {
@@ -95,19 +96,19 @@ define([
 					}
 				});
 				
-				socket.on("client_device", function(device){
+				socket.on("client_device", function(device) {
 					
-					client = self.createClient(socket, device);
+					client.device = device;
 					Log.log("ServerGame: New Client\n", Log.object(device));
 					socket.emit("server_ready", self.toJSON(), Assets.toJSON());
 				});
 				
-				socket.on("client_ready", function(){
+				socket.on("client_ready", function() {
 					
 					self.emit("connection", client);
 				});
 				
-				socket.on("client_sync_input", function(json){
+				socket.on("client_sync_input", function(json) {
 					
 					client._inputNeedsUpdate = true;
 					client.input.fromSYNC(json);
@@ -130,7 +131,7 @@ define([
 		};
 		
 		
-		ServerGame.prototype.createClient = function(socket, device) {
+		ServerGame.prototype.createClient = function(socket) {
 			var id = socket.id,
 				clientHash = this._clientHash,
 				client;
@@ -143,7 +144,6 @@ define([
 			client = new Client({
 				id: id,
 				socket: socket,
-				device: device,
 				game: this
 			});
 			
@@ -254,7 +254,7 @@ define([
 			if (method === "GET") {
 				fileName = path.resolve(cwd, uri);
 				
-				fs.stat(fileName, function(err, stat){
+				fs.stat(fileName, function(err, stat) {
 					if (err) {
 						sendError(res, 500, err);
 						return;
@@ -279,7 +279,7 @@ define([
 				if (exists) {
 					var type = MIME_TYPES[fileName.split(".").pop()] || "text/plain";
 					
-					fs.readFile(fileName, function(err, buffer){
+					fs.readFile(fileName, function(err, buffer) {
 						res.setHeader("Content-Type", type);
 						res.writeHead(200);
 						res.write(buffer);

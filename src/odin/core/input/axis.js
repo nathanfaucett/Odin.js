@@ -7,23 +7,24 @@ define(
         function Axis(opts) {
             opts || (opts = {});
 			
-            this.name = opts.name !== undefined ? opts.name : "unknown";
+            this.name = opts.name != undefined ? opts.name : "unknown";
 			
-            this.negButton = opts.negButton !== undefined ? opts.negButton : "";
-            this.posButton = opts.posButton !== undefined ? opts.posButton : "";
+            this.negButton = opts.negButton != undefined ? opts.negButton : "";
+            this.posButton = opts.posButton != undefined ? opts.posButton : "";
 			
-            this.altNegButton = opts.altNegButton !== undefined ? opts.altNegButton : "";
-            this.altPosButton = opts.altPosButton !== undefined ? opts.altPosButton : "";
+            this.altNegButton = opts.altNegButton != undefined ? opts.altNegButton : "";
+            this.altPosButton = opts.altPosButton != undefined ? opts.altPosButton : "";
 			
-            this.gravity = opts.gravity !== undefined ? opts.gravity : 3;
-            this.sensitivity = opts.sensitivity !== undefined ? opts.sensitivity : 3;
+            this.gravity = opts.gravity != undefined ? opts.gravity : 3;
+            this.sensitivity = opts.sensitivity != undefined ? opts.sensitivity : 3;
 			
-            this.dead = opts.dead !== undefined ? opts.dead : 0.001;
+            this.dead = opts.dead != undefined ? opts.dead : 0.001;
 			
-            this.type = opts.type !== undefined ? opts.type : Axis.BUTTON;
-            this.axis = opts.axis !== undefined ? opts.axis : "x";
+            this.type = opts.type != undefined ? opts.type : Axis.BUTTON;
+            this.axis = opts.axis != undefined ? opts.axis : "x";
+            this.index = opts.index != undefined ? opts.index : 0;
 			
-            this.joyNum = opts.joyNum !== undefined ? opts.joyNum : 0;
+            this.joyNum = opts.joyNum != undefined ? opts.joyNum : 0;
 			
             this.value = 0;
 			
@@ -68,6 +69,7 @@ define(
 			
             json.type = this.type;
             json.axis = this.axis;
+            json.index = this.index;
 			
             json.joyNum = this.joyNum;
 			
@@ -94,6 +96,7 @@ define(
 			
             this.type = json.type;
             this.axis = json.axis;
+            this.index = json.index;
 			
             this.joyNum = json.joyNum;
 			
@@ -105,8 +108,9 @@ define(
 
         Axis.BUTTON = 1;
         Axis.MOUSE = 2;
-        Axis.MOUSE_WHEEL = 3;
-        Axis.JOYSTICK = 4;
+        Axis.TOUCH = 3;
+        Axis.MOUSE_WHEEL = 4;
+        Axis.JOYSTICK = 5;
 
 
         return Axis;

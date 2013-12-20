@@ -51,7 +51,8 @@ define([
 			ENUM_BASIC_SHADER = -2,
 			
 			EMPTY_ARRAY = [];
-
+		
+		
         /**
         * @class WebGLRenderer2D
         * @extends EventEmitter
@@ -101,7 +102,8 @@ define([
                 lastShader: undefined,
                 lastBuffer: undefined
             };
-
+			
+			this._clearBytes = 17664;
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground = new Color;
@@ -144,7 +146,8 @@ define([
 
             removeEvent(element, "webglcontextlost", this._handleWebGLContextLost, this);
             removeEvent(element, "webglcontextrestored", this._handleWebGLContextRestored, this);
-
+			
+			this._clearBytes = 17664;
             this._lastCamera = undefined;
             this._lastBackground.setRGB(0, 0, 0);
 			this._lastBlending = undefined;
@@ -253,7 +256,7 @@ define([
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, WHITE_TEXTURE);
             gl.bindTexture(gl.TEXTURE_2D, null);
             webgl.textures[ENUM_WHITE_TEXTURE] = texture;
-			
+            
 			buildBuffer(this, {
 				_id: ENUM_SPRITE_BUFFER,
 				vertices: SPRITE_VERTICES,
@@ -271,6 +274,8 @@ define([
 				vertexShader: basicVertexShader(precision),
 				fragmentShader: basicFragmentShader(precision)
 			});
+			
+			this._clearBytes = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT;
 			
 			return this;
         };
@@ -365,7 +370,7 @@ define([
                 this._lastCamera = camera;
             }
 
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            gl.clear(this._clearBytes);
 			
 			for (i = sprite2ds.length; i--;) {
                 sprite2d = sprite2ds[i];
@@ -393,13 +398,12 @@ define([
 				glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
 				glTexture = buildTexture(this, texture),
 				uniforms = glShader.uniforms,
-				raw, w, h;
+				raw = texture.raw, w, h;
 			
             MAT.mmul(camera.projection, transform2d.modelView);
 			MAT4.fromMat32(MAT);
 			
-			if (texture && texture.raw) {
-				raw = texture.raw;
+			if (texture && raw) {
 				w = 1 / raw.width;
                 h = 1 / raw.height;
 			} else {
@@ -411,7 +415,7 @@ define([
                 webgl.lastShader = glShader;
             }
             if (lastBuffer !== glBuffer) {
-				bindBuffers(gl, glShader, glBuffer)
+				bindBuffers(gl, glShader, glBuffer);
                 webgl.lastBuffer = glBuffer;
             }
 			gl.uniformMatrix4fv(uniforms.uMatrix, false, MAT4.elements);
@@ -547,17 +551,21 @@ define([
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 shaders = webgl.shaders,
-                glShader = shaders[shader._id];
+                glShader = shaders[shader._id],
+				vertex, fragment;
 			
 			if (glShader && !shader._needsUpdate) return glShader;
+			
 			glShader = glShader || (shaders[shader._id] = {});
+			vertex = shader.vertex || shader.vertexShader;
+			fragment = shader.fragment || shader.fragmentShader;
 			
-			var program = glShader.program = createProgram(gl, shader.vertexShader, shader.fragmentShader);
+			var program = glShader.program = createProgram(gl, vertex, fragment);
 			
-			glShader.vertex = shader.vertexShader;
-			glShader.fragment = shader.fragmentShader;
+			glShader.vertex = vertex;
+			glShader.fragment = fragment;
 			
-			parseUniformsAttributes(gl, program, shader.vertexShader, shader.fragmentShader,
+			parseUniformsAttributes(gl, program, vertex, fragment,
 				glShader.attributes || (glShader.attributes = {}),
 				glShader.uniforms || (glShader.uniforms = {})
 			);

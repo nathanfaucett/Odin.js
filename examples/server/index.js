@@ -12,29 +12,53 @@ require({
 			forceCanvas: false
 		});
 		
-		game.on("init", function(){
+		game.on("init", function() {
 			
 			game.connect(function(socket) {
 				
 				socket.on("player", function(player_id) {
-					var player = window.player = game.scene.findByServerId(player_id);
+					var player = window.player = game.scene.findByServerId(player_id),
+						camera = game.camera.gameObject;
+					
+					camera.on("update", function() {
+						var transform2d = this.transform2d,
+							dt = Time.delta,
+							x = 0, y = 0;
+						
+						if (Device.mobile) {
+							x = player.transform2d.position.x;
+							y = player.transform2d.position.y;
+							x -= transform2d.position.x;
+							y -= transform2d.position.y;
+							
+							x *= dt;
+							y *= dt;
+						} else {
+							if (Input.mouseButton(0)) {
+								x = -dt * Input.axis("mouseX");
+								y = dt * Input.axis("mouseY");
+							}
+						}
+						
+						transform2d.position.x += x;
+						transform2d.position.y += y;
+					});
 					
 					player.on("update", function() {
 						var transform2d = this.transform2d,
-							dt = 2 * Time.delta,
-							touch = Input.touches[0],
-							w = game.camera.width * 0.25,
-							h = game.camera.height * 0.25,
-							x = dt * Input.axis("horizontal"),
-							y = dt * Input.axis("vertical");
+							dt = Time.delta,
+							x, y;
 						
-						if (touch) {
-							transform2d.position.x += dt * (touch.delta.x / w);
-							transform2d.position.y += dt * (touch.delta.y / h);
+						if (Device.mobile) {
+							x = dt * Input.axis("touchX");
+							y = dt * Input.axis("touchY");
 						} else {
-							transform2d.position.x += x;
-							transform2d.position.y += y;
+							x = 2 * dt * Input.axis("horizontal");
+							y = 2 * dt * Input.axis("vertical");
 						}
+						
+						transform2d.position.x += x;
+						transform2d.position.y += y;
 					});
 				});
 			});

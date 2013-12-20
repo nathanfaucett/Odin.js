@@ -52,7 +52,7 @@ define([
             position.y = y;
 
             delta.x = position.x - last.x;
-            delta.y = -(position.y - last.y);
+            delta.y = position.y - last.y;
 			
 			this._first = false;
 			

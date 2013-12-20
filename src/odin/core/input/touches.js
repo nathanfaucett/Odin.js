@@ -45,11 +45,11 @@ define([
 		
 		
 		Touches.prototype.cancel = function() {
-
-			TOUCH_POOL.clear();
-			this.length = 0
 			
-			return touch;
+			TOUCH_POOL.clear();
+			this.length = 0;
+			
+			return this;
         };
 		
 		
@@ -95,6 +95,7 @@ define([
 				i;
 			
 			for (i = this.length; i--;) jsonTouches[i] = this[i].toJSON(jsonTouches[i]);
+			
 			return json;
 		};
 

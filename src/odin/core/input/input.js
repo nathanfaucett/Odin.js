@@ -7,11 +7,13 @@ define([
         "odin/math/vec2",
         "odin/math/vec3",
         "odin/core/input/buttons",
+        "odin/core/input/button",
         "odin/core/input/axes",
         "odin/core/input/axis",
-        "odin/core/input/touches"
+        "odin/core/input/touches",
+        "odin/core/input/touch"
     ],
-    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Buttons, Axes, Axis, Touches) {
+    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Buttons, Button, Axes, Axis, Touches, Touch) {
         "use strict";
         
 		
@@ -20,6 +22,7 @@ define([
 			clamp = Mathf.clamp,
 			BUTTON = Axis.BUTTON,
 			MOUSE = Axis.MOUSE,
+			TOUCH = Axis.TOUCH,
 			MOUSE_WHEEL = Axis.MOUSE_WHEEL,
 			JOYSTICK = Axis.JOYSTICK,
 			
@@ -56,8 +59,18 @@ define([
         }
 		
         EventEmitter.extend(Input, EventEmitter);
-
-
+		
+		
+		Input.Touch = Touch;
+		Input.Touches = Touches;
+		
+		Input.Axis = Axis;
+		Input.Axes = Axes;
+		
+		Input.Button = Button;
+		Input.Buttons = Buttons;
+		
+		
 		Input.prototype.update = function() {
             var axes = this.axes, buttons = this.buttons.hash, button, altButton,
 				axis, value, sensitivity, pos, neg, tmp, dt = Time.delta, i;
@@ -89,8 +102,14 @@ define([
 					
 					case MOUSE:
 					
-						value = this.mouseDelta[axis.axis];
-						break;
+						axis.value = this.mouseDelta[axis.axis];
+						continue;
+					
+					case TOUCH:
+						
+						var touch = this.touches[axis.index];
+						axis.value = touch ? touch.delta[axis.axis] : 0;
+						continue;
 					
 					case MOUSE_WHEEL:
 					
@@ -111,6 +130,8 @@ define([
 				
 				axis.value = value;
 			}
+			
+			this.mouseWheel = 0;
         };
         
         

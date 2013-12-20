@@ -33,7 +33,7 @@ requirejs(
 		
 		game.addScene(scene);
 		
-		game.on("connection", function(client){
+		game.on("connection", function(client) {
 			var player = new GameObject({
 					components: [
 						new Transform2D,
@@ -49,8 +49,12 @@ requirejs(
 				}),
 				camera = new GameObject({
 					components: [
-						new Transform2D,
-						new Camera2D
+						new Transform2D({
+							sync: false
+						}),
+						new Camera2D({
+							sync: false
+						})
 					]
 				});
 			
@@ -61,26 +65,25 @@ requirejs(
 			
 			client.socket.emit("player", player._id);
 			
-			client.on("update", function(){
+			client.on("update", function() {
 				var input = this.input,
 					transform2d = player.transform2d,
-					dt = 2 * Time.delta,
-					touch = input.touches[0],
-					w = this.camera.width * 0.25,
-					h = this.camera.height * 0.25,
-					x = dt * input.axis("horizontal"),
-					y = dt * input.axis("vertical");
+					dt = Time.delta,
+					x, y;
 				
-				if (touch) {
-					transform2d.position.x += dt * (touch.delta.x / w);
-					transform2d.position.y += dt * (touch.delta.y / h);
+				if (this.device.mobile) {
+					x = dt * input.axis("touchX");
+					y = dt * -input.axis("touchY");
 				} else {
-					transform2d.position.x += x;
-					transform2d.position.y += y;
+					x = 2 * dt * input.axis("horizontal");
+					y = 2 * dt * input.axis("vertical");
 				}
+				
+				transform2d.position.x += x;
+				transform2d.position.y += y;
 			});
 			
-			client.on("disconnect", function(){
+			client.on("disconnect", function() {
 				
 				scene.remove(player, camera);
 			});

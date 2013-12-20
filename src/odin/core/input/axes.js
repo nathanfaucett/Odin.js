@@ -9,6 +9,7 @@ define([
 		
 		var BUTTON = Axis.BUTTON,
 			MOUSE = Axis.MOUSE,
+			TOUCH = Axis.TOUCH,
 			MOUSE_WHEEL = Axis.MOUSE_WHEEL,
 			JOYSTICK = Axis.JOYSTICK;
 		
@@ -65,6 +66,18 @@ define([
 			this.add({
 				name: "mouseY",
 				type: MOUSE,
+				axis: "y"
+			});
+			
+			this.add({
+				name: "touchX",
+				type: TOUCH,
+				axis: "x"
+			});
+			
+			this.add({
+				name: "touchY",
+				type: TOUCH,
 				axis: "y"
 			});
 			

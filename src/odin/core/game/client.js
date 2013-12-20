@@ -20,12 +20,11 @@ define([
 			this.input = new Input.constructor;
 			this.game = opts.game;
 			
-			this._inputNeedsUpdate = true;
-			
 			this.scene = undefined;
 			this.camera = undefined;
 			
 			this.userData = {};
+			this._inputNeedsUpdate = true;
         }
         Class.extend(Client, Class);
 

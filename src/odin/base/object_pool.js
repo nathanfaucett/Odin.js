@@ -20,14 +20,6 @@ define(
 
             return object;
         };
-
-		
-        ObjectPool.prototype.remove = ObjectPool.prototype.removeObjects = function() {
-			
-            for (var i = arguments.length; i--;) this.removeObject(arguments[i]);
-			
-            return this;
-        };
 		
 		
         ObjectPool.prototype.removeObject = function(object) {
@@ -40,6 +32,14 @@ define(
                 objects.splice(index, 1);
             }
 
+            return this;
+        };
+
+		
+        ObjectPool.prototype.remove = ObjectPool.prototype.removeObjects = function() {
+			
+            for (var i = arguments.length; i--;) this.removeObject(arguments[i]);
+			
             return this;
         };
 

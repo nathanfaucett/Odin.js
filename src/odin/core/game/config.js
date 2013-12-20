@@ -7,13 +7,10 @@ define(
         function Config() {
 
             this.debug = false;
-			
-            this.logInfo = false;
-            this.logWarn = false;
-            this.logError = false;
-			
+
             this.forceCanvas = false;
-			
+			this.renderer = "";
+
             this.host = "127.0.0.1";
             this.port = 3000;
 			

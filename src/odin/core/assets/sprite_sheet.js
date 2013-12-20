@@ -55,6 +55,7 @@ define([
 			Asset.prototype.fromJSON.call(this, json);
 			
 			if (!json.src && json.raw) this.raw = JSON.parse(json.raw);
+			this.parse(this.raw);
 			
 			return this;
 		};

@@ -187,8 +187,8 @@ define([
 				types = components[type],
                 index = types.indexOf(component);
 			
-            this._componentHash[component._id] = component;
-            if (component._serverId !== -1) this._componentHashServer[component._serverId] = component;
+            this._componentHash[component._id] = undefined;
+            if (component._serverId !== -1) this._componentHashServer[component._serverId] = undefined;
 
             types.splice(index, 1);
             types.sort(component.sort);
