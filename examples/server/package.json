@@ -4,5 +4,9 @@
   "description": "odin test",
   "main": "index.js",
   "author": "Nathan Faucett",
-  "license": "BSD-2-Clause"
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-requirejs": "~0.4.1"
+  }
 }

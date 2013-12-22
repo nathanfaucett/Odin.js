@@ -6,7 +6,7 @@ requirejs(
         nodeRequire: require
     },
 	[
-		"odin/odin_server"
+		"odin_server"
 	],
     function(Odin) {
 		
@@ -31,7 +31,6 @@ requirejs(
 			}),
 			new AudioClip({
 				name: "sound",
-				loop: true,
 				src: "./content/audio/boom.ogg"
 			})
 		);
@@ -52,8 +51,7 @@ requirejs(
 						}),
 						new AudioSource({
 							clip: Assets.hash["sound"],
-							doppler: true,
-							autoplay: true
+							doppler: true
 						})
 					]
 				}),

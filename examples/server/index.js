@@ -1,7 +1,8 @@
 require({
-        baseUrl: "./src/"
-    }, [
-        "odin/odin"
+		baseUrl: "../../src"
+	},
+	[
+        "odin"
     ],
     function(Odin) {
 		
@@ -11,7 +12,7 @@ require({
 			debug: true,
 			forceCanvas: false
 		});
-		
+	
 		game.on("init", function() {
 			
 			game.connect(function(socket) {

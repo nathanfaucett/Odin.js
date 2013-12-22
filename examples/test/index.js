@@ -3,7 +3,7 @@ require(
         baseUrl: "../../src"
     },
 	[
-        "odin/odin"
+        "odin"
     ],
     function(Odin) {
 		
