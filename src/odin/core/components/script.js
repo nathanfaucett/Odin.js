@@ -1,12 +1,9 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
         "odin/base/class",
-        "odin/base/time",
-        "odin/math/vec2",
-        "odin/core/components/component",
-        "odin/core/assets/assets"
+        "odin/core/components/component"
     ],
-    function(Class, Time, Vec2, Component, Assets) {
+    function(Class, Component) {
         "use strict";
 		
 

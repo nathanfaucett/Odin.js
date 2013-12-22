@@ -28,6 +28,11 @@ requirejs(
 			new SpriteSheet({
 				name: "ss_player",
 				src: "./content/spritesheets/player.json"
+			}),
+			new AudioClip({
+				name: "sound",
+				loop: true,
+				src: "./content/audio/boom.ogg"
 			})
 		);
 		
@@ -44,6 +49,11 @@ requirejs(
 							w: 64,
 							h: 64,
 							sync: false
+						}),
+						new AudioSource({
+							clip: Assets.hash["sound"],
+							doppler: true,
+							autoplay: true
 						})
 					]
 				}),

@@ -14,9 +14,11 @@ define(
 			
 			this.Asset = require("odin/core/assets/asset");
 			this.Assets = require("odin/core/assets/assets");
+			this.AudioClip = require("odin/core/assets/audio_clip");
 			this.SpriteSheet = require("odin/core/assets/sprite_sheet");
 			this.Texture = require("odin/core/assets/texture");
 			
+			this.AudioSource = require("odin/core/components/audio_source");
 			this.Camera = require("odin/core/components/camera");
 			this.Camera2D = require("odin/core/components/camera2d");
 			this.Component = require("odin/core/components/component");

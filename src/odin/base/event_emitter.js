@@ -135,14 +135,11 @@ define(
 		
 		
 		function extend(child, parent) {
-			var parentProto = parent.prototype,
-				childProto = child.prototype = Object.create(parentProto),
-				key;
 			
-			for (key in parentProto) childProto[key] = parentProto[key];
-			childProto.constructor = child;
+			child.prototype = Object.create(parent.prototype);
+			child.prototype.constructor = child;
 			
-			if (parentProto._onExtend) parentProto._onExtend(child);
+			if (parent.prototype._onExtend) parent.prototype._onExtend(child);
 			child.extend = extend;
 		};
 		

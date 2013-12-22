@@ -22,6 +22,7 @@ require({
 					
 					camera.on("update", function() {
 						var transform2d = this.transform2d,
+							camera2d = this.camera2d,
 							dt = Time.delta,
 							x = 0, y = 0;
 						
@@ -38,6 +39,7 @@ require({
 								x = -dt * Input.axis("mouseX");
 								y = dt * Input.axis("mouseY");
 							}
+							camera2d.setOrthographicSize(camera2d.orthographicSize + -dt*Input.axis("mouseWheel"));
 						}
 						
 						transform2d.position.x += x;

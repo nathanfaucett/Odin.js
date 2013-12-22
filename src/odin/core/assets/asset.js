@@ -6,7 +6,8 @@ define([
         "use strict";
         
 		
-		var ASSET_ID = 0;
+		var ASSET_ID = 0,
+			defineProperty = Object.defineProperty;
 		
 		
 		function Asset(opts) {
@@ -19,9 +20,26 @@ define([
 			this.json = opts.json != undefined ? !!opts.json : true;
 			
 			this.assets = undefined;
-			this.name = opts.name != undefined ? opts.name : "Asset"+ this._id;
+			this._name = opts.name != undefined ? opts.name : "Asset"+ this._id;
 			this.src = opts.src;
 			this.raw = opts.raw;
+			
+			defineProperty(this, "name", {
+				get: function() {
+					return this._name;
+				},
+				set: function(value) {
+					if (!value) return;
+					var assets = this.assets;
+					
+					if (assets) {
+						delete assets[this._name];
+						assets[value] = this;
+					}
+					
+					this._name = value;
+				}
+			});
 			
 			this._SYNC = {};
 		}
@@ -31,6 +49,27 @@ define([
 		Asset.prototype._onExtend = function(child) {
 			Asset._types[child.name] = child;
 		}
+		
+		
+		Asset.prototype.clone = function() {
+			
+			return new this.constructor().copy(this);
+		};
+		
+		
+		Asset.prototype.copy = function(other) {
+			
+			this.sync = other.sync;
+			this.json = other.json;
+			
+			this.name = other.name +"."+ this._id;
+			this.src = other.src;
+			this.raw = other.raw;
+			
+			if (this.assets !== other.assets) other.assets.addAsset(this);
+			
+			return this;
+		};
 		
 		
 		Asset.prototype.mimeType = function() {
@@ -103,14 +142,11 @@ define([
 		
 		
 		function extend(child, parent) {
-			var parentProto = parent.prototype,
-				childProto = child.prototype = Object.create(parentProto),
-				key;
 			
-			for (key in parentProto) childProto[key] = parentProto[key];
-			childProto.constructor = child;
+			child.prototype = Object.create(parent.prototype);
+			child.prototype.constructor = child;
 			
-			if (parentProto._onExtend) parentProto._onExtend(child);
+			if (parent.prototype._onExtend) parent.prototype._onExtend(child);
 			child.extend = extend;
 		};
 		

@@ -3,16 +3,17 @@ define([
         "odin/base/class",
         "odin/math/mathf",
         "odin/math/color",
-        "odin/math/vec3",
+        "odin/math/vec2",
         "odin/math/mat32",
         "odin/math/mat4",
         "odin/core/components/component"
     ],
-    function(Class, Mathf, Color, Vec3, Mat32, Mat4, Component) {
+    function(Class, Mathf, Color, Vec2, Mat32, Mat4, Component) {
         "use strict";
 
 
-		var degsToRads = Mathf.degsToRads;
+		var clamp = Mathf.clamp,
+			degsToRads = Mathf.degsToRads;
 		
 		
         function Camera2D(opts) {
@@ -90,7 +91,7 @@ define([
 		
 		
 		var MAT32 = new Mat32,
-            VEC2 = new Vec3;
+            VEC2 = new Vec2;
         Camera2D.prototype.toWorld = function(v, out) {
             out || (out = new Vec3);
 

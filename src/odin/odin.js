@@ -17,9 +17,11 @@ define(
 			this.Asset = require("odin/core/assets/asset");
 			this.AssetLoader = require("odin/core/assets/asset_loader");
 			this.Assets = require("odin/core/assets/assets");
+			this.AudioClip = require("odin/core/assets/audio_clip");
 			this.SpriteSheet = require("odin/core/assets/sprite_sheet");
 			this.Texture = require("odin/core/assets/texture");
 			
+			this.AudioSource = require("odin/core/components/audio_source");
 			this.Camera = require("odin/core/components/camera");
 			this.Camera2D = require("odin/core/components/camera2d");
 			this.Component = require("odin/core/components/component");
@@ -52,16 +54,21 @@ define(
 			this.Vec2 = require("odin/math/vec2");
 			this.Vec3 = require("odin/math/vec3");
 			this.Vec4 = require("odin/math/vec4");
+			
+			if (this.Device.mobile) {
+				window.onerror = function(message,page,line,chr) {
+					alert("line: "+ line +", page: "+ page +"\nmessage: "+ message);
+				};
+			}
 		}
 		
 		
 		Odin.prototype.globalize = function() {
-            
+			
             for (var key in this) window[key] = this[key];
             window.Odin = this;
         };
 		
-
         return new Odin;
     }
 );

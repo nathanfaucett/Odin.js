@@ -19,19 +19,10 @@ define([
 				premultipliedAlpha: true,
 				preserveDrawingBuffer: false,
 				stencil: true
-			}
+			};
         
 		
-        function Dom() {
-			
-			this.audioContext = (
-				window.audioContext ||
-				window.webkitAudioContext ||
-				window.mozAudioContext ||
-				window.oAudioContext ||
-				window.msAudioContext
-			);
-		}
+        function Dom() {}
 
 		
         Dom.prototype.addEvent = function(obj, name, callback, ctx) {

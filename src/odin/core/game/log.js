@@ -48,9 +48,11 @@ define([
 				
 				if (type === "object") {
 					values.push(value);
-					str += "\t"+ key +" = "+ this.object(value);
+					str += "\t"+ key +" = "+ this.object(value, values);
 				} else if (type !== "function") {
 					str += "\t"+ key +" = "+ value +"\n";
+				} else {
+					values.push(value);
 				}
 			}
 			

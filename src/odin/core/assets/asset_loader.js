@@ -1,27 +1,38 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define([
+		"odin/base/event_emitter",
+		"odin/base/audio_context",
 		"odin/core/assets/asset",
 		"odin/core/assets/assets",
 		"odin/core/game/log"
 	],
-    function(Asset, Assets, Log) {
+    function(EventEmitter, audioContext, Asset, Assets, Log) {
         "use strict";
         
 		
 		var FUNC = function() {};
 		
 		
-		function AssetLoader() {}
+		function AssetLoader() {
+			
+			EventEmitter.call(this);
+		}
+		
+		EventEmitter.extend(AssetLoader, EventEmitter);
 		
 		
 		AssetLoader.prototype.load = function(callback, reload) {
 			callback || (callback = FUNC);
-			var count = Assets.length, i,
+			var self = this,
+				count = Assets.length, i,
 				fn = function(err) {
 					if (err) Log.warn(err.message);
 					
 					count--;
-					if (count === 0) callback();
+					if (count === 0) {
+						self.emit("load");
+						callback();
+					}
 				};
 			
 			for (i = count; i--;) this.loadAsset(Assets[i], fn, reload);
@@ -29,7 +40,8 @@ define([
 		
 		
 		AssetLoader.prototype.loadAsset = function(asset, callback, reload) {
-			var mimeType;
+			var self = this,
+				mimeType;
 			
 			if (asset.raw && !reload) {
 				callback()
@@ -49,6 +61,7 @@ define([
 					}
 					
 					asset.parse(raw);
+					self.emit("loadAsset", asset);
 					callback();
 				});
 			}
@@ -58,12 +71,12 @@ define([
 		AssetLoader.prototype.gif = AssetLoader.prototype.jpg = AssetLoader.prototype.jpeg = AssetLoader.prototype.png = function(src, callback) {
 			var image = new Image;
 			
-			image.onload = function() {
+			image.addEventListener("load", function(e) {
 				callback && callback(null, image);
-			};
-			image.onerror = function(error) {
-				callback && callback(error);
-			};
+			}, false);
+			image.addEventListener("error", function(e) {
+				callback && callback(e);
+			}, false);
 			
 			image.src = src;
 		};
@@ -72,8 +85,8 @@ define([
 		AssetLoader.prototype.json = function(src, callback) {
 			var request = new XMLHttpRequest;
 			
-			request.onreadystatechange = function() {
-			
+			request.addEventListener("readystatechange", function(e) {
+				
 				if (this.readyState == 1) {
 					this.send(null);
 				} else if (this.readyState == 4) {
@@ -93,8 +106,31 @@ define([
 						callback && callback(new Error(status));
 					}
 				}
-			};
+			}, false);
 			
+			request.open("GET", src, true);
+		};
+		
+		
+		AssetLoader.prototype.ogg = AssetLoader.prototype.wav = AssetLoader.prototype.mp3 = AssetLoader.prototype.aac = function(src, callback) {
+			var request = new XMLHttpRequest;
+			
+			request.addEventListener("readystatechange", function(e) {
+			
+				if (this.readyState == 1) {
+					this.send(null);
+				} else if (this.readyState == 4) {
+					var status = this.status;
+					
+					if ((status > 199 && status < 301) || status == 304) {
+						callback && callback(null, this.response);
+					} else {
+						callback && callback(new Error(status));
+					}
+				}
+			}, false);
+			
+			request.responseType = "arraybuffer";
 			request.open("GET", src, true);
 		};
 
