@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/event_emitter",
         "base/device",
@@ -32,57 +34,57 @@ define([
         addMeta(VIEWPORT_HEIGHT, "viewport", "height=device-height");
 
         /**
-        * @class Canvas
-        * @extends EventEmitter
-        * @brief canvas helper
-        * @param Number width
-        * @param Number height
-        */
+         * @class Canvas
+         * @extends EventEmitter
+         * @brief canvas helper
+         * @param Number width
+         * @param Number height
+         */
 
         function Canvas(width, height) {
 
             EventEmitter.call(this);
 
             /**
-            * @property Boolean fullScreen
-            * @memberof Canvas
-            */
+             * @property Boolean fullScreen
+             * @memberof Canvas
+             */
             this.fullScreen = (width === undefined && height === undefined) ? true : false;
 
             /**
-            * @property Number width
-            * @memberof Canvas
-            */
+             * @property Number width
+             * @memberof Canvas
+             */
             this.width = width !== undefined ? width : window.innerWidth;
 
             /**
-            * @property Number height
-            * @memberof Canvas
-            */
+             * @property Number height
+             * @memberof Canvas
+             */
             this.height = height !== undefined ? height : window.innerHeight;
 
             /**
-            * @property Number aspect
-            * @memberof Canvas
-            */
+             * @property Number aspect
+             * @memberof Canvas
+             */
             this.aspect = this.width / this.height;
 
             /**
-            * @property Number pixelWidth
-            * @memberof Canvas
-            */
+             * @property Number pixelWidth
+             * @memberof Canvas
+             */
             this.pixelWidth = this.width;
 
             /**
-            * @property Number pixelHeight
-            * @memberof Canvas
-            */
+             * @property Number pixelHeight
+             * @memberof Canvas
+             */
             this.pixelHeight = this.height;
 
             /**
-            * @property HTMLCanvasElement element
-            * @memberof Canvas
-            */
+             * @property HTMLCanvasElement element
+             * @memberof Canvas
+             */
             this.element = undefined;
         }
 
@@ -95,7 +97,7 @@ define([
 
             element.style.cssText = CANVAS_STYLE;
             document.body.appendChild(element);
-            
+
             if (!Config.debug) {
                 element.oncontextmenu = function() {
                     return false;
@@ -115,31 +117,31 @@ define([
             document.body.removeChild(this.element);
             this.element = undefined;
             canvas.off("resize");
-            
+
             return this;
         };
 
         /**
-        * @method setFullscreen
-        * @memberof Canvas
-        * @brief sets fullScreen boolean
-        * @param Number width
-        */
+         * @method setFullscreen
+         * @memberof Canvas
+         * @brief sets fullScreen boolean
+         * @param Number width
+         */
         Canvas.prototype.setFullscreen = function(value) {
             if (!this.element || this.fullScreen === value) return this;
 
             this.fullScreen = !! value;
             this._handleResize();
-            
+
             return this;
         };
 
         /**
-        * @method setWidth
-        * @memberof Canvas
-        * @brief sets width and updates aspect
-        * @param Number width
-        */
+         * @method setWidth
+         * @memberof Canvas
+         * @brief sets width and updates aspect
+         * @param Number width
+         */
         Canvas.prototype.setWidth = function(width) {
             if (!this.element || this.width === width) return this;
 
@@ -148,16 +150,16 @@ define([
             this.aspect = this.width / this.height;
 
             this._handleResize();
-            
+
             return this;
         };
 
         /**
-        * @method setHeight
-        * @memberof Canvas
-        * @brief sets height and updates aspect
-        * @param Number height
-        */
+         * @method setHeight
+         * @memberof Canvas
+         * @brief sets height and updates aspect
+         * @param Number height
+         */
         Canvas.prototype.setHeight = function(height) {
             if (!this.element || this.height === height) return this;
 
@@ -166,16 +168,16 @@ define([
             this.aspect = this.width / this.height;
 
             this._handleResize();
-            
+
             return this;
         };
 
         /**
-        * @method style
-        * @memberof Canvas
-        * @brief sets style of html element
-        * @param Number height
-        */
+         * @method style
+         * @memberof Canvas
+         * @brief sets style of html element
+         * @param Number height
+         */
         Canvas.prototype.style = function(key, value) {
             if (!this.element) return this;
 
@@ -184,11 +186,11 @@ define([
         };
 
         /**
-        * @method setBackgroundColor
-        * @memberof Canvas
-        * @brief sets html background color
-        * @param Number height
-        */
+         * @method setBackgroundColor
+         * @memberof Canvas
+         * @brief sets html background color
+         * @param Number height
+         */
         Canvas.prototype.setBackgroundColor = function(color) {
             if (!this.element) return this;
 
@@ -221,19 +223,19 @@ define([
 
             this.pixelWidth = floor(width);
             this.pixelHeight = floor(height);
-            
+
             element.width = width;
             element.height = height;
 
-            style.marginLeft = -floor(width * 0.5) - 1 +"px";
-            style.marginTop = -floor(height * 0.5) - 1 +"px";
+            style.marginLeft = -floor(width * 0.5) - 1 + "px";
+            style.marginTop = -floor(height * 0.5) - 1 + "px";
 
-            style.width = floor(width) +"px";
-            style.height = floor(height) +"px";
+            style.width = floor(width) + "px";
+            style.height = floor(height) + "px";
 
-            document.getElementById(VIEWPORT).setAttribute("content", viewportScale.replace(SCALE_REG, "-scale="+ Device.invPixelRatio));
-            document.getElementById(VIEWPORT_WIDTH).setAttribute("content", "width="+ w);
-            document.getElementById(VIEWPORT_HEIGHT).setAttribute("content", "height="+ h);
+            document.getElementById(VIEWPORT).setAttribute("content", viewportScale.replace(SCALE_REG, "-scale=" + Device.invPixelRatio));
+            document.getElementById(VIEWPORT_WIDTH).setAttribute("content", "width=" + w);
+            document.getElementById(VIEWPORT_HEIGHT).setAttribute("content", "height=" + h);
             window.scrollTo(1, 1);
 
             this.emit("resize");

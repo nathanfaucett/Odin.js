@@ -1,9 +1,11 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
-		"core/input/input",
-		"core/scene",
-		"core/game/log"
+        "core/input/input",
+        "core/scene",
+        "core/game/log"
     ],
     function(Class, Input, Scene, Log) {
         "use strict";
@@ -13,24 +15,24 @@ define([
             opts || (opts = {});
 
             Class.call(this);
-			
-			this.id = opts.id;
-			this.socket = opts.socket;
-			this.device = opts.device;
-			this.input = new Input.constructor;
-			this.game = opts.game;
-			
-			this.scene = undefined;
-			this.camera = undefined;
-			
-			this.userData = {};
-			this._inputNeedsUpdate = true;
+
+            this.id = opts.id;
+            this.socket = opts.socket;
+            this.device = opts.device;
+            this.input = new Input.constructor;
+            this.game = opts.game;
+
+            this.scene = undefined;
+            this.camera = undefined;
+
+            this.userData = {};
+            this._inputNeedsUpdate = true;
         }
         Class.extend(Client, Class);
 
-		
-		Client.prototype.setScene = function(scene) {
-			if (!(scene instanceof Scene)) {
+
+        Client.prototype.setScene = function(scene) {
+            if (!(scene instanceof Scene)) {
                 Log.warn("Client.setScene: can't add passed argument, it is not instance of Scene");
                 return this;
             }
@@ -38,19 +40,19 @@ define([
                 index = scenes.indexOf(scene);
 
             if (index !== -1) {
-				scene.game = this.game;
-				this.scene = scene;
-				this.socket.emit("server_setScene", scene._id);
-				this.emit("setScene", scene);
-			} else {
-				Log.warn("Client.setScene: Scene is not a member of Game");
-			}
+                scene.game = this.game;
+                this.scene = scene;
+                this.socket.emit("server_setScene", scene._id);
+                this.emit("setScene", scene);
+            } else {
+                Log.warn("Client.setScene: Scene is not a member of Game");
+            }
 
             return this;
         };
-		
-		
-		Client.prototype.setCamera = function(gameObject) {
+
+
+        Client.prototype.setCamera = function(gameObject) {
             var scene = this.scene,
                 lastCamera = this.camera,
                 index;
@@ -71,16 +73,16 @@ define([
             if (this.camera) {
                 this.camera._active = true;
                 if (lastCamera) lastCamera._active = false;
-				
-				this.socket.emit("server_setCamera", gameObject._id);
-				this.emit("setCamera", this.camera);
+
+                this.socket.emit("server_setCamera", gameObject._id);
+                this.emit("setCamera", this.camera);
             } else {
-				Log.warn("Client.setCamera: GameObject does't have a Camera or a Camera2D Component");
-			}
+                Log.warn("Client.setCamera: GameObject does't have a Camera or a Camera2D Component");
+            }
 
             return this;
         };
-		
+
 
         return Client;
     }

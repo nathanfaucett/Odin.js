@@ -1,30 +1,32 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
-		"core/game/log"
-	],
+        "core/game/log"
+    ],
     function(Log) {
         "use strict";
 
 
         var splitter = /[ \,]+/,
-		
-			regAttribute = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
+
+            regAttribute = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
             regUniform = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
-			
-			WEBGL_NAMES = ["webgl", "webkit-3d", "moz-webgl", "experimental-webgl", "3d"],
-			WEBGL_ATTRIBUTES = {
-				alpha: true,
-				antialias: true,
-				depth: true,
-				premultipliedAlpha: true,
-				preserveDrawingBuffer: false,
-				stencil: true
-			};
-        
-		
+
+            WEBGL_NAMES = ["webgl", "webkit-3d", "moz-webgl", "experimental-webgl", "3d"],
+            WEBGL_ATTRIBUTES = {
+                alpha: true,
+                antialias: true,
+                depth: true,
+                premultipliedAlpha: true,
+                preserveDrawingBuffer: false,
+                stencil: true
+            };
+
+
         function Dom() {}
 
-		
+
         Dom.prototype.addEvent = function(obj, name, callback, ctx) {
             var names = name.split(splitter),
                 i,
@@ -38,14 +40,14 @@ define([
                 name = names[i];
 
                 if (obj.attachEvent) {
-                    obj.attachEvent("on"+ name, afn);
+                    obj.attachEvent("on" + name, afn);
                 } else {
                     obj.addEventListener(name, afn, false);
                 }
             }
         };
 
-		
+
         Dom.prototype.removeEvent = function(obj, name, callback, ctx) {
             var names = name.split(splitter),
                 i, il,
@@ -66,7 +68,7 @@ define([
             }
         };
 
-		
+
         Dom.prototype.addMeta = function(id, name, content) {
             var meta = document.createElement("meta"),
                 head = document.head;
@@ -78,29 +80,30 @@ define([
             head.insertBefore(meta, head.firstChild);
         };
 
-		
+
         Dom.prototype.getWebGLContext = function(canvas, attributes) {
-			var key, error, gl, i;
-			
-			attributes || (attributes = {});
-			for (key in WEBGL_ATTRIBUTES) if (attributes[key] != undefined) attributes[key] = WEBGL_ATTRIBUTES[key];
+            var key, error, gl, i;
 
-			for (i = WEBGL_NAMES.length; i--;) {
-				
-				try{
-					gl = canvas.getContext(WEBGL_NAMES[i], attributes);
-				} catch(e) {
-					error = e;
-				}
-				if (gl) break;
-			}
-			
-			if (error) Log.warn("Dom.getWebGLContext: could not get a WebGL Context "+ error.message || "");
-			
-			return gl;
-		};
+            attributes || (attributes = {});
+            for (key in WEBGL_ATTRIBUTES)
+                if (attributes[key] != undefined) attributes[key] = WEBGL_ATTRIBUTES[key];
 
-		
+            for (i = WEBGL_NAMES.length; i--;) {
+
+                try {
+                    gl = canvas.getContext(WEBGL_NAMES[i], attributes);
+                } catch (e) {
+                    error = e;
+                }
+                if (gl) break;
+            }
+
+            if (error) Log.warn("Dom.getWebGLContext: could not get a WebGL Context " + error.message || "");
+
+            return gl;
+        };
+
+
         var createShader = Dom.prototype.createShader = function(gl, source, type) {
             var shader = gl.createShader(type);
 
@@ -116,7 +119,7 @@ define([
             return shader;
         };
 
-		
+
         Dom.prototype.createProgram = function(gl, vertex, fragment) {
             var program = gl.createProgram(),
                 shader;
@@ -141,37 +144,37 @@ define([
 
             return program;
         };
-		
-		
+
+
         Dom.prototype.parseUniformsAttributes = function(gl, program, vertexShader, fragmentShader, attributes, uniforms) {
-			var src = vertexShader + fragmentShader,
-				lines = src.split("\n"),
-				matchAttributes, matchUniforms,
-				name, length, line,
-				i, j;
+            var src = vertexShader + fragmentShader,
+                lines = src.split("\n"),
+                matchAttributes, matchUniforms,
+                name, length, line,
+                i, j;
 
-			for (i = lines.length; i--;) {
-				line = lines[i];
-				matchAttributes = line.match(regAttribute);
-				matchUniforms = line.match(regUniform);
+            for (i = lines.length; i--;) {
+                line = lines[i];
+                matchAttributes = line.match(regAttribute);
+                matchUniforms = line.match(regUniform);
 
-				if (matchAttributes) {
-					name = matchAttributes[3];
-					attributes[name] = gl.getAttribLocation(program, name);
-				}
-				if (matchUniforms) {
-					name = matchUniforms[3];
-					length = parseInt(matchUniforms[5]);
+                if (matchAttributes) {
+                    name = matchAttributes[3];
+                    attributes[name] = gl.getAttribLocation(program, name);
+                }
+                if (matchUniforms) {
+                    name = matchUniforms[3];
+                    length = parseInt(matchUniforms[5]);
 
-					if (length) {
-						uniforms[name] = [];
-						for (j = length; j--;) uniforms[name][j] = gl.getUniformLocation(program, name + "[" + j + "]");
-					} else {
-						uniforms[name] = gl.getUniformLocation(program, name);
-					}
-				}
-			}
-		};
+                    if (length) {
+                        uniforms[name] = [];
+                        for (j = length; j--;) uniforms[name][j] = gl.getUniformLocation(program, name + "[" + j + "]");
+                    } else {
+                        uniforms[name] = gl.getUniformLocation(program, name);
+                    }
+                }
+            }
+        };
 
 
         return new Dom;

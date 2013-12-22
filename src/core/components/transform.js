@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "math/mathf",
@@ -6,7 +8,7 @@ define([
         "math/quat",
         "math/mat4",
         "core/components/component",
-		"core/game/log"
+        "core/game/log"
     ],
     function(Class, Mathf, Vec3, Quat, Mat4, Component, Log) {
         "use strict";
@@ -14,7 +16,7 @@ define([
 
         var EPSILON = Mathf.EPSILON;
 
-		
+
         function Transform(opts) {
             opts || (opts = {});
 
@@ -37,7 +39,7 @@ define([
             this._modelViewNeedsUpdate = false;
         }
 
-		Transform.type = "Transform";
+        Transform.type = "Transform";
         Class.extend(Transform, Component);
 
 
@@ -265,56 +267,56 @@ define([
             return b.depth - a.depth;
         };
 
-		
-		var VEC = new Vec3;
-		Transform.prototype.toSYNC = function(json){
-			json = Component.prototype.toSYNC.call(this, json);
-			
-			if (this.parent) {
-				json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
-				json.scale = this.toWorld(VEC.copy(this.scale)).toJSON(json.scale);
-				json.rotation = this.toWorld(VEC.copy(this.rotation)).toJSON(json.rotation);
-			} else {
-				json.position = this.position.toJSON(json.position);
-				json.scale = this.scale.toJSON(json.scale);
-				json.rotation = this.rotation.toJSON(json.rotation);
-			}
-			
-			return json;
-		};
-		
-		
-		Transform.prototype.fromSYNC = function(json){
-			
-			this.position.fromJSON(json.position);
+
+        var VEC = new Vec3;
+        Transform.prototype.toSYNC = function(json) {
+            json = Component.prototype.toSYNC.call(this, json);
+
+            if (this.parent) {
+                json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
+                json.scale = this.toWorld(VEC.copy(this.scale)).toJSON(json.scale);
+                json.rotation = this.toWorld(VEC.copy(this.rotation)).toJSON(json.rotation);
+            } else {
+                json.position = this.position.toJSON(json.position);
+                json.scale = this.scale.toJSON(json.scale);
+                json.rotation = this.rotation.toJSON(json.rotation);
+            }
+
+            return json;
+        };
+
+
+        Transform.prototype.fromSYNC = function(json) {
+
+            this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
             this.rotation.fromJSON(json.rotation);
-			
-			return this;
-		};
-		
-		
-		Transform.prototype.toJSON = function(json){
-			json || (json = {});
-			Component.prototype.toJSON.call(this, json);
-			
-			json.position = this.position.toJSON(json.position);
+
+            return this;
+        };
+
+
+        Transform.prototype.toJSON = function(json) {
+            json || (json = {});
+            Component.prototype.toJSON.call(this, json);
+
+            json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);
             json.rotation = this.rotation.toJSON(json.rotation);
-			
-			return json;
-		};
-		
-		
-		Transform.prototype.fromJSON = function(json){
-			Component.prototype.fromJSON.call(this, json);
-			
-			this.position.fromJSON(json.position);
+
+            return json;
+        };
+
+
+        Transform.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+
+            this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
             this.rotation.fromJSON(json.rotation);
-			
-			return this;
-		};
+
+            return this;
+        };
 
 
         function updateDepth(transform, depth) {

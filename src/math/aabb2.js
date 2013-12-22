@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "math/mathf",
         "math/vec2"
@@ -264,10 +266,10 @@ define([
          */
         AABB2.prototype.toJSON = function(json) {
             json || (json = {});
-            
+
             json.min = this.min.toJSON(json.min);
             json.max = this.max.toJSON(json.max);
-            
+
             return json;
         };
 

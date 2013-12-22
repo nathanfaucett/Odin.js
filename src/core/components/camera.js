@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "math/mathf",
@@ -10,23 +12,23 @@ define([
     function(Class, Mathf, Color, Vec3, Mat4, Component) {
         "use strict";
 
-		
-		var degsToRads = Mathf.degsToRads;
-		
-		
+
+        var degsToRads = Mathf.degsToRads;
+
+
         function Camera(opts) {
             opts || (opts = {});
 
             Component.call(this, "Camera", opts.sync, opts.json);
-			
-			this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
+
+            this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
 
             this.width = 960;
             this.height = 640;
 
             this.aspect = this.width / this.height;
             this.fov = opts.fov !== undefined ? opts.fov : 35;
-			
+
             this.near = opts.near !== undefined ? opts.near : 0.1;
             this.far = opts.far !== undefined ? opts.far : 512;
 
@@ -42,14 +44,14 @@ define([
             this._needsUpdate = true;
             this._active = false;
         }
-		
-		Camera.type = "Camera";
+
+        Camera.type = "Camera";
         Class.extend(Camera, Component);
 
 
         Camera.prototype.copy = function(other) {
 
-			this.backgroundColor.copy(other.backgroundColor);
+            this.backgroundColor.copy(other.backgroundColor);
             this.width = other.width;
             this.height = other.height;
             this.aspect = other.aspect;
@@ -67,9 +69,9 @@ define([
 
             return this;
         };
-		
-		
-		Camera.prototype.set = function(width, height) {
+
+
+        Camera.prototype.set = function(width, height) {
 
             this.width = width;
             this.height = height;
@@ -78,67 +80,67 @@ define([
         };
 
 
-		Camera.prototype.setWidth = function(width) {
+        Camera.prototype.setWidth = function(width) {
 
             this.width = width;
             this.aspect = width / this.height;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setHeight = function(height) {
+
+
+        Camera.prototype.setHeight = function(height) {
 
             this.height = height;
             this.aspect = this.width / height;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setFov = function(value) {
+
+
+        Camera.prototype.setFov = function(value) {
 
             this.fov = value;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setNear = function(value) {
+
+
+        Camera.prototype.setNear = function(value) {
 
             this.near = value;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setFar = function(value) {
+
+
+        Camera.prototype.setFar = function(value) {
 
             this.far = value;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setOrthographic = function(value) {
+
+
+        Camera.prototype.setOrthographic = function(value) {
 
             this.orthographic = !! value;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.toggleOrthographic = function() {
+
+
+        Camera.prototype.toggleOrthographic = function() {
 
             this.orthographic = !this.orthographic;
             this._needsUpdate = true;
         };
-		
-		
-		Camera.prototype.setOrthographicSize = function(size) {
+
+
+        Camera.prototype.setOrthographicSize = function(size) {
 
             this.orthographicSize = clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
             this._needsUpdate = true;
         };
-		
-		
-		var MAT4 = new Mat4,
+
+
+        var MAT4 = new Mat4,
             VEC3 = new Vec3;
-		
+
         Camera.prototype.toWorld = function(v, out) {
             out || (out = new Vec3);
 
@@ -165,7 +167,7 @@ define([
 
 
         Camera.prototype.update = function() {
-			if (!this._active) return;
+            if (!this._active) return;
 
             if (this._needsUpdate) {
 
@@ -196,11 +198,11 @@ define([
             return a._active ? -1 : b._active ? 1 : -1;
         };
 
-		
-		Camera.prototype.toSYNC = function(json){
-			json = Component.prototype.toSYNC.call(this, json);
-			
-			json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
+
+        Camera.prototype.toSYNC = function(json) {
+            json = Component.prototype.toSYNC.call(this, json);
+
+            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
             json.aspect = this.aspect;
@@ -213,16 +215,16 @@ define([
             json.orthographicSize = this.orthographicSize;
             json.minOrthographicSize = this.minOrthographicSize;
             json.maxOrthographicSize = this.maxOrthographicSize;
-			
-			return json;
-		};
-		
-		
-		Camera.prototype.fromSYNC = function(json){
-			Component.prototype.fromSYNC.call(this, json);
-			if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
-			
-			this.backgroundColor.fromJSON(json.backgroundColor);
+
+            return json;
+        };
+
+
+        Camera.prototype.fromSYNC = function(json) {
+            Component.prototype.fromSYNC.call(this, json);
+            if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
+
+            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
             this.aspect = json.aspect;
@@ -235,16 +237,16 @@ define([
             this.orthographicSize = json.orthographicSize;
             this.minOrthographicSize = json.minOrthographicSize;
             this.maxOrthographicSize = json.maxOrthographicSize;
-			
-			return this;
-		};
-		
-		
-		Camera.prototype.toJSON = function(json){
-			json || (json = {});
-			Component.prototype.toJSON.call(this, json);
-			
-			json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
+
+            return this;
+        };
+
+
+        Camera.prototype.toJSON = function(json) {
+            json || (json = {});
+            Component.prototype.toJSON.call(this, json);
+
+            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
             json.aspect = this.aspect;
@@ -257,15 +259,15 @@ define([
             json.orthographicSize = this.orthographicSize;
             json.minOrthographicSize = this.minOrthographicSize;
             json.maxOrthographicSize = this.maxOrthographicSize;
-			
-			return json;
-		};
-		
-		
-		Camera.prototype.fromJSON = function(json){
-			Component.prototype.fromJSON.call(this, json);
-			
-			this.backgroundColor.fromJSON(json.backgroundColor);
+
+            return json;
+        };
+
+
+        Camera.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+
+            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
             this.aspect = json.aspect;
@@ -280,9 +282,9 @@ define([
             this.maxOrthographicSize = json.maxOrthographicSize;
 
             this._needsUpdate = true;
-			
-			return this;
-		};
+
+            return this;
+        };
 
 
         return Camera;

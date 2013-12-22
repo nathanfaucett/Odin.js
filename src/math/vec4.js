@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define(
     function() {
         "use strict";
@@ -675,12 +677,12 @@ define(
          */
         Vec4.prototype.toJSON = function(json) {
             json || (json = {});
-            
+
             json.x = this.x;
             json.y = this.y;
             json.z = this.z;
             json.w = this.w;
-            
+
             return json;
         };
 

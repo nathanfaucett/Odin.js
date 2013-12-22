@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/event_emitter",
         "base/dom",
@@ -13,10 +15,10 @@ define([
 
         var min = Math.min,
             max = Math.max,
-        
+
             addEvent = Dom.addEvent,
             removeEvent = Dom.removeEvent,
-            
+
             touchPool = new ObjectPool(Touch);
 
 
@@ -26,13 +28,13 @@ define([
 
             this.element = undefined;
         }
-        
+
         EventEmitter.extend(Handler, EventEmitter);
 
 
         Handler.prototype.setElement = function(element) {
             if (this.element) this.removeElement();
-            
+
             this.element = element;
 
             addEvent(element, "mousedown mouseup mousemove mouseout mousewheel DOMMouseScroll", handleMouse, Input);
@@ -74,14 +76,14 @@ define([
 
 
         var touchesMoveNeedsUpdate = false;
-        
+
         function handleTouches(e) {
             e.preventDefault();
             var touches = this.touches,
                 evtTouches = e.touches,
                 changedTouches = e.changedTouches,
                 i;
-            
+
             switch (e.type) {
 
                 case "touchstart":
@@ -95,7 +97,7 @@ define([
                     break;
 
                 case "touchcancel":
-                    
+
                     touches.cancel();
                     this.emit("touchcancel");
 
@@ -117,14 +119,14 @@ define([
         var mouseFirst = false,
             mouseLast = new Vec2,
             mouseWheel = 0;
-            
+
         function handleMouse(e) {
             e.preventDefault();
-            
+
             switch (e.type) {
 
                 case "mousedown":
-                    
+
                     mouseFirst = true;
                     this.buttons.on(MOUSE_BUTTONS[e.button]);
                     updateMousePosition(this, e);
@@ -176,7 +178,7 @@ define([
                 offsetY = element.offsetTop || 0,
                 x = (e.pageX || e.clientX) - offsetX,
                 y = (e.pageY || e.clientY) - offsetY;
-                
+
             mouseLast.x = !mouseFirst ? x : position.x;
             mouseLast.y = !mouseFirst ? y : position.y;
 
@@ -206,13 +208,13 @@ define([
                     break;
             }
         }
-        
+
         var MOUSE_BUTTONS = {
             "0": "mouse0",
             "1": "mouse1",
             "2": "mouse2"
         }
-        
+
         var KEY_CODES = {
             8: "backspace",
             9: "tab",

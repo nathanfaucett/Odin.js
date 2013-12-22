@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "math/vec2"
     ],
@@ -15,8 +17,8 @@ define([
 
             this._last = new Vec2;
             this._first = true;
-			
-			this._SYNC = {};
+
+            this._SYNC = {};
         };
 
 
@@ -29,8 +31,8 @@ define([
             this._last.set(0, 0);
 
             this._first = true;
-			
-			return this;
+
+            return this;
         };
 
 
@@ -44,7 +46,7 @@ define([
                 offsetY = element.offsetTop,
                 x = (e.pageX || e.clientX) - offsetX,
                 y = (e.pageY || e.clientY) - offsetY;
-			
+
             last.x = !first ? position.x : x;
             last.y = !first ? position.y : y;
 
@@ -53,30 +55,30 @@ define([
 
             delta.x = position.x - last.x;
             delta.y = position.y - last.y;
-			
-			this._first = false;
-			
-			return this;
+
+            this._first = false;
+
+            return this;
         };
 
 
         Touch.prototype.toSYNC = function(json) {
-			json || (json = this._SYNC);
-			
-			json.id = this.id;
+            json || (json = this._SYNC);
+
+            json.id = this.id;
 
             json.delta = this.delta.toJSON(json.delta);
             json.position = this.position.toJSON(json.position);
 
             json._last = this._last.toJSON(json._last);
             json._first = this._first;
-			
+
             return json;
         };
 
 
         Touch.prototype.fromSYNC = function(json) {
-			
+
             this.id = json.id;
 
             this.delta.fromJSON(json.delta);
@@ -84,15 +86,15 @@ define([
 
             this._last.fromJSON(json._last);
             this._first = json._first;
-			
+
             return this;
         };
 
 
         Touch.prototype.toJSON = function(json) {
-			json || (json = {});
-			
-			json.id = this.id;
+            json || (json = {});
+
+            json.id = this.id;
 
             json.delta = this.delta.toJSON(json.delta);
             json.position = this.position.toJSON(json.position);

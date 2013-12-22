@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "base/time",
@@ -31,8 +33,8 @@ define([
             this.w = opts.w || 1;
             this.h = opts.h || 1;
         }
-		
-		Sprite2D.type = "Sprite2D";
+
+        Sprite2D.type = "Sprite2D";
         Class.extend(Sprite2D, Component);
 
 
@@ -59,7 +61,7 @@ define([
 
 
         Sprite2D.prototype.toSYNC = function(json) {
-			json = Component.prototype.toSYNC.call(this, json);
+            json = Component.prototype.toSYNC.call(this, json);
 
             json.visible = this.visible;
 
@@ -75,7 +77,7 @@ define([
 
 
         Sprite2D.prototype.fromSYNC = function(json) {
-			Component.prototype.fromSYNC.call(this, json);
+            Component.prototype.fromSYNC.call(this, json);
 
             this.visible = json.visible;
 
@@ -91,17 +93,17 @@ define([
 
 
         Sprite2D.prototype.toJSON = function(json) {
-			json || (json = {});
-			Component.prototype.toJSON.call(this, json);
+            json || (json = {});
+            Component.prototype.toJSON.call(this, json);
 
             json.visible = this.visible;
 
             json.z = this.z;
 
             json.alpha = this.alpha;
-			
+
             json.texture = this.texture ? this.texture.name : undefined;
-			
+
             json.width = this.width;
             json.height = this.height;
 
@@ -115,15 +117,15 @@ define([
 
 
         Sprite2D.prototype.fromJSON = function(json) {
-			Component.prototype.fromJSON.call(this, json);
+            Component.prototype.fromJSON.call(this, json);
 
             this.visible = json.visible;
 
             this.z = json.z;
 
             this.alpha = json.alpha;
-			
-			this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+
+            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
 
             this.width = json.width;
             this.height = json.height;
@@ -144,8 +146,8 @@ define([
 
 
         var ONCE = Sprite2D.ONCE = 1,
-			LOOP = Sprite2D.LOOP = 2,
-			PING_PONG = Sprite2D.PING_PONG = 3;
+            LOOP = Sprite2D.LOOP = 2,
+            PING_PONG = Sprite2D.PING_PONG = 3;
 
 
         return Sprite2D;

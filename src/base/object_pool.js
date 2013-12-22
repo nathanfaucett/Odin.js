@@ -1,9 +1,11 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define(
     function() {
         "use strict";
 
-		
+
         function ObjectPool(constructor) {
 
             this.pooled = [];
@@ -11,7 +13,7 @@ define(
             this.object = constructor;
         }
 
-		
+
         ObjectPool.prototype.create = function() {
             var pooled = this.pooled,
                 object = pooled.length ? pooled.pop() : new this.object;
@@ -20,8 +22,8 @@ define(
 
             return object;
         };
-		
-		
+
+
         ObjectPool.prototype.removeObject = function(object) {
             var objects = this.objects,
                 pooled = this.pooled,
@@ -35,15 +37,15 @@ define(
             return this;
         };
 
-		
+
         ObjectPool.prototype.remove = ObjectPool.prototype.removeObjects = function() {
-			
+
             for (var i = arguments.length; i--;) this.removeObject(arguments[i]);
-			
+
             return this;
         };
 
-		
+
         ObjectPool.prototype.clear = function() {
             var objects = this.objects,
                 pooled = this.pooled,

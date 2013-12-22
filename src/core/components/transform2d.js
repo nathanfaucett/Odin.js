@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "math/mathf",
@@ -6,7 +8,7 @@ define([
         "math/mat32",
         "math/mat4",
         "core/components/component",
-		"core/game/log"
+        "core/game/log"
     ],
     function(Class, Mathf, Vec2, Mat32, Mat4, Component, Log) {
         "use strict";
@@ -30,7 +32,7 @@ define([
             this.position = opts.position != undefined ? opts.position : new Vec2;
             this.rotation = opts.rotation != undefined ? opts.rotation : 0;
             this.scale = opts.scale != undefined ? opts.scale : new Vec2(1, 1);
-			
+
             this.matrix = new Mat32;
             this.matrixWorld = new Mat32;
 
@@ -38,7 +40,7 @@ define([
             this._modelViewNeedsUpdate = false;
         }
 
-		Transform2D.type = "Transform2D";
+        Transform2D.type = "Transform2D";
         Class.extend(Transform2D, Component);
 
 
@@ -254,7 +256,7 @@ define([
 
         Transform2D.prototype.updateModelView = function(viewMatrix) {
             if (!this._modelViewNeedsUpdate) return;
-			
+
             this.modelView.mmul(viewMatrix, this.matrixWorld);
             this._modelViewNeedsUpdate = false;
         };
@@ -266,55 +268,55 @@ define([
         };
 
 
-		var VEC = new Vec2;
-		Transform2D.prototype.toSYNC = function(json){
-			json = Component.prototype.toSYNC.call(this, json);
-			
-			if (this.parent) {
-				json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
-				json.scale = this.toWorld(VEC.copy(this.scale)).toJSON(json.scale);
-				json.rotation = this.rotation - this.parent.rotation;
-			} else {
-				json.position = this.position.toJSON(json.position);
-				json.scale = this.scale.toJSON(json.scale);
-				json.rotation = this.rotation;
-			}
-			
-			return json;
-		};
+        var VEC = new Vec2;
+        Transform2D.prototype.toSYNC = function(json) {
+            json = Component.prototype.toSYNC.call(this, json);
+
+            if (this.parent) {
+                json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
+                json.scale = this.toWorld(VEC.copy(this.scale)).toJSON(json.scale);
+                json.rotation = this.rotation - this.parent.rotation;
+            } else {
+                json.position = this.position.toJSON(json.position);
+                json.scale = this.scale.toJSON(json.scale);
+                json.rotation = this.rotation;
+            }
+
+            return json;
+        };
 
 
-		Transform2D.prototype.fromSYNC = function(json){
-			
-			this.position.fromJSON(json.position);
-			this.scale.fromJSON(json.scale);
-			this.rotation = json.rotation;
+        Transform2D.prototype.fromSYNC = function(json) {
 
-			return this;
-		};
-
-
-		Transform2D.prototype.toJSON = function(json){
-			json || (json = {});
-			Component.prototype.toJSON.call(this, json);
-			
-			json.position = this.position.toJSON(json.position);
-            json.scale = this.scale.toJSON(json.scale);
-            json.rotation = this.rotation
-			
-			return json;
-		};
-
-
-		Transform2D.prototype.fromJSON = function(json){
-			Component.prototype.fromJSON.call(this, json);
-			
-			this.position.fromJSON(json.position);
+            this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
             this.rotation = json.rotation;
-			
-			return this;
-		};
+
+            return this;
+        };
+
+
+        Transform2D.prototype.toJSON = function(json) {
+            json || (json = {});
+            Component.prototype.toJSON.call(this, json);
+
+            json.position = this.position.toJSON(json.position);
+            json.scale = this.scale.toJSON(json.scale);
+            json.rotation = this.rotation
+
+            return json;
+        };
+
+
+        Transform2D.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+
+            this.position.fromJSON(json.position);
+            this.scale.fromJSON(json.scale);
+            this.rotation = json.rotation;
+
+            return this;
+        };
 
 
         function updateDepth(transform, depth) {

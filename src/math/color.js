@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "math/mathf"
     ],
@@ -654,11 +656,11 @@ define([
          */
         Color.prototype.toJSON = function(json) {
             json || (json = {});
-            
+
             json.r = this.r;
             json.g = this.g;
             json.b = this.b;
-            
+
             return json;
         };
 

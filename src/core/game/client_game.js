@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "base/device",
@@ -14,8 +16,8 @@ define([
         "core/scene",
         "core/input/input",
         "core/input/handler",
-		"core/assets/assets",
-		"core/assets/asset_loader"
+        "core/assets/assets",
+        "core/assets/asset_loader"
     ],
     function(Class, Device, Time, Config, Game, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
         "use strict";
@@ -32,34 +34,34 @@ define([
             Game.call(this, opts);
 
             this.io = undefined;
-			this._sessionid = undefined;
+            this._sessionid = undefined;
 
             this._handler = Handler;
             this.input = Input;
 
             this.scene = undefined;
             this.camera = undefined;
-			
+
             this.canvas = new Canvas(opts.width, opts.height);
 
-			this.CanvasRenderer2D = undefined;
-			this.WebGLRenderer2D = undefined;
+            this.CanvasRenderer2D = undefined;
+            this.WebGLRenderer2D = undefined;
 
-			this._optsCanvasRenderer2D = opts.CanvasRenderer2D;
-			this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
+            this._optsCanvasRenderer2D = opts.CanvasRenderer2D;
+            this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
 
             this.renderer = undefined;
         }
-		
+
         Class.extend(ClientGame, Game);
 
 
         ClientGame.prototype.init = function() {
             this.canvas.init();
-			
+
             this._loop.init();
             this.emit("init");
-			
+
             return this;
         };
 
@@ -71,41 +73,41 @@ define([
             this.io = socket = io.connect();
 
             socket.on("connect", function() {
-				if (!self._sessionid) self._sessionid = this.socket.sessionid;
-				if (self._sessionid !== this.socket.sessionid) location.reload();
-				
+                if (!self._sessionid) self._sessionid = this.socket.sessionid;
+                if (self._sessionid !== this.socket.sessionid) location.reload();
+
                 socket.emit("client_device", Device);
             });
 
             socket.on("server_ready", function(game, assets) {
-				
-				Assets.fromJSON(assets);
-				
-				AssetLoader.load(function() {
-					self.fromJSON(game);
-					
-					socket.emit("client_ready");
-					
-					self.emit("connect", socket);
-					if (handler) handler.call(self, socket);
-				});
+
+                Assets.fromJSON(assets);
+
+                AssetLoader.load(function() {
+                    self.fromJSON(game);
+
+                    socket.emit("client_ready");
+
+                    self.emit("connect", socket);
+                    if (handler) handler.call(self, socket);
+                });
             });
 
             socket.on("server_sync_input", function() {
-				
+
                 socket.emit("client_sync_input", Input.toSYNC());
             });
-			
+
             socket.on("server_sync_scene", function(jsonScene) {
-				var scene = self.scene;
-				if (!scene) return;
-				
-				scene.fromSYNC(jsonScene);
+                var scene = self.scene;
+                if (!scene) return;
+
+                scene.fromSYNC(jsonScene);
             });
 
             socket.on("server_setScene", function(scene_id) {
                 var scene = self.findByServerId(scene_id);
-				
+
                 self.setScene(scene);
             });
 
@@ -116,13 +118,13 @@ define([
                 }
                 var camera = self.scene.findByServerId(camera_id),
                     canvas = self.canvas;
-					
+
                 if (!camera) {
                     Log.warn("Socket:server_setCamera: can't find camera in active scene");
                     return;
                 }
-				
-				self.setCamera(camera);
+
+                self.setCamera(camera);
 
                 canvas.on("resize", function() {
 
@@ -172,7 +174,7 @@ define([
 
                 var gameObject = scene.findByServerId(gameObject_id);
                 if (!gameObject) return;
-				
+
                 gameObject.removeComponent(gameObject.getComponent(component_type));
             });
 
@@ -182,12 +184,12 @@ define([
 
         ClientGame.prototype.disconnect = function() {
             var socket = this.io;
-			
-			socket.disconnect();
-			socket.removeAllListeners();
-			this._sessionid = undefined;
-			
-			return this;
+
+            socket.disconnect();
+            socket.removeAllListeners();
+            this._sessionid = undefined;
+
+            return this;
         };
 
 
@@ -201,7 +203,7 @@ define([
 
             if (index !== -1) {
                 this.scene = scene;
-				this.emit("setScene", scene);
+                this.emit("setScene", scene);
             } else {
                 Log.warn("ClientGame.setScene: Scene is not a member of Game");
             }
@@ -237,7 +239,7 @@ define([
                 if (lastCamera) lastCamera._active = false;
 
                 this.updateRenderer();
-				this.emit("setCamera", this.camera);
+                this.emit("setCamera", this.camera);
             } else {
                 Log.warn("ClientGame.setCamera: GameObject does't have a Camera or a Camera2D Component");
             }
@@ -249,35 +251,35 @@ define([
         ClientGame.prototype.updateRenderer = function() {
             var camera = this.camera,
                 lastRenderer = this.renderer,
-				canvas = this.canvas,
+                canvas = this.canvas,
                 gameObject;
-			
+
             if (!camera) return;
             gameObject = camera.gameObject;
-			
-			if (Config.renderer && this[Config.renderer]) {
-				this.renderer = this[Config.renderer];
-				Log.log("Game: setting up "+ Config.renderer);
-			} else {
-				if (gameObject.camera) {
-					Log.warn("Game.updateRenderer: no renderer for camera component yet");
-				} else if (gameObject.camera2d) {
-					if (!Config.forceCanvas && Device.webgl) {
-						this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
-						Log.log("Game: setting up WebGLRenderer2D");
-					} else if (Device.canvas) {
-						this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
-						Log.log("Game: setting up CanvasRenderer2D");
-					} else {
-						Log.error("Game.updateRenderer: Could not get a renderer for this device");
-					}
-				}
-			}
+
+            if (Config.renderer && this[Config.renderer]) {
+                this.renderer = this[Config.renderer];
+                Log.log("Game: setting up " + Config.renderer);
+            } else {
+                if (gameObject.camera) {
+                    Log.warn("Game.updateRenderer: no renderer for camera component yet");
+                } else if (gameObject.camera2d) {
+                    if (!Config.forceCanvas && Device.webgl) {
+                        this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
+                        Log.log("Game: setting up WebGLRenderer2D");
+                    } else if (Device.canvas) {
+                        this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
+                        Log.log("Game: setting up CanvasRenderer2D");
+                    } else {
+                        Log.error("Game.updateRenderer: Could not get a renderer for this device");
+                    }
+                }
+            }
 
             if (lastRenderer === this.renderer) return;
             if (lastRenderer) lastRenderer.destroy();
-			
-			this.renderer.init(canvas);
+
+            this.renderer.init(canvas);
             Handler.setElement(canvas.element);
         };
 
@@ -294,8 +296,8 @@ define([
             var camera = this.camera,
                 scene = this.scene,
                 gameObjects,
-				MIN_DELTA = Config.MIN_DELTA,
-				MAX_DELTA = Config.MAX_DELTA,
+                MIN_DELTA = Config.MIN_DELTA,
+                MAX_DELTA = Config.MAX_DELTA,
                 i;
 
             Time.frameCount = frameCount++;

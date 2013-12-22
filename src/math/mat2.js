@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define(
     function() {
         "use strict";
@@ -445,12 +447,12 @@ define(
             json || (json = {});
             var te = this.elements,
                 je = json.elements || (json.elements = []);
-            
+
             je[0] = te[0];
             je[1] = te[1];
             je[2] = te[2];
             je[3] = te[3];
-            
+
             return json;
         };
 

@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define(
     function() {
         "use strict";
@@ -517,9 +519,11 @@ define(
          * @return this
          */
         Vec2.prototype.transformAngle = function(a) {
-            var x = this.x, y = this.y,
-                c = cos(a), s = sin(a);
-            
+            var x = this.x,
+                y = this.y,
+                c = cos(a),
+                s = sin(a);
+
             this.x = x * c - y * s;
             this.y = x * s + y * c;
 
@@ -746,10 +750,10 @@ define(
          */
         Vec2.prototype.toJSON = function(json) {
             json || (json = {});
-            
+
             json.x = this.x;
             json.y = this.y;
-            
+
             return json;
         };
 

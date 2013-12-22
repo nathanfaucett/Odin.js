@@ -1,4 +1,6 @@
-if (typeof define !== 'function') { var define = require('amdefine')(module) }
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module)
+}
 define([
         "base/class",
         "math/mathf",
@@ -12,21 +14,21 @@ define([
         "use strict";
 
 
-		var clamp = Mathf.clamp,
-			degsToRads = Mathf.degsToRads;
-		
-		
+        var clamp = Mathf.clamp,
+            degsToRads = Mathf.degsToRads;
+
+
         function Camera2D(opts) {
             opts || (opts = {});
 
             Component.call(this, "Camera2D", opts.sync, opts.json);
-			
-			this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
+
+            this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
 
             this.width = 960;
             this.height = 640;
-			
-			this.aspect = this.width / this.height;
+
+            this.aspect = this.width / this.height;
 
             this.orthographicSize = opts.orthographicSize !== undefined ? opts.orthographicSize : 2;
 
@@ -39,14 +41,14 @@ define([
             this._needsUpdate = true;
             this._active = false;
         }
-		
-		Camera2D.type = "Camera2D";
+
+        Camera2D.type = "Camera2D";
         Class.extend(Camera2D, Component);
 
 
         Camera2D.prototype.copy = function(other) {
 
-			this.backgroundColor.copy(other.backgroundColor);
+            this.backgroundColor.copy(other.backgroundColor);
             this.width = other.width;
             this.height = other.height;
 
@@ -58,9 +60,9 @@ define([
 
             return this;
         };
-		
-		
-		Camera2D.prototype.set = function(width, height) {
+
+
+        Camera2D.prototype.set = function(width, height) {
 
             this.width = width;
             this.height = height;
@@ -69,30 +71,30 @@ define([
         };
 
 
-		Camera2D.prototype.setWidth = function(width) {
+        Camera2D.prototype.setWidth = function(width) {
 
             this.width = width;
             this.aspect = width / this.height;
             this._needsUpdate = true;
         };
-		
-		
-		Camera2D.prototype.setHeight = function(height) {
+
+
+        Camera2D.prototype.setHeight = function(height) {
 
             this.height = height;
             this.aspect = this.width / height;
             this._needsUpdate = true;
         };
-		
-		
-		Camera2D.prototype.setOrthographicSize = function(size) {
+
+
+        Camera2D.prototype.setOrthographicSize = function(size) {
 
             this.orthographicSize = clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
             this._needsUpdate = true;
         };
-		
-		
-		var MAT32 = new Mat32,
+
+
+        var MAT32 = new Mat32,
             VEC2 = new Vec2;
         Camera2D.prototype.toWorld = function(v, out) {
             out || (out = new Vec3);
@@ -118,16 +120,16 @@ define([
 
 
         Camera2D.prototype.update = function() {
-			if (!this._active) return;
+            if (!this._active) return;
 
             if (this._needsUpdate) {
-				var orthographicSize = this.orthographicSize,
-					right = orthographicSize * this.aspect,
-					left = -right,
-					top = orthographicSize,
-					bottom = -top;
-					
-				this.projection.orthographic(left, right, bottom, top);
+                var orthographicSize = this.orthographicSize,
+                    right = orthographicSize * this.aspect,
+                    left = -right,
+                    top = orthographicSize,
+                    bottom = -top;
+
+                this.projection.orthographic(left, right, bottom, top);
                 this._needsUpdate = false;
             }
 
@@ -140,58 +142,58 @@ define([
             return a._active ? -1 : b._active ? 1 : -1;
         };
 
-		
-		Camera2D.prototype.toSYNC = function(json){
-			json = Component.prototype.toSYNC.call(this, json);
-			
-			json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
+
+        Camera2D.prototype.toSYNC = function(json) {
+            json = Component.prototype.toSYNC.call(this, json);
+
+            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
 
             json.orthographicSize = this.orthographicSize;
             json.minOrthographicSize = this.minOrthographicSize;
             json.maxOrthographicSize = this.maxOrthographicSize;
-			
-			return json;
-		};
-		
-		
-		Camera2D.prototype.fromSYNC = function(json){
-			Component.prototype.fromSYNC.call(this, json);
-			if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
-			
-			this.backgroundColor.fromJSON(json.backgroundColor);
+
+            return json;
+        };
+
+
+        Camera2D.prototype.fromSYNC = function(json) {
+            Component.prototype.fromSYNC.call(this, json);
+            if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
+
+            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
 
             this.orthographicSize = json.orthographicSize;
             this.minOrthographicSize = json.minOrthographicSize;
             this.maxOrthographicSize = json.maxOrthographicSize;
-			
-			return this;
-		};
-		
-		
-		Camera2D.prototype.toJSON = function(json){
-			json || (json = {});
-			Component.prototype.toJSON.call(this, json);
-			
-			json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
+
+            return this;
+        };
+
+
+        Camera2D.prototype.toJSON = function(json) {
+            json || (json = {});
+            Component.prototype.toJSON.call(this, json);
+
+            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
 
             json.orthographicSize = this.orthographicSize;
             json.minOrthographicSize = this.minOrthographicSize;
             json.maxOrthographicSize = this.maxOrthographicSize;
-			
-			return json;
-		};
-		
-		
-		Camera2D.prototype.fromJSON = function(json){
-			Component.prototype.fromJSON.call(this, json);
-			
-			this.backgroundColor.fromJSON(json.backgroundColor);
+
+            return json;
+        };
+
+
+        Camera2D.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+
+            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
 
@@ -201,8 +203,8 @@ define([
 
             this._needsUpdate = true;
 
-			return this;
-		};
+            return this;
+        };
 
 
         return Camera2D;
