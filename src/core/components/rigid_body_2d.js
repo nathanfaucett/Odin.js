@@ -4,7 +4,7 @@ if (typeof define !== 'function') {
 define([
         "base/class",
         "core/components/component",
-		"phys2d/dynamic/rigid_body"
+		"phys_2d/dynamic/rigid_body"
     ],
     function(Class, Component, RigidBody) {
         "use strict";

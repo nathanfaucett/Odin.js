@@ -8,7 +8,7 @@ define(
 
         function Odin() {
 
-            this.Phys2D = require("phys2d/phys_2d");
+            this.Phys2D = require("phys_2d/phys_2d");
 			
             this.AudioCtx = require("base/audio_ctx");
             this.Class = require("base/class");
@@ -30,6 +30,7 @@ define(
             this.Camera = require("core/components/camera");
             this.Camera2D = require("core/components/camera_2d");
             this.Component = require("core/components/component");
+            this.Emitter = require("core/components/emitter");
             this.RigidBody2D = require("core/components/rigid_body_2d");
             this.Sprite2D = require("core/components/sprite_2d");
             this.Transform = require("core/components/transform");
