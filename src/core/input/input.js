@@ -63,16 +63,6 @@ define([
         EventEmitter.extend(Input, EventEmitter);
 
 
-        Input.Touch = Touch;
-        Input.Touches = Touches;
-
-        Input.Axis = Axis;
-        Input.Axes = Axes;
-
-        Input.Button = Button;
-        Input.Buttons = Buttons;
-
-
         Input.prototype.update = function() {
             var axes = this.axes,
                 buttons = this.buttons.hash,

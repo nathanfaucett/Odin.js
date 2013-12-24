@@ -716,7 +716,7 @@ define(
          * @brief returns json object of this
          * @return Object
          */
-        Mat32.prototype.toJSON = function() {
+        Mat32.prototype.toJSON = function(json) {
             json || (json = {});
             var te = this.elements,
                 je = json.elements || (json.elements = []);

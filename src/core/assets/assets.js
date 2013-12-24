@@ -14,7 +14,6 @@ define([
             Array.call(this);
 
             this.hash = {};
-            this._SYNC = {};
         }
 
         Assets.prototype = Object.create(Array.prototype);
@@ -65,46 +64,13 @@ define([
         };
 
 
-        Assets.prototype.toSYNC = function(json) {
-            json || (json = this._SYNC);
-            var jsonAssets = json.assets || (json.assets = []),
-                jsonAsset
-                i;
-
-            for (i = this.length; i--;)
-                if ((jsonAsset = this[i]).sync) jsonAssets[i] = jsonAsset.toSYNC(jsonAssets[i]);
-            return json;
-        };
-
-
-        Assets.prototype.fromSYNC = function(json) {
-            var assetsHash = this.hash,
-                jsonAssets = json.assets || (json.assets = []),
-                assets, jsonAsset,
-                i;
-
-            for (i = jsonAssets.length; i--;) {
-                if (!(jsonAsset = jsonAssets[i])) continue;
-
-                if ((assets = assetsHash[jsonAsset.name])) {
-                    assets.fromSYNC(jsonAsset);
-                } else {
-                    this.add(new Asset._types[jsonAsset._type]().fromJSON(jsonAsset));
-                }
-            }
-
-            return this;
-        };
-
-
-        Assets.prototype.toJSON = function(json) {
+        Assets.prototype.toJSON = function(json, pack) {
             json || (json = {});
             var jsonAssets = json.assets || (json.assets = []),
                 jsonAsset,
                 i;
 
-            for (i = this.length; i--;)
-                if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i]);
+            for (i = this.length; i--;) if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i], pack);
             return json;
         };
 

@@ -103,20 +103,19 @@ define([
                     return false;
                 };
             }
-            addEvent(window, "resize orientationchange", this._handleResize, this);
+            addEvent(window, "resize orientationchange", this.handleResize, this);
 
             this.element = element;
-            this._handleResize();
+            this.handleResize();
         };
 
 
         Canvas.prototype.destroy = function() {
             if (!this.element) return this;
 
-            removeEvent(window, "resize orientationchange", this._handleResize, this);
+            removeEvent(window, "resize orientationchange", this.handleResize, this);
             document.body.removeChild(this.element);
             this.element = undefined;
-            canvas.off("resize");
 
             return this;
         };
@@ -131,7 +130,7 @@ define([
             if (!this.element || this.fullScreen === value) return this;
 
             this.fullScreen = !! value;
-            this._handleResize();
+            this.handleResize();
 
             return this;
         };
@@ -149,7 +148,7 @@ define([
             this.fullScreen = false;
             this.aspect = this.width / this.height;
 
-            this._handleResize();
+            this.handleResize();
 
             return this;
         };
@@ -167,7 +166,7 @@ define([
             this.fullScreen = false;
             this.aspect = this.width / this.height;
 
-            this._handleResize();
+            this.handleResize();
 
             return this;
         };
@@ -199,7 +198,7 @@ define([
         };
 
 
-        Canvas.prototype._handleResize = function() {
+        Canvas.prototype.handleResize = function() {
             var viewportScale = document.getElementById(VIEWPORT).getAttribute("content"),
                 w = window.innerWidth,
                 h = window.innerHeight,

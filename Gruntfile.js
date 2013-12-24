@@ -24,14 +24,26 @@ module.exports = function(grunt) {
         },
         jsbeautifier: {
             files: [
-				"src/**/*.js",
-			]
-        }
+                "src/**/*.js",
+            ]
+        },
+		watch: {
+			scripts: {
+                files: [
+                    "src/**/*.js",
+                ],
+                tasks: ["jsbeautifier", "requirejs"],
+                options: {
+                    spawn: false,
+                }
+            }
+		}
     });
 
     grunt.loadNpmTasks("grunt-contrib-requirejs");
+    grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-jsbeautifier");
 
-    grunt.registerTask("default", ["requirejs"]);
-    grunt.registerTask("beautify", ["jsbeautifier"]);
+    grunt.registerTask("dev", ["watch"]);
+    grunt.registerTask("default", ["jsbeautifier", "requirejs"]);
 };

@@ -56,11 +56,11 @@ define([
 
 
         var CANVAS, CTX;
-        Texture.prototype.toJSON = function(json) {
+        Texture.prototype.toJSON = function(json, pack) {
             json || (json = {});
             Asset.prototype.toJSON.call(this, json);
-
-            if (!this.src && this.raw) {
+			
+            if ((pack || !this.src) && this.raw) {
                 if (typeof(window) === "undefined") {
                     json.raw = this.raw;
                 } else {

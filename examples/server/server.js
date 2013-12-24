@@ -17,7 +17,7 @@ requirejs({
         });
 
         var scene = new Scene;
-
+		
         Assets.add(
             new Texture({
                 name: "img_player",
@@ -37,33 +37,33 @@ requirejs({
 
         game.on("connection", function(client) {
             var player = new GameObject({
-                components: [
-                    new Transform2D,
-                    new Sprite2D({
-                        texture: Assets.hash["img_player"],
-                        x: 0,
-                        y: 0,
-                        w: 64,
-                        h: 64,
-                        sync: false
-                    }),
-                    new AudioSource({
-                        clip: Assets.hash["sound"],
-                        doppler: true
-                    })
-                ]
-            }),
+					components: [
+						new Transform2D,
+						new Sprite2D({
+							texture: Assets.hash["img_player"],
+							x: 0,
+							y: 0,
+							w: 64,
+							h: 64
+						}),
+						new AudioSource({
+							clip: Assets.hash["sound"],
+							playOnInit: true,
+							loop: true,
+							dopplerLevel: 1,
+							volume: 0.25
+						})
+					]
+				}),
                 camera = new GameObject({
                     components: [
                         new Transform2D({
                             sync: false
                         }),
-                        new Camera2D({
-                            sync: false
-                        })
+                        new Camera2D
                     ]
                 });
-
+			
             scene.add(player, camera);
 
             client.setScene(scene);

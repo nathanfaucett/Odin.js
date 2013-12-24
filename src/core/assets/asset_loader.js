@@ -3,12 +3,12 @@ if (typeof define !== 'function') {
 }
 define([
         "base/event_emitter",
-        "base/audio_context",
+        "base/audio_ctx",
         "core/assets/asset",
         "core/assets/assets",
         "core/game/log"
     ],
-    function(EventEmitter, audioContext, Asset, Assets, Log) {
+    function(EventEmitter, AudioCtx, Asset, Assets, Log) {
         "use strict";
 
 

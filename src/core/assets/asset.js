@@ -18,32 +18,12 @@ define([
             this._id = ++ASSET_ID;
             this._type = this.constructor.name || "UnknownAsset";
 
-            this.sync = opts.sync != undefined ? !! opts.sync : false;
-            this.json = opts.json != undefined ? !! opts.json : true;
+            this.json = opts.json != undefined ? !!opts.json : true;
 
             this.assets = undefined;
             this._name = opts.name != undefined ? opts.name : "Asset" + this._id;
             this.src = opts.src;
             this.raw = opts.raw;
-
-            defineProperty(this, "name", {
-                get: function() {
-                    return this._name;
-                },
-                set: function(value) {
-                    if (!value) return;
-                    var assets = this.assets;
-
-                    if (assets) {
-                        delete assets[this._name];
-                        assets[value] = this;
-                    }
-
-                    this._name = value;
-                }
-            });
-
-            this._SYNC = {};
         }
 
         Asset.type = "Asset";
@@ -54,6 +34,31 @@ define([
 
             Asset._types[child.type] = child;
         }
+
+		
+		defineProperty(Asset.prototype, "name", {
+			get: function() {
+				return this._name;
+			},
+			set: function(value) {
+				var assets = this.assets,
+					hash;
+				
+				if (assets) {
+					hash = assets.hash;
+					
+					if (hash[value]) {
+						Log.warn("Asset.set name: can't change name to "+ value +" Assets already have an asset with same name");
+						return;
+					}
+						
+					delete hash[this.name];
+					hash[value] = this;
+				}
+
+				this._name = value;
+			}
+		});
 
 
         Asset.prototype.clone = function() {
@@ -110,27 +115,14 @@ define([
         };
 
 
-        Asset.prototype.toSYNC = function(json) {
-            json || (json = this._SYNC);
-
-            return json;
-        };
-
-
-        Asset.prototype.fromSYNC = function(json) {
-
-            return this;
-        };
-
-
-        Asset.prototype.toJSON = function(json) {
+        Asset.prototype.toJSON = function(json, pack) {
             json || (json = {});
 
             json._type = this._type;
 
             json.name = this.name;
-            json.src = this.src;
-
+            if (!pack) json.src = this.src;
+			
             return json;
         };
 
@@ -141,7 +133,7 @@ define([
 
             this.name = json.name;
             this.src = json.src;
-
+			
             return this;
         };
 

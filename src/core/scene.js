@@ -14,9 +14,9 @@ define([
             opts || (opts = {});
 
             Class.call(this);
-
+			
             this.game = undefined;
-
+			
             this.gameObjects = [];
             this._gameObjectHash = {};
             this._gameObjectServerHash = {};
@@ -51,7 +51,7 @@ define([
             var types = this._componentTypes,
                 gameObjects = this.gameObjects,
                 components, i, j;
-
+			
             for (i = types.length; i--;) {
                 components = types[i];
                 for (j = components.length; j--;) components[j].update();
@@ -197,6 +197,8 @@ define([
 
             this.emit("remove" + type, component);
             this.emit("removeComponent", component);
+
+            component.clear();
         };
 
 

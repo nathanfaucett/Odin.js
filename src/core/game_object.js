@@ -50,7 +50,6 @@ define([
             for (i = components.length; i--;) this.addComponent(components[i].clone());
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
-            if (this.scene) this.scene.removeGameObject(this);
             if (other.scene) other.scene.addGameObject(this);
 
             return this;
