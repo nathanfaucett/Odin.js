@@ -47,7 +47,7 @@ define([
         SpriteSheet.prototype.toJSON = function(json, pack) {
             json || (json = {});
             Asset.prototype.toJSON.call(this, json);
-			
+
             if ((pack || !this.src) && this.raw) json.raw = JSON.stringify(this.raw);
 
             return json;

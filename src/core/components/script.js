@@ -12,7 +12,7 @@ define([
         function Script(opts) {
             opts || (opts = {});
 
-            Component.call(this, opts.name || "Script", opts.sync != undefined ? !!opts.sync : false, opts.json);
+            Component.call(this, opts.name || "Script", opts.sync != undefined ? !! opts.sync : false, opts.json);
         }
 
         Script.type = "Script";

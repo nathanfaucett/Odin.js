@@ -84,9 +84,9 @@ define([
 
             this.length = 0;
             TOUCH_POOL.clear();
-			
+
             for (; i--;) this[i] = TOUCH_POOL.create().fromSYNC(jsonTouches[i]);
-			
+
             return this;
         };
 

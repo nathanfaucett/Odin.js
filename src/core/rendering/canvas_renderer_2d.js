@@ -6,10 +6,11 @@ define([
         "base/device",
         "base/dom",
         "math/mathf",
+        "math/vec2",
         "math/mat32",
         "math/color"
     ],
-    function(EventEmitter, Device, Dom, Mathf, Mat32, Color) {
+    function(EventEmitter, Device, Dom, Mathf, Vec2, Mat32, Color) {
         "use strict";
 
 
@@ -75,8 +76,8 @@ define([
                 background = camera.backgroundColor,
                 components = scene.components,
                 sprite2ds = components.Sprite2D || EMPTY_ARRAY,
-                sprite2d,
-                transform2d,
+                emitter2ds = components.Emitter2D || EMPTY_ARRAY,
+                sprite2d, emitter2d, transform2d,
                 i;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
@@ -94,6 +95,7 @@ define([
 
                 ctx.translate(hw, hh);
                 ctx.scale(hw, -hh);
+                ctx.fillStyle = background.toRGB();
 
                 if (this._lastResizeFn) canvas.off("resize", this._lastResizeFn);
 
@@ -107,6 +109,7 @@ define([
 
                     ctx.translate(hw, hh);
                     ctx.scale(hw, -hh);
+                    ctx.fillStyle = background.toRGB();
                 };
 
                 canvas.on("resize", this._lastResizeFn);
@@ -124,6 +127,16 @@ define([
                 transform2d.updateModelView(camera.view);
                 this.renderSprite2D(camera, transform2d, sprite2d);
             }
+
+            for (i = emitter2ds.length; i--;) {
+                emitter2d = emitter2ds[i];
+                transform2d = emitter2d.transform2d;
+
+                if (!transform2d) continue;
+
+                transform2d.updateModelView(camera.view);
+                this.renderEmitter2D(camera, transform2d, emitter2d);
+            }
         };
 
 
@@ -131,10 +144,9 @@ define([
         CanvasRenderer2D.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
             var ctx = this.context,
                 texture = sprite2d.texture,
-                mvp;
+                mvp = MAT.elements;
 
             MAT.mmul(camera.projection, transform2d.modelView);
-            mvp = MAT.elements;
 
             if (texture) {
                 texture = texture.raw;
@@ -157,6 +169,43 @@ define([
                 sprite2d.width,
                 sprite2d.height
             );
+
+            ctx.restore();
+        };
+
+
+        CanvasRenderer2D.prototype.renderEmitter2D = function(camera, transform2d, emitter2d) {
+            var ctx = this.context,
+                particles = emitter2d.particles,
+                particle,
+                view = emitter2d.worldSpace ? camera.view : transform2d.modelView,
+                mvp = MAT.elements,
+                pos, size,
+                i = particles.length;
+
+            if (!i) return;
+
+            ctx.save();
+
+            MAT.mmul(camera.projection, view);
+            ctx.transform(mvp[0], -mvp[2], -mvp[1], mvp[3], mvp[4], mvp[5]);
+
+            for (; i--;) {
+                particle = particles[i];
+                pos = particle.position;
+                size = particle.size;
+
+                ctx.save();
+
+                ctx.fillStyle = particle.color.toRGB();
+                ctx.globalAlpha = particle.alpha;
+
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(particle.rotation);
+                ctx.fillRect(-size * 0.5, -size * 0.5, size, size);
+
+                ctx.restore();
+            }
 
             ctx.restore();
         };

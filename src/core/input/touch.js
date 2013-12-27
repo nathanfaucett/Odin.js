@@ -16,7 +16,7 @@ define([
             this.position = new Vec2;
 
             this._last = new Vec2;
-            this._first = true;
+            this._first = false;
 
             this._SYNC = {};
         };
@@ -30,7 +30,7 @@ define([
             this.delta.set(0, 0);
             this._last.set(0, 0);
 
-            this._first = true;
+            this._first = false;
 
             return this;
         };
@@ -47,8 +47,8 @@ define([
                 x = (e.pageX || e.clientX) - offsetX,
                 y = (e.pageY || e.clientY) - offsetY;
 
-            last.x = !first ? position.x : x;
-            last.y = !first ? position.y : y;
+            last.x = first ? position.x : x;
+            last.y = first ? position.y : y;
 
             position.x = x;
             position.y = y;
@@ -56,7 +56,7 @@ define([
             delta.x = position.x - last.x;
             delta.y = position.y - last.y;
 
-            this._first = false;
+            this._first = true;
 
             return this;
         };

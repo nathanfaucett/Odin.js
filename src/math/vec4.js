@@ -687,6 +687,40 @@ define(
         };
 
         /**
+         * @method fromArray
+         * @memberof Vec4
+         * @brief sets values from Array object
+         * @param Array array
+         * @return this
+         */
+        Vec4.prototype.fromArray = function(array) {
+
+            this.x = array[0];
+            this.y = array[1];
+            this.z = array[2];
+            this.w = array[3];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Vec4
+         * @brief returns array object of this
+         * @return Array
+         */
+        Vec4.prototype.toArray = function(array) {
+            array || (array = []);
+
+            array[0] = this.x;
+            array[1] = this.y;
+            array[2] = this.z;
+            array[3] = this.w;
+
+            return array;
+        };
+
+        /**
          * @method toString
          * @memberof Vec4
          * @brief returns string of this

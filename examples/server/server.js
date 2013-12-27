@@ -52,6 +52,16 @@ requirejs({
 							loop: true,
 							dopplerLevel: 1,
 							volume: 0.25
+						}),
+						new Emitter2D({
+							loop: true,
+							minLife: 0.25,
+							maxLife: 1,
+							velocity: new Vec2(0,-1),
+							randVelocity: new Vec2(0.25, 0.3),
+							randColor: new Color(1, 0.5, 0.5),
+							offset: new Vec2(0,-0.25),
+							worldSpace: true
 						})
 					]
 				}),

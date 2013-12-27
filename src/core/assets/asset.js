@@ -18,7 +18,7 @@ define([
             this._id = ++ASSET_ID;
             this._type = this.constructor.name || "UnknownAsset";
 
-            this.json = opts.json != undefined ? !!opts.json : true;
+            this.json = opts.json != undefined ? !! opts.json : true;
 
             this.assets = undefined;
             this._name = opts.name != undefined ? opts.name : "Asset" + this._id;
@@ -35,30 +35,30 @@ define([
             Asset._types[child.type] = child;
         }
 
-		
-		defineProperty(Asset.prototype, "name", {
-			get: function() {
-				return this._name;
-			},
-			set: function(value) {
-				var assets = this.assets,
-					hash;
-				
-				if (assets) {
-					hash = assets.hash;
-					
-					if (hash[value]) {
-						Log.warn("Asset.set name: can't change name to "+ value +" Assets already have an asset with same name");
-						return;
-					}
-						
-					delete hash[this.name];
-					hash[value] = this;
-				}
 
-				this._name = value;
-			}
-		});
+        defineProperty(Asset.prototype, "name", {
+            get: function() {
+                return this._name;
+            },
+            set: function(value) {
+                var assets = this.assets,
+                    hash;
+
+                if (assets) {
+                    hash = assets.hash;
+
+                    if (hash[value]) {
+                        Log.warn("Asset.set name: can't change name to " + value + " Assets already have an asset with same name");
+                        return;
+                    }
+
+                    delete hash[this.name];
+                    hash[value] = this;
+                }
+
+                this._name = value;
+            }
+        });
 
 
         Asset.prototype.clone = function() {
@@ -122,7 +122,7 @@ define([
 
             json.name = this.name;
             if (!pack) json.src = this.src;
-			
+
             return json;
         };
 
@@ -133,7 +133,7 @@ define([
 
             this.name = json.name;
             this.src = json.src;
-			
+
             return this;
         };
 

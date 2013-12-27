@@ -768,6 +768,38 @@ define(
         };
 
         /**
+         * @method fromArray
+         * @memberof Vec3
+         * @brief sets values from Array object
+         * @param Array array
+         * @return this
+         */
+        Vec3.prototype.fromArray = function(array) {
+
+            this.x = array[0];
+            this.y = array[1];
+            this.z = array[2];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Vec3
+         * @brief returns array object of this
+         * @return Array
+         */
+        Vec3.prototype.toArray = function(array) {
+            array || (array = []);
+
+            array[0] = this.x;
+            array[1] = this.y;
+            array[2] = this.z;
+
+            return array;
+        };
+
+        /**
          * @method toString
          * @memberof Vec3
          * @brief returns string of this

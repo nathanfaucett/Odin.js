@@ -224,7 +224,7 @@ define([
 
         Transform2D.prototype.toWorld = function(v) {
 
-            return v.transformMat4(this.matrixWorld);
+            return v.transformMat32(this.matrixWorld);
         };
 
 

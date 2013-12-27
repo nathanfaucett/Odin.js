@@ -70,7 +70,8 @@ define([
                 jsonAsset,
                 i;
 
-            for (i = this.length; i--;) if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i], pack);
+            for (i = this.length; i--;)
+                if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i], pack);
             return json;
         };
 

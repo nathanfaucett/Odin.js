@@ -665,6 +665,38 @@ define([
         };
 
         /**
+         * @method fromArray
+         * @memberof Color
+         * @brief sets values from Array object
+         * @param Array array
+         * @return this
+         */
+        Color.prototype.fromArray = function(array) {
+
+            this.r = array[0];
+            this.g = array[1];
+            this.b = array[2];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Color
+         * @brief returns array object of this
+         * @return Array
+         */
+        Color.prototype.toArray = function(array) {
+            array || (array = []);
+
+            array[0] = this.r;
+            array[1] = this.g;
+            array[2] = this.b;
+
+            return array;
+        };
+
+        /**
          * @method toString
          * @memberof Color
          * @brief returns string of this

@@ -46,6 +46,9 @@ scene.addGameObject(camera);
 // set scene first, because Game.setCamera needs an active scene
 MyGame.setScene(scene);
 MyGame.setCamera(camera);
+
+// to start the game call it's init function
+MyGame.init();
 ```
 
 ### Scenes
@@ -78,7 +81,7 @@ var player = new GameObject({
             rotation: Math.PI*0.5,
 			
 			// every component can be synced with the client and the server
-			// by default transforms, are the only ones sync
+			// by default transforms, are the only ones synced
 			// only affects if created on the server
 			sync: true,
 			

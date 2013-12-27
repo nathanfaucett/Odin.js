@@ -758,6 +758,36 @@ define(
         };
 
         /**
+         * @method fromArray
+         * @memberof Vec2
+         * @brief sets values from Array object
+         * @param Array array
+         * @return this
+         */
+        Vec2.prototype.fromArray = function(array) {
+
+            this.x = array[0];
+            this.y = array[1];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Vec2
+         * @brief returns array object of this
+         * @return Array
+         */
+        Vec2.prototype.toArray = function(array) {
+            array || (array = []);
+
+            array[0] = this.x;
+            array[1] = this.y;
+
+            return array;
+        };
+
+        /**
          * @method toString
          * @memberof Vec2
          * @brief returns string of this

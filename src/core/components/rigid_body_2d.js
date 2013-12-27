@@ -4,18 +4,18 @@ if (typeof define !== 'function') {
 define([
         "base/class",
         "core/components/component",
-		"phys_2d/dynamic/rigid_body"
+        "phys_2d/dynamic/rigid_body"
     ],
     function(Class, Component, RigidBody) {
         "use strict";
-		
-		
+
+
         function RigidBody2D(opts) {
             opts || (opts = {});
 
             Component.call(this, "RigidBody2D", opts.sync, opts.json);
-			
-			this.body = new RigidBody(opts);
+
+            this.body = new RigidBody(opts);
         }
 
         RigidBody2D.type = "RigidBody2D";
@@ -29,12 +29,12 @@ define([
 
 
         RigidBody2D.prototype.init = function() {
-			
+
         };
 
 
         RigidBody2D.prototype.update = function() {
-            
+
         };
 
 
@@ -60,18 +60,18 @@ define([
         RigidBody2D.prototype.toJSON = function(json) {
             json || (json = {});
             Component.prototype.toJSON.call(this, json);
-			
-			json.body = this.body.toJSON(json.body);
-			
+
+            json.body = this.body.toJSON(json.body);
+
             return json;
         };
 
 
         RigidBody2D.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
-			
-			this.body.fromJSON(json.body);
-			
+
+            this.body.fromJSON(json.body);
+
             return this;
         };
 
