@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/input/axis",
@@ -12,8 +12,7 @@ define([
         var BUTTON = Axis.BUTTON,
             MOUSE = Axis.MOUSE,
             TOUCH = Axis.TOUCH,
-            MOUSE_WHEEL = Axis.MOUSE_WHEEL,
-            JOYSTICK = Axis.JOYSTICK;
+            MOUSE_WHEEL = Axis.MOUSE_WHEEL;
 
 
         function Axes() {

@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/game/config"
@@ -22,14 +22,14 @@ define([
 
 
         Log.prototype.warn = function() {
-            if (!Config.debug) return;
+            if (!Config.debug || !Config.warn) return;
 
             console.warn.apply(console, arguments);
         };
 
 
         Log.prototype.error = function() {
-            if (!Config.debug) return;
+            if (!Config.debug || !Config.error) return;
 
             console.error.apply(console, arguments);
         };

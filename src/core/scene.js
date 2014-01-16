@@ -1,12 +1,13 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/class",
         "core/game_object",
+        "core/world",
         "core/game/log"
     ],
-    function(Class, GameObject, Log) {
+    function(Class, GameObject, World, Log) {
         "use strict";
 
 
@@ -16,6 +17,11 @@ define([
             Class.call(this);
 
             this.game = undefined;
+            this._needsSync = true;
+
+            this.name = opts.name != undefined ? opts.name : "Scene-" + this._id;
+
+            this.world = undefined;
 
             this.gameObjects = [];
             this._gameObjectHash = {};
@@ -26,16 +32,19 @@ define([
             this._componentHash = {};
             this._componentHashServer = {};
 
+            this.setWorld(opts.world instanceof World ? opts.world : new World(opts.world));
             if (opts.gameObjects) this.addGameObjects.apply(this, opts.gameObjects);
         }
 
-        Class.extend(Scene, Class);
+        Class.extend(Scene);
 
 
         Scene.prototype.init = function() {
             var types = this._componentTypes,
                 gameObjects = this.gameObjects,
                 components, i, j;
+
+            this.world && this.world.init();
 
             for (i = types.length; i--;) {
                 components = types[i];
@@ -52,12 +61,15 @@ define([
                 gameObjects = this.gameObjects,
                 components, i, j;
 
+            this.world && this.world.update();
+
             for (i = types.length; i--;) {
                 components = types[i];
                 for (j = components.length; j--;) components[j].update();
             }
 
             for (i = gameObjects.length; i--;) gameObjects[i].emit("update");
+            this._needsSync = true;
         };
 
 
@@ -65,6 +77,7 @@ define([
             var gameObjects = this.gameObjects,
                 i;
 
+            this.world = undefined;
             for (i = gameObjects.length; i--;) this.removeGameObject(gameObjects[i]);
             return this;
         };
@@ -80,6 +93,29 @@ define([
             this.emit("destroy");
 
             this.clear();
+
+            return this;
+        };
+
+
+        Scene.prototype.setWorld = function(world) {
+            if (this.world) this.removeWorld();
+
+            world.scene = this;
+            this.world = world;
+
+            if (this.game) world.init();
+
+            return this;
+        };
+
+
+        Scene.prototype.removeWorld = function() {
+            if (!this.world) return this;
+            var world = this.world;
+
+            world.scene = undefined;
+            this.world = undefined;
 
             return this;
         };
@@ -153,7 +189,7 @@ define([
             }
             var gameObjects = this.gameObjects,
                 index = gameObjects.indexOf(gameObject),
-                components, component,
+                components,
                 i;
 
             if (index !== -1) {
@@ -227,28 +263,31 @@ define([
 
 
         Scene.prototype.toSYNC = function(json) {
+            if (!this._needsSync) return this._SYNC;
             json = Class.prototype.toSYNC.call(this, json);
             var gameObjects = this.gameObjects,
                 jsonGameObjects = json.gameObjects || (json.gameObjects = []),
                 gameObject,
                 i;
 
-            for (i = gameObjects.length; i--;)
+            for (i = gameObjects.length; i--;) {
                 if ((gameObject = gameObjects[i]).sync) jsonGameObjects[i] = gameObject.toSYNC(jsonGameObjects[i]);
+            }
+
+            this._needsSync = false;
+
             return json;
         };
 
 
         Scene.prototype.fromSYNC = function(json, alpha) {
             Class.prototype.fromSYNC.call(this, json);
-            var gameObjects = this.gameObjects,
-                jsonGameObjects = json.gameObjects,
+            var jsonGameObjects = json.gameObjects,
                 gameObject, jsonGameObject,
                 i;
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
-
                 if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject, alpha);
             }
 
@@ -257,25 +296,29 @@ define([
 
 
         Scene.prototype.toJSON = function(json) {
-            json || (json = {});
-            Class.prototype.toJSON.call(this, json);
+            json = Class.prototype.toJSON.call(this, json);
             var gameObjects = this.gameObjects,
                 jsonGameObjects = json.gameObjects || (json.gameObjects = []),
                 gameObject,
                 i;
 
-            for (i = gameObjects.length; i--;)
+            json.name = this.name;
+
+            for (i = gameObjects.length; i--;) {
                 if ((gameObject = gameObjects[i]).json) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
+            }
+
             return json;
         };
 
 
         Scene.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
-            var gameObjects = this.gameObjects,
-                jsonGameObjects = json.gameObjects,
+            var jsonGameObjects = json.gameObjects,
                 gameObject, jsonGameObject,
                 i;
+
+            this.name = json.name;
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;

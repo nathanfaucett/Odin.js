@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
@@ -16,7 +16,7 @@ define(
         }
 
 
-        EventEmitter.prototype.on = EventEmitter.prototype.addEventListener = function(type, listener, ctx) {
+        EventEmitter.prototype.on = function(type, listener, ctx) {
             var types = type.split(SPLITER),
                 events = this._events,
                 i;
@@ -33,9 +33,9 @@ define(
         };
 
 
-        EventEmitter.prototype.once = EventEmitter.prototype.addEventListenerOnce = function(type, listener, ctx) {
+        EventEmitter.prototype.once = function(type, listener, ctx) {
             var self = this;
-            ctx || (ctx = this);
+            ctx = ctx || this;
 
             function once() {
                 self.off(type, once);
@@ -46,8 +46,8 @@ define(
         };
 
 
-        EventEmitter.prototype.listenTo = EventEmitter.prototype.addEventListenerTo = function(obj, type, listener, ctx) {
-            if (!(obj instanceof EventEmitter)) throw "Can't listen to Object, its not a instance of EventEmitter";
+        EventEmitter.prototype.listenTo = function(obj, type, listener, ctx) {
+            if (!obj.on || !obj.addEventListenerTo) throw "Can't listen to Object, it's not a instance of EventEmitter";
 
             obj.on(type, listener, ctx || this);
 
@@ -55,7 +55,7 @@ define(
         };
 
 
-        EventEmitter.prototype.off = EventEmitter.prototype.removeEventListener = function(type, listener, ctx) {
+        EventEmitter.prototype.off = function(type, listener, ctx) {
             var types = type.split(SPLITER),
                 thisEvents = this._events,
                 events, event,
@@ -75,7 +75,7 @@ define(
                 if (!listener) {
                     events.length = 0;
                 } else {
-                    ctx || (ctx = this);
+                    ctx = ctx || this;
 
                     for (j = events.length; j--;) {
                         event = events[j];
@@ -92,7 +92,7 @@ define(
         };
 
 
-        EventEmitter.prototype.emit = EventEmitter.prototype.trigger = function(type) {
+        EventEmitter.prototype.emit = function(type) {
             var events = this._events[type],
                 a1, a2, a3, a4,
                 event,
@@ -140,18 +140,19 @@ define(
         };
 
 
-        function extend(child, parent) {
+        EventEmitter.extend = function(child, parent) {
+            if (!parent) parent = this;
 
             child.prototype = Object.create(parent.prototype);
             child.prototype.constructor = child;
 
+            child.extend = this.extend;
+
             if (parent.prototype._onExtend) parent.prototype._onExtend(child);
             if (child.prototype._onInherit) child.prototype._onInherit(parent);
-            child.extend = extend;
+
+            return child;
         };
-
-
-        EventEmitter.extend = extend;
 
 
         return EventEmitter;

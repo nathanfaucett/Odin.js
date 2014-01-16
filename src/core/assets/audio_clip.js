@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/audio_ctx",
@@ -22,7 +22,7 @@ define([
         }
 
         AudioClip.type = "AudioClip";
-        Asset.extend(AudioClip, Asset);
+        Asset.extend(AudioClip);
 
 
         defineProperty(AudioClip.prototype, "length", {
@@ -69,8 +69,7 @@ define([
 
 
         AudioClip.prototype.toJSON = function(json, pack) {
-            json || (json = {});
-            Asset.prototype.toJSON.call(this, json, pack);
+            json = Asset.prototype.toJSON.call(this, json, pack);
 
             if ((pack || !this.src) && this.raw) json.raw = arrayBufferToString(this.raw);
 
@@ -96,9 +95,9 @@ define([
             var len = str.length,
                 arrayBuffer = new ArrayBuffer(len * 2),
                 array = new Uint16Array(arrayBuffer),
-                i;
+                i = len;
 
-            for (i = len; i--;) array[i] = str.charCodeAt(i);
+            for (; i--;) array[i] = str.charCodeAt(i);
             return arrayBuffer;
         }
 

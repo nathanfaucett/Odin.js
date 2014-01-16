@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/assets/asset",
@@ -16,7 +16,7 @@ define([
         }
 
         SpriteSheet.type = "SpriteSheet";
-        Asset.extend(SpriteSheet, Asset);
+        Asset.extend(SpriteSheet);
 
 
         SpriteSheet.prototype.parse = function(raw) {
@@ -45,8 +45,7 @@ define([
 
 
         SpriteSheet.prototype.toJSON = function(json, pack) {
-            json || (json = {});
-            Asset.prototype.toJSON.call(this, json);
+            json = Asset.prototype.toJSON.call(this, json);
 
             if ((pack || !this.src) && this.raw) json.raw = JSON.stringify(this.raw);
 

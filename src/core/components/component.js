@@ -1,12 +1,16 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/class",
+        "base/util",
         "core/game/log"
     ],
-    function(Class, Log) {
+    function(Class, util, Log) {
         "use strict";
+
+
+        var camelize = util.camelize;
 
 
         function Component(type, sync, json) {
@@ -14,16 +18,18 @@ define([
             Class.call(this);
 
             this._type = type || "UnknownComponent";
-            this._name = (this._type).toLowerCase();
+            this._name = camelize(this._type, true);
 
             this.sync = sync != undefined ? !! sync : true;
             this.json = json != undefined ? !! json : true;
 
             this.gameObject = undefined;
         }
-        Class.extend(Component, Class);
 
+        Class.extend(Component);
         Component.type = "Component";
+
+
         Component._types = {};
         Component.prototype._onExtend = function(child) {
 
@@ -74,18 +80,16 @@ define([
         };
 
 
-        Component.prototype.fromSYNC = function(json) {
+        Component.prototype.fromSYNC = function() {
 
             return this;
         };
 
 
         Component.prototype.toJSON = function(json) {
-            json || (json = {});
-            Class.prototype.toJSON.call(this, json);
+            json = Class.prototype.toJSON.call(this, json);
 
-            json._type = this._type;
-            json._name = this._name;
+            json.type = this._type;
 
             json.sync = this.sync;
             json.json = this.json;
@@ -96,9 +100,6 @@ define([
 
         Component.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
-
-            this._type = json._type;
-            this._name = json._name;
 
             this.sync = json.sync;
             this.json = json.json;

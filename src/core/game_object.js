@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/class",
@@ -37,7 +37,7 @@ define([
             if (opts.components) this.addComponents.apply(this, opts.components);
         }
 
-        Class.extend(GameObject, Class);
+        Class.extend(GameObject);
 
 
         GameObject.prototype.copy = function(other) {
@@ -126,7 +126,7 @@ define([
         GameObject.prototype.addComponent = function(component, others) {
             if (typeof(component) === "string") component = new Component._types[component];
             if (!(component instanceof Component)) {
-                Log.warn("GameObject.addComponent: can't add passed argument, it is not instance of Component");
+                Log.warn("GameObject.addComponent: can't add passed argument, it is not an instance of Component");
                 return this;
             }
             var name = component._name,
@@ -169,8 +169,7 @@ define([
 
 
         GameObject.prototype.add = GameObject.prototype.addComponents = function() {
-            var scene = this.scene,
-                length = arguments.length,
+            var length = arguments.length,
                 components = this.components,
                 component, name,
                 i, j;
@@ -194,7 +193,7 @@ define([
         GameObject.prototype.removeComponent = function(component, others) {
             if (typeof(component) === "string") component = this.getComponent(component);
             if (!(component instanceof Component)) {
-                Log.warn("GameObject.removeComponent: can't remove passed argument, it is not instance of Component");
+                Log.warn("GameObject.removeComponent: can't remove passed argument, it is not an instance of Component");
                 return this;
             }
             var name = component._name,
@@ -235,8 +234,7 @@ define([
 
 
         GameObject.prototype.remove = GameObject.prototype.removeComponents = function() {
-            var scene = this.scene,
-                length = arguments.length,
+            var length = arguments.length,
                 components = this.components,
                 toRemove = arguments,
                 component, name,
@@ -292,28 +290,29 @@ define([
             var components = this.components,
                 jsonComponents = json.components || (json.components = []),
                 component,
-                i;
+                i = components.length;
 
-            for (i = components.length; i--;)
+            for (; i--;) {
                 if ((component = components[i]).sync) jsonComponents[i] = component.toSYNC(jsonComponents[i]);
+            }
+
             return json;
         };
 
 
         GameObject.prototype.fromSYNC = function(json, alpha) {
             Class.prototype.fromSYNC.call(this, json);
-            var components = this.components,
-                jsonComponents = json.components || (json.components = []),
+            var jsonComponents = json.components || (json.components = []),
                 component, jsonComponent, type,
-                i;
+                i = jsonComponents.length;
 
-            for (i = jsonComponents.length; i--;) {
+            for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 
                 if ((component = this.findComponentByServerId(jsonComponent._id))) {
                     component.fromSYNC(jsonComponent, alpha);
                 } else {
-                    if (!(type = Component._types[jsonComponent._type])) continue;
+                    if (!(type = Component._types[jsonComponent._type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
                     this.addComponent(new type().fromSYNC(jsonComponent, alpha));
                 }
             }
@@ -323,17 +322,17 @@ define([
 
 
         GameObject.prototype.toJSON = function(json) {
-            json || (json = {});
-            Class.prototype.toJSON.call(this, json);
+            json = Class.prototype.toJSON.call(this, json);
             var components = this.components,
                 jsonComponents = json.components || (json.components = []),
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 component,
-                i;
+                i = components.length;
 
-            for (i = components.length; i--;)
+            for (; i--;) {
                 if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
+            }
             for (i = tags.length; i--;) jsonTags[i] = tags[i];
 
             return json;
@@ -342,16 +341,15 @@ define([
 
         GameObject.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
-            var components = this.components,
-                jsonComponents = json.components || (json.components = []),
+            var jsonComponents = json.components || (json.components = []),
                 component, jsonComponent, type,
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
-                i;
+                i = jsonComponents.length;
 
-            for (i = jsonComponents.length; i--;) {
+            for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
-                if (!(type = Component._types[jsonComponent._type])) continue;
+                if (!(type = Component._types[jsonComponent.type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
 
                 if ((component = this.findComponentByServerId(jsonComponent._id))) {
                     component.fromJSON(jsonComponent);
@@ -359,8 +357,9 @@ define([
                     this.addComponent(new type().fromJSON(jsonComponent));
                 }
             }
-            for (i = jsonTags.length; i--;)
+            for (i = jsonTags.length; i--;) {
                 if (!this.hasTag(jsonTags[i])) tags.push(jsonTags[i]);
+            }
 
             return this;
         };

@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/assets/asset",
@@ -68,10 +68,12 @@ define([
             json || (json = {});
             var jsonAssets = json.assets || (json.assets = []),
                 jsonAsset,
-                i;
+                i = this.length;
 
-            for (i = this.length; i--;)
+            for (; i--;) {
                 if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i], pack);
+            }
+
             return json;
         };
 
@@ -80,9 +82,9 @@ define([
             var assetsHash = this.hash,
                 jsonAssets = json.assets || (json.assets = []),
                 assets, jsonAsset,
-                i;
+                i = jsonAssets.length;
 
-            for (i = jsonAssets.length; i--;) {
+            for (; i--;) {
                 if (!(jsonAsset = jsonAssets[i])) continue;
 
                 if ((assets = assetsHash[jsonAsset.name])) {

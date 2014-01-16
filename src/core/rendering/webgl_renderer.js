@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter",
@@ -111,7 +111,7 @@ define([
             this._lastBlending = undefined;
         }
 
-        EventEmitter.extend(WebGLRenderer, EventEmitter);
+        EventEmitter.extend(WebGLRenderer);
 
 
         WebGLRenderer.prototype.init = function(canvas) {
@@ -334,7 +334,7 @@ define([
             if (!this._context) return;
             var gl = this.context,
                 lastBackground = this._lastBackground,
-                background = camera.backgroundColor,
+                background = scene.world.background,
                 components = scene.components,
                 sprite2ds = components.Sprite2D || EMPTY_ARRAY,
                 sprite2d,

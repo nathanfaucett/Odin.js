@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter",
@@ -12,10 +12,9 @@ define([
         "core/input/button",
         "core/input/axes",
         "core/input/axis",
-        "core/input/touches",
-        "core/input/touch"
+        "core/input/touches"
     ],
-    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Buttons, Button, Axes, Axis, Touches, Touch) {
+    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Buttons, Button, Axes, Axis, Touches) {
         "use strict";
 
 
@@ -60,7 +59,7 @@ define([
                 this._SYNC = {};
             }
 
-        EventEmitter.extend(Input, EventEmitter);
+        EventEmitter.extend(Input);
 
 
         Input.prototype.update = function() {
@@ -109,6 +108,10 @@ define([
                     case MOUSE_WHEEL:
 
                         value += this.mouseWheel;
+                        break;
+
+                    case JOYSTICK:
+
                         break;
                 }
 

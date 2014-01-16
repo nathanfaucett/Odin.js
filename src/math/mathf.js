@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
@@ -18,6 +18,7 @@ define(
             HALF_PI = PI * 0.5,
             TO_RADS = PI / 180,
             TO_DEGS = 180 / PI,
+            keys = Object.keys,
             modulo, clamp01, standardRadian, standardAngle, radsToDegs;
 
         /**
@@ -150,10 +151,10 @@ define(
          * @param Number x
          * @return Number
          */
-        Mathf.prototype.sign = function(x) {
+        Mathf.prototype.sign = Math.sign || (Math.sign = function(x) {
 
             return x ? x < 0 ? -1 : 1 : 0;
-        };
+        });
 
         /**
          * @method clamp
@@ -358,6 +359,19 @@ define(
          * @return Number
          */
         Mathf.prototype.randChoice = function(array) {
+
+            return array[~~(random() * array.length)];
+        };
+
+        /**
+         * @method randChoiceObject
+         * @memberof Mathf
+         * @brief returns random key from object
+         * @param Array array
+         * @return Number
+         */
+        Mathf.prototype.randChoiceObject = function(obj) {
+            var array = keys(obj);
 
             return array[~~(random() * array.length)];
         };

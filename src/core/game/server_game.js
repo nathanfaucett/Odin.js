@@ -1,8 +1,7 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "base/time",
         "core/game/config",
         "core/game/game",
@@ -10,7 +9,7 @@ define([
         "core/game/client",
         "core/assets/assets"
     ],
-    function(Class, Time, Config, Game, Log, Client, Assets) {
+    function(Time, Config, Game, Log, Client, Assets) {
         "use strict";
 
 
@@ -18,12 +17,10 @@ define([
             https = require("https"),
             io = require("socket.io"),
             fs = require("fs"),
-            url = require("url"),
             path = require("path"),
             cwd = process.cwd(),
 
-            now = Time.now,
-            stamp = Time.stamp;
+            now = Time.now;
 
 
         function ServerGame(opts) {
@@ -32,10 +29,14 @@ define([
 
             Game.call(this, opts);
 
-            if (opts.credentials) {
-                this._server = new https.Server(opts.credentials, handler);
+            if (opts.server) {
+                this._server = opts.server;
             } else {
-                this._server = new http.Server(handler);
+                if (opts.credentials) {
+                    this._server = new https.Server(opts.credentials, handler);
+                } else {
+                    this._server = new http.Server(handler);
+                }
             }
 
             this.io = io.listen(this._server);
@@ -76,7 +77,8 @@ define([
                 sockets.emit("server_removeScene", scene._id);
             });
         }
-        Class.extend(ServerGame, Game);
+
+        Game.extend(ServerGame);
 
 
         ServerGame.prototype.init = function() {
@@ -92,10 +94,8 @@ define([
                 socket.on("disconnect", function() {
 
                     client = self.removeClient(socket);
-                    if (client) {
-                        client.emit("disconnect");
-                        self.emit("disconnect", client);
-                    }
+                    client.emit("disconnect");
+                    self.emit("disconnect", client);
                 });
 
                 socket.on("client_device", function(device) {
@@ -190,8 +190,9 @@ define([
             fpsTime = 0,
             lastUpdate = 0;
 
-        ServerGame.prototype.loop = function(ms) {
+        ServerGame.prototype.loop = function() {
             var clients = this.clients,
+                scenes = this.scenes,
                 needsUpdate = false,
                 client, socket, scene,
                 MIN_DELTA = Config.MIN_DELTA,
@@ -225,6 +226,8 @@ define([
                 needsUpdate = true;
             }
 
+            for (i = scenes.length; i--;) scenes[i].update();
+
             for (i = clients.length; i--;) {
                 client = clients[i];
                 socket = client.socket;
@@ -238,7 +241,6 @@ define([
                 client.emit("update");
 
                 if ((scene = client.scene)) {
-                    scene.update();
                     if (needsUpdate) socket.emit("server_sync_scene", scene.toSYNC());
                 }
             }
@@ -248,13 +250,12 @@ define([
 
 
         function handler(req, res) {
-            var uri = url.parse(req.url).pathname,
+            var url = req.url,
                 method = req.method,
                 fileName;
 
-            if (uri[0] === "/") uri = uri.slice(1);
             if (method === "GET") {
-                fileName = path.resolve(cwd, uri);
+                fileName = cwd + url;
 
                 fs.stat(fileName, function(err, stat) {
                     if (err) {
@@ -276,20 +277,18 @@ define([
 
 
         function sendFile(res, fileName) {
+            var type = MIME_TYPES[fileName.split(".").pop()] || "application/octet-stream";
 
-            fs.exists(fileName, function(exists) {
-                if (exists) {
-                    var type = MIME_TYPES[fileName.split(".").pop()] || "text/plain";
-
-                    fs.readFile(fileName, function(err, buffer) {
-                        res.setHeader("Content-Type", type);
-                        res.writeHead(200);
-                        res.write(buffer);
-                        res.end();
-                    });
-                } else {
+            fs.readFile(fileName, function(err, buffer) {
+                if (err) {
                     sendError(res, 404, "File " + fileName + " was not found on this server");
+                    return;
                 }
+
+                res.setHeader("Content-Length", buffer.length);
+                res.setHeader("Content-Type", type);
+                //res.setHeader("Cache-Control", "public, max-age=86400");
+                res.end(buffer);
             });
         }
 
@@ -310,17 +309,25 @@ define([
 
 
         var MIME_TYPES = {
-            "txt": "text/plain",
-            "html": "text/html",
-            "css": "text/css",
-            "xml": "application/xml",
-            "json": "application/json",
-            "js": "application/javascript",
-            "jpg": "image/jpeg",
-            "jpeg": "image/jpeg",
-            "gif": "image/gif",
-            "png": "image/png",
-            "svg": "image/svg+xml"
+            bmp: "image/bmp",
+            css: "text/css",
+            gif: "image/gif",
+            html: "text/html",
+            ico: "image/x-icon",
+            jpeg: "image/jpeg",
+            jpg: "image/jpeg",
+            js: "application/javascript",
+            json: "application/json",
+            otf: "application/x-font-opentype",
+            png: "image/png",
+            svg: "image/svg+xml",
+            tiff: "image/tiff",
+            tif: "image/tiff",
+            ttf: "application/x-font-truetype",
+            txt: "text/plain",
+            woff: "application/font-woff",
+            xml: "application/xml",
+            zip: "application/zip"
         };
 
 

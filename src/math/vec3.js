@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
@@ -238,8 +238,7 @@ define(
         Vec3.prototype.div = function(other) {
             var x = other.x,
                 y = other.y,
-                z = other.z,
-                w = other.w;
+                z = other.z;
 
             this.x *= x !== 0 ? 1 / x : 0;
             this.y *= y !== 0 ? 1 / y : 0;

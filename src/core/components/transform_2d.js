@@ -1,8 +1,7 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "math/mathf",
         "math/vec2",
         "math/mat32",
@@ -10,12 +9,11 @@ define([
         "core/components/component",
         "core/game/log"
     ],
-    function(Class, Mathf, Vec2, Mat32, Mat4, Component, Log) {
+    function(Mathf, Vec2, Mat32, Mat4, Component, Log) {
         "use strict";
 
 
-        var lerp = Mathf.lerp,
-            EPSILON = Mathf.EPSILON;
+        var EPSILON = Mathf.EPSILON;
 
 
         function Transform2D(opts) {
@@ -41,12 +39,11 @@ define([
         }
 
         Transform2D.type = "Transform2D";
-        Class.extend(Transform2D, Component);
+        Component.extend(Transform2D);
 
 
         Transform2D.prototype.copy = function(other) {
             var children = other.children,
-                child, gameObject,
                 i;
 
             this.position.copy(other.position);
@@ -139,7 +136,7 @@ define([
 
         Transform2D.prototype.addChild = function(child) {
             if (!(child instanceof Transform2D)) {
-                Log.warn("Transform2D.add: can\'t add passed argument, it is not instance of Transform2D");
+                Log.warn("Transform2D.add: can\'t add passed argument, it is not an instance of Transform2D");
                 return this;
             }
             var children = this.children,
@@ -297,8 +294,7 @@ define([
 
 
         Transform2D.prototype.toJSON = function(json) {
-            json || (json = {});
-            Component.prototype.toJSON.call(this, json);
+            json = Component.prototype.toJSON.call(this, json);
 
             json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);

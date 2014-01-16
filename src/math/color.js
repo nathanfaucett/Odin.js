@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "math/mathf"
@@ -210,6 +210,7 @@ define([
                 this._g = this.g;
                 this._b = this.b;
                 this._hex = "#" + hexR + hexG + hexB;
+                this._rgb = "rgb(" + floor(clamp01(this.r) * 256) + "," + floor(clamp01(this.g) * 256) + "," + floor(clamp01(this.b) * 256) + ")";
             }
 
             return this._hex;
@@ -232,6 +233,7 @@ define([
                 this._g = this.g;
                 this._b = this.b;
                 this._rgb = "rgb(" + r + "," + g + "," + b + ")";
+                this._hex = "#" + singleToHEX(this.r) + singleToHEX(this.g) + singleToHEX(this.b);
             }
 
             return this._rgb;
@@ -394,8 +396,7 @@ define([
         Color.prototype.div = function(other) {
             var x = other.r,
                 y = other.g,
-                z = other.b,
-                w = other.w;
+                z = other.b;
 
             this.r *= x !== 0 ? 1 / x : 0;
             this.g *= y !== 0 ? 1 / y : 0;

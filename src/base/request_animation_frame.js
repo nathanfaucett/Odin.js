@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
@@ -16,7 +16,7 @@ define(
             w.mozRequestAnimationFrame ||
             w.oRequestAnimationFrame ||
             w.msRequestAnimationFrame ||
-            function(callback, element) {
+            function(callback) {
 
                 return w.setTimeout(callback, RATE);
             }

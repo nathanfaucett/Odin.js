@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/object_pool",
@@ -80,7 +80,7 @@ define([
 
         Touches.prototype.fromSYNC = function(json) {
             var jsonTouches = json.touches,
-                touch, i = jsonTouches.length;
+                i = jsonTouches.length;
 
             this.length = 0;
             TOUCH_POOL.clear();

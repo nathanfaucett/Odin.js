@@ -1,15 +1,14 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter",
         "base/dom",
         "base/object_pool",
         "math/vec2",
-        "core/input/input",
-        "core/input/touch"
+        "core/input/input"
     ],
-    function(EventEmitter, Dom, ObjectPool, Vec2, Input, Touch) {
+    function(EventEmitter, Dom, ObjectPool, Vec2, Input) {
         "use strict";
 
 
@@ -17,9 +16,7 @@ define([
             max = Math.max,
 
             addEvent = Dom.addEvent,
-            removeEvent = Dom.removeEvent,
-
-            touchPool = new ObjectPool(Touch);
+            removeEvent = Dom.removeEvent;
 
 
         function Handler() {
@@ -29,7 +26,7 @@ define([
             this.element = undefined;
         }
 
-        EventEmitter.extend(Handler, EventEmitter);
+        EventEmitter.extend(Handler);
 
 
         Handler.prototype.setElement = function(element) {
@@ -74,8 +71,6 @@ define([
             }
         }
 
-
-        var touchesMoveNeedsUpdate = false;
 
         function handleTouches(e) {
             e.preventDefault();

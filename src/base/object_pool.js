@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
@@ -19,7 +19,6 @@ define(
                 object = pooled.length ? pooled.pop() : new this.object;
 
             this.objects.push(object);
-
             return object;
         };
 

@@ -1,9 +1,9 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "base/device",
+        "base/socket.io",
         "base/time",
         "core/game/config",
         "core/game/game",
@@ -19,12 +19,11 @@ define([
         "core/assets/assets",
         "core/assets/asset_loader"
     ],
-    function(Class, Device, Time, Config, Game, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
+    function(Device, io, Time, Config, Game, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
         "use strict";
 
 
-        var now = Time.now,
-            stamp = Time.stamp;
+        var now = Time.now;
 
 
         function ClientGame(opts) {
@@ -51,9 +50,10 @@ define([
             this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
 
             this.renderer = undefined;
+            this.customRenderer = undefined;
         }
 
-        Class.extend(ClientGame, Game);
+        Game.extend(ClientGame);
 
 
         ClientGame.prototype.init = function() {
@@ -68,9 +68,8 @@ define([
 
         ClientGame.prototype.connect = function(handler) {
             var self = this,
-                socket;
+                socket = this.io = io.connect();
 
-            this.io = socket = io.connect();
 
             socket.on("connect", function() {
                 if (!self._sessionid) self._sessionid = this.socket.sessionid;
@@ -111,6 +110,8 @@ define([
                 self.setScene(scene);
             });
 
+
+            var canvasOnResize;
             socket.on("server_setCamera", function(camera_id) {
                 if (!self.scene) {
                     Log.warn("Socket:server_setCamera: can't set camera without an active scene, use ServerGame.setScene first");
@@ -126,10 +127,11 @@ define([
 
                 self.setCamera(camera);
 
-                canvas.on("resize", function() {
+                if (canvasOnResize) canvas.off("resize", canvasOnResize);
+                canvas.on("resize", (canvasOnResize = function() {
 
                     socket.emit("client_resize", this.pixelWidth, this.pixelHeight);
-                });
+                }));
                 socket.emit("client_resize", canvas.pixelWidth, canvas.pixelHeight);
             });
 
@@ -195,7 +197,7 @@ define([
 
         ClientGame.prototype.setScene = function(scene) {
             if (!(scene instanceof Scene)) {
-                Log.warn("ClientGame.setScene: can't add passed argument, it is not instance of Scene");
+                Log.warn("ClientGame.setScene: can't add passed argument, it is not an instance of Scene");
                 return this;
             }
             var scenes = this.scenes,
@@ -257,9 +259,9 @@ define([
             if (!camera) return;
             gameObject = camera.gameObject;
 
-            if (Config.renderer && this[Config.renderer]) {
-                this.renderer = this[Config.renderer];
-                Log.log("Game: setting up " + Config.renderer);
+            if (typeof(this.customRenderer) === "function") {
+                this.renderer = this.customRenderer;
+                Log.log("Game: setting up custom renderer " + this.customRenderer.name);
             } else {
                 if (gameObject.camera) {
                     Log.warn("Game.updateRenderer: no renderer for camera component yet");
@@ -292,13 +294,11 @@ define([
             fpsLast = 0,
             fpsTime = 0;
 
-        ClientGame.prototype.loop = function(ms) {
+        ClientGame.prototype.loop = function() {
             var camera = this.camera,
                 scene = this.scene,
-                gameObjects,
                 MIN_DELTA = Config.MIN_DELTA,
-                MAX_DELTA = Config.MAX_DELTA,
-                i;
+                MAX_DELTA = Config.MAX_DELTA;
 
             Time.frameCount = frameCount++;
 

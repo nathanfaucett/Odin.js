@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/class",
@@ -23,7 +23,7 @@ define([
             this._sceneServerHash = {};
         }
 
-        Class.extend(Game, Class);
+        Class.extend(Game);
 
 
         Game.prototype.addScene = function(scene) {
@@ -42,6 +42,7 @@ define([
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = scene;
 
                 scene.game = this;
+                scene.init();
 
                 this.emit("addScene", scene);
             } else {
@@ -136,8 +137,7 @@ define([
 
 
         Game.prototype.fromSYNC = function(json) {
-            var scenes = this.scenes,
-                jsonScenes = json.scenes,
+            var jsonScenes = json.scenes,
                 scene, jsonScene,
                 i;
 
@@ -166,8 +166,7 @@ define([
 
         Game.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
-            var scenes = this.scenes,
-                jsonScenes = json.scenes,
+            var jsonScenes = json.scenes,
                 scene, jsonScene,
                 i;
 

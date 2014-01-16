@@ -1,23 +1,30 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function(require) {
         "use strict";
 
 
-        function Odin() {
+        var IS_SERVER = !(typeof(window) !== "undefined" && window.document),
+            IS_CLIENT = !IS_SERVER,
 
-            this.Phys2D = require("phys_2d/phys_2d");
+            defineProperty = Object.defineProperty;
+
+
+        function Odin() {
 
             this.AudioCtx = require("base/audio_ctx");
             this.Class = require("base/class");
             this.Device = require("base/device");
             this.Dom = require("base/dom");
+            this.Enum = require("base/enum");
             this.EventEmitter = require("base/event_emitter");
             this.ObjectPool = require("base/object_pool");
             this.requestAnimationFrame = require("base/request_animation_frame");
+            this.io = require("base/socket.io");
             this.Time = require("base/time");
+            this.util = require("base/util");
 
             this.Asset = require("core/assets/asset");
             this.AssetLoader = require("core/assets/asset_loader");
@@ -30,14 +37,14 @@ define(
             this.Camera = require("core/components/camera");
             this.Camera2D = require("core/components/camera_2d");
             this.Component = require("core/components/component");
-            this.Emitter2D = require("core/components/emitter_2d");
-            this.RigidBody2D = require("core/components/rigid_body_2d");
+            this.ParticleSystem = require("core/components/particle_system/particle_system");
             this.Sprite2D = require("core/components/sprite_2d");
             this.Transform = require("core/components/transform");
             this.Transform2D = require("core/components/transform_2d");
 
             this.Game = require("core/game/game");
             this.ClientGame = require("core/game/client_game");
+            this.Config = require("core/game/config");
             this.Log = require("core/game/log");
 
             this.Handler = require("core/input/handler");
@@ -46,8 +53,10 @@ define(
             this.CanvasRenderer2D = require("core/rendering/canvas_renderer_2d");
             this.WebGLRenderer2D = require("core/rendering/webgl_renderer_2d");
 
+            this.Enums = require("core/enums");
             this.GameObject = require("core/game_object");
             this.Scene = require("core/scene");
+            this.World = require("core/world");
 
             this.AABB2 = require("math/aabb2");
             this.AABB3 = require("math/aabb3");
@@ -63,11 +72,25 @@ define(
             this.Vec4 = require("math/vec4");
 
             if (this.Device.mobile) {
-                window.onerror = function(message, page, line, chr) {
+                window.onerror = function(message, page, line) {
                     alert("line: " + line + ", page: " + page + "\nmessage: " + message);
                 };
             }
         }
+
+
+        defineProperty(Odin.prototype, "isServer", {
+            get: function() {
+                return IS_SERVER;
+            }
+        });
+
+
+        defineProperty(Odin.prototype, "isClient", {
+            get: function() {
+                return IS_CLIENT;
+            }
+        });
 
 
         Odin.prototype.globalize = function() {
@@ -75,6 +98,7 @@ define(
             for (var key in this) window[key] = this[key];
             window.Odin = this;
         };
+
 
         return new Odin;
     }

@@ -1,23 +1,23 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "base/time",
         "math/vec2",
         "core/components/component",
         "core/assets/assets"
     ],
-    function(Class, Time, Vec2, Component, Assets) {
+    function(Time, Vec2, Component, Assets) {
         "use strict";
 
 
         function Sprite2D(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Sprite2D", opts.sync != undefined ? !! opts.sync : false, opts.json);
+            Component.call(this, "Sprite2D", !! opts.sync, opts.json);
 
             this.visible = opts.visible != undefined ? !! opts.visible : true;
+            this.blending = opts.blending != undefined ? opts.blending : Enums.BlendingDefault;
 
             this.z = opts.z != undefined ? opts.z : 0;
 
@@ -35,12 +35,13 @@ define([
         }
 
         Sprite2D.type = "Sprite2D";
-        Class.extend(Sprite2D, Component);
+        Component.extend(Sprite2D);
 
 
         Sprite2D.prototype.copy = function(other) {
 
             this.visible = other.visible;
+            this.blending = other.blending;
 
             this.z = other.z;
 
@@ -64,6 +65,7 @@ define([
             json = Component.prototype.toSYNC.call(this, json);
 
             json.visible = this.visible;
+            json.blending = this.blending;
 
             json.z = this.z;
 
@@ -71,6 +73,11 @@ define([
 
             json.width = this.width;
             json.height = this.height;
+
+            json.x = this.x;
+            json.y = this.y;
+            json.w = this.w;
+            json.h = this.h;
 
             return json;
         };
@@ -80,6 +87,7 @@ define([
             Component.prototype.fromSYNC.call(this, json);
 
             this.visible = json.visible;
+            this.blending = json.blending;
 
             this.z = json.z;
 
@@ -88,15 +96,20 @@ define([
             this.width = json.width;
             this.height = json.height;
 
+            this.x = json.x;
+            this.y = json.y;
+            this.w = json.w;
+            this.h = json.h;
+
             return this;
         };
 
 
         Sprite2D.prototype.toJSON = function(json) {
-            json || (json = {});
-            Component.prototype.toJSON.call(this, json);
+            json = Component.prototype.toJSON.call(this, json);
 
             json.visible = this.visible;
+            json.blending = this.blending;
 
             json.z = this.z;
 
@@ -120,6 +133,7 @@ define([
             Component.prototype.fromJSON.call(this, json);
 
             this.visible = json.visible;
+            this.blending = json.blending;
 
             this.z = json.z;
 
@@ -143,11 +157,6 @@ define([
 
             return b.z - a.z;
         };
-
-
-        var ONCE = Sprite2D.ONCE = 1,
-            LOOP = Sprite2D.LOOP = 2,
-            PING_PONG = Sprite2D.PING_PONG = 3;
 
 
         return Sprite2D;

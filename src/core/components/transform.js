@@ -1,8 +1,7 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "math/mathf",
         "math/vec3",
         "math/quat",
@@ -10,7 +9,7 @@ define([
         "core/components/component",
         "core/game/log"
     ],
-    function(Class, Mathf, Vec3, Quat, Mat4, Component, Log) {
+    function(Mathf, Vec3, Quat, Mat4, Component, Log) {
         "use strict";
 
 
@@ -40,12 +39,11 @@ define([
         }
 
         Transform.type = "Transform";
-        Class.extend(Transform, Component);
+        Component.extend(Transform);
 
 
         Transform.prototype.copy = function(other) {
             var children = other.children,
-                child, gameObject,
                 i;
 
             this.position.copy(other.position);
@@ -139,7 +137,7 @@ define([
 
         Transform.prototype.addChild = function(child) {
             if (!(child instanceof Transform)) {
-                Log.warn("Transform.add: can\'t add passed argument, it is not instance of Transform");
+                Log.warn("Transform.add: can\'t add passed argument, it is not an instance of Transform");
                 return this;
             }
             var children = this.children,
@@ -297,8 +295,7 @@ define([
 
 
         Transform.prototype.toJSON = function(json) {
-            json || (json = {});
-            Component.prototype.toJSON.call(this, json);
+            json = Component.prototype.toJSON.call(this, json);
 
             json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);

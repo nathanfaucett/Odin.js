@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter",
@@ -88,7 +88,7 @@ define([
             this.element = undefined;
         }
 
-        EventEmitter.extend(Canvas, EventEmitter);
+        EventEmitter.extend(Canvas);
 
 
         Canvas.prototype.init = function() {

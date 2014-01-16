@@ -1,8 +1,7 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "base/class",
         "math/mathf",
         "math/color",
         "math/vec2",
@@ -10,20 +9,17 @@ define([
         "math/mat4",
         "core/components/component"
     ],
-    function(Class, Mathf, Color, Vec2, Mat32, Mat4, Component) {
+    function(Mathf, Color, Vec2, Mat32, Mat4, Component) {
         "use strict";
 
 
-        var clamp = Mathf.clamp,
-            degsToRads = Mathf.degsToRads;
+        var clamp = Mathf.clamp;
 
 
         function Camera2D(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Camera2D", opts.sync != undefined ? !! opts.sync : false, opts.json);
-
-            this.backgroundColor = opts.backgroundColor !== undefined ? opts.backgroundColor : new Color(0.5, 0.5, 0.5);
+            Component.call(this, "Camera2D", !! opts.sync, opts.json);
 
             this.width = 960;
             this.height = 640;
@@ -43,12 +39,11 @@ define([
         }
 
         Camera2D.type = "Camera2D";
-        Class.extend(Camera2D, Component);
+        Component.extend(Camera2D);
 
 
         Camera2D.prototype.copy = function(other) {
 
-            this.backgroundColor.copy(other.backgroundColor);
             this.width = other.width;
             this.height = other.height;
 
@@ -146,7 +141,6 @@ define([
         Camera2D.prototype.toSYNC = function(json) {
             json = Component.prototype.toSYNC.call(this, json);
 
-            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
 
@@ -162,7 +156,6 @@ define([
             Component.prototype.fromSYNC.call(this, json);
             if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
 
-            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
 
@@ -175,10 +168,8 @@ define([
 
 
         Camera2D.prototype.toJSON = function(json) {
-            json || (json = {});
-            Component.prototype.toJSON.call(this, json);
+            json = Component.prototype.toJSON.call(this, json);
 
-            json.backgroundColor = this.backgroundColor.toJSON(json.backgroundColor);
             json.width = this.width;
             json.height = this.height;
 
@@ -193,7 +184,6 @@ define([
         Camera2D.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
-            this.backgroundColor.fromJSON(json.backgroundColor);
             this.width = json.width;
             this.height = json.height;
 

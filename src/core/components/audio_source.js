@@ -1,16 +1,15 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/audio_ctx",
-        "base/class",
         "base/time",
         "math/mathf",
         "math/vec2",
         "math/vec3",
         "core/components/component"
     ],
-    function(AudioCtx, Class, Time, Mathf, Vec2, Vec3, Component) {
+    function(AudioCtx, Time, Mathf, Vec2, Vec3, Component) {
         "use strict";
 
 
@@ -22,7 +21,7 @@ define([
         function AudioSource(opts) {
             opts || (opts = {});
 
-            Component.call(this, "AudioSource", opts.sync != undefined ? !! opts.sync : false, opts.json);
+            Component.call(this, "AudioSource", !! opts.sync, opts.json);
 
             this.clip = opts.clip;
 
@@ -52,14 +51,15 @@ define([
             this._startTime = 0;
 
             var self = this;
-            this._onended = function(e) {
+            this._onended = function() {
+
                 self.isPlaying = false;
                 self.time = 0;
             };
         }
 
         AudioSource.type = "AudioSource";
-        Class.extend(AudioSource, Component);
+        Component.extend(AudioSource);
 
 
         defineProperty(AudioSource.prototype, "volume", {
@@ -205,8 +205,7 @@ define([
 
 
         AudioSource.prototype.toJSON = function(json) {
-            json || (json = {});
-            Component.prototype.toJSON.call(this, json);
+            json = Component.prototype.toJSON.call(this, json);
 
             json.clip = this.clip ? this.clip.name : undefined;
 

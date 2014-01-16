@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "math/mathf",
@@ -420,8 +420,7 @@ define([
          * @return this
          */
         Mat4.prototype.determinant = function() {
-            var te = this.elements,
-                m11 = ae[0],
+            var m11 = ae[0],
                 m12 = ae[4],
                 m13 = ae[8],
                 m14 = ae[12],
@@ -876,28 +875,24 @@ define([
          * @param Mat4 other
          * @return this
          */
-        Mat4.prototype.extractRotationScale = function() {
-            var vec = new Vec3();
+        Mat4.prototype.extractRotationScale = function(other) {
+            var te = this.elements,
+                me = other.elements
 
-            return function(other) {
-                var te = this.elements,
-                    me = other.elements
+                te[0] = me[0];
+            te[1] = me[1];
+            te[2] = me[2];
 
-                    te[0] = me[0];
-                te[1] = me[1];
-                te[2] = me[2];
+            te[4] = me[4];
+            te[5] = me[5];
+            te[6] = me[6];
 
-                te[4] = me[4];
-                te[5] = me[5];
-                te[6] = me[6];
+            te[8] = me[8];
+            te[9] = me[9];
+            te[10] = me[10];
 
-                te[8] = me[8];
-                te[9] = me[9];
-                te[10] = me[10];
-
-                return this;
-            };
-        }();
+            return this;
+        };
 
         /**
          * @method translate

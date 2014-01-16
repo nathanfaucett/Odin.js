@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/class",
@@ -28,22 +28,24 @@ define([
             this.userData = {};
             this._inputNeedsUpdate = true;
         }
-        Class.extend(Client, Class);
+        Class.extend(Client);
 
 
         Client.prototype.setScene = function(scene) {
             if (!(scene instanceof Scene)) {
-                Log.warn("Client.setScene: can't add passed argument, it is not instance of Scene");
+                Log.warn("Client.setScene: can't add passed argument, it is not an instance of Scene");
                 return this;
             }
             var scenes = this.game.scenes,
-                index = scenes.indexOf(scene);
+                index = scenes.indexOf(scene),
+                socket = this.socket;
 
             if (index !== -1) {
                 scene.game = this.game;
+
                 this.scene = scene;
-                this.socket.emit("server_setScene", scene._id);
                 this.emit("setScene", scene);
+                socket.emit("server_setScene", scene._id);
             } else {
                 Log.warn("Client.setScene: Scene is not a member of Game");
             }

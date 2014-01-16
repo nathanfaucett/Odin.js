@@ -1,30 +1,33 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
-        "core/game/log"
+        "core/game/log",
+        "base/class"
     ],
-    function(Log) {
+    function(Log, Class) {
         "use strict";
 
 
-        var ASSET_ID = 0,
-            defineProperty = Object.defineProperty;
+        var defineProperty = Object.defineProperty;
 
 
         function Asset(opts) {
             opts || (opts = {});
 
-            this._id = ++ASSET_ID;
+            Class.call(this);
+
             this._type = this.constructor.name || "UnknownAsset";
+            this._name = opts.name != undefined ? opts.name : "Asset-" + this._id;
 
             this.json = opts.json != undefined ? !! opts.json : true;
 
             this.assets = undefined;
-            this._name = opts.name != undefined ? opts.name : "Asset" + this._id;
             this.src = opts.src;
             this.raw = opts.raw;
         }
+
+        Class.extend(Asset);
 
         Asset.type = "Asset";
         Asset._types = {
@@ -34,7 +37,6 @@ define([
 
             Asset._types[child.type] = child;
         }
-
 
         defineProperty(Asset.prototype, "name", {
             get: function() {
@@ -82,7 +84,7 @@ define([
         };
 
 
-        Asset.prototype.mimeType = function() {
+        Asset.prototype.ext = function() {
 
             return this.src ? this.src.split(".").pop() : false;
         };
@@ -116,7 +118,7 @@ define([
 
 
         Asset.prototype.toJSON = function(json, pack) {
-            json || (json = {});
+            json = Class.prototype.toJSON.call(this, json);
 
             json._type = this._type;
 
@@ -128,6 +130,7 @@ define([
 
 
         Asset.prototype.fromJSON = function(json) {
+            Class.prototype.fromJSON.call(this, json);
 
             this._type = json._type;
 
@@ -136,19 +139,6 @@ define([
 
             return this;
         };
-
-
-        function extend(child, parent) {
-
-            child.prototype = Object.create(parent.prototype);
-            child.prototype.constructor = child;
-
-            if (parent.prototype._onExtend) parent.prototype._onExtend(child);
-            child.extend = extend;
-        };
-
-
-        Asset.extend = extend;
 
 
         return Asset;

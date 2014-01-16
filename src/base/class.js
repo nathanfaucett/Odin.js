@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter"
@@ -8,7 +8,11 @@ define([
         "use strict";
 
 
-        var CLASS_ID = 0;
+        var CLASS_ID = 0,
+            IS_SERVER = !(typeof(window) !== "undefined" && window.document),
+            IS_CLIENT = !IS_SERVER,
+
+            defineProperty = Object.defineProperty;
 
 
         function Class() {
@@ -21,7 +25,21 @@ define([
             this._SYNC = {};
         }
 
-        EventEmitter.extend(Class, EventEmitter);
+        EventEmitter.extend(Class);
+
+
+        defineProperty(Class.prototype, "isServer", {
+            get: function() {
+                return IS_SERVER;
+            }
+        });
+
+
+        defineProperty(Class.prototype, "isClient", {
+            get: function() {
+                return IS_CLIENT;
+            }
+        });
 
 
         Class.prototype.clone = function() {
@@ -30,7 +48,7 @@ define([
         };
 
 
-        Class.prototype.copy = function(other) {
+        Class.prototype.copy = function() {
 
             return this;
         };
@@ -46,6 +64,7 @@ define([
 
 
         Class.prototype.fromSYNC = function(json) {
+            this._SYNC = json;
 
             return this;
         };

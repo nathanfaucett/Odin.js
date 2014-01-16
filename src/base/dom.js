@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/game/log"
@@ -8,7 +8,7 @@ define([
         "use strict";
 
 
-        var splitter = /[ \,]+/,
+        var SPLITER = /[ ,]+/,
 
             regAttribute = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
             regUniform = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
@@ -28,12 +28,11 @@ define([
 
 
         Dom.prototype.addEvent = function(obj, name, callback, ctx) {
-            var names = name.split(splitter),
+            var names = name.split(SPLITER),
                 i,
                 scope = ctx || obj,
                 afn = function(e) {
-                    e = e || window.event;
-                    if (callback) callback.call(scope, e);
+                    callback.call(scope, e || window.event);
                 };
 
             for (i = names.length; i--;) {
@@ -49,12 +48,11 @@ define([
 
 
         Dom.prototype.removeEvent = function(obj, name, callback, ctx) {
-            var names = name.split(splitter),
+            var names = name.split(SPLITER),
                 i, il,
                 scope = ctx || obj,
                 afn = function(e) {
-                    e = e || window.event;
-                    if (callback) callback.call(scope, e);
+                    if (callback) callback.call(scope, e || window.event);
                 };
 
             for (i = 0, il = names.length; i < il; i++) {
@@ -82,7 +80,7 @@ define([
 
 
         Dom.prototype.getWebGLContext = function(canvas, attributes) {
-            var key, error, gl, i;
+            var key, gl, i;
 
             attributes || (attributes = {});
             for (key in WEBGL_ATTRIBUTES)
@@ -92,13 +90,11 @@ define([
 
                 try {
                     gl = canvas.getContext(WEBGL_NAMES[i], attributes);
-                } catch (e) {
-                    error = e;
+                } catch (err) {
+                    Log.warn("Dom.getWebGLContext: could not get a WebGL Context " + err.message || "");
                 }
                 if (gl) break;
             }
-
-            if (error) Log.warn("Dom.getWebGLContext: could not get a WebGL Context " + error.message || "");
 
             return gl;
         };

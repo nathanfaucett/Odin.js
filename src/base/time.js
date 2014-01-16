@@ -1,13 +1,13 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define(
     function() {
         "use strict";
 
 
-        var w = typeof window !== "undefined" ? window : {},
-            performance = typeof w.performance !== "undefined" ? w.performance : {},
+        var w = typeof(window) !== "undefined" ? window : {},
+            performance = typeof(w.performance) !== "undefined" ? w.performance : {},
             defineProperty = Object.defineProperty,
             START_MS = Date.now(),
             START = START_MS * 0.001,

@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "base/event_emitter",
@@ -20,7 +20,7 @@ define([
             EventEmitter.call(this);
         }
 
-        EventEmitter.extend(AssetLoader, EventEmitter);
+        EventEmitter.extend(AssetLoader);
 
 
         AssetLoader.prototype.load = function(callback, reload) {
@@ -44,20 +44,20 @@ define([
 
         AssetLoader.prototype.loadAsset = function(asset, callback, reload) {
             var self = this,
-                mimeType;
+                ext;
 
             if (asset.raw && !reload) {
                 callback()
                 return;
             };
 
-            if ((mimeType = asset.mimeType())) {
-                if (!this[mimeType]) {
-                    callback(new Error("AssetLoader.load: has no loader named " + mimeType))
+            if ((ext = asset.ext())) {
+                if (!this[ext]) {
+                    callback(new Error("AssetLoader.load: has no loader named " + ext))
                     return;
                 }
 
-                this[mimeType](asset.src, function(err, raw) {
+                this[ext](asset.src, function(err, raw) {
                     if (err) {
                         callback(new Error("AssetLoader.load: " + err.message));
                         return;
@@ -74,10 +74,10 @@ define([
         AssetLoader.prototype.gif = AssetLoader.prototype.jpg = AssetLoader.prototype.jpeg = AssetLoader.prototype.png = function(src, callback) {
             var image = new Image;
 
-            image.addEventListener("load", function(e) {
+            image.addEventListener("load", function() {
                 callback && callback(null, image);
             }, false);
-            image.addEventListener("error", function(e) {
+            image.addEventListener("error", function() {
                 callback && callback(e);
             }, false);
 
@@ -88,7 +88,7 @@ define([
         AssetLoader.prototype.json = function(src, callback) {
             var request = new XMLHttpRequest;
 
-            request.addEventListener("readystatechange", function(e) {
+            request.addEventListener("readystatechange", function() {
 
                 if (this.readyState == 1) {
                     this.send(null);
@@ -99,8 +99,8 @@ define([
                     if ((status > 199 && status < 301) || status == 304) {
                         try {
                             json = JSON.parse(this.responseText);
-                        } catch (e) {
-                            callback && callback(e);
+                        } catch (err) {
+                            callback && callback(err);
                             return;
                         }
 
@@ -118,9 +118,10 @@ define([
         AssetLoader.prototype.ogg = AssetLoader.prototype.wav = AssetLoader.prototype.mp3 = AssetLoader.prototype.aac = function(src, callback) {
             var request = new XMLHttpRequest;
 
-            request.addEventListener("readystatechange", function(e) {
+            request.addEventListener("readystatechange", function() {
 
                 if (this.readyState == 1) {
+                    this.responseType = "arraybuffer";
                     this.send(null);
                 } else if (this.readyState == 4) {
                     var status = this.status;
@@ -133,7 +134,6 @@ define([
                 }
             }, false);
 
-            request.responseType = "arraybuffer";
             request.open("GET", src, true);
         };
 

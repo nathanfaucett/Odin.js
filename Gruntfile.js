@@ -7,37 +7,47 @@ module.exports = function(grunt) {
                     baseUrl: "./src",
                     optimize: "uglify2",
                     name: "odin",
-                    out: "./odin.js",
+                    out: "build/odin.js",
 
                     uglify2: {
                         output: {
-                            beautify: false
+                            beautify: false,
+                            space_colon: false,
+                            bracketize: true
                         },
                         compress: {
-                            sequences: true
+                            sequences: true,
+                            hoist_vars: true
                         },
-                        warnings: true,
-                        mangle: true
+                        preserveLicenseComments: false,
+                        mangle: true,
+
+                        generateSourceMaps: true,
+                        warnings: true
                     }
                 }
             }
         },
         jsbeautifier: {
             files: [
-                "src/**/*.js",
+                "**/*.js",
+                "!build/**/*",
+                "!node_modules/**/*"
             ]
         },
-		watch: {
-			scripts: {
+        watch: {
+            scripts: {
                 files: [
-                    "src/**/*.js",
+                    "**/*.js",
+                    "!build/**/*",
+                    "!node_modules/**/*"
                 ],
-                tasks: ["jsbeautifier", "requirejs"],
+                tasks: ["jsbeautifier"],
                 options: {
                     spawn: false,
                 }
             }
-		}
+        }
     });
 
     grunt.loadNpmTasks("grunt-contrib-requirejs");
@@ -45,5 +55,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-jsbeautifier");
 
     grunt.registerTask("dev", ["watch"]);
+    grunt.registerTask("build", ["requirejs"]);
+    grunt.registerTask("jsb", ["jsbeautifier"]);
     grunt.registerTask("default", ["jsbeautifier", "requirejs"]);
 };

@@ -1,5 +1,5 @@
-if (typeof define !== 'function') {
-    var define = require('amdefine')(module)
+if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
 }
 define([
         "core/assets/asset"
@@ -24,7 +24,7 @@ define([
         }
 
         Texture.type = "Texture";
-        Asset.extend(Texture, Asset);
+        Asset.extend(Texture);
 
 
         Texture.prototype.setAnisotropy = function(value) {
@@ -57,8 +57,7 @@ define([
 
         var CANVAS, CTX;
         Texture.prototype.toJSON = function(json, pack) {
-            json || (json = {});
-            Asset.prototype.toJSON.call(this, json);
+            json = Asset.prototype.toJSON.call(this, json);
 
             if ((pack || !this.src) && this.raw) {
                 if (typeof(window) === "undefined") {
