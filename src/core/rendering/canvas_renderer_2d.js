@@ -8,13 +8,16 @@ define([
         "math/mathf",
         "math/vec2",
         "math/mat32",
-        "math/color"
+        "math/color",
+        "core/enums"
     ],
-    function(EventEmitter, Device, Dom, Mathf, Vec2, Mat32, Color) {
+    function(EventEmitter, Device, Dom, Mathf, Vec2, Mat32, Color, Enums) {
         "use strict";
 
 
-        var EMPTY_ARRAY = [],
+        var Blending = Enums.Blending,
+
+            EMPTY_ARRAY = [],
             DEFAULT_IMAGE = new Image;
 
         DEFAULT_IMAGE.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
@@ -53,7 +56,7 @@ define([
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground.set(0, 0, 0);
-            this.setBlending(Enums.BlendingDefault);
+            this.setBlending(Blending.Default);
 
             this._offContext = document.createElement("canvas").getContext("2d");
 
@@ -81,23 +84,23 @@ define([
             var ctx = this.context;
 
             switch (blending) {
-                case Enums.BlendingNone:
+                case Blending.None:
                     ctx.globalCompositeOperation = "none";
                     break;
 
-                case Enums.BlendingAdditive:
+                case Blending.Additive:
                     ctx.globalCompositeOperation = "color-dodge";
                     break;
 
-                case Enums.BlendingSubtractive:
+                case Blending.Subtractive:
                     ctx.globalCompositeOperation = "color-burn";
                     break;
 
-                case Enums.BlendingMuliply:
+                case Blending.Muliply:
                     ctx.globalCompositeOperation = "multiply";
                     break;
 
-                case Enums.BlendingDefault:
+                case Blending.Default:
                 default:
                     ctx.globalCompositeOperation = "source-over";
                     break;

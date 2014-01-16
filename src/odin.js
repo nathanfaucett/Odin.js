@@ -47,6 +47,10 @@ define(
             this.Config = require("core/game/config");
             this.Log = require("core/game/log");
 
+            this.GUI = require("core/gui/gui");
+            this.GUIStyle = require("core/gui/gui_style");
+            this.GUIStyleState = require("core/gui/gui_style_state");
+
             this.Handler = require("core/input/handler");
             this.Input = require("core/input/input");
 
@@ -67,6 +71,8 @@ define(
             this.Mat4 = require("math/mat4");
             this.Mathf = require("math/mathf");
             this.Quat = require("math/quat");
+            this.Rect = require("math/rect");
+            this.RectOffset = require("math/rect_offset");
             this.Vec2 = require("math/vec2");
             this.Vec3 = require("math/vec3");
             this.Vec4 = require("math/vec4");

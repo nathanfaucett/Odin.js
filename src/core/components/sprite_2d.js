@@ -4,10 +4,11 @@ if (typeof(define) !== "function") {
 define([
         "base/time",
         "math/vec2",
+        "core/enums",
         "core/components/component",
         "core/assets/assets"
     ],
-    function(Time, Vec2, Component, Assets) {
+    function(Time, Vec2, Enums, Component, Assets) {
         "use strict";
 
 
@@ -17,7 +18,7 @@ define([
             Component.call(this, "Sprite2D", !! opts.sync, opts.json);
 
             this.visible = opts.visible != undefined ? !! opts.visible : true;
-            this.blending = opts.blending != undefined ? opts.blending : Enums.BlendingDefault;
+            this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
 
             this.z = opts.z != undefined ? opts.z : 0;
 

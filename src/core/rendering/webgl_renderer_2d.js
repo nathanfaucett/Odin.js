@@ -17,7 +17,9 @@ define([
         "use strict";
 
 
-        var getWebGLContext = Dom.getWebGLContext,
+        var Blending = Enums.Blending,
+
+            getWebGLContext = Dom.getWebGLContext,
             createProgram = Dom.createProgram,
             parseUniformsAttributes = Dom.parseUniformsAttributes,
 
@@ -243,7 +245,7 @@ define([
 
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-            this.setBlending(Enums.BlendingDefault);
+            this.setBlending(Blending.Default);
 
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
@@ -291,29 +293,29 @@ define([
             if (blending !== this._lastBlending) {
 
                 switch (blending) {
-                    case Enums.BlendingNone:
+                    case Blending.None:
                         gl.disable(gl.BLEND);
                         break;
 
-                    case Enums.BlendingAdditive:
+                    case Blending.Additive:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
                         break;
 
-                    case Enums.BlendingSubtractive:
+                    case Blending.Subtractive:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_COLOR);
                         break;
 
-                    case Enums.BlendingMuliply:
+                    case Blending.Muliply:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.ZERO, gl.SRC_COLOR);
                         break;
 
-                    case Enums.BlendingDefault:
+                    case Blending.Default:
                     default:
                         gl.enable(gl.BLEND);
                         gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);

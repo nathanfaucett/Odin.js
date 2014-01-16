@@ -16,7 +16,9 @@ define([
         "use strict";
 
 
-        var PI = Math.PI,
+        var EmitterType = Enums.EmitterType,
+
+            PI = Math.PI,
             TWO_PI = PI * 2,
 
             random = Math.random,
@@ -36,10 +38,10 @@ define([
 
             Class.call(this);
 
-            this.positionType = opts.positionType != undefined ? opts.positionType : Enums.Box;
-            this.velocityType = opts.velocityType != undefined ? opts.velocityType : Enums.Box;
+            this.positionType = opts.positionType != undefined ? opts.positionType : EmitterType.Box;
+            this.velocityType = opts.velocityType != undefined ? opts.velocityType : EmitterType.Box;
 
-            this.blending = opts.blending != undefined ? opts.blending : Enums.BlendingDefault;
+            this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
             this.texture = opts.texture != undefined ? opts.texture : undefined;
 
             this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec2(0.5, 0.5);
@@ -268,12 +270,12 @@ define([
                 }
 
                 switch (positionType) {
-                    case Enums.Box:
+                    case EmitterType.Box:
                         pos.x += randFloat(-positionSpread.x, positionSpread.x);
                         pos.y += randFloat(-positionSpread.y, positionSpread.y);
                         break;
 
-                    case Enums.BoxEdge:
+                    case EmitterType.BoxEdge:
                         switch (floor(random() * 4)) {
                             case 0:
                                 pos.x += randFloat(-positionSpread.x, positionSpread.x);
@@ -294,7 +296,7 @@ define([
                         }
                         break;
 
-                    case Enums.Circle:
+                    case EmitterType.Circle:
                         angle = TWO_PI * random();
                         u = random() + random();
                         r = u > 1 ? 2 - u : u;
@@ -303,7 +305,7 @@ define([
                         pos.y += posy + r * sin(angle) * positionRadius;
                         break;
 
-                    case Enums.CircleEdge:
+                    case EmitterType.CircleEdge:
                         angle = TWO_PI * random();
                         pos.x += posx + cos(angle) * positionRadius;
                         pos.y += posy + sin(angle) * positionRadius;
@@ -311,14 +313,14 @@ define([
                 }
 
                 switch (velocityType) {
-                    case Enums.Box:
-                    case Enums.BoxEdge:
+                    case EmitterType.Box:
+                    case EmitterType.BoxEdge:
                         vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
                         vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
                         break;
 
-                    case Enums.Circle:
-                    case Enums.CircleEdge:
+                    case EmitterType.Circle:
+                    case EmitterType.CircleEdge:
                         if (worldSpace) {
                             dx = pos.x - (position.x + transformPosition.x);
                             dy = pos.y - (position.y + transformPosition.y);

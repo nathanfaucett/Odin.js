@@ -8,17 +8,12 @@ define([
         "use strict";
 
 
-        return new Enum([
-            "BlendingDefault",
-            "BlendingNone",
-            "BlendingAdditive",
-            "BlendingSubtractive",
-            "BlendingMuliply",
-
-            "Circle",
-            "CircleEdge",
-            "Box",
-            "BoxEdge"
-        ]);
+        return {
+            Blending: new Enum("Default None Additive Subtractive Muliply"),
+            EmitterType: new Enum("Circle CircleEdge Box BoxEdge"),
+            FontStyle: new Enum("Normal Bold Italic BoldAnditalic"),
+            TextClipping: new Enum("Overflow Clip"),
+            TextAnchor: new Enum("UpperLeft UpperCenter UpperRight MiddleLeft MiddleCenter MiddleRight LowerLeft LowerCenter LowerRight"),
+        };
     }
 );

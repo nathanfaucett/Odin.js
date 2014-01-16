@@ -139,11 +139,11 @@ requirejs({
                                     values: [0.2, 0.5, 0.5, 1]
                                 },
 
-                                positionType: Enums.Circle,
+                                positionType: Enums.EmitterType.Circle,
                                 positionSpread: new Vec2(0.25, 0.25),
                                 positionRadius: 0.1,
 
-                                velocityType: Enums.Circle,
+                                velocityType: Enums.EmitterType.Circle,
                                 speed: 1,
                                 speedSpread: 2,
 
