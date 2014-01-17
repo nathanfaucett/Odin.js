@@ -78,6 +78,26 @@ define([
         };
 
 
+        Assets.prototype.fromServerJSON = function(json) {
+            var assetsHash = this.hash,
+                jsonAssets = json.assets || (json.assets = []),
+                assets, jsonAsset,
+                i = jsonAssets.length;
+
+            for (; i--;) {
+                if (!(jsonAsset = jsonAssets[i])) continue;
+
+                if ((assets = assetsHash[jsonAsset.name])) {
+                    assets.fromServerJSON(jsonAsset);
+                } else {
+                    this.add(new Asset._types[jsonAsset._type]().fromServerJSON(jsonAsset));
+                }
+            }
+
+            return this;
+        };
+
+
         Assets.prototype.fromJSON = function(json) {
             var assetsHash = this.hash,
                 jsonAssets = json.assets || (json.assets = []),

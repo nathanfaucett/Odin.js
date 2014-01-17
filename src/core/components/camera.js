@@ -256,6 +256,28 @@ define([
         };
 
 
+        Camera.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.width = json.width;
+            this.height = json.height;
+            this.aspect = json.aspect;
+
+            this.far = json.far;
+            this.near = json.near;
+            this.fov = json.fov;
+
+            this.orthographic = json.orthographic;
+            this.orthographicSize = json.orthographicSize;
+            this.minOrthographicSize = json.minOrthographicSize;
+            this.maxOrthographicSize = json.maxOrthographicSize;
+
+            this._needsUpdate = true;
+
+            return this;
+        };
+
+
         Camera.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 

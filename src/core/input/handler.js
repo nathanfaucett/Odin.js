@@ -60,7 +60,7 @@ define([
             var acc = e.accelerationIncludingGravity,
                 acceleration;
 
-            if (acc) {
+            if (acc && (acc.x || acc.y || acc.z)) {
                 acceleration = this.acceleration;
 
                 acceleration.x = acc.x;

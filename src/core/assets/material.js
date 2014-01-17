@@ -52,6 +52,13 @@ define([
         };
 
 
+        Material.prototype.fromServerJSON = function(json) {
+            Asset.prototype.fromServerJSON.call(this, json);
+
+            return this;
+        };
+
+
         Material.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
 

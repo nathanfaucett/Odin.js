@@ -32,6 +32,7 @@ define([
 
 
         Client.prototype.setScene = function(scene) {
+            if (typeof(scene) === "string") scene = this.game._sceneNameHash[scene];
             if (!(scene instanceof Scene)) {
                 Log.warn("Client.setScene: can't add passed argument, it is not an instance of Scene");
                 return this;
@@ -41,8 +42,6 @@ define([
                 socket = this.socket;
 
             if (index !== -1) {
-                scene.game = this.game;
-
                 this.scene = scene;
                 this.emit("setScene", scene);
                 socket.emit("server_setScene", scene._id);

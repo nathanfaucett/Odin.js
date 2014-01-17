@@ -233,6 +233,35 @@ define([
         };
 
 
+        AudioSource.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.clip = json.clip ? Assets.hash[json.clip] : undefined;
+
+            this.dopplerLevel = json.dopplerLevel;
+            this.loop = json.loop;
+
+            this.maxDistance = json.maxDistance;
+            this.minDistance = json.minDistance;
+
+            this.offset.fromJSON(json.offset);
+            this.panLevel = json.panLevel;
+
+            this.pitch = json.pitch;
+
+            this.playOnInit = json.playOnInit;
+
+            this.spread = json.spread;
+
+            this.time = json.time;
+            this.volume = json.volume;
+
+            this.isPlaying = json.isPlaying;
+
+            return this;
+        };
+
+
         AudioSource.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 

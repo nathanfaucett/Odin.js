@@ -98,6 +98,16 @@ define([
         };
 
 
+        Component.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
+
+            this.sync = json.sync;
+            this.json = json.json;
+
+            return this;
+        };
+
+
         Component.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 

@@ -22,14 +22,14 @@ define([
 
 
         Log.prototype.warn = function() {
-            if (!Config.debug || !Config.warn) return;
+            if (!(Config.debug || Config.warn)) return;
 
             console.warn.apply(console, arguments);
         };
 
 
         Log.prototype.error = function() {
-            if (!Config.debug || !Config.error) return;
+            if (!(Config.debug || Config.error)) return;
 
             console.error.apply(console, arguments);
         };

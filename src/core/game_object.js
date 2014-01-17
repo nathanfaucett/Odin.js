@@ -131,10 +131,10 @@ define([
             }
             var name = component._name,
                 components = this.components,
-                index = components.indexOf(component),
                 comp, i, j;
 
-            if (index === -1) {
+
+            if (!this[name]) {
                 if (component.gameObject) component = component.clone();
 
                 components.push(component);
@@ -161,7 +161,7 @@ define([
 
                 if (this.scene) this.scene._addComponent(component);
             } else {
-                Log.warn("GameObject.addComponent: GameObject already has a(n) " + type + " Component");
+                Log.warn("GameObject.addComponent: GameObject already has a(n) " + component._type + " Component");
             }
 
             return this;
@@ -198,10 +198,9 @@ define([
             }
             var name = component._name,
                 components = this.components,
-                index = components.indexOf(component),
                 comp, i, j;
 
-            if (index !== -1) {
+            if (this[name]) {
 
                 if (!others) {
                     for (i = components.length; i--;) {
@@ -214,7 +213,7 @@ define([
                     }
                 }
 
-                components.splice(index, 1);
+                components.splice(components.indexOf(component), 1);
                 this._componentHash[component._id] = undefined;
                 if (component._serverId !== -1) this._componentHashServer[component._serverId] = undefined;
 
@@ -339,10 +338,10 @@ define([
         };
 
 
-        GameObject.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
+        GameObject.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
             var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent, type,
+                component, jsonComponent, type, tag,
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
@@ -352,14 +351,40 @@ define([
                 if (!(type = Component._types[jsonComponent.type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
 
                 if ((component = this.findComponentByServerId(jsonComponent._id))) {
+                    component.fromServerJSON(jsonComponent);
+                } else {
+                    this.addComponent(new type().fromServerJSON(jsonComponent));
+                }
+            }
+
+            for (i = jsonTags.length; i--;)
+                if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
+
+            return this;
+        };
+
+
+        GameObject.prototype.fromJSON = function(json) {
+            Class.prototype.fromJSON.call(this, json);
+            var jsonComponents = json.components || (json.components = []),
+                component, jsonComponent, type, tag,
+                tags = this.tags,
+                jsonTags = json.tags || (json.tags = []),
+                i = jsonComponents.length;
+
+            for (; i--;) {
+                if (!(jsonComponent = jsonComponents[i])) continue;
+                if (!(type = Component._types[jsonComponent.type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
+
+                if ((component = this.findComponentById(jsonComponent._id))) {
                     component.fromJSON(jsonComponent);
                 } else {
                     this.addComponent(new type().fromJSON(jsonComponent));
                 }
             }
-            for (i = jsonTags.length; i--;) {
-                if (!this.hasTag(jsonTags[i])) tags.push(jsonTags[i]);
-            }
+
+            for (i = jsonTags.length; i--;)
+                if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
 
             return this;
         };

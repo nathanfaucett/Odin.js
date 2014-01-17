@@ -86,6 +86,28 @@ define([
         };
 
 
+        Texture.prototype.fromServerJSON = function(json) {
+            Asset.prototype.fromServerJSON.call(this, json);
+
+            if (!json.src && json.raw) {
+                if (typeof(window) === "undefined") {
+                    this.raw = json.raw;
+                } else {
+                    var image = new Image;
+                    image.src = json.raw;
+                    this.raw = image;
+                }
+            }
+
+            this.anisotropy = json.anisotropy;
+            this.minFilter = json.minFilter;
+            this.magFilter = json.magFilter;
+            this.format = json.format;
+
+            return this;
+        };
+
+
         Texture.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
 

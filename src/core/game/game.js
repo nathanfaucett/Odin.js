@@ -5,9 +5,10 @@ define([
         "base/class",
         "core/game/loop",
         "core/scene",
+        "core/gui/gui",
         "core/game/log"
     ],
-    function(Class, Loop, Scene, Log) {
+    function(Class, Loop, Scene, GUI, Log) {
         "use strict";
 
 
@@ -18,9 +19,12 @@ define([
 
             this._loop = new Loop(this.loop, this);
 
+            this.gui = opts.gui instanceof GUI ? opts.gui : new GUI(opts.gui);
+
             this.scenes = [];
             this._sceneHash = {};
             this._sceneServerHash = {};
+            this._sceneNameHash = {};
         }
 
         Class.extend(Game);
@@ -38,6 +42,7 @@ define([
                 if (scene.game) scene.game.removeScene(scene);
 
                 scenes.push(scene);
+                this._sceneNameHash[scene.name] = scene;
                 this._sceneHash[scene._id] = scene;
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = scene;
 
@@ -71,6 +76,7 @@ define([
             if (index !== -1) {
 
                 scenes.splice(index, 1);
+                this._sceneNameHash[scene.name] = scene;
                 this._sceneHash[scene._id] = undefined;
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = undefined;
 
@@ -164,6 +170,26 @@ define([
         };
 
 
+        Game.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
+            var jsonScenes = json.scenes,
+                scene, jsonScene,
+                i;
+
+            for (i = jsonScenes.length; i--;) {
+                jsonScene = jsonScenes[i];
+
+                if ((scene = this.findByServerId(jsonScene._id))) {
+                    scene.fromServerJSON(jsonScene);
+                } else {
+                    this.addScene(new Scene().fromServerJSON(jsonScene));
+                }
+            }
+
+            return this;
+        };
+
+
         Game.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
@@ -173,7 +199,7 @@ define([
             for (i = jsonScenes.length; i--;) {
                 jsonScene = jsonScenes[i];
 
-                if ((scene = this.findByServerId(jsonScene._id))) {
+                if ((scene = this.findById(jsonScene._id))) {
                     scene.fromJSON(jsonScene);
                 } else {
                     this.addScene(new Scene().fromJSON(jsonScene));

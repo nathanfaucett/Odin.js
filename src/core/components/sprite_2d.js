@@ -130,6 +130,30 @@ define([
         };
 
 
+        Sprite2D.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.visible = json.visible;
+            this.blending = json.blending;
+
+            this.z = json.z;
+
+            this.alpha = json.alpha;
+
+            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+
+            this.width = json.width;
+            this.height = json.height;
+
+            this.x = json.x;
+            this.y = json.y;
+            this.w = json.w;
+            this.h = json.h;
+
+            return this;
+        };
+
+
         Sprite2D.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 

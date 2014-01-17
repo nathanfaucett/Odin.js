@@ -460,6 +460,66 @@ define([
         };
 
 
+        Emitter2D.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
+
+            this.positionType = json.positionType;
+            this.velocityType = json.velocityType;
+
+            this.blending = json.blending;
+            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+
+            this.position.fromJSON(json.position);
+            this.positionSpread.fromJSON(json.positionSpread);
+            this.positionRadius = json.positionRadius;
+
+            this.speed = json.speed;
+            this.speedSpread = json.speedSpread;
+
+            this.worldSpace = json.worldSpace;
+
+            this.minEmission = json.minEmission;
+            this.maxEmission = json.maxEmission;
+
+            this.minLife = json.minLife;
+            this.maxLife = json.maxLife;
+
+            this.minSize = json.minSize;
+            this.maxSize = json.maxSize;
+
+            this.sizeTween.fromJSON(json.sizeTween);
+            this.alphaTween.fromJSON(json.alphaTween);
+            this.colorTween.fromJSON(json.colorTween);
+
+            this.velocity.fromJSON(json.velocity);
+            this.velocitySpread.fromJSON(json.velocitySpread);
+
+            this.acceleration.fromJSON(json.acceleration);
+            this.accelerationSpread.fromJSON(json.accelerationSpread);
+
+            this.angularVelocity = json.angularVelocity;
+            this.angularAcceleration = json.angularAcceleration;
+
+            this.angularVelocitySpread = json.angularVelocitySpread;
+            this.randomAngle = json.randomAngle;
+
+            this.emissionRate = json.emissionRate;
+
+            this.color.fromJSON(json.color);
+            this.colorSpread.fromJSON(json.colorSpread);
+
+            this.time = json.time;
+            this._time = json._time;
+
+            this.duration = json.duration;
+            this.loop = json.loop;
+            this.playing = json.playing;
+            this.emitting = json.emitting;
+
+            return this;
+        };
+
+
         Emitter2D.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 

@@ -50,8 +50,8 @@ define([
             this.scale.copy(other.scale);
             this.rotation.copy(other.rotation);
 
-            for (i = children.length; i--;) this.add(children[i].gameObject.clone().transform);
-            if (other.parent) other.parent.add(this);
+            for (i = children.length; i--;) this.addChild(children[i].gameObject.clone().transform);
+            if (other.parent) other.parent.addChild(this);
 
             return this;
         };
@@ -144,7 +144,7 @@ define([
                 index = children.indexOf(child),
                 root, depth;
 
-            if (index < 0) {
+            if (index === -1) {
                 if (child.parent) child.parent.remove(child);
 
                 child.parent = this;
@@ -181,7 +181,7 @@ define([
                 index = children.indexOf(child),
                 root, depth;
 
-            if (index > -1) {
+            if (index !== -1) {
                 child.parent = undefined;
                 children.splice(index, 1);
 
@@ -302,6 +302,17 @@ define([
             json.rotation = this.rotation.toJSON(json.rotation);
 
             return json;
+        };
+
+
+        Transform.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.position.fromJSON(json.position);
+            this.scale.fromJSON(json.scale);
+            this.rotation.fromJSON(json.rotation);
+
+            return this;
         };
 
 

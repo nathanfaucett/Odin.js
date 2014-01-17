@@ -167,7 +167,7 @@ requirejs({
 
             scene.add(player, camera);
 
-            client.setScene(scene);
+            client.setScene(scene.name);
             client.setCamera(camera);
 
             client.socket.emit("player", player._id);

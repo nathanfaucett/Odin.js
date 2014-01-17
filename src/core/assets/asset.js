@@ -129,6 +129,18 @@ define([
         };
 
 
+        Asset.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
+
+            this._type = json._type;
+
+            this.name = json.name;
+            this.src = json.src;
+
+            return this;
+        };
+
+
         Asset.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 

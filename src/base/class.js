@@ -54,6 +54,12 @@ define([
         };
 
 
+        Class.prototype.clear = function() {
+
+            return this;
+        };
+
+
         Class.prototype.toSYNC = function(json) {
             json || (json = this._SYNC);
 
@@ -79,9 +85,15 @@ define([
         };
 
 
-        Class.prototype.fromJSON = function(json) {
+        Class.prototype.fromServerJSON = function(json) {
 
             this._serverId = json._id;
+
+            return this;
+        };
+
+
+        Class.prototype.fromJSON = function() {
 
             return this;
         };

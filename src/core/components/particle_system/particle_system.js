@@ -165,6 +165,23 @@ define([
         };
 
 
+        ParticleSystem.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+            var jsonEmitters = json.emitters,
+                jsonEmitter,
+                i = 0,
+                il = jsonEmitters.length;
+
+            for (; i < il; i++) {
+                jsonEmitter = jsonEmitters[i];
+                this.addEmitter(new Emitter2D().fromServerJSON(jsonEmitter));
+            }
+            this.playing = json.playing;
+
+            return this;
+        };
+
+
         ParticleSystem.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
             var jsonEmitters = json.emitters,

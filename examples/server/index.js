@@ -7,6 +7,7 @@ require({
 
         Odin.globalize();
 
+
         function Player(opts) {
             opts || (opts = {});
 

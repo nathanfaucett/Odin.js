@@ -51,6 +51,13 @@ define([
         };
 
 
+        Mesh.prototype.fromServerJSON = function(json) {
+            Asset.prototype.fromServerJSON.call(this, json);
+
+            return this;
+        };
+
+
         Mesh.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
 

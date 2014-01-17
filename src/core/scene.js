@@ -39,6 +39,20 @@ define([
         Class.extend(Scene);
 
 
+        Scene.prototype.copy = function(other) {
+            var otherGameObjects = other.gameObjects,
+                gameObject, otherGameObject,
+                i;
+
+            this.clear();
+
+            this.name = other.name;
+            for (i = otherGameObjects.length; i--;) this.addGameObject(otherGameObjects[i].clone());
+
+            return this;
+        };
+
+
         Scene.prototype.init = function() {
             var types = this._componentTypes,
                 gameObjects = this.gameObjects,
@@ -312,6 +326,28 @@ define([
         };
 
 
+        Scene.prototype.fromServerJSON = function(json) {
+            Class.prototype.fromServerJSON.call(this, json);
+            var jsonGameObjects = json.gameObjects,
+                gameObject, jsonGameObject,
+                i;
+
+            this.name = json.name;
+
+            for (i = jsonGameObjects.length; i--;) {
+                if (!(jsonGameObject = jsonGameObjects[i])) continue;
+
+                if ((gameObject = this.findByServerId(jsonGameObject._id))) {
+                    gameObject.fromServerJSON(jsonGameObject);
+                } else {
+                    this.addGameObject(new GameObject().fromServerJSON(jsonGameObject));
+                }
+            }
+
+            return this;
+        };
+
+
         Scene.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonGameObjects = json.gameObjects,
@@ -323,7 +359,7 @@ define([
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
 
-                if ((gameObject = this.findByServerId(jsonGameObject._id))) {
+                if ((gameObject = this.findById(jsonGameObject._id))) {
                     gameObject.fromJSON(jsonGameObject);
                 } else {
                     this.addGameObject(new GameObject().fromJSON(jsonGameObject));

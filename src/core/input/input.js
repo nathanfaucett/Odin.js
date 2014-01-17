@@ -31,33 +31,33 @@ define([
                 "0": "mouse0",
                 "1": "mouse1",
                 "2": "mouse2"
-            }
+            };
 
 
-            function Input() {
+        function Input() {
 
-                EventEmitter.call(this);
+            EventEmitter.call(this);
 
-                this.axes = new Axes;
-                this.buttons = new Buttons;
+            this.axes = new Axes;
+            this.buttons = new Buttons;
 
-                this.mouseWheel = 0;
-                this.mousePosition = new Vec2;
-                this.mouseDelta = new Vec2;
-                this.mouseMoveNeedsUpdate = false;
+            this.mouseWheel = 0;
+            this.mousePosition = new Vec2;
+            this.mouseDelta = new Vec2;
+            this.mouseMoveNeedsUpdate = false;
 
-                this.touches = new Touches;
-                this.touchesMoveNeedsUpdate = false;
-                this.acceleration = new Vec3;
+            this.touches = new Touches;
+            this.touchesMoveNeedsUpdate = false;
+            this.acceleration = new Vec3;
 
-                this.frameCount = 0;
-                this._frameCount = undefined;
+            this.frameCount = 0;
+            this._frameCount = undefined;
 
-                this.time = 0;
-                this._time = undefined;
+            this.time = 0;
+            this._time = undefined;
 
-                this._SYNC = {};
-            }
+            this._SYNC = {};
+        }
 
         EventEmitter.extend(Input);
 

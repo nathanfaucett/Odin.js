@@ -48,6 +48,8 @@ define(
             this.Log = require("core/game/log");
 
             this.GUI = require("core/gui/gui");
+            this.GUIContent = require("core/gui/gui_content");
+            this.GUILayout = require("core/gui/gui_layout");
             this.GUIStyle = require("core/gui/gui_style");
             this.GUIStyleState = require("core/gui/gui_style_state");
 

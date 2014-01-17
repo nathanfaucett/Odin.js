@@ -77,6 +77,15 @@ define([
         };
 
 
+        AudioClip.prototype.fromServerJSON = function(json, pack) {
+            Asset.prototype.fromServerJSON.call(this, json, pack);
+
+            if ((pack || !this.src) && this.raw) this.raw = stringToArrayBuffer(json.raw);
+
+            return this;
+        };
+
+
         AudioClip.prototype.fromJSON = function(json, pack) {
             Asset.prototype.fromJSON.call(this, json, pack);
 

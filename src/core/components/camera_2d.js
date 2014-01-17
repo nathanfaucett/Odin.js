@@ -181,6 +181,22 @@ define([
         };
 
 
+        Camera2D.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.width = json.width;
+            this.height = json.height;
+
+            this.orthographicSize = json.orthographicSize;
+            this.minOrthographicSize = json.minOrthographicSize;
+            this.maxOrthographicSize = json.maxOrthographicSize;
+
+            this._needsUpdate = true;
+
+            return this;
+        };
+
+
         Camera2D.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 

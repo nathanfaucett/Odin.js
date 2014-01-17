@@ -80,10 +80,10 @@ define([
 
             socket.on("server_ready", function(game, assets) {
 
-                Assets.fromJSON(assets);
+                Assets.fromServerJSON(assets);
 
                 AssetLoader.load(function() {
-                    self.fromJSON(game);
+                    self.fromServerJSON(game);
 
                     socket.emit("client_ready");
 
@@ -137,14 +137,14 @@ define([
 
             socket.on("server_addScene", function(scene) {
 
-                self.addScene(new Scene().fromJSON(scene));
+                self.addScene(new Scene().fromServerJSON(scene));
             });
 
             socket.on("server_addGameObject", function(scene_id, gameObject) {
                 var scene = self.findByServerId(scene_id);
                 if (!scene) return;
 
-                scene.addGameObject(new GameObject().fromJSON(gameObject));
+                scene.addGameObject(new GameObject().fromServerJSON(gameObject));
             });
 
             socket.on("server_addComponent", function(scene_id, gameObject_id, component) {
@@ -154,7 +154,7 @@ define([
                 var gameObject = scene.findByServerId(gameObject_id);
                 if (!gameObject) return;
 
-                gameObject.addComponent(new Component._types[component._type].fromJSON(component));
+                gameObject.addComponent(new Component._types[component._type].fromServerJSON(component));
             });
 
 
@@ -196,6 +196,7 @@ define([
 
 
         ClientGame.prototype.setScene = function(scene) {
+            if (typeof(scene) === "string") scene = this._sceneNameHash[scene];
             if (!(scene instanceof Scene)) {
                 Log.warn("ClientGame.setScene: can't add passed argument, it is not an instance of Scene");
                 return this;
@@ -205,7 +206,7 @@ define([
 
             if (index !== -1) {
                 this.scene = scene;
-                this.emit("setScene", scene);
+                this.emit("setScene", this.scene);
             } else {
                 Log.warn("ClientGame.setScene: Scene is not a member of Game");
             }

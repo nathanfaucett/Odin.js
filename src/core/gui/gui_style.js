@@ -12,7 +12,9 @@ define([
         "use strict";
 
 
-        var FontStyle = Enums.FontStyle,
+        var GUI_STYLE_ID = 0,
+
+            FontStyle = Enums.FontStyle,
             TextAnchor = Enums.TextAnchor,
             TextClipping = Enums.TextClipping;
 
@@ -20,8 +22,7 @@ define([
         function GUIStyle(opts) {
             opts || (opts = {});
 
-            Class.call(this);
-
+            this._id = ++GUI_STYLE_ID;
             this.name = opts.name || "GUIStyle-" + this._id;
 
             this.alignment = opts.alignment || TextAnchor.MiddleLeft;
@@ -50,13 +51,6 @@ define([
             this.stretchWidth = opts.stretchWidth != undefined ? opts.stretchWidth : true;
             this.wordWrap = opts.wordWrap != undefined ? opts.wordWrap : true;
         }
-
-        Class.extend(GUIStyle);
-
-
-        GUIStyle.prototype.height = function() {
-
-        };
 
 
         return GUIStyle;
