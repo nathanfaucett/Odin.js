@@ -35,7 +35,8 @@ define(
             this.Camera2D = require("core/components/camera_2d");
             this.Component = require("core/components/component");
             this.ParticleSystem = require("core/components/particle_system/particle_system");
-            this.Sprite2D = require("core/components/sprite_2d");
+            this.Sprite = require("core/components/sprite");
+            this.SpriteAnimation = require("core/components/sprite_animation");
             this.Transform = require("core/components/transform");
             this.Transform2D = require("core/components/transform_2d");
 

@@ -58,6 +58,24 @@ define([
         };
 
 
+        Transform2D.prototype.clear = function() {
+            var children = this.children,
+                i;
+
+            for (i = children.length; i--;) this.removeChild(children[i]);
+
+            this.position.set(0, 0);
+            this.scale.set(1, 1);
+            this.rotation = 0;
+
+            this.parent = undefined;
+            this.root = this;
+            this.depth = 0;
+
+            return this;
+        };
+
+
         Transform2D.prototype.translate = function() {
             var vec = new Vec2;
 

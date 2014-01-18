@@ -15,6 +15,7 @@ define([
             FontStyle: new Enum("Normal Bold Italic BoldAnditalic"),
             TextClipping: new Enum("Overflow Clip"),
             TextAnchor: new Enum("UpperLeft UpperCenter UpperRight MiddleLeft MiddleCenter MiddleRight LowerLeft LowerCenter LowerRight"),
+            WrapMode: new Enum("Once Loop PingPong Clamp")
         };
     }
 );

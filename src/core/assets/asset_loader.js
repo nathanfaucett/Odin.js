@@ -12,9 +12,6 @@ define([
         "use strict";
 
 
-        var FUNC = function() {};
-
-
         function AssetLoader() {
 
             EventEmitter.call(this);
@@ -24,7 +21,6 @@ define([
 
 
         AssetLoader.prototype.load = function(callback, reload) {
-            callback || (callback = FUNC);
             var self = this,
                 count = Assets.length,
                 i,
@@ -34,7 +30,7 @@ define([
                     count--;
                     if (count === 0) {
                         self.emit("load");
-                        callback();
+                        callback && callback();
                     }
                 };
 
@@ -47,25 +43,25 @@ define([
                 ext;
 
             if (asset.raw && !reload) {
-                callback()
+                callback && callback()
                 return;
             };
 
             if ((ext = asset.ext())) {
                 if (!this[ext]) {
-                    callback(new Error("AssetLoader.load: has no loader named " + ext))
+                    callback && callback(new Error("AssetLoader.load: has no loader named " + ext))
                     return;
                 }
 
                 this[ext](asset.src, function(err, raw) {
                     if (err) {
-                        callback(new Error("AssetLoader.load: " + err.message));
+                        callback && callback(new Error("AssetLoader.load: " + err.message));
                         return;
                     }
 
                     asset.parse(raw);
                     self.emit("loadAsset", asset);
-                    callback();
+                    callback && callback();
                 });
             }
         };
@@ -106,7 +102,6 @@ define([
                 }
             };
 
-            console.log(request);
             request.open("GET", src, true);
             request.setRequestHeader("Content-Type", "application/json");
             request.send();
@@ -120,14 +115,18 @@ define([
                 var status = this.status;
 
                 if ((status > 199 && status < 301) || status == 304) {
-                    AudioCtx.decodeAudioData(this.response,
-                        function success(buffer) {
-                            callback && callback(null, buffer);
-                        },
-                        function failure() {
-                            callback && callback(new Error("AudioContext Failed to parse Audio Clip"));
-                        }
-                    );
+                    if (AudioCtx) {
+                        AudioCtx.decodeAudioData(this.response,
+                            function success(buffer) {
+                                callback && callback(null, buffer);
+                            },
+                            function failure() {
+                                callback && callback(new Error("AudioContext Failed to parse Audio Clip"));
+                            }
+                        );
+                    } else {
+                        callback && callback(new Error("AudioContext (WebAudio API) is not supported by this browser"));
+                    }
                 } else {
                     callback && callback(new Error(status));
                 }

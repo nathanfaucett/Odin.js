@@ -12,10 +12,10 @@ define([
         "use strict";
 
 
-        function Sprite2D(opts) {
+        function Sprite(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Sprite2D", !! opts.sync, opts.json);
+            Component.call(this, "Sprite", !! opts.sync, opts.json);
 
             this.visible = opts.visible != undefined ? !! opts.visible : true;
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
@@ -35,11 +35,11 @@ define([
             this.h = opts.h || 1;
         }
 
-        Sprite2D.type = "Sprite2D";
-        Component.extend(Sprite2D);
+        Sprite.type = "Sprite";
+        Component.extend(Sprite);
 
 
-        Sprite2D.prototype.copy = function(other) {
+        Sprite.prototype.copy = function(other) {
 
             this.visible = other.visible;
             this.blending = other.blending;
@@ -62,7 +62,15 @@ define([
         };
 
 
-        Sprite2D.prototype.toSYNC = function(json) {
+        Sprite.prototype.clear = function() {
+
+            this.texture = undefined;
+
+            return this;
+        };
+
+
+        Sprite.prototype.toSYNC = function(json) {
             json = Component.prototype.toSYNC.call(this, json);
 
             json.visible = this.visible;
@@ -84,7 +92,7 @@ define([
         };
 
 
-        Sprite2D.prototype.fromSYNC = function(json) {
+        Sprite.prototype.fromSYNC = function(json) {
             Component.prototype.fromSYNC.call(this, json);
 
             this.visible = json.visible;
@@ -106,7 +114,7 @@ define([
         };
 
 
-        Sprite2D.prototype.toJSON = function(json) {
+        Sprite.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
             json.visible = this.visible;
@@ -130,7 +138,7 @@ define([
         };
 
 
-        Sprite2D.prototype.fromServerJSON = function(json) {
+        Sprite.prototype.fromServerJSON = function(json) {
             Component.prototype.fromServerJSON.call(this, json);
 
             this.visible = json.visible;
@@ -154,7 +162,7 @@ define([
         };
 
 
-        Sprite2D.prototype.fromJSON = function(json) {
+        Sprite.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
             this.visible = json.visible;
@@ -178,12 +186,12 @@ define([
         };
 
 
-        Sprite2D.prototype.sort = function(a, b) {
+        Sprite.prototype.sort = function(a, b) {
 
             return b.z - a.z;
         };
 
 
-        return Sprite2D;
+        return Sprite;
     }
 );

@@ -46,14 +46,16 @@ define([
             this.time = opts.time != undefined ? opts.time : 0;
             this._volume = opts.volume != undefined ? opts.volume : 1;
 
-            this.isPlaying = false;
+            this.playing = false;
+            this.stopped = false;
+            this.paused = false;
 
             this._startTime = 0;
 
             var self = this;
             this._onended = function() {
 
-                self.isPlaying = false;
+                self.playing = false;
                 self.time = 0;
             };
         }
@@ -84,6 +86,46 @@ define([
         });
 
 
+        AudioSource.prototype.copy = function(other) {
+
+            this.clip = other.clip;
+
+            this.dopplerLevel = other.dopplerLevel;
+            this.loop = other.loop;
+
+            this.maxDistance = other.maxDistance;
+            this.minDistance = other.minDistance;
+
+            this.offset.copy(other.offset);
+            this.panLevel = other.panLevel;
+
+            this.pitch = other.pitch;
+
+            this.playOnInit = other.playOnInit;
+
+            this.spread = other.spread;
+
+            this.time = other.time;
+            this.volume = other.volume;
+
+            this.playing = false;
+            this.stopped = false;
+            this.paused = false;
+
+            return this;
+        };
+
+
+        AudioSource.prototype.clear = function() {
+            if (this.playing) this.stop();
+
+            this.clip = undefined;
+            this._source = undefined;
+            this._gain = undefined;
+            this._panner = undefined;
+        };
+
+
         AudioSource.prototype.init = function() {
 
             if (this.playOnInit) this.play();
@@ -93,7 +135,7 @@ define([
         var VEC2 = new Vec2,
             VEC3 = new Vec3;
         AudioSource.prototype.update = function() {
-            if (this.dopplerLevel === 0 || !this.isPlaying) return;
+            if (this.dopplerLevel === 0 || !this.playing) return;
             var transform2d, transform, camera, cameraTransform, panner;
 
             if (!(camera = this.gameObject.scene.game.camera)) return;
@@ -120,24 +162,16 @@ define([
         };
 
 
-        AudioSource.prototype.clear = function() {
-
-            if (this.isPlaying) this.stop();
-
-            this._source = undefined;
-            this._gain = undefined;
-            this._panner = undefined;
-        };
-
-
         AudioSource.prototype.play = function(delay, offset) {
             if (!AudioCtx) return this;
             delay || (delay = 0);
-            offset || (offset = 0);
+            offset || (offset = this.time);
 
-            this.refresh();
+            this._refresh();
 
-            this.isPlaying = true;
+            this.playing = true;
+            this.stopped = false;
+            this.paused = false;
             this._startTime = now();
 
             this.time = offset;
@@ -150,7 +184,9 @@ define([
         AudioSource.prototype.pause = function() {
             if (!AudioCtx) return this;
 
-            this.isPlaying = false;
+            this.playing = false;
+            this.stopped = false;
+            this.paused = true;
             this.time = now() - this._startTime;
 
             this._source.stop(this.time);
@@ -163,7 +199,9 @@ define([
             if (!AudioCtx) return this;
 
             this.time = 0;
-            this.isPlaying = false;
+            this.playing = false;
+            this.stopped = true;
+            this.paused = false;
 
             this._source.stop(this.time);
 
@@ -171,7 +209,7 @@ define([
         };
 
 
-        AudioSource.prototype.refresh = function() {
+        AudioSource.prototype._refresh = function() {
             var source = this._source = AudioCtx.createBufferSource(),
                 gain = this._gain = AudioCtx.createGain(),
                 panner = this._panner = AudioCtx.createPanner();
@@ -193,12 +231,20 @@ define([
         AudioSource.prototype.toSYNC = function(json) {
             json = Component.prototype.toSYNC.call(this, json);
 
+            json.playing = this.playing;
+            json.stopped = this.stopped;
+            json.paused = this.paused;
+
             return json;
         };
 
 
         AudioSource.prototype.fromSYNC = function(json) {
             Component.prototype.fromSYNC.call(this, json);
+
+            if (json.stopped) this.stop();
+            if (json.paused) this.pause();
+            if (json.playing) this.play();
 
             return this;
         };
@@ -227,8 +273,6 @@ define([
             json.time = this.time;
             json.volume = this.volume;
 
-            json.isPlaying = this.isPlaying;
-
             return json;
         };
 
@@ -256,8 +300,6 @@ define([
             this.time = json.time;
             this.volume = json.volume;
 
-            this.isPlaying = json.isPlaying;
-
             return this;
         };
 
@@ -284,8 +326,6 @@ define([
 
             this.time = json.time;
             this.volume = json.volume;
-
-            this.isPlaying = json.isPlaying;
 
             return this;
         };

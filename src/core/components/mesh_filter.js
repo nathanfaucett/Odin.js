@@ -3,9 +3,10 @@ if (typeof define !== "function") {
 }
 define([
         "core/components/component",
-        "core/assets/material"
+        "core/assets/material",
+        "core/assets/mesh"
     ],
-    function(Component, Material) {
+    function(Component, Material, Mesh) {
         "use strict";
 
 
@@ -36,13 +37,13 @@ define([
              * @property Mesh mesh
              * @memberof MeshFilter
              */
-            this.mesh = opts.mesh;
+            this.mesh = opts.mesh instanceof Mesh ? opts.mesh : new Mesh(opts.mesh);
 
             /**
              * @property Material material
              * @memberof MeshFilter
              */
-            this.material = opts.material !== undefined ? opts.material : new Material;
+            this.material = opts.material instanceof Material ? opts.material : new Material(opts.material);
         }
 
         Component.extend(MeshFilter);
@@ -55,6 +56,15 @@ define([
 
             this.mesh = other.mesh;
             this.material.copy(other.material);
+
+            return this;
+        };
+
+
+        MeshFilter.prototype.clear = function() {
+
+            this.mesh = undefined;
+            this.material = undefined;
 
             return this;
         };

@@ -98,7 +98,7 @@ requirejs({
                         client: client
                     }),
                     new Transform2D,
-                    new Sprite2D({
+                    new Sprite({
                         texture: Assets.hash["img_player"],
                         x: 0,
                         y: 0,

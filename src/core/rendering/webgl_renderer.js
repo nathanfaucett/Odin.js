@@ -336,7 +336,7 @@ define([
                 lastBackground = this._lastBackground,
                 background = scene.world.background,
                 components = scene.components,
-                sprite2ds = components.Sprite2D || EMPTY_ARRAY,
+                sprite2ds = components.Sprite || EMPTY_ARRAY,
                 sprite2d,
                 transform2d,
                 i;
@@ -376,14 +376,14 @@ define([
                 if (!transform2d) continue;
 
                 transform2d.updateModelView(camera.view);
-                this.renderSprite2D(camera, transform2d, sprite2d);
+                this.renderSprite(camera, transform2d, sprite2d);
             }
         };
 
 
         var MAT = new Mat32,
             MAT4 = new Mat4;
-        WebGLRenderer.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
+        WebGLRenderer.prototype.renderSprite = function(camera, transform2d, sprite2d) {
             var gl = this.context,
                 webgl = this._webgl,
                 texture = sprite2d.texture,

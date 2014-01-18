@@ -369,11 +369,11 @@ define([
 
             this.time += dt;
             this._time += dt;
-            count = floor(this._time / this.emissionRate);
+            count = this._time / this.emissionRate;
 
-            if (this.emitting && count > 1) {
+            if (this.emitting && count >= 1) {
                 this._time = 0;
-                this.spawn(randInt(this.minEmission, this.maxEmission) * count);
+                this.spawn(randInt(this.minEmission, this.maxEmission) * floor(count));
 
                 if (!this.loop && this.time > this.duration) this.emitting = false;
             }

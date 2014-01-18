@@ -11177,7 +11177,7 @@ define('core/components/emitter_2d', [
 );
 
 
-define('core/components/sprite_2d', [
+define('core/components/sprite', [
         "base/time",
         "math/vec2",
         "core/components/component",
@@ -11187,10 +11187,10 @@ define('core/components/sprite_2d', [
 
 
 
-        function Sprite2D(opts) {
+        function Sprite(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Sprite2D", !! opts.sync, opts.json);
+            Component.call(this, "Sprite", !! opts.sync, opts.json);
 
             this.visible = opts.visible != undefined ? !! opts.visible : true;
 
@@ -11209,11 +11209,11 @@ define('core/components/sprite_2d', [
             this.h = opts.h || 1;
         }
 
-        Sprite2D.type = "Sprite2D";
-        Component.extend(Sprite2D);
+        Sprite.type = "Sprite";
+        Component.extend(Sprite);
 
 
-        Sprite2D.prototype.copy = function(other) {
+        Sprite.prototype.copy = function(other) {
 
             this.visible = other.visible;
 
@@ -11235,7 +11235,7 @@ define('core/components/sprite_2d', [
         };
 
 
-        Sprite2D.prototype.toSYNC = function(json) {
+        Sprite.prototype.toSYNC = function(json) {
             json = Component.prototype.toSYNC.call(this, json);
 
             json.visible = this.visible;
@@ -11256,7 +11256,7 @@ define('core/components/sprite_2d', [
         };
 
 
-        Sprite2D.prototype.fromSYNC = function(json) {
+        Sprite.prototype.fromSYNC = function(json) {
             Component.prototype.fromSYNC.call(this, json);
 
             this.visible = json.visible;
@@ -11277,7 +11277,7 @@ define('core/components/sprite_2d', [
         };
 
 
-        Sprite2D.prototype.toJSON = function(json) {
+        Sprite.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
             json.visible = this.visible;
@@ -11300,7 +11300,7 @@ define('core/components/sprite_2d', [
         };
 
 
-        Sprite2D.prototype.fromJSON = function(json) {
+        Sprite.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
             this.visible = json.visible;
@@ -11323,13 +11323,13 @@ define('core/components/sprite_2d', [
         };
 
 
-        Sprite2D.prototype.sort = function(a, b) {
+        Sprite.prototype.sort = function(a, b) {
 
             return b.z - a.z;
         };
 
 
-        return Sprite2D;
+        return Sprite;
     }
 );
 
@@ -14147,7 +14147,7 @@ define('core/rendering/canvas_renderer_2d', [
                 lastBackground = this._lastBackground,
                 background = camera.backgroundColor,
                 components = scene.components,
-                sprite2ds = components.Sprite2D || EMPTY_ARRAY,
+                sprite2ds = components.Sprite || EMPTY_ARRAY,
                 emitter2ds = components.Emitter2D || EMPTY_ARRAY,
                 sprite2d, emitter2d, transform2d,
                 i;
@@ -14197,7 +14197,7 @@ define('core/rendering/canvas_renderer_2d', [
                 if (!transform2d) continue;
 
                 transform2d.updateModelView(camera.view);
-                this.renderSprite2D(camera, transform2d, sprite2d);
+                this.renderSprite(camera, transform2d, sprite2d);
             }
 
             for (i = emitter2ds.length; i--;) {
@@ -14213,7 +14213,7 @@ define('core/rendering/canvas_renderer_2d', [
 
 
         var MAT = new Mat32;
-        CanvasRenderer2D.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
+        CanvasRenderer2D.prototype.renderSprite = function(camera, transform2d, sprite2d) {
             var ctx = this.context,
                 texture = sprite2d.texture,
                 mvp = MAT.elements;
@@ -14627,7 +14627,7 @@ define('core/rendering/webgl_renderer_2d', [
                 lastBackground = this._lastBackground,
                 background = camera.backgroundColor,
                 components = scene.components,
-                sprite2ds = components.Sprite2D || EMPTY_ARRAY,
+                sprite2ds = components.Sprite || EMPTY_ARRAY,
                 emitter2ds = components.Emitter2D || EMPTY_ARRAY,
                 sprite2d, emitter2d, transform2d,
                 i;
@@ -14667,7 +14667,7 @@ define('core/rendering/webgl_renderer_2d', [
                 if (!transform2d) continue;
 
                 transform2d.updateModelView(camera.view);
-                this.renderSprite2D(camera, transform2d, sprite2d);
+                this.renderSprite(camera, transform2d, sprite2d);
             }
 
             for (i = emitter2ds.length; i--;) {
@@ -14684,7 +14684,7 @@ define('core/rendering/webgl_renderer_2d', [
 
         var MAT = new Mat32,
             MAT4 = new Mat4;
-        WebGLRenderer2D.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
+        WebGLRenderer2D.prototype.renderSprite = function(camera, transform2d, sprite2d) {
             var gl = this.context,
                 webgl = this._webgl,
                 texture = sprite2d.texture,
@@ -19287,7 +19287,7 @@ define(
 
 
 define(
-    'odin', ['require', 'base/audio_ctx', 'base/class', 'base/device', 'base/dom', 'base/event_emitter', 'base/object_pool', 'base/request_animation_frame', 'base/socket.io', 'base/time', 'core/assets/asset', 'core/assets/asset_loader', 'core/assets/assets', 'core/assets/audio_clip', 'core/assets/sprite_sheet', 'core/assets/texture', 'core/components/audio_source', 'core/components/camera', 'core/components/camera_2d', 'core/components/component', 'core/components/emitter_2d', 'core/components/sprite_2d', 'core/components/transform', 'core/components/transform_2d', 'core/game/game', 'core/game/client_game', 'core/game/log', 'core/input/handler', 'core/input/input', 'core/rendering/canvas_renderer_2d', 'core/rendering/webgl_renderer_2d', 'core/game_object', 'core/scene', 'math/aabb2', 'math/aabb3', 'math/color', 'math/mat2', 'math/mat3', 'math/mat32', 'math/mat4', 'math/mathf', 'math/quat', 'math/vec2', 'math/vec3', 'math/vec4'], function(require) {
+    'odin', ['require', 'base/audio_ctx', 'base/class', 'base/device', 'base/dom', 'base/event_emitter', 'base/object_pool', 'base/request_animation_frame', 'base/socket.io', 'base/time', 'core/assets/asset', 'core/assets/asset_loader', 'core/assets/assets', 'core/assets/audio_clip', 'core/assets/sprite_sheet', 'core/assets/texture', 'core/components/audio_source', 'core/components/camera', 'core/components/camera_2d', 'core/components/component', 'core/components/emitter_2d', 'core/components/sprite', 'core/components/transform', 'core/components/transform_2d', 'core/game/game', 'core/game/client_game', 'core/game/log', 'core/input/handler', 'core/input/input', 'core/rendering/canvas_renderer_2d', 'core/rendering/webgl_renderer_2d', 'core/game_object', 'core/scene', 'math/aabb2', 'math/aabb3', 'math/color', 'math/mat2', 'math/mat3', 'math/mat32', 'math/mat4', 'math/mathf', 'math/quat', 'math/vec2', 'math/vec3', 'math/vec4'], function(require) {
 
 
 
@@ -19321,7 +19321,7 @@ define(
             this.Camera2D = require("core/components/camera_2d");
             this.Component = require("core/components/component");
             this.Emitter2D = require("core/components/emitter_2d");
-            this.Sprite2D = require("core/components/sprite_2d");
+            this.Sprite = require("core/components/sprite");
             this.Transform = require("core/components/transform");
             this.Transform2D = require("core/components/transform_2d");
 

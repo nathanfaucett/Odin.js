@@ -17,7 +17,7 @@ define([
 
             Class.call(this);
 
-            this._name = opts.name != undefined ? opts.name : "Asset-" + this._id;
+            this._name = opts.name != undefined ? opts.name : "Asset_" + this._id;
 
             this.json = opts.json != undefined ? !! opts.json : true;
 
@@ -69,7 +69,7 @@ define([
             this.src = other.src;
             this.raw = other.raw;
 
-            if (this.assets !== other.assets) other.assets.addAsset(this);
+            if (other.assets) other.assets.addAsset(this);
 
             return this;
         };

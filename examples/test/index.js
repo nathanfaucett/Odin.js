@@ -8,10 +8,14 @@ require({
         Odin.globalize();
 
 
+        var direction = Mathf.direction,
+            sqrt = Math.sqrt;
+
+
         function Player(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Player", opts.sync, opts.json);
+            Component.call(this, "Player", !! opts.sync, opts.json);
 
             this.speed = 5;
         }
@@ -19,40 +23,57 @@ require({
         Component.extend(Player);
         window.Player = Player;
 
+        VEC = new Vec2;
         Player.prototype.update = function() {
             var position = this.transform2d.position,
+                animation = this.spriteAnimation,
                 spd = this.speed,
                 dt = Time.delta,
                 x = Input.axis("horizontal"),
-                y = Input.axis("vertical");
+                y = Input.axis("vertical"),
+                invLen;
 
-            position.x += spd * dt * x;
-            position.y += spd * dt * y;
+            VEC.set(x, y);
+            if (VEC.lengthSq() > 1) VEC.normalize();
+
+            if (x || y) {
+                position.x += spd * dt * VEC.x;
+                position.y += spd * dt * VEC.y;
+
+                animation.play(direction(x, y));
+            }
+
+            animation.rate = 1 / (spd * 5 * (VEC.lengthSq()));
         };
 
 
         function CameraControl(opts) {
             opts || (opts = {});
 
-            Component.call(this, "CameraControl", opts.sync, opts.json);
+            Component.call(this, "CameraControl", !! opts.sync, opts.json);
+
+            this.speed = 1;
+            this.zoomSpeed = 1;
         }
 
         Component.extend(CameraControl);
         window.CameraControl = CameraControl;
 
+
         CameraControl.prototype.update = function() {
             var position = this.transform2d.position,
                 camera2d = this.camera2d,
                 dt = Time.delta,
+                spd = this.speed,
                 x = 0,
                 y = 0;
 
 
             if (Input.mouseButton(0)) {
-                x = -dt * Input.axis("mouseX");
-                y = dt * Input.axis("mouseY");
+                x = -dt * spd * Input.axis("mouseX");
+                y = dt * spd * Input.axis("mouseY");
             }
-            camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * Input.axis("mouseWheel"));
+            camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * Input.axis("mouseWheel"));
 
             position.x += x;
             position.y += y;
@@ -101,16 +122,20 @@ require({
             components: [
                 new Player,
                 new Transform2D,
-                new Sprite2D({
+                new Sprite({
                     texture: Assets.hash["img_player"],
                     x: 0,
                     y: 0,
                     w: 64,
                     h: 64
                 }),
+                new SpriteAnimation({
+                    sheet: Assets.hash["ss_player"],
+                    rate: 0.1
+                }),
                 new AudioSource({
                     clip: Assets.hash["sound"],
-                    playOnInit: true,
+                    playOnInit: false,
                     loop: true,
                     dopplerLevel: 1,
                     volume: 0.25
@@ -123,7 +148,7 @@ require({
                             texture: Assets.hash["img_pixel_blood"],
 
                             worldSpace: true,
-                            emissionRate: 0.2,
+                            emissionRate: 0.5,
 
                             minLife: 0.1,
                             maxLife: 0.2,

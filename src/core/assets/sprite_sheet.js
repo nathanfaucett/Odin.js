@@ -24,7 +24,7 @@ define([
                 if (!this[key]) {
                     this[key] = raw[key];
                 } else {
-                    Log.warn("SpriteSheet.parse: bad name " + key + " in file " + this.src);
+                    Log.error("SpriteSheet.parse: invalid animation name " + key + " in file " + this.src);
                 }
             }
 

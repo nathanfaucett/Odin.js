@@ -19,7 +19,7 @@ define([
             this.game = undefined;
             this._needsSync = true;
 
-            this.name = opts.name != undefined ? opts.name : "Scene-" + this._id;
+            this.name = opts.name != undefined ? opts.name : "Scene_" + this._id;
 
             this.world = undefined;
 

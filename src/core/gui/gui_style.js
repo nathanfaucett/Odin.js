@@ -23,7 +23,7 @@ define([
             opts || (opts = {});
 
             this._id = ++GUI_STYLE_ID;
-            this.name = opts.name || "GUIStyle-" + this._id;
+            this.name = opts.name || "GUIStyle_" + this._id;
 
             this.alignment = opts.alignment || TextAnchor.MiddleLeft;
             this.clipping = opts.alignment || TextClipping.Clip;

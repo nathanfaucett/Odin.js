@@ -20,6 +20,7 @@ define([
             this._loop = new Loop(this.loop, this);
 
             this.scenes = [];
+            this._scenesJSON = [];
             this._sceneHash = {};
             this._sceneServerHash = {};
             this._sceneNameHash = {};
@@ -58,6 +59,7 @@ define([
                 if (scene.game) scene.game.removeScene(scene);
 
                 scenes.push(scene);
+                this._scenesJSON.push(scene.toJSON());
                 this._sceneNameHash[scene.name] = scene;
                 this._sceneHash[scene._id] = scene;
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = scene;
@@ -93,6 +95,7 @@ define([
             if (index !== -1) {
 
                 scenes.splice(index, 1);
+                this._scenesJSON.splice(index, 1);
                 this._sceneNameHash[scene.name] = undefined;
                 this._sceneHash[scene._id] = undefined;
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = undefined;

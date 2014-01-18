@@ -23,6 +23,15 @@ define(
         };
 
 
+        Tween.prototype.clear = function() {
+
+            this.times.length = 0;
+            this.values.length = 0;
+
+            return this;
+        };
+
+
         Tween.prototype.update = function(time, out) {
             var times = this.times,
                 values = this.values,

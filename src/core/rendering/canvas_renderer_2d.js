@@ -114,7 +114,7 @@ define([
                 lastBackground = this._lastBackground,
                 background = scene.world.background,
                 components = scene.components,
-                sprite2ds = components.Sprite2D || EMPTY_ARRAY,
+                sprite2ds = components.Sprite || EMPTY_ARRAY,
                 particleSystems = components.ParticleSystem || EMPTY_ARRAY,
                 sprite2d, particleSystem, transform2d,
                 i;
@@ -164,7 +164,7 @@ define([
                 if (!transform2d) continue;
 
                 transform2d.updateModelView(camera.view);
-                this.renderSprite2D(camera, transform2d, sprite2d);
+                this.renderSprite(camera, transform2d, sprite2d);
             }
 
             for (i = particleSystems.length; i--;) {
@@ -181,7 +181,7 @@ define([
 
         var MAT = new Mat32,
             mvp = MAT.elements;
-        CanvasRenderer2D.prototype.renderSprite2D = function(camera, transform2d, sprite2d) {
+        CanvasRenderer2D.prototype.renderSprite = function(camera, transform2d, sprite2d) {
             var ctx = this.context,
                 texture = sprite2d.texture;
 

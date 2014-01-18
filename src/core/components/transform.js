@@ -57,6 +57,24 @@ define([
         };
 
 
+        Transform.prototype.clear = function() {
+            var children = this.children,
+                i;
+
+            for (i = children.length; i--;) this.removeChild(children[i]);
+
+            this.position.set(0, 0, 0);
+            this.scale.set(1, 1, 1);
+            this.rotation.set(0, 0, 0, 1);
+
+            this.parent = undefined;
+            this.root = this;
+            this.depth = 0;
+
+            return this;
+        };
+
+
         Transform.prototype.translate = function() {
             var vec = new Vec3;
 
