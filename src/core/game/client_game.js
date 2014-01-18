@@ -5,6 +5,7 @@ define([
         "base/device",
         "base/socket.io",
         "base/time",
+        "math/mathf",
         "core/game/config",
         "core/game/game",
         "core/game/log",
@@ -19,11 +20,12 @@ define([
         "core/assets/assets",
         "core/assets/asset_loader"
     ],
-    function(Device, io, Time, Config, Game, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
+    function(Device, io, Time, Mathf, Config, Game, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
         "use strict";
 
 
-        var now = Time.now;
+        var now = Time.now,
+            stamp = Time.stamp;
 
 
         function ClientGame(opts) {
@@ -34,6 +36,10 @@ define([
 
             this.io = undefined;
             this._sessionid = undefined;
+
+            this._inputStamp = 0;
+            this._deltaState = Config.SCENE_SYNC_RATE + Config.FAKE_LAG;
+            this._lag = Config.FAKE_LAG;
 
             this._handler = Handler;
             this.input = Input;
@@ -46,8 +52,8 @@ define([
             this.CanvasRenderer2D = undefined;
             this.WebGLRenderer2D = undefined;
 
-            this._optsCanvasRenderer2D = opts.CanvasRenderer2D;
-            this._optsWebGLRenderer2D = opts.WebGLRenderer2D;
+            this._CanvasRenderer2DOptions = opts.CanvasRenderer2D;
+            this._WebGLRenderer2DOptions = opts.WebGLRenderer2D;
 
             this.renderer = undefined;
             this.customRenderer = undefined;
@@ -79,7 +85,6 @@ define([
             });
 
             socket.on("server_ready", function(game, assets) {
-
                 Assets.fromServerJSON(assets);
 
                 AssetLoader.load(function() {
@@ -92,16 +97,28 @@ define([
                 });
             });
 
-            socket.on("server_sync_input", function() {
+            socket.on("server_sync_input", function(timeStamp) {
 
-                socket.emit("client_sync_input", Input.toSYNC());
+                self._inputStamp = timeStamp - (Config.FAKE_LAG * 2);
+                socket.emit("client_sync_input", Input.toSYNC(), stamp());
             });
 
-            socket.on("server_sync_scene", function(jsonScene) {
-                var scene = self.scene;
+            var lastState = 0;
+            socket.on("server_sync_scene", function(jsonScene, serverTimeStamp) {
+                var scene = self.scene,
+                    timeStamp, lag;
+
                 if (!scene) return;
 
-                scene.fromSYNC(jsonScene);
+                timeStamp = stamp();
+                lag = timeStamp - serverTimeStamp + Config.FAKE_LAG;
+
+                self._lag = lag;
+                self._deltaState = timeStamp - (lastState || (timeStamp - Config.SCENE_SYNC_RATE - lag));
+                lastState = timeStamp - lag;
+
+                self.emit("serverSyncScene", jsonScene);
+                if (Config.SYNC_SERVER_SCENE) scene.fromSYNC(jsonScene);
             });
 
             socket.on("server_setScene", function(scene_id) {
@@ -257,7 +274,10 @@ define([
                 canvas = this.canvas,
                 gameObject;
 
-            if (!camera) return;
+            if (!camera) {
+                Log.warn("Game: can't set Renderer without a Camera");
+                return;
+            }
             gameObject = camera.gameObject;
 
             if (typeof(this.customRenderer) === "function") {
@@ -268,10 +288,10 @@ define([
                     Log.warn("Game.updateRenderer: no renderer for camera component yet");
                 } else if (gameObject.camera2d) {
                     if (!Config.forceCanvas && Device.webgl) {
-                        this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._optsWebGLRenderer2D));
+                        this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._WebGLRenderer2DOptions));
                         Log.log("Game: setting up WebGLRenderer2D");
                     } else if (Device.canvas) {
-                        this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._optsCanvasRenderer2D));
+                        this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._CanvasRenderer2DOptions));
                         Log.log("Game: setting up CanvasRenderer2D");
                     } else {
                         Log.error("Game.updateRenderer: Could not get a renderer for this device");
@@ -280,7 +300,7 @@ define([
             }
 
             if (lastRenderer === this.renderer) return;
-            if (lastRenderer) lastRenderer.destroy();
+            if (lastRenderer) lastRenderer.clear();
 
             this.renderer.init(canvas);
             Handler.setElement(canvas.element);

@@ -14,49 +14,53 @@ requirejs({
 
             Component.call(this, "Player", opts.sync, opts.json);
 
+            this.id = opts.id;
             this.client = opts.client;
         }
 
         Player.type = "Player";
         Component.extend(Player);
 
-
         Player.prototype.update = function() {
             var position = this.transform2d.position,
                 dt = Time.delta,
                 x = 0,
-                y = 0;
+                y = 0,
+                client = this.client,
+                input = client.input;
 
-            if (this.isServer) {
-                var client = this.client,
-                    input = client.input;
-
-                if (client.device.mobile) {
-                    x = dt * input.axis("touchX");
-                    y = dt * -input.axis("touchY");
-                } else {
-                    x = 2 * dt * input.axis("horizontal");
-                    y = 2 * dt * input.axis("vertical");
-                }
+            if (client.device.mobile) {
+                x = dt * input.axis("touchX");
+                y = dt * -input.axis("touchY");
             } else {
-                if (Device.mobile) {
-                    x = dt * Input.axis("touchX");
-                    y = dt * -Input.axis("touchY");
-                } else {
-                    x = 2 * dt * Input.axis("horizontal");
-                    y = 2 * dt * Input.axis("vertical");
-                }
+                x = 2 * dt * input.axis("horizontal");
+                y = 2 * dt * input.axis("vertical");
             }
 
             position.x += x;
             position.y += y;
+        };
+        Player.prototype.toJSON = function(json) {
+            json = Component.prototype.toJSON.call(this, json);
+
+            json.id = this.id;
+
+            return json;
+        };
+        Player.prototype.fromServerJSON = function(json) {
+            Component.prototype.fromServerJSON.call(this, json);
+
+            this.id = json.id;
+
+            return this;
         };
 
 
         var game = new ServerGame({
             debug: true,
             host: "192.168.1.235",
-            port: 3000
+            port: 3000,
+            FAKE_LAG: 0.1
         });
 
         var scene = new Scene;
@@ -90,6 +94,7 @@ requirejs({
             var player = new GameObject({
                 components: [
                     new Player({
+                        id: client.id,
                         client: client
                     }),
                     new Transform2D,
@@ -124,7 +129,6 @@ requirejs({
                                 maxEmission: 8,
 
                                 duration: 0,
-                                color: new Color("red"),
 
                                 alphaTween: {
                                     times: [0, 0.3, 0.75, 1],

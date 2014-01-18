@@ -21,7 +21,6 @@ define([
             this.buffer = undefined;
         }
 
-        AudioClip.type = "AudioClip";
         Asset.extend(AudioClip);
 
 

@@ -8,25 +8,22 @@ define([
         "math/mathf",
         "math/vec2",
         "math/vec3",
+        "core/enums",
         "core/input/buttons",
         "core/input/button",
         "core/input/axes",
         "core/input/axis",
         "core/input/touches"
     ],
-    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Buttons, Button, Axes, Axis, Touches) {
+    function(EventEmitter, ObjectPool, Time, Mathf, Vec2, Vec3, Enums, Buttons, Button, Axes, Axis, Touches) {
         "use strict";
 
 
         var abs = Math.abs,
             sign = Mathf.sign,
             clamp = Mathf.clamp,
-            BUTTON = Axis.BUTTON,
-            MOUSE = Axis.MOUSE,
-            TOUCH = Axis.TOUCH,
-            MOUSE_WHEEL = Axis.MOUSE_WHEEL,
-            JOYSTICK = Axis.JOYSTICK,
 
+            AxisType = Enums.AxisType,
             MOUSE_BUTTONS = {
                 "0": "mouse0",
                 "1": "mouse1",
@@ -82,7 +79,7 @@ define([
 
                 switch (axis.type) {
 
-                    case BUTTON:
+                    case AxisType.Button:
 
                         button = buttons[axis.negButton];
                         altButton = buttons[axis.altNegButton];
@@ -94,23 +91,23 @@ define([
 
                         break;
 
-                    case MOUSE:
+                    case AxisType.Mouse:
 
                         axis.value = this.mouseDelta[axis.axis];
                         continue;
 
-                    case TOUCH:
+                    case AxisType.Touch:
 
                         var touch = this.touches[axis.index];
                         axis.value = touch ? touch.delta[axis.axis] : 0;
                         continue;
 
-                    case MOUSE_WHEEL:
+                    case AxisType.MouseWheel:
 
                         value += this.mouseWheel;
                         break;
 
-                    case JOYSTICK:
+                    case AxisType.Joystick:
 
                         break;
                 }

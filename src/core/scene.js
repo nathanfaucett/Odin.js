@@ -41,7 +41,6 @@ define([
 
         Scene.prototype.copy = function(other) {
             var otherGameObjects = other.gameObjects,
-                gameObject, otherGameObject,
                 i;
 
             this.clear();
@@ -62,7 +61,6 @@ define([
 
             for (i = types.length; i--;) {
                 components = types[i];
-
                 for (j = components.length; j--;) components[j].init();
             }
 
@@ -92,7 +90,7 @@ define([
                 i;
 
             this.world = undefined;
-            for (i = gameObjects.length; i--;) this.removeGameObject(gameObjects[i]);
+            for (i = gameObjects.length; i--;) this.removeGameObject(gameObjects[i], true);
             return this;
         };
 
@@ -196,7 +194,7 @@ define([
         };
 
 
-        Scene.prototype.removeGameObject = function(gameObject) {
+        Scene.prototype.removeGameObject = function(gameObject, clear) {
             if (!(gameObject instanceof GameObject)) {
                 Log.warn("Scene.removeGameObject: can't remove argument from Scene, it's not an instance of GameObject");
                 return this;
@@ -217,6 +215,7 @@ define([
                 for (i = components.length; i--;) this._removeComponent(components[i]);
 
                 this.emit("removeGameObject", gameObject);
+                if (clear) gameObject.clear();
             } else {
                 Log.warn("Scene.removeGameObject: GameObject is not a member of Scene");
             }
@@ -252,6 +251,29 @@ define([
         };
 
 
+        Scene.prototype.findByTag = function(tag, out) {
+            out || (out = []);
+            var gameObjects = this.gameObjects,
+                gameObject, i = gameObjects.length;
+
+            for (; i--;)
+                if ((gameObject = gameObjects[i]).hasTag(tag)) out.push(gameObject);
+
+            return out;
+        };
+
+
+        Scene.prototype.findByTagFrist = function(tag) {
+            var gameObjects = this.gameObjects,
+                gameObject, i = gameObjects.length;
+
+            for (; i--;)
+                if ((gameObject = gameObjects[i]).hasTag(tag)) return gameObject;
+
+            return out;
+        };
+
+
         Scene.prototype.findById = function(id) {
 
             return this._gameObjectHash[id];
@@ -284,25 +306,28 @@ define([
                 gameObject,
                 i;
 
+            if (this.world.sync) json.world = this.world.toSYNC(json.world);
+
             for (i = gameObjects.length; i--;) {
                 if ((gameObject = gameObjects[i]).sync) jsonGameObjects[i] = gameObject.toSYNC(jsonGameObjects[i]);
             }
-
             this._needsSync = false;
 
             return json;
         };
 
 
-        Scene.prototype.fromSYNC = function(json, alpha) {
+        Scene.prototype.fromSYNC = function(json) {
             Class.prototype.fromSYNC.call(this, json);
             var jsonGameObjects = json.gameObjects,
                 gameObject, jsonGameObject,
                 i;
 
+            if (json.world) this.world.fromSYNC(json.world);
+
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
-                if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject, alpha);
+                if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject);
             }
 
             return this;
@@ -317,6 +342,7 @@ define([
                 i;
 
             json.name = this.name;
+            json.world = this.world.toJSON(json.world);
 
             for (i = gameObjects.length; i--;) {
                 if ((gameObject = gameObjects[i]).json) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
@@ -333,6 +359,7 @@ define([
                 i;
 
             this.name = json.name;
+            this.world = Class.fromJSON(json.world);
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
@@ -349,12 +376,12 @@ define([
 
 
         Scene.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
             var jsonGameObjects = json.gameObjects,
                 gameObject, jsonGameObject,
                 i;
 
             this.name = json.name;
+            this.world = Class.fromJSON(json.world);
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;

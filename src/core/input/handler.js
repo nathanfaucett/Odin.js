@@ -188,19 +188,22 @@ define([
 
         function handleKeys(e) {
             e.preventDefault();
+            var key;
 
             switch (e.type) {
 
                 case "keydown":
+                    key = KEY_CODES[e.keyCode];
 
-                    this.buttons.on(KEY_CODES[e.keyCode]);
-                    this.emit("keydown");
+                    this.buttons.on(key);
+                    this.emit("keydown", key);
                     break;
 
                 case "keyup":
+                    key = KEY_CODES[e.keyCode];
 
-                    this.buttons.off(KEY_CODES[e.keyCode]);
-                    this.emit("keyup");
+                    this.buttons.off(key);
+                    this.emit("keyup", key);
                     break;
             }
         }

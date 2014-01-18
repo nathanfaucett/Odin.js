@@ -151,10 +151,10 @@ define(
          * @param Number x
          * @return Number
          */
-        Mathf.prototype.sign = Math.sign || (Math.sign = function(x) {
+        Mathf.prototype.sign = function(x) {
 
-            return x ? x < 0 ? -1 : 1 : 0;
-        });
+            return x < 0 ? -1 : 1;
+        };
 
         /**
          * @method clamp

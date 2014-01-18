@@ -2,10 +2,11 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "base/class",
         "core/assets/asset",
         "core/game/log"
     ],
-    function(Asset, Log) {
+    function(Class, Asset, Log) {
         "use strict";
 
 
@@ -81,16 +82,16 @@ define([
         Assets.prototype.fromServerJSON = function(json) {
             var assetsHash = this.hash,
                 jsonAssets = json.assets || (json.assets = []),
-                assets, jsonAsset,
+                asset, jsonAsset,
                 i = jsonAssets.length;
 
             for (; i--;) {
                 if (!(jsonAsset = jsonAssets[i])) continue;
 
-                if ((assets = assetsHash[jsonAsset.name])) {
-                    assets.fromServerJSON(jsonAsset);
+                if ((asset = assetsHash[jsonAsset.name])) {
+                    asset.fromServerJSON(jsonAsset);
                 } else {
-                    this.add(new Asset._types[jsonAsset._type]().fromServerJSON(jsonAsset));
+                    this.add(Class.fromServerJSON(jsonAsset));
                 }
             }
 
@@ -101,16 +102,16 @@ define([
         Assets.prototype.fromJSON = function(json) {
             var assetsHash = this.hash,
                 jsonAssets = json.assets || (json.assets = []),
-                assets, jsonAsset,
+                asset, jsonAsset,
                 i = jsonAssets.length;
 
             for (; i--;) {
                 if (!(jsonAsset = jsonAssets[i])) continue;
 
-                if ((assets = assetsHash[jsonAsset.name])) {
-                    assets.fromJSON(jsonAsset);
+                if ((asset = assetsHash[jsonAsset.name])) {
+                    asset.fromJSON(jsonAsset);
                 } else {
-                    this.add(new Asset._types[jsonAsset._type]().fromJSON(jsonAsset));
+                    this.add(Class.fromJSON(jsonAsset));
                 }
             }
 

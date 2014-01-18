@@ -27,14 +27,6 @@ define([
         }
 
         Class.extend(Component);
-        Component.type = "Component";
-
-
-        Component._types = {};
-        Component.prototype._onExtend = function(child) {
-
-            Component._types[child.type] = child;
-        }
 
 
         Component.prototype.init = function() {
@@ -89,8 +81,6 @@ define([
         Component.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
-            json.type = this._type;
-
             json.sync = this.sync;
             json.json = this.json;
 
@@ -109,7 +99,6 @@ define([
 
 
         Component.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
 
             this.sync = json.sync;
             this.json = json.json;

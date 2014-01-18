@@ -146,10 +146,12 @@ define(
             child.prototype = Object.create(parent.prototype);
             child.prototype.constructor = child;
 
-            child.extend = this.extend;
+            child.extend = parent.extend || this.extend;
 
-            if (parent.prototype._onExtend) parent.prototype._onExtend(child);
-            if (child.prototype._onInherit) child.prototype._onInherit(parent);
+            if (parent.onExtend) {
+                if (!child.onExtend) child.onExtend = parent.onExtend;
+                parent.onExtend(child);
+            }
 
             return child;
         };

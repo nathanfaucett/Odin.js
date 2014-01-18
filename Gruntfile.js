@@ -20,7 +20,7 @@ module.exports = function(grunt) {
                             hoist_vars: true
                         },
                         preserveLicenseComments: false,
-                        mangle: true,
+                        mangle: false,
 
                         generateSourceMaps: true,
                         warnings: true

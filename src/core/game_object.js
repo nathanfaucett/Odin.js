@@ -33,7 +33,9 @@ define([
             this._componentHash = {};
             this._componentHashServer = {};
 
+            if (opts.tag) this.addTag(opts.tag);
             if (opts.tags) this.addTags.apply(this, opts.tags);
+
             if (opts.components) this.addComponents.apply(this, opts.components);
         }
 
@@ -62,7 +64,7 @@ define([
                 i;
 
             for (i = tags.length; i--;) this.removeTag(tags[i]);
-            for (i = components.length; i--;) this.removeComponent(components[i]);
+            for (i = components.length; i--;) this.removeComponent(components[i], true);
 
             return this;
         };
@@ -84,10 +86,9 @@ define([
 
 
         GameObject.prototype.addTag = function(tag) {
-            var tags = this.tags,
-                index = tags.indexOf(tag);
+            var tags = this.tags;
 
-            if (index === -1) tags.push(tag);
+            if (tags.indexOf(tag) === -1) tags.push(tag);
 
             return this;
         };
@@ -190,7 +191,7 @@ define([
         };
 
 
-        GameObject.prototype.removeComponent = function(component, others) {
+        GameObject.prototype.removeComponent = function(component, clear, others) {
             if (typeof(component) === "string") component = this.getComponent(component);
             if (!(component instanceof Component)) {
                 Log.warn("GameObject.removeComponent: can't remove passed argument, it is not an instance of Component");
@@ -223,6 +224,7 @@ define([
                 this.emit("remove" + component._type, component);
                 this.emit("removeComponent", component);
 
+                if (clear) component.clear();
                 if (this.scene) this.scene._removeComponent(component);
             } else {
                 Log.warn("GameObject.removeComponent: GameObject does not have a(n) " + type + " Component");
@@ -239,7 +241,7 @@ define([
                 component, name,
                 i, j;
 
-            for (i = length; i--;) this.removeComponent(arguments[i], true);
+            for (i = length; i--;) this.removeComponent(arguments[i], null, true);
 
             for (i = components.length; i--;) {
                 component = components[i];
@@ -266,8 +268,10 @@ define([
             var components = this.components,
                 i;
 
-            for (i = components.length; i--;)
+            for (i = components.length; i--;) {
                 if (components[i]._type === type) return true;
+            }
+
             return false;
         };
 
@@ -299,20 +303,19 @@ define([
         };
 
 
-        GameObject.prototype.fromSYNC = function(json, alpha) {
+        GameObject.prototype.fromSYNC = function(json) {
             Class.prototype.fromSYNC.call(this, json);
             var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent, type,
+                component, jsonComponent,
                 i = jsonComponents.length;
 
             for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 
                 if ((component = this.findComponentByServerId(jsonComponent._id))) {
-                    component.fromSYNC(jsonComponent, alpha);
+                    component.fromSYNC(jsonComponent);
                 } else {
-                    if (!(type = Component._types[jsonComponent._type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
-                    this.addComponent(new type().fromSYNC(jsonComponent, alpha));
+                    this.addComponent(Class.fromSYNC(jsonComponent));
                 }
             }
 
@@ -341,50 +344,49 @@ define([
         GameObject.prototype.fromServerJSON = function(json) {
             Class.prototype.fromServerJSON.call(this, json);
             var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent, type, tag,
+                component, jsonComponent, tag,
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
 
             for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
-                if (!(type = Component._types[jsonComponent.type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
 
                 if ((component = this.findComponentByServerId(jsonComponent._id))) {
                     component.fromServerJSON(jsonComponent);
                 } else {
-                    this.addComponent(new type().fromServerJSON(jsonComponent));
+                    this.addComponent(Class.fromServerJSON(jsonComponent));
                 }
             }
 
-            for (i = jsonTags.length; i--;)
+            for (i = jsonTags.length; i--;) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
+            }
 
             return this;
         };
 
 
         GameObject.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
             var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent, type, tag,
+                component, jsonComponent, tag,
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
 
             for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
-                if (!(type = Component._types[jsonComponent.type])) throw "No Component named " + jsonComponent.type + " make sure to add a type to the constructor - Component.type = \"Component\"";
 
                 if ((component = this.findComponentById(jsonComponent._id))) {
                     component.fromJSON(jsonComponent);
                 } else {
-                    this.addComponent(new type().fromJSON(jsonComponent));
+                    this.addComponent(Class.fromJSON(jsonComponent));
                 }
             }
 
-            for (i = jsonTags.length; i--;)
+            for (i = jsonTags.length; i--;) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
+            }
 
             return this;
         };

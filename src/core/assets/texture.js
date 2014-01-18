@@ -23,7 +23,6 @@ define([
             this._needsUpdate = true;
         }
 
-        Texture.type = "Texture";
         Asset.extend(Texture);
 
 

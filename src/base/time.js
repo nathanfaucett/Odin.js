@@ -70,7 +70,7 @@ define(
 
         Time.prototype.stamp = function() {
 
-            return START + now();
+            return Date.now() * 0.001;
         };
 
 

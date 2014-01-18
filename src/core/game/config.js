@@ -14,8 +14,10 @@ define(
             this.host = "127.0.0.1";
             this.port = 3000;
 
-            this.MAX_SERVER_STATES = 5;
+            this.FAKE_LAG = 0;
             this.SCENE_SYNC_RATE = 0.5;
+
+            this.MAX_SCENE_STATES = 5;
 
             this.MIN_DELTA = 0.000001;
             this.MAX_DELTA = 1;

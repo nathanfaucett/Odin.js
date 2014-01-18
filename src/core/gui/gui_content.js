@@ -1,10 +1,8 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define([
-        "core/gui/gui_style"
-    ],
-    function(GUIStyle) {
+define(
+    function() {
         "use strict";
 
 

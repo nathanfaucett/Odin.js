@@ -1,9 +1,14 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define(
-    function() {
+define([
+        "core/enums"
+    ],
+    function(Enums) {
         "use strict";
+
+
+        var AxisType = Enums.AxisType;
 
 
         function Axis(opts) {
@@ -22,7 +27,7 @@ define(
 
             this.dead = opts.dead != undefined ? opts.dead : 0.001;
 
-            this.type = opts.type != undefined ? opts.type : Axis.BUTTON;
+            this.type = opts.type != undefined ? opts.type : AxisType.BUTTON;
             this.axis = opts.axis != undefined ? opts.axis : "x";
             this.index = opts.index != undefined ? opts.index : 0;
 
@@ -106,13 +111,6 @@ define(
 
             return this;
         };
-
-
-        Axis.BUTTON = 1;
-        Axis.MOUSE = 2;
-        Axis.TOUCH = 3;
-        Axis.MOUSE_WHEEL = 4;
-        Axis.JOYSTICK = 5;
 
 
         return Axis;

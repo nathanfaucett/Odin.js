@@ -4,9 +4,10 @@ if (typeof define !== "function") {
 define([
         "base/time",
         "core/components/component",
-        "core/components/particle_system/emitter_2d"
+        "core/components/particle_system/emitter_2d",
+        "core/components/particle_system/tween"
     ],
-    function(Time, Component, Emitter2D) {
+    function(Time, Component, Emitter2D, Tween) {
         "use strict";
 
 
@@ -32,6 +33,8 @@ define([
              * @memberof ParticleSystem
              */
             this.emitters = [];
+            this._emitterHash = {};
+            this._emitterServerHash = {};
 
             if (opts.emitter) this.addEmitter(opts.emitter);
             if (opts.emitters) this.add.apply(this, opts.emitters);
@@ -42,6 +45,7 @@ define([
 
 
         ParticleSystem.Emitter2D = Emitter2D;
+        ParticleSystem.Tween = Tween;
 
 
         ParticleSystem.prototype.copy = function(other) {
@@ -74,8 +78,10 @@ define([
             if (index === -1) {
                 if (emitter.particleSystem) emitter = emitter.clone();
 
-                emitters.push(emitter);
                 emitter.particleSystem = this;
+                emitters.push(emitter);
+                this._emitterHash[emitter._id] = emitter;
+                if (emitter._serverId !== -1) this._emitterHash[emitter._serverId] = emitter;
             } else {
                 Log.warn("ParticleSystem.addEmitter: ParticleSystem already has passed Emitter");
             }
@@ -97,6 +103,8 @@ define([
 
             if (index !== -1) {
                 emitters.splice(index, 1);
+                this._emitterHash[emitter._id] = undefined;
+                if (emitter._serverId !== -1) this._emitterHash[emitter._serverId] = undefined;
 
                 emitter.clear();
                 emitter.particleSystem = undefined;
@@ -113,6 +121,18 @@ define([
 
             for (var i = arguments.length; i--;) this.removeEmitter(arguments[i]);
             return this;
+        };
+
+
+        ParticleSystem.prototype.findEmitterById = function(id) {
+
+            return this._emitterHash[id];
+        };
+
+
+        ParticleSystem.prototype.findEmitterByServerId = function(id) {
+
+            return this._emitterServerHash[id];
         };
 
 
@@ -168,13 +188,18 @@ define([
         ParticleSystem.prototype.fromServerJSON = function(json) {
             Component.prototype.fromServerJSON.call(this, json);
             var jsonEmitters = json.emitters,
-                jsonEmitter,
+                emitter, jsonEmitter,
                 i = 0,
                 il = jsonEmitters.length;
 
             for (; i < il; i++) {
                 jsonEmitter = jsonEmitters[i];
-                this.addEmitter(new Emitter2D().fromServerJSON(jsonEmitter));
+
+                if ((emitter = this.findEmitterByServerId(jsonEmitter._id))) {
+                    emitter.fromServerJSON(jsonEmitter);
+                } else {
+                    this.addEmitter(Class.fromServerJSON(jsonEmitter));
+                }
             }
             this.playing = json.playing;
 
@@ -185,13 +210,18 @@ define([
         ParticleSystem.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
             var jsonEmitters = json.emitters,
-                jsonEmitter,
+                emitter, jsonEmitter,
                 i = 0,
                 il = jsonEmitters.length;
 
             for (; i < il; i++) {
                 jsonEmitter = jsonEmitters[i];
-                this.addEmitter(new Emitter2D().fromJSON(jsonEmitter));
+
+                if ((emitter = this.findEmitterById(jsonEmitter._id))) {
+                    emitter.fromJSON(jsonEmitter);
+                } else {
+                    this.addEmitter(Class.fromJSON(jsonEmitter));
+                }
             }
             this.playing = json.playing;
 

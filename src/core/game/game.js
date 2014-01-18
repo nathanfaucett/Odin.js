@@ -19,8 +19,6 @@ define([
 
             this._loop = new Loop(this.loop, this);
 
-            this.gui = opts.gui instanceof GUI ? opts.gui : new GUI(opts.gui);
-
             this.scenes = [];
             this._sceneHash = {};
             this._sceneServerHash = {};
@@ -28,6 +26,24 @@ define([
         }
 
         Class.extend(Game);
+
+
+        Game.prototype.clear = function() {
+            var scenes = this.scenes,
+                i;
+
+            for (i = scenes.length; i--;) this.removeScene(scenes[i], true);
+            return this;
+        };
+
+
+        Game.prototype.destroy = function() {
+
+            this.emit("destroy");
+            this.clear();
+
+            return this;
+        };
 
 
         Game.prototype.addScene = function(scene) {
@@ -47,6 +63,7 @@ define([
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = scene;
 
                 scene.game = this;
+                scene.save();
                 scene.init();
 
                 this.emit("addScene", scene);
@@ -65,7 +82,7 @@ define([
         };
 
 
-        Game.prototype.removeScene = function(scene) {
+        Game.prototype.removeScene = function(scene, clear) {
             if (!(scene instanceof Scene)) {
                 Log.warn("Game.removeScene: can't remove argument from Game, it's not an instance of Scene");
                 return this;
@@ -76,13 +93,14 @@ define([
             if (index !== -1) {
 
                 scenes.splice(index, 1);
-                this._sceneNameHash[scene.name] = scene;
+                this._sceneNameHash[scene.name] = undefined;
                 this._sceneHash[scene._id] = undefined;
                 if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = undefined;
 
                 scene.game = undefined;
 
                 this.emit("removeScene", scene);
+                if (clear) scene.clear();
             } else {
                 Log.warn("Game.removeScene: Scene not a member of Game");
             }
@@ -191,7 +209,6 @@ define([
 
 
         Game.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
                 scene, jsonScene,
                 i;

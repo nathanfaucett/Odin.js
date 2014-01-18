@@ -2,10 +2,9 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "core/assets/asset",
-        "core/game/log"
+        "core/assets/asset"
     ],
-    function(Asset, Log) {
+    function(Asset) {
         "use strict";
 
 
@@ -15,12 +14,10 @@ define([
             Asset.call(this, opts);
         }
 
-        SpriteSheet.type = "SpriteSheet";
         Asset.extend(SpriteSheet);
 
 
         SpriteSheet.prototype.parse = function(raw) {
-
             Asset.prototype.parse.call(this, raw);
 
             for (var key in raw) {
@@ -36,7 +33,6 @@ define([
 
 
         SpriteSheet.prototype.clear = function() {
-
             for (var key in this.raw) this[key] = null;
             Asset.prototype.clear.call(this);
 

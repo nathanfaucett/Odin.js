@@ -521,7 +521,6 @@ define([
 
 
         Emitter2D.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
 
             this.positionType = json.positionType;
             this.velocityType = json.velocityType;

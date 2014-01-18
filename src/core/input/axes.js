@@ -2,17 +2,15 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "core/enums",
         "core/input/axis",
         "core/game/log"
     ],
-    function(Axis, Log) {
+    function(Enums, Axis, Log) {
         "use strict";
 
 
-        var BUTTON = Axis.BUTTON,
-            MOUSE = Axis.MOUSE,
-            TOUCH = Axis.TOUCH,
-            MOUSE_WHEEL = Axis.MOUSE_WHEEL;
+        var AxisType = Enums.AxisType;
 
 
         function Axes() {
@@ -28,7 +26,7 @@ define([
                 negButton: "left",
                 altPosButton: "d",
                 altNegButton: "a",
-                type: BUTTON
+                type: AxisType.Button
             });
 
             this.add({
@@ -37,7 +35,7 @@ define([
                 negButton: "down",
                 altPosButton: "w",
                 altNegButton: "s",
-                type: BUTTON
+                type: AxisType.Button
             });
 
             this.add({
@@ -46,7 +44,7 @@ define([
                 negButton: "",
                 altPosButton: "mouse0",
                 altNegButton: "",
-                type: BUTTON
+                type: AxisType.Button
             });
 
             this.add({
@@ -55,36 +53,36 @@ define([
                 negButton: "",
                 altPosButton: "mouse2",
                 altNegButton: "",
-                type: BUTTON
+                type: AxisType.Button
             });
 
             this.add({
                 name: "mouseX",
-                type: MOUSE,
+                type: AxisType.Mouse,
                 axis: "x"
             });
 
             this.add({
                 name: "mouseY",
-                type: MOUSE,
+                type: AxisType.Mouse,
                 axis: "y"
             });
 
             this.add({
                 name: "touchX",
-                type: TOUCH,
+                type: AxisType.Touch,
                 axis: "x"
             });
 
             this.add({
                 name: "touchY",
-                type: TOUCH,
+                type: AxisType.Touch,
                 axis: "y"
             });
 
             this.add({
                 name: "mouseWheel",
-                type: MOUSE_WHEEL
+                type: AxisType.MouseWheel
             });
         }
 

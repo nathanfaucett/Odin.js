@@ -30,6 +30,8 @@ define(
             this.AssetLoader = require("core/assets/asset_loader");
             this.Assets = require("core/assets/assets");
             this.AudioClip = require("core/assets/audio_clip");
+            this.Material = require("core/assets/material");
+            this.Mesh = require("core/assets/mesh");
             this.SpriteSheet = require("core/assets/sprite_sheet");
             this.Texture = require("core/assets/texture");
 

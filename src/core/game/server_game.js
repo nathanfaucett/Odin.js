@@ -20,6 +20,7 @@ define([
             path = require("path"),
             cwd = process.cwd(),
 
+            stamp = Time.stamp,
             now = Time.now;
 
 
@@ -37,6 +38,9 @@ define([
                 } else {
                     this._server = new http.Server(handler);
                 }
+
+                this._server.listen(Config.port, Config.host);
+                Log.log("ServerGame: Started on " + Config.host + ":" + Config.port);
             }
 
             this.io = io.listen(this._server);
@@ -110,9 +114,10 @@ define([
                     self.emit("connection", client);
                 });
 
-                socket.on("client_sync_input", function(json) {
+                socket.on("client_sync_input", function(json, timeStamp) {
 
                     client._inputNeedsUpdate = true;
+                    client._inputStamp = timeStamp;
                     client.input.fromSYNC(json);
                 });
 
@@ -125,8 +130,6 @@ define([
             });
 
             this._loop.init();
-            this._server.listen(Config.port, Config.host);
-
             this.emit("init");
 
             return this;
@@ -234,14 +237,14 @@ define([
 
                 if (client._inputNeedsUpdate) {
                     client._inputNeedsUpdate = false;
-                    socket.emit("server_sync_input");
+                    socket.emit("server_sync_input", client._inputStamp);
                 }
 
                 client.input.update();
                 client.emit("update");
 
                 if ((scene = client.scene)) {
-                    if (needsUpdate) socket.emit("server_sync_scene", scene.toSYNC());
+                    if (needsUpdate) socket.emit("server_sync_scene", scene.toSYNC(), stamp());
                 }
             }
 

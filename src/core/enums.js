@@ -9,6 +9,7 @@ define([
 
 
         return {
+            AxisType: new Enum("Button Mouse MouseWheel Touch Joystick"),
             Blending: new Enum("Default None Additive Subtractive Muliply"),
             EmitterType: new Enum("Circle CircleEdge Box BoxEdge"),
             FontStyle: new Enum("Normal Bold Italic BoldAnditalic"),

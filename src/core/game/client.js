@@ -27,6 +27,7 @@ define([
 
             this.userData = {};
             this._inputNeedsUpdate = true;
+            this._inputStamp = 0;
         }
         Class.extend(Client);
 

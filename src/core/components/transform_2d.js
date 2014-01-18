@@ -7,9 +7,10 @@ define([
         "math/mat32",
         "math/mat4",
         "core/components/component",
+        "core/game/config",
         "core/game/log"
     ],
-    function(Mathf, Vec2, Mat32, Mat4, Component, Log) {
+    function(Mathf, Vec2, Mat32, Mat4, Component, Config, Log) {
         "use strict";
 
 

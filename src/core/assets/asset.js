@@ -17,7 +17,6 @@ define([
 
             Class.call(this);
 
-            this._type = this.constructor.name || "UnknownAsset";
             this._name = opts.name != undefined ? opts.name : "Asset-" + this._id;
 
             this.json = opts.json != undefined ? !! opts.json : true;
@@ -29,14 +28,6 @@ define([
 
         Class.extend(Asset);
 
-        Asset.type = "Asset";
-        Asset._types = {
-            Asset: Asset
-        };
-        Asset.prototype._onExtend = function(child) {
-
-            Asset._types[child.type] = child;
-        }
 
         defineProperty(Asset.prototype, "name", {
             get: function() {
@@ -120,8 +111,6 @@ define([
         Asset.prototype.toJSON = function(json, pack) {
             json = Class.prototype.toJSON.call(this, json);
 
-            json._type = this._type;
-
             json.name = this.name;
             if (!pack) json.src = this.src;
 
@@ -132,8 +121,6 @@ define([
         Asset.prototype.fromServerJSON = function(json) {
             Class.prototype.fromServerJSON.call(this, json);
 
-            this._type = json._type;
-
             this.name = json.name;
             this.src = json.src;
 
@@ -142,9 +129,6 @@ define([
 
 
         Asset.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
-
-            this._type = json._type;
 
             this.name = json.name;
             this.src = json.src;
