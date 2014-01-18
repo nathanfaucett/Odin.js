@@ -62,7 +62,7 @@ define([
         AudioClip.prototype.parse = function(raw) {
             Asset.prototype.parse.call(this, raw);
 
-            this.buffer = AudioCtx.createBuffer(raw, false);
+            this.buffer = raw;
             return this;
         };
 

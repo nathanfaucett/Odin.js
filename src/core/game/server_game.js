@@ -30,20 +30,7 @@ define([
 
             Game.call(this, opts);
 
-            if (opts.server) {
-                this._server = opts.server;
-            } else {
-                if (opts.credentials) {
-                    this._server = new https.Server(opts.credentials, handler);
-                } else {
-                    this._server = new http.Server(handler);
-                }
-
-                this._server.listen(Config.port, Config.host);
-                Log.log("ServerGame: Started on " + Config.host + ":" + Config.port);
-            }
-
-            this.io = io.listen(this._server);
+            this.io = io.listen(Config.port, Config.host);
 
             this.clients = [];
             this._clientHash = {};
@@ -250,88 +237,6 @@ define([
 
             this.emit("update", time);
         }
-
-
-        function handler(req, res) {
-            var url = req.url,
-                method = req.method,
-                fileName;
-
-            if (method === "GET") {
-                fileName = cwd + url;
-
-                fs.stat(fileName, function(err, stat) {
-                    if (err) {
-                        sendError(res, 500, err);
-                        return;
-                    }
-
-                    if (stat.isDirectory()) {
-                        fileName = path.join(fileName, "index.html");
-                        sendFile(res, fileName);
-
-                        return;
-                    }
-
-                    sendFile(res, fileName);
-                });
-            }
-        }
-
-
-        function sendFile(res, fileName) {
-            var type = MIME_TYPES[fileName.split(".").pop()] || "application/octet-stream";
-
-            fs.readFile(fileName, function(err, buffer) {
-                if (err) {
-                    sendError(res, 404, "File " + fileName + " was not found on this server");
-                    return;
-                }
-
-                res.setHeader("Content-Length", buffer.length);
-                res.setHeader("Content-Type", type);
-                //res.setHeader("Cache-Control", "public, max-age=86400");
-                res.end(buffer);
-            });
-        }
-
-
-        function sendError(res, code, msg) {
-            code || (code = 500);
-            var httpMsg = http.STATUS_CODES[code];
-            msg || (msg = httpMsg);
-
-            res.setHeader("Content-Type", "text/html");
-            res.writeHead(code || 500);
-            res.write(
-                '<h1>' + httpMsg + '</h1>' +
-                '<p>' + code + ' - ' + msg + '</p>'
-            );
-            res.end();
-        }
-
-
-        var MIME_TYPES = {
-            bmp: "image/bmp",
-            css: "text/css",
-            gif: "image/gif",
-            html: "text/html",
-            ico: "image/x-icon",
-            jpeg: "image/jpeg",
-            jpg: "image/jpeg",
-            js: "application/javascript",
-            json: "application/json",
-            otf: "application/x-font-opentype",
-            png: "image/png",
-            svg: "image/svg+xml",
-            tiff: "image/tiff",
-            tif: "image/tiff",
-            ttf: "application/x-font-truetype",
-            txt: "text/plain",
-            woff: "application/font-woff",
-            xml: "application/xml",
-            zip: "application/zip"
-        };
 
 
         return ServerGame;

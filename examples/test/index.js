@@ -110,7 +110,7 @@ require({
                 }),
                 new AudioSource({
                     clip: Assets.hash["sound"],
-                    playOnInit: false,
+                    playOnInit: true,
                     loop: true,
                     dopplerLevel: 1,
                     volume: 0.25

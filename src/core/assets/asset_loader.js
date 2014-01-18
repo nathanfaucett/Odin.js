@@ -29,7 +29,7 @@ define([
                 count = Assets.length,
                 i,
                 fn = function(err) {
-                    if (err) Log.warn(err.message);
+                    if (err) Log.error(err.message);
 
                     count--;
                     if (count === 0) {
@@ -74,12 +74,12 @@ define([
         AssetLoader.prototype.gif = AssetLoader.prototype.jpg = AssetLoader.prototype.jpeg = AssetLoader.prototype.png = function(src, callback) {
             var image = new Image;
 
-            image.addEventListener("load", function() {
+            image.onload = function() {
                 callback && callback(null, image);
-            }, false);
-            image.addEventListener("error", function() {
-                callback && callback(e);
-            }, false);
+            };
+            image.onerror = function() {
+                callback && callback(new Error("GET " + src + " 404 (Not Found)"));
+            };
 
             image.src = src;
         };
@@ -88,53 +88,54 @@ define([
         AssetLoader.prototype.json = function(src, callback) {
             var request = new XMLHttpRequest;
 
-            request.addEventListener("readystatechange", function() {
+            request.onload = function() {
+                var status = this.status,
+                    json;
 
-                if (this.readyState == 1) {
-                    this.send(null);
-                } else if (this.readyState == 4) {
-                    var status = this.status,
-                        json;
-
-                    if ((status > 199 && status < 301) || status == 304) {
-                        try {
-                            json = JSON.parse(this.responseText);
-                        } catch (err) {
-                            callback && callback(err);
-                            return;
-                        }
-
-                        callback && callback(null, json);
-                    } else {
-                        callback && callback(new Error(status));
+                if ((status > 199 && status < 301) || status == 304) {
+                    try {
+                        json = JSON.parse(this.responseText);
+                    } catch (err) {
+                        callback && callback(err);
+                        return;
                     }
-                }
-            }, false);
 
+                    callback && callback(null, json);
+                } else {
+                    callback && callback(new Error(status));
+                }
+            };
+
+            console.log(request);
             request.open("GET", src, true);
+            request.setRequestHeader("Content-Type", "application/json");
+            request.send();
         };
 
 
         AssetLoader.prototype.ogg = AssetLoader.prototype.wav = AssetLoader.prototype.mp3 = AssetLoader.prototype.aac = function(src, callback) {
             var request = new XMLHttpRequest;
 
-            request.addEventListener("readystatechange", function() {
+            request.onload = function() {
+                var status = this.status;
 
-                if (this.readyState == 1) {
-                    this.responseType = "arraybuffer";
-                    this.send(null);
-                } else if (this.readyState == 4) {
-                    var status = this.status;
-
-                    if ((status > 199 && status < 301) || status == 304) {
-                        callback && callback(null, this.response);
-                    } else {
-                        callback && callback(new Error(status));
-                    }
+                if ((status > 199 && status < 301) || status == 304) {
+                    AudioCtx.decodeAudioData(this.response,
+                        function success(buffer) {
+                            callback && callback(null, buffer);
+                        },
+                        function failure() {
+                            callback && callback(new Error("AudioContext Failed to parse Audio Clip"));
+                        }
+                    );
+                } else {
+                    callback && callback(new Error(status));
                 }
-            }, false);
+            };
 
             request.open("GET", src, true);
+            request.responseType = "arraybuffer";
+            request.send();
         };
 
 

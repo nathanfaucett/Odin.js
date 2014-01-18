@@ -74,7 +74,7 @@ define([
 
         ClientGame.prototype.connect = function(handler) {
             var self = this,
-                socket = this.io = io.connect();
+                socket = this.io = io.connect(Config.host + ":" + Config.port);
 
 
             socket.on("connect", function() {
