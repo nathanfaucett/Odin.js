@@ -19,8 +19,9 @@ define([
 
         function Transform2D(opts) {
             opts || (opts = {});
+            opts.sync = opts.sync != undefined ? opts.sync : true;
 
-            Component.call(this, "Transform2D", opts.sync, opts.json);
+            Component.call(this, "Transform2D", opts);
 
             this.root = this;
             this.depth = 0;

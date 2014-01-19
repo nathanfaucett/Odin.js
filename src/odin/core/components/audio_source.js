@@ -22,7 +22,7 @@ define([
         function AudioSource(opts) {
             opts || (opts = {});
 
-            Component.call(this, "AudioSource", !! opts.sync, opts.json);
+            Component.call(this, "AudioSource", opts);
 
             this.clip = opts.clip;
 
@@ -219,7 +219,7 @@ define([
             panner.connect(gain);
             source.connect(panner);
 
-            source.buffer = this.clip.buffer;
+            source.buffer = this.clip.raw;
             source.onended = this._onended;
 
             gain.gain.value = this.volume;

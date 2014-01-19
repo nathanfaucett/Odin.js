@@ -335,7 +335,7 @@ define(
          */
         Mathf.prototype.randInt = function(min, max) {
 
-            return~~ (min + (random() * (max + 1 - min)));
+            return floor(min + (random() * (max + 1 - min)));
         };
 
         /**
@@ -349,6 +349,19 @@ define(
         Mathf.prototype.randFloat = function(min, max) {
 
             return min + (random() * (max - min));
+        };
+
+        /**
+         * @method randSign
+         * @memberof Mathf
+         * @brief returns either -1 or 1
+         * @param Number min
+         * @param Number max
+         * @return Number
+         */
+        Mathf.prototype.randSign = function() {
+
+            return random() < 0.5 ? 1 : -1;
         };
 
         /**

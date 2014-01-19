@@ -19,7 +19,7 @@ define([
         function MeshFilter(opts) {
             opts || (opts = {});
 
-            Component.call(this, "MeshFilter", !! opts.sync, opts.json);
+            Component.call(this, "MeshFilter", opts);
 
             /**
              * @property Boolean castShadows

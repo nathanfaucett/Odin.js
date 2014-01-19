@@ -13,15 +13,20 @@ define([
         var camelize = util.camelize;
 
 
-        function Component(type, sync, json) {
+        function Component(type, opts) {
+            if (typeof(type) === "object") {
+                opts = type;
+                type = "UnknownComponent";
+            }
+            opts || (opts = {});
 
             Class.call(this);
 
-            this._type = type || "UnknownComponent";
+            this._type = type;
             this._name = camelize(this._type, true);
 
-            this.sync = sync != undefined ? !! sync : true;
-            this.json = json != undefined ? !! json : true;
+            this.sync = opts.sync != undefined ? !! opts.sync : false;
+            this.json = opts.json != undefined ? !! opts.json : true;
 
             this.gameObject = undefined;
         }

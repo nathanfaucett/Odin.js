@@ -407,15 +407,14 @@ define([
                 glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
                 glTexture = buildTexture(this, texture),
                 uniforms = glShader.uniforms,
-                raw = texture.raw,
                 w, h;
 
             MAT.mmul(camera.projection, transform2d.modelView);
             MAT4.fromMat32(MAT);
 
-            if (texture && raw) {
-                w = 1 / raw.width;
-                h = 1 / raw.height;
+            if (texture && texture.raw) {
+                w = texture.invWidth;
+                h = texture.invHeight;
             } else {
                 return;
             }

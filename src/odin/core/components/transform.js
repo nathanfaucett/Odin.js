@@ -18,8 +18,9 @@ define([
 
         function Transform(opts) {
             opts || (opts = {});
+            opts.sync = opts.sync != undefined ? opts.sync : true;
 
-            Component.call(this, "Transform", opts.sync, opts.json);
+            Component.call(this, "Transform", opts);
 
             this.root = this;
             this.depth = 0;

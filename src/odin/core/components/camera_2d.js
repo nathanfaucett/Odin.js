@@ -19,7 +19,7 @@ define([
         function Camera2D(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Camera2D", !! opts.sync, opts.json);
+            Component.call(this, "Camera2D", opts);
 
             this.width = 960;
             this.height = 640;

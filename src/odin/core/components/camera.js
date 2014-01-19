@@ -18,7 +18,7 @@ define([
         function Camera(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Camera", !! opts.sync, opts.json);
+            Component.call(this, "Camera", opts);
 
             this.width = 960;
             this.height = 640;

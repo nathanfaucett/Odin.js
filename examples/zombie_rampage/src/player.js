@@ -1,7 +1,8 @@
 define([
-        "odin/odin"
+        "odin/odin",
+        "character"
     ],
-    function(Odin) {
+    function(Odin, Character) {
 
 
         var Time = Odin.Time,
@@ -14,23 +15,39 @@ define([
         function Player(opts) {
             opts || (opts = {});
 
-            Odin.Component.call(this, "Player", !! opts.sync, opts.json);
-			
-			this.speed = 3;
+            opts.spd || (opts.spd = 10);
+            Character.call(this, opts);
         }
 
-        Odin.Component.extend(Player);
+        Character.extend(Player);
+
+
+        Player.prototype.init = function() {
+
+            this.gameObject.on("collision", function(other) {
+                if (!other.hasTag("Enemy")) return;
+                other.character.attack(this);
+            }, this);
+        };
 
 
         var VEC = new Odin.Vec2;
         Player.prototype.update = function() {
             var position = this.transform2d.position,
                 animation = this.spriteAnimation,
-                spd = this.speed,
+                spd = this.spd,
                 dt = Time.delta,
                 x = Input.axis("horizontal"),
                 y = Input.axis("vertical"),
                 invLen;
+
+            if (this.dead) {
+                animation.play("death", Odin.Enums.WrapMode.Clamp, 0.2);
+                this.collisionObject.mass = 0;
+                return;
+            }
+
+            this.hitTimer(dt);
 
             VEC.x = x;
             VEC.y = y;
@@ -40,10 +57,10 @@ define([
                 position.x += spd * dt * VEC.x;
                 position.y += spd * dt * VEC.y;
 
-                animation.play(direction(x, y));
+                if (!this.hit) animation.play(direction(x, y));
             }
 
-            animation.rate = 1 / sqrt(spd * 100 * (VEC.lengthSq()));
+            if (!this.hit) animation.rate = 1 / sqrt(spd * 100 * (VEC.lengthSq()));
         };
 
 

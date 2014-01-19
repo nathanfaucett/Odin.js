@@ -17,8 +17,6 @@ define([
             opts || (opts = {});
 
             Asset.call(this, opts);
-
-            this.buffer = undefined;
         }
 
         Asset.extend(AudioClip);
@@ -26,28 +24,28 @@ define([
 
         defineProperty(AudioClip.prototype, "length", {
             get: function() {
-                return this.buffer ? this.buffer.duration : 0;
+                return this.raw ? this.raw.duration : 0;
             }
         });
 
 
         defineProperty(AudioClip.prototype, "samples", {
             get: function() {
-                return this.buffer ? this.buffer.length : 0;
+                return this.raw ? this.raw.length : 0;
             }
         });
 
 
         defineProperty(AudioClip.prototype, "frequency", {
             get: function() {
-                return this.buffer ? this.buffer.sampleRate : 44100;
+                return this.raw ? this.raw.sampleRate : 44100;
             }
         });
 
 
         defineProperty(AudioClip.prototype, "channels", {
             get: function() {
-                return this.buffer ? this.buffer.numberOfChannels : 0;
+                return this.raw ? this.raw.numberOfChannels : 0;
             }
         });
 
@@ -55,15 +53,7 @@ define([
         AudioClip.prototype.getData = function(array, offset) {
             array || (array = []);
 
-            return this.buffer ? this.buffer.getChannelData(array, offset) : array;
-        };
-
-
-        AudioClip.prototype.parse = function(raw) {
-            Asset.prototype.parse.call(this, raw);
-
-            this.buffer = raw;
-            return this;
+            return this.raw ? this.raw.getChannelData(array, offset) : array;
         };
 
 

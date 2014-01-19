@@ -216,6 +216,7 @@ define([
             if (isNew) this._componentTypes.push(types);
 
             if (this.game) component.init();
+
             this.emit("add" + type, component);
             this.emit("addComponent", component);
         };
@@ -389,6 +390,7 @@ define([
 
             this.name = json.name;
             this.world = Class.fromJSON(json.world);
+            this.world.scene = this;
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
@@ -412,6 +414,7 @@ define([
 
             this.name = json.name;
             this.world = Class.fromJSON(json.world);
+            this.world.scene = this;
 
             for (i = jsonGameObjects.length; i--;) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;

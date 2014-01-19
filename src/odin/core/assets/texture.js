@@ -13,6 +13,12 @@ define([
 
             Asset.call(this, opts);
 
+            this.width = 0;
+            this.height = 0;
+
+            this.invWidth = 0;
+            this.invHeight = 0;
+
             this.anisotropy = opts.anisotropy != undefined ? opts.anisotropy : 1;
 
             this.minFilter = opts.minFilter != undefined ? opts.minFilter : "LINEAR";
@@ -24,6 +30,19 @@ define([
         }
 
         Asset.extend(Texture);
+
+
+        Texture.prototype.parse = function(raw) {
+            Asset.prototype.parse.call(this, raw);
+
+            this.width = raw.width;
+            this.height = raw.height;
+
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
+
+            return this;
+        };
 
 
         Texture.prototype.setAnisotropy = function(value) {
@@ -81,6 +100,11 @@ define([
             json.magFilter = this.magFilter;
             json.format = this.format;
 
+            json.width = this.width;
+            json.height = this.height;
+            json.invWidth = this.invWidth;
+            json.invHeight = this.invHeight;
+
             return json;
         };
 
@@ -103,6 +127,11 @@ define([
             this.magFilter = json.magFilter;
             this.format = json.format;
 
+            this.width = json.width;
+            this.height = json.height;
+            this.invWidth = json.invWidth;
+            this.invHeight = json.invHeight;
+
             return this;
         };
 
@@ -124,6 +153,11 @@ define([
             this.minFilter = json.minFilter;
             this.magFilter = json.magFilter;
             this.format = json.format;
+
+            this.width = json.width;
+            this.height = json.height;
+            this.invWidth = json.invWidth;
+            this.invHeight = json.invHeight;
 
             return this;
         };

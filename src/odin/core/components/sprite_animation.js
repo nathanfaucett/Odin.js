@@ -24,7 +24,7 @@ define([
         function SpriteAnimation(opts) {
             opts || (opts = {});
 
-            Component.call(this, "SpriteAnimation", !! opts.sync, opts.json);
+            Component.call(this, "SpriteAnimation", opts);
 
             this.sheet = opts.sheet != undefined ? opts.sheet : undefined;
 

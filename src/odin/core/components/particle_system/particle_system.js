@@ -21,7 +21,7 @@ define([
         function ParticleSystem(opts) {
             opts || (opts = {});
 
-            Component.call(this, "ParticleSystem", !! opts.sync, opts.json);
+            Component.call(this, "ParticleSystem", opts);
 
             /**
              * @property Boolean playing

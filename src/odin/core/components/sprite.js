@@ -15,7 +15,7 @@ define([
         function Sprite(opts) {
             opts || (opts = {});
 
-            Component.call(this, "Sprite", !! opts.sync, opts.json);
+            Component.call(this, "Sprite", opts);
 
             this.visible = opts.visible != undefined ? !! opts.visible : true;
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
