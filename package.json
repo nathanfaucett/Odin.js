@@ -1,6 +1,6 @@
 {
   "name": "odin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Node.js Canvas/WebGL Javascript Game Framework",
   "repository": {
     "type": "git",

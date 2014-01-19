@@ -6,7 +6,7 @@ module.exports = function(grunt) {
                 options: {
                     baseUrl: "./src",
                     optimize: "uglify2",
-                    name: "odin",
+                    name: "odin/odin",
                     out: "build/odin.js",
 
                     uglify2: {
