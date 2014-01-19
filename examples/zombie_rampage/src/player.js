@@ -15,8 +15,8 @@ define([
             opts || (opts = {});
 
             Odin.Component.call(this, "Player", !! opts.sync, opts.json);
-
-            this.speed = 5;
+			
+			this.speed = 3;
         }
 
         Odin.Component.extend(Player);
@@ -32,7 +32,8 @@ define([
                 y = Input.axis("vertical"),
                 invLen;
 
-            VEC.set(x, y);
+            VEC.x = x;
+            VEC.y = y;
             if (VEC.lengthSq() > 1) VEC.normalize();
 
             if (x || y) {

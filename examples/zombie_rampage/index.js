@@ -3,10 +3,11 @@ require({
     }, [
         "odin/odin",
         "player",
+        "zombie",
         "camera_control"
     ],
-    function(Odin, Player, CameraControl) {
-
+    function(Odin, Player, Zombie, CameraControl) {
+		
 
         var Assets = Odin.Assets;
 
@@ -14,23 +15,15 @@ require({
         Assets.add(
             new Odin.Texture({
                 name: "img_player",
-                src: "../content/images/player.png"
+                src: "content/player.png"
             }),
             new Odin.Texture({
-                name: "img_water",
-                src: "../content/images/sprites/water.png"
-            }),
-            new Odin.Texture({
-                name: "img_pixel_blood",
-                src: "../content/images/sprites/pixel_blood.png"
+                name: "img_zombie",
+                src: "content/zombie.png"
             }),
             new Odin.SpriteSheet({
-                name: "ss_player",
-                src: "../content/spritesheets/player.json"
-            }),
-            new Odin.AudioClip({
-                name: "sound",
-                src: "../content/audio/boom.ogg"
+                name: "ss_small",
+                src: "content/32x32.json"
             })
         );
 
@@ -65,74 +58,36 @@ require({
                     h: 64
                 }),
                 new Odin.SpriteAnimation({
-                    sheet: Assets.hash["ss_player"],
-                    rate: 0.1
-                }),
-                new Odin.AudioSource({
-                    clip: Assets.hash["sound"],
-                    playOnInit: false,
-                    loop: true,
-                    dopplerLevel: 1,
-                    volume: 0.25
-                }),
-                new Odin.ParticleSystem({
-                    emitters: [
-                        new Odin.ParticleSystem.Emitter2D({
-                            loop: true,
-
-                            texture: Assets.hash["img_pixel_blood"],
-
-                            worldSpace: true,
-                            emissionRate: 0.3,
-
-                            minLife: 0.1,
-                            maxLife: 0.3,
-
-                            minEmission: 1,
-                            maxEmission: 8,
-
-                            duration: 0,
-
-                            alphaTween: {
-                                times: [0, 0.3, 0.75, 1],
-                                values: [0, 0.5, 1, 0]
-                            },
-                            colorTween: {
-                                times: [0.5, 1],
-                                values: [new Odin.Color("red"), new Odin.Color("black")]
-                            },
-                            sizeTween: {
-                                times: [0, 0.5, 0.75, 1],
-                                values: [0, 0.5, 0.5, 1]
-                            },
-
-                            positionType: Odin.Enums.EmitterType.Circle,
-                            positionSpread: new Odin.Vec2(0.1, 0.1),
-                            positionRadius: 0.1,
-
-                            velocityType: Odin.Enums.EmitterType.Circle,
-                            speed: 1,
-                            speedSpread: 2,
-
-                            randomAngle: true,
-                            angularVelocitySpread: Math.PI,
-
-                            accelerationSpread: new Odin.Vec2(1, 1)
-                        })
-                    ]
+                    sheet: Assets.hash["ss_small"]
                 })
             ],
             tag: "Player"
         });
+		var zombie = new Odin.GameObject({
+            components: [
+                new Zombie,
+                new Odin.Transform2D,
+                new Odin.Sprite({
+                    texture: Assets.hash["img_zombie"],
+                    x: 0,
+                    y: 0,
+                    w: 64,
+                    h: 64
+                }),
+                new Odin.SpriteAnimation({
+                    sheet: Assets.hash["ss_small"]
+                })
+            ],
+            tags: ["Zombie", "Enemy"]
+        });
 
-        scene.add(player, camera);
+        scene.add(camera, player, zombie);
         game.addScene(scene);
 
 
         function start() {
             game.setScene("PlayGround");
-            var camera = game.scene.findByTagFirst("Camera")
-            game.setCamera(camera);
+            game.setCamera(game.scene.findByTagFirst("Camera"));
         }
 
         function restart() {
@@ -144,12 +99,6 @@ require({
 
             start();
         });
-
-
-        Odin.Input.on("keydown", function(key) {
-
-            if (key === "space") restart();
-        })
 
 
         Odin.AssetLoader.load(function() {

@@ -112,52 +112,52 @@ requirejs({
                         dopplerLevel: 1,
                         volume: 0.25
                     }),
-                    new ParticleSystem({
-                        emitters: [
-                            new ParticleSystem.Emitter2D({
-                                loop: true,
-
-                                texture: Assets.hash["img_pixel_blood"],
-
-                                worldSpace: true,
-                                emissionRate: 0.2,
-
-                                minLife: 0.1,
-                                maxLife: 0.2,
-
-                                minEmission: 1,
-                                maxEmission: 8,
-
-                                duration: 0,
-
-                                alphaTween: {
-                                    times: [0, 0.3, 0.75, 1],
-                                    values: [0, 1, 1, 0]
-                                },
-                                colorTween: {
-                                    times: [0.1, 1],
-                                    values: [new Color("black"), new Color("red")]
-                                },
-                                sizeTween: {
-                                    times: [0, 0.3, 0.75, 1],
-                                    values: [0.2, 0.5, 0.5, 1]
-                                },
-
-                                positionType: Enums.EmitterType.Circle,
-                                positionSpread: new Vec2(0.25, 0.25),
-                                positionRadius: 0.1,
-
-                                velocityType: Enums.EmitterType.Circle,
-                                speed: 1,
-                                speedSpread: 2,
-
-                                randomAngle: true,
-                                angularVelocitySpread: Math.PI,
-
-                                accelerationSpread: new Vec2(1, 1)
-                            })
-                        ]
-                    })
+					new ParticleSystem({
+						emitters: [
+							new ParticleSystem.Emitter2D({
+								loop: true,
+	
+								texture: Assets.hash["img_pixel_blood"],
+	
+								worldSpace: true,
+								emissionRate: 0.3,
+	
+								minLife: 0.1,
+								maxLife: 0.3,
+	
+								minEmission: 1,
+								maxEmission: 8,
+	
+								duration: 0,
+	
+								alphaTween: {
+									times: [0, 0.3, 0.75, 1],
+									values: [0, 0.5, 1, 0]
+								},
+								colorTween: {
+									times: [0.5, 1],
+									values: [new Color("red"), new Color("black")]
+								},
+								sizeTween: {
+									times: [0, 0.5, 0.75, 1],
+									values: [0, 0.5, 0.5, 1]
+								},
+	
+								positionType: Enums.EmitterType.Circle,
+								positionSpread: new Vec2(0.1, 0.1),
+								positionRadius: 0.1,
+	
+								velocityType: Enums.EmitterType.Circle,
+								speed: 1,
+								speedSpread: 2,
+	
+								randomAngle: true,
+								angularVelocitySpread: Math.PI,
+	
+								accelerationSpread: new Odin.Vec2(1, 1)
+							})
+						]
+					})
                 ]
             }),
                 camera = new GameObject({
