@@ -32,6 +32,8 @@ define([
             this.maxOrthographicSize = opts.maxOrthographicSize !== undefined ? opts.maxOrthographicSize : 1024;
 
             this.projection = new Mat32;
+            this._projectionMat4 = new Mat4;
+
             this.view = new Mat32;
 
             this._needsUpdate = true;
@@ -92,7 +94,7 @@ define([
         var MAT32 = new Mat32,
             VEC2 = new Vec2;
         Camera2D.prototype.toWorld = function(v, out) {
-            out || (out = new Vec3);
+            out || (out = new Vec2);
 
             out.x = 2 * v.x / this.width - 1;
             out.y = -2 * v.y / this.height + 1;
@@ -110,7 +112,7 @@ define([
             out.x = ((VEC2.x + 1) * 0.5) * this.width;
             out.y = ((1 - VEC2.y) * 0.5) * this.height;
 
-            return v;
+            return out;
         };
 
 
@@ -124,7 +126,8 @@ define([
                     top = orthographicSize,
                     bottom = -top;
 
-                this.projection.orthographic(left, right, bottom, top);
+                this.projection.orthographic(left, right, top, bottom);
+                this._projectionMat4.orthographic(left, right, top, bottom, -1, 1);
                 this._needsUpdate = false;
             }
 

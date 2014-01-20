@@ -34,8 +34,8 @@ define([
 
             this.x = 0;
             this.y = 0;
-            this.vx = 0;
-            this.vy = 0;
+
+            this.site = 5;
         }
 
         Character.extend(Zombie);
@@ -43,6 +43,12 @@ define([
 
         Zombie.prototype.init = function() {
 
+            this.gameObject.on("collision", function(other) {
+
+                this.dir += PI;
+                if (!other.hasTag("Player")) return;
+                this.attack(other.character);
+            }, this);
         };
 
 
@@ -68,7 +74,7 @@ define([
 
             if (player && !player.character.dead) {
                 playerPosition = player.transform2d.position;
-                if (abs(position.lengthSq() - playerPosition.lengthSq()) <= 24) follow = true;
+                if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.site * this.site)) follow = true;
             }
 
             if (follow) this.dir = atan2(playerPosition.y - position.y, playerPosition.x - position.x);
@@ -82,7 +88,7 @@ define([
 
                 if (!this.hit) {
                     animation.play(direction(x, y));
-                    animation.rate = 1 / (spd * 10 * (x * x + y * y));
+                    animation.rate = 1 / (spd * 5 * (x * x + y * y));
                 }
             }
 

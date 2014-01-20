@@ -168,7 +168,6 @@ define([
             if (this._needsUpdate) {
 
                 if (!this.orthographic) {
-
                     this.projection.perspective(degsToRads(this.fov), this.aspect, this.near, this.far);
                 } else {
                     this.orthographicSize = clamp(this.orthographicSize, this.minOrthographicSize, this.maxOrthographicSize);
@@ -179,7 +178,7 @@ define([
                         top = orthographicSize,
                         bottom = -top;
 
-                    this.projection.orthographic(left, right, bottom, top, this.near, this.far);
+                    this.projection.orthographic(left, right, top, bottom, this.near, this.far);
                 }
 
                 this._needsUpdate = false;

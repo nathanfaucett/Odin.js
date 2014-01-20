@@ -33,16 +33,16 @@ define([
             ENUM_WHITE_TEXTURE = -1,
 
             SPRITE_VERTICES = [
-                new Vec2(0.5, 0.5),
                 new Vec2(-0.5, 0.5),
-                new Vec2(0.5, -0.5),
-                new Vec2(-0.5, -0.5)
+                new Vec2(-0.5, -0.5),
+                new Vec2(0.5, 0.5),
+                new Vec2(0.5, -0.5)
             ],
             SPRITE_UVS = [
-                new Vec2(1, 1),
+                new Vec2(0, 0),
                 new Vec2(0, 1),
                 new Vec2(1, 0),
-                new Vec2(0, 0)
+                new Vec2(1, 1)
             ],
             ENUM_SPRITE_BUFFER = -1,
 
@@ -243,7 +243,7 @@ define([
             gl.cullFace(gl.BACK);
             gl.enable(gl.CULL_FACE);
 
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
             this.setBlending(Blending.Default);
 
@@ -409,8 +409,7 @@ define([
                 uniforms = glShader.uniforms,
                 w, h;
 
-            MAT.mmul(camera.projection, transform2d.modelView);
-            MAT4.fromMat32(MAT);
+            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform2d.modelView));
 
             if (texture && texture.raw) {
                 w = texture.invWidth;
@@ -491,8 +490,7 @@ define([
                 }
                 this.setBlending(emitter.blending);
 
-                MAT.mmul(camera.projection, view);
-                MAT4.fromMat32(MAT);
+                MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(view));
                 gl.uniformMatrix4fv(uMatrix, false, elements);
 
                 if (webgl.lastTexture !== glTexture) {

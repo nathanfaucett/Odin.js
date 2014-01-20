@@ -10,8 +10,7 @@ require({
         "camera_control"
     ],
     function(Odin, Level, Player, Zombie, CollisionWorld, CollisionObject, CameraControl) {
-        Odin.globalize();
-
+        window.Odin = Odin;
 
         var Assets = Odin.Assets,
             randFloat = Odin.Mathf.randFloat;
@@ -42,19 +41,24 @@ require({
 
 
         game = new Odin.Game({
-            debug: true
+            debug: true,
+            forceCanvas: false
         });
 
         var scene = new Odin.Scene({
             name: "PlayGround",
-            world: new CollisionWorld
+            world: new CollisionWorld({
+                background: new Odin.Color("black")
+            })
         });
 
         var camera = new Odin.GameObject({
             components: [
                 new Odin.Transform2D,
                 new Odin.Camera2D({
-                    orthographicSize: 6
+                    orthographicSize: 6,
+                    minOrthographicSize: 1,
+                    maxOrthographicSize: 8
                 }),
                 new CameraControl
             ],
@@ -81,7 +85,11 @@ require({
         });
         var zombie = new Odin.GameObject({
             components: [
-                new Zombie,
+                new Zombie({
+                    spd: 1,
+                    atk: 3,
+                    def: 2
+                }),
                 new Odin.Transform2D,
                 new Odin.Sprite({
                     texture: Assets.hash["img_zombie"],
@@ -100,7 +108,11 @@ require({
         });
         var zombie_red = new Odin.GameObject({
             components: [
-                new Zombie,
+                new Zombie({
+                    spd: 3,
+                    atk: 1,
+                    def: 1
+                }),
                 new Odin.Transform2D,
                 new Odin.Sprite({
                     texture: Assets.hash["img_zombie_red"],
@@ -141,7 +153,8 @@ require({
                     size: new Odin.Vec2(32, 8),
                     mass: 0
                 })
-            ]
+            ],
+            tags: ["Wall", "Top"]
         });
         var wall_bottom = new Odin.GameObject({
             components: [
@@ -151,7 +164,8 @@ require({
                     size: new Odin.Vec2(32, 8),
                     mass: 0
                 })
-            ]
+            ],
+            tags: ["Wall", "Bottom"]
         });
         var wall_left = new Odin.GameObject({
             components: [
@@ -161,7 +175,8 @@ require({
                     size: new Odin.Vec2(8, 32),
                     mass: 0
                 })
-            ]
+            ],
+            tags: ["Wall", "Left"]
         });
         var wall_right = new Odin.GameObject({
             components: [
@@ -171,18 +186,19 @@ require({
                     size: new Odin.Vec2(8, 32),
                     mass: 0
                 })
-            ]
+            ],
+            tags: ["Wall", "Right"]
         });
 
         scene.add(camera, player, wall_top, wall_bottom, wall_left, wall_right, background);
-        for (var i = 100; i--;) {
+        for (var i = 5; i--;) {
             var instance = zombie.clone();
 
             instance.transform2d.position.set(randFloat(-10, 10), randFloat(-10, 10));
 
             scene.add(instance);
         }
-        for (var i = 100; i--;) {
+        for (var i = 0; i--;) {
             var instance = zombie_red.clone();
 
             instance.transform2d.position.set(randFloat(-10, 10), randFloat(-10, 10));

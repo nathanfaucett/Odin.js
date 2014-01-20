@@ -453,7 +453,7 @@ define(
         /**
          * @method direction
          * @memberof Mathf
-         * @brief returns direction string from atan2( y, x )
+         * @brief returns direction string from an x and a y coordinate
          * @param Number x
          * @param Number y
          * @return String

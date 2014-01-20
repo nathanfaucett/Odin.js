@@ -55,9 +55,12 @@ define([
                 bj = pairsj[i];
 
                 if (bi.collide > 1 || bj.collide > 1) {
-                    bi.gameObject.emit("collision", bj.gameObject);
-                    bj.gameObject.emit("collision", bi.gameObject);
+                    bi.gameObject.emit("collisionStart", bj.gameObject);
+                    bj.gameObject.emit("collisionStart", bi.gameObject);
                 }
+                bi.gameObject.emit("collision", bj.gameObject);
+                bj.gameObject.emit("collision", bi.gameObject);
+
                 bi.collide = bj.collide = 2;
                 collision(dt, bi, bj);
             }

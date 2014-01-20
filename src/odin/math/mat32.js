@@ -629,18 +629,18 @@ define(
          * @param Number top
          * @return Mat32
          */
-        Mat32.prototype.orthographic = function(left, right, bottom, top) {
+        Mat32.prototype.orthographic = function(left, right, top, bottom) {
             var te = this.elements,
-                w = 1 / (right - left),
-                h = 1 / (top - bottom),
-                x = (right + left) * w,
-                y = (top + bottom) * h;
+                w = right - left,
+                h = top - bottom,
 
-            te[0] = 2 * w;
+                x = (right + left) / w,
+                y = (top + bottom) / h;
+
+            te[0] = 2 / w;
             te[1] = 0;
             te[2] = 0;
-            te[3] = 2 * h;
-
+            te[3] = 2 / h;
             te[4] = -x;
             te[5] = -y;
 

@@ -18,7 +18,7 @@ define([
             this.scene = undefined;
             this.sync = false;
 
-            this.background = opts.color != undefined ? opts.color : new Color(0.5, 0.5, 0.5);
+            this.background = opts.background != undefined ? opts.background : new Color(0.5, 0.5, 0.5);
         }
 
         Class.extend(World);

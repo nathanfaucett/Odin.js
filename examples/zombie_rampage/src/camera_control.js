@@ -15,7 +15,7 @@ define([
 
             this.player = undefined;
             this.speed = 1;
-            this.zoomSpeed = 1;
+            this.zoomSpeed = 8;
         }
 
         Odin.Component.extend(CameraControl);
@@ -30,18 +30,17 @@ define([
                 dt = Time.delta,
                 spd = this.speed;
 
-            if (player) {
+            if (player && !player.character.dead) {
                 playerTransform = player.transform2d;
 
+                transform.follow(playerTransform, dt * spd);
+            } else {
                 if (Input.mouseButton(0)) {
                     position.x += -dt * spd * Input.axis("mouseX");
                     position.y += dt * spd * Input.axis("mouseY");
-                } else {
-                    transform.follow(playerTransform, dt * spd);
                 }
+                camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * Input.axis("mouseWheel"));
             }
-
-            camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * Input.axis("mouseWheel"));
         };
 
 

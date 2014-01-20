@@ -1151,25 +1151,29 @@ define([
          */
         Mat4.prototype.frustum = function(left, right, bottom, top, near, far) {
             var te = this.elements,
-                rl = 1 / (right - left),
-                tb = 1 / (top - bottom),
-                nf = 1 / (near - far);
+                x = 2 * near / (right - left),
+                y = 2 * near / (top - bottom),
 
-            te[0] = (near * 2) * rl;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
+                a = (right + left) / (right - left),
+                b = (top + bottom) / (top - bottom),
+                c = -(far + near) / (far - near),
+                d = -2 * far * near / (far - near);
+
+            te[0] = x;
             te[4] = 0;
-            te[5] = (near * 2) * tb;
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = (right + left) * rl;
-            te[9] = (top + bottom) * tb;
-            te[10] = (far + near) * nf;
-            te[11] = -1;
+            te[8] = a;
             te[12] = 0;
+            te[1] = 0;
+            te[5] = y;
+            te[9] = b;
             te[13] = 0;
-            te[14] = (far * near * 2) * nf;
+            te[2] = 0;
+            te[6] = 0;
+            te[10] = c;
+            te[14] = d;
+            te[3] = 0;
+            te[7] = 0;
+            te[11] = -1;
             te[15] = 0;
 
             return this;
@@ -1186,28 +1190,12 @@ define([
          * @return this
          */
         Mat4.prototype.perspective = function(fov, aspect, near, far) {
-            var te = this.elements,
-                f = 1 / tan(degsToRads(fov * 0.5)),
-                nf = 1 / (near - far);
+            var ymax = near * Math.tan(degsToRads(fov * 0.5)),
+                ymin = -ymax,
+                xmin = ymin * aspect,
+                xmax = ymax * aspect;
 
-            te[0] = f / aspect;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
-            te[4] = 0;
-            te[5] = f;
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
-            te[9] = 0;
-            te[10] = (far + near) * nf;
-            te[11] = -1;
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = (2 * far * near) * nf;
-            te[15] = 0;
-
-            return this;
+            return this.frustum(xmin, xmax, ymin, ymax, near, far);
         };
 
         /**
@@ -1222,27 +1210,31 @@ define([
          * @param Number far
          * @return this
          */
-        Mat4.prototype.orthographic = function(left, right, bottom, top, near, far) {
+        Mat4.prototype.orthographic = function(left, right, top, bottom, near, far) {
             var te = this.elements,
-                lr = 1 / (left - right),
-                bt = 1 / (bottom - top),
-                nf = 1 / (near - far);
+                w = right - left,
+                h = top - bottom,
+                p = far - near,
 
-            te[0] = -2 * lr;
+                x = (right + left) / w,
+                y = (top + bottom) / h,
+                z = (far + near) / p;
+
+            te[0] = 2 / w;
             te[1] = 0;
             te[2] = 0;
             te[3] = 0;
             te[4] = 0;
-            te[5] = -2 * bt;
+            te[5] = 2 / h;
             te[6] = 0;
             te[7] = 0
             te[8] = 0;
             te[9] = 0;
-            te[10] = 2 * nf;
+            te[10] = -2 / p;
             te[11] = 0;
-            te[12] = (left + right) * lr;
-            te[13] = (top + bottom) * bt;
-            te[14] = (far + near) * nf;
+            te[12] = -x;
+            te[13] = -y;
+            te[14] = -z;
             te[15] = 1;
 
             return this;

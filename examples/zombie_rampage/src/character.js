@@ -5,7 +5,8 @@ define([
 
 
         var Mathf = Odin.Mathf,
-            randInt = Mathf.randInt;
+            randInt = Mathf.randInt,
+            floor = Math.floor;
 
 
         function Character(opts) {
@@ -16,7 +17,7 @@ define([
             this.dead = false;
 
             this.hit = false;
-            this.hitTime = 0.25;
+            this.hitTime = 0.5;
             this._hitTime = 0;
 
             this.level = opts.level != undefined ? opts.level : 1;
@@ -37,6 +38,24 @@ define([
         Odin.Component.extend(Character);
 
 
+        Character.prototype.copy = function(other) {
+
+            this.level = other.level;
+
+            this.maxHp = other.maxHp;
+            this.hp = other.hp;
+
+            this.atk = other.atk;
+            this.def = other.def;
+            this.spd = other.spd;
+
+            this.exp = other.exp;
+            this.nextLevel = other.nextLevel;
+
+            return this;
+        };
+
+
         Character.prototype.attack = function(other) {
             if (other.dead || other.hit) return;
             var damage = this.atk * randInt(1, 6) - other.def * randInt(1, 6);
@@ -44,16 +63,21 @@ define([
             if (damage > 0) {
                 other.hp -= damage;
                 other.hit = true;
-            }
 
-            if (other.hp <= 0) other.dead = true;
+                if (other.hp <= 0) {
+                    other.dead = true;
+
+                    this.exp += floor(other.maxHp * other.level);
+                    if (this.exp > this.nextLevel) this.setLevel(this.level + 1);
+                }
+            }
         };
 
 
         Character.prototype.hitTimer = function(dt) {
             if (!this.hit) return;
 
-            this.spriteAnimation.play("hit", Odin.Enums.WrapMode.Loop, 0.2);
+            this.spriteAnimation.play("hit", Odin.Enums.WrapMode.Clamp, 0.1);
 
             if ((this._hitTime += dt) > this.hitTime) {
                 this.hit = false;
@@ -73,6 +97,44 @@ define([
             this.atk += level % 2 === 0 ? 1 : 0;
             this.def += level % 3 === 0 ? 1 : 0;
             this.spd += level % 10 === 0 ? 1 : 0;
+        };
+
+
+        Character.prototype.toJSON = function(json) {
+            json = Odin.Component.prototype.toJSON.call(this, json);
+
+            json.level = this.level;
+
+            json.maxHp = this.maxHp;
+            json.hp = this.hp;
+
+            json.atk = this.atk;
+            json.def = this.def;
+            json.spd = this.spd;
+
+            json.exp = this.exp;
+            json.nextLevel = this.nextLevel;
+
+            return json;
+        };
+
+
+        Character.prototype.fromJSON = function(json) {
+            Odin.Component.prototype.fromJSON.call(this, json);
+
+            this.level = json.level;
+
+            this.maxHp = json.maxHp;
+            this.hp = json.hp;
+
+            this.atk = json.atk;
+            this.def = json.def;
+            this.spd = json.spd;
+
+            this.exp = json.exp;
+            this.nextLevel = json.nextLevel;
+
+            return this;
         };
 
 

@@ -39,7 +39,7 @@ define([
 
 
         CollisionObject.prototype.toJSON = function(json) {
-            json = Component.prototype.toJSON.call(this, json);
+            json = Odin.Component.prototype.toJSON.call(this, json);
 
             json.offset = this.offset.toJSON(json.offset);
             json.size = this.size.toJSON(json.size);
@@ -50,7 +50,7 @@ define([
 
 
         CollisionObject.prototype.fromJSON = function(json) {
-            Component.prototype.fromJSON.call(this, json);
+            Odin.Component.prototype.fromJSON.call(this, json);
 
             this.offset.fromJSON(json.offset);
             this.size.fromJSON(json.size);

@@ -852,9 +852,15 @@ define([
          * @brief returns array of this
          * @return Object
          */
-        Quat.prototype.toArray = function() {
+        Quat.prototype.toArray = function(array) {
+            array || (array = []);
 
-            return [this.x, this.y, this.z, this.w];
+            array[0] = this.x;
+            array[1] = this.y;
+            array[2] = this.z;
+            array[3] = this.w;
+
+            return array;
         };
 
         /**
@@ -863,14 +869,15 @@ define([
          * @brief returns json object of this
          * @return Object
          */
-        Quat.prototype.toJSON = function() {
+        Quat.prototype.toJSON = function(json) {
+            json || (json = {});
 
-            return {
-                x: this.x,
-                y: this.y,
-                z: this.z,
-                w: this.w
-            };
+            json.x = this.x;
+            json.y = this.y;
+            json.z = this.z;
+            json.w = this.w;
+
+            return json;
         };
 
         /**
