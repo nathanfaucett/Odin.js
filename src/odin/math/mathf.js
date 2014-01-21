@@ -377,6 +377,17 @@ define(
         };
 
         /**
+         * @method randArg
+         * @memberof Mathf
+         * @brief returns random argument from arguments
+         * @return Number
+         */
+        Mathf.prototype.randArg = function() {
+
+            return arguments[~~(random() * arguments.length)];
+        };
+
+        /**
          * @method randChoiceObject
          * @memberof Mathf
          * @brief returns random key from object

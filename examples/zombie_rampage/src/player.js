@@ -10,7 +10,9 @@ define([
         Odin.Assets.add(
             new Odin.Texture({
                 name: "img_objects",
-                src: "content/objects.png"
+                src: "content/objects.png",
+                magFilter: "NEAREST",
+                minFilter: "NEAREST"
             })
         );
 
@@ -18,10 +20,14 @@ define([
         var Time = Odin.Time,
             Input = Odin.Input,
 
+            Mathf = Odin.Mathf,
+            randInt = Mathf.randInt,
+            direction = Mathf.direction,
+
+            floor = Math.floor,
             atan2 = Math.atan2,
             Loop = Odin.Enums.WrapMode.Loop,
 
-            direction = Odin.Mathf.direction,
             sqrt = Math.sqrt,
             PI = Math.PI,
 
@@ -45,11 +51,11 @@ define([
                 tag: "Bullet"
             }),
 
-            pistol = new Weapon("Pistol", 0.5, 2, Infinity);
-        shotgun = new Weapon("Shotgun", 1.2, 2, 0);
-        uzi = new Weapon("Uzi", 0.15, 1, 0);
-        flamethrower = new Weapon("Flamethrower", 0.1, 3, 0);
-        bazooka = new Weapon("Bazooka", 1.5, 100, 0);
+            pistol = new Weapon("Pistol", 0.5, 2, Infinity),
+            shotgun = new Weapon("Shotgun", 1.2, 2, 0),
+            uzi = new Weapon("Uzi", 0.15, 1, 0),
+            flamethrower = new Weapon("Flamethrower", 0.1, 3, 0),
+            bazooka = new Weapon("Bazooka", 1.5, 100, 0);
 
 
         function Player(opts) {
@@ -85,6 +91,8 @@ define([
                 amount;
 
             if (this.dead) {
+                if (this.deadTimer(dt)) return;
+
                 animation.play("death", Odin.Enums.WrapMode.Clamp, 0.2);
                 this.collisionObject.mass = 0;
                 return;
@@ -123,10 +131,28 @@ define([
         };
 
 
+        Player.prototype.attack = function(other) {
+            if (this.dead) return;
+
+            if (other.takeDamage(this.atk + this.weapon.atk)) {
+                var exp = floor(randInt(other.maxHp * other.level * 0.5, other.maxHp * other.level));
+
+                this.exp += exp;
+                console.log("GAINED " + exp + " exp");
+
+                if (this.exp > this.nextLevel) {
+                    this.setLevel(this.level + 1);
+                    console.log("LEVEL UP");
+                }
+            }
+        };
+
+
         var FIRE = new Odin.Vec2;
         Player.prototype.fire = function(position, dx, dy, dt) {
             if (!this.weapon.fire(dt)) return;
             var instance = bullet.clone(),
+                instanceBullet = instance.bullet,
                 transform2d = instance.transform2d,
                 invLen = 1 / sqrt(dx * dx + dy * dy);
 
@@ -135,10 +161,14 @@ define([
 
             transform2d.position.copy(position).add(FIRE.set(dx, dy).smul(0.25));
             transform2d.rotation = atan2(-dx, dy);
-            instance.bullet.x = dx;
-            instance.bullet.y = dy;
+            instanceBullet.x = dx;
+            instanceBullet.y = dy;
+            instanceBullet.owner = this;
 
             switch (this.weapon.name) {
+                case "Shotgun":
+                    this.gameObject.scene.addGameObject(instance);
+                    break;
 
                 case "Pistol":
                 default:
@@ -148,10 +178,10 @@ define([
         };
 
 
-        function Weapon(name, freq, damage, ammo) {
+        function Weapon(name, freq, atk, ammo) {
             this.name = name;
             this.freq = freq;
-            this.damage = damage;
+            this.atk = atk;
             this.ammo = ammo;
             this._time = 0;
         }

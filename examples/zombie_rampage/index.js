@@ -19,30 +19,19 @@ require({
         Assets.add(
             new Odin.Texture({
                 name: "img_hospital",
-                src: "content/hospital.png"
-            }),
-            new Odin.Texture({
-                name: "img_player",
-                src: "content/player.png"
-            }),
-            new Odin.Texture({
-                name: "img_zombie",
-                src: "content/zombie.png"
-            }),
-            new Odin.Texture({
-                name: "img_zombie_red",
-                src: "content/zombie_red.png"
-            }),
-            new Odin.SpriteSheet({
-                name: "ss_small",
-                src: "content/32x32.json"
+                src: "content/hospital.png",
+                magFilter: "NEAREST",
+                minFilter: "NEAREST"
             })
         );
 
 
         game = new Odin.Game({
             debug: true,
-            forceCanvas: false
+            forceCanvas: true,
+            canvasRenderer2DOptions: {
+                imageSmoothingEnabled: false
+            }
         });
 
         var scene = new Odin.Scene({
@@ -56,78 +45,13 @@ require({
             components: [
                 new Odin.Transform2D,
                 new Odin.Camera2D({
-                    orthographicSize: 6,
-                    minOrthographicSize: 1,
+                    orthographicSize: 8,
+                    minOrthographicSize: 2,
                     maxOrthographicSize: 8
                 }),
                 new CameraControl
             ],
             tag: "Camera"
-        });
-        var player = new Odin.GameObject({
-            components: [
-                new Player,
-                new Odin.Transform2D,
-                new Odin.Sprite({
-                    texture: Assets.hash["img_player"],
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64
-                }),
-                new Odin.SpriteAnimation({
-                    sheet: Assets.hash["ss_small"],
-                    rate: 0
-                }),
-                new CollisionObject
-            ],
-            tag: "Player"
-        });
-        var zombie = new Odin.GameObject({
-            components: [
-                new Zombie({
-                    spd: 1,
-                    atk: 3,
-                    def: 2
-                }),
-                new Odin.Transform2D,
-                new Odin.Sprite({
-                    texture: Assets.hash["img_zombie"],
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64
-                }),
-                new Odin.SpriteAnimation({
-                    sheet: Assets.hash["ss_small"],
-                    rate: 0.2
-                }),
-                new CollisionObject
-            ],
-            tags: ["Zombie", "Enemy"]
-        });
-        var zombie_red = new Odin.GameObject({
-            components: [
-                new Zombie({
-                    spd: 3,
-                    atk: 1,
-                    def: 1
-                }),
-                new Odin.Transform2D,
-                new Odin.Sprite({
-                    texture: Assets.hash["img_zombie_red"],
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64
-                }),
-                new Odin.SpriteAnimation({
-                    sheet: Assets.hash["ss_small"],
-                    rate: 0.2
-                }),
-                new CollisionObject
-            ],
-            tags: ["ZombieRed", "Enemy"]
         });
         var background = new Odin.GameObject({
             components: [
@@ -190,22 +114,7 @@ require({
             tags: ["Wall", "Right"]
         });
 
-        scene.add(camera, player, wall_top, wall_bottom, wall_left, wall_right, background);
-        for (var i = 5; i--;) {
-            var instance = zombie.clone();
-
-            instance.transform2d.position.set(randFloat(-10, 10), randFloat(-10, 10));
-
-            scene.add(instance);
-        }
-        for (var i = 0; i--;) {
-            var instance = zombie_red.clone();
-
-            instance.transform2d.position.set(randFloat(-10, 10), randFloat(-10, 10));
-
-            scene.add(instance);
-        }
-
+        scene.add(camera, wall_top, wall_bottom, wall_left, wall_right, background);
         game.addScene(scene);
 
 

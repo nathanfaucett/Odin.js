@@ -12,8 +12,10 @@ define([
 
             Odin.Component.call(this, "CollisionObject", opts);
 
+            this.active = true;
+
             this.offset = opts.offset != undefined ? opts.offset : new Odin.Vec2(0, -0.25);
-            this.size = opts.size != undefined ? opts.size : new Odin.Vec2(1, 0.5);
+            this.size = opts.size != undefined ? opts.size : new Odin.Vec2(0.75, 0.5);
 
             this.mass = opts.mass != undefined ? opts.mass : 1; // 0 for not moveable
             this.aabb = new Odin.AABB2;

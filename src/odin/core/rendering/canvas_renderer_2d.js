@@ -28,6 +28,8 @@ define([
 
             EventEmitter.call(this);
 
+            this.imageSmoothingEnabled = opts.imageSmoothingEnabled != undefined ? opts.imageSmoothingEnabled : false;
+
             this.canvas = undefined;
             this.context = undefined;
             this._context = false;
@@ -44,16 +46,19 @@ define([
 
         CanvasRenderer2D.prototype.init = function(canvas) {
             if (this.canvas) this.clear();
+            var ctx;
 
             this.canvas = canvas;
 
             try {
-                this.context = canvas.element.getContext("2d");
+                this.context = ctx = canvas.element.getContext("2d");
             } catch (e) {
                 Log.error(e);
                 return this;
             }
+
             this._context = true;
+            ctx.imageSmoothingEnabled = ctx.webkitImageSmoothingEnabled = ctx.mozImageSmoothingEnabled = ctx.oImageSmoothingEnabled = ctx.msImageSmoothingEnabled = this.imageSmoothingEnabled;
 
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;

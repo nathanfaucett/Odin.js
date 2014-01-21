@@ -30,7 +30,7 @@ define([
             this.time = 0;
             this.turnTime = randFloat(0, 1);
 
-            this.dir = TWO_PI;
+            this.dir = PI;
 
             this.x = 0;
             this.y = 0;
@@ -44,10 +44,18 @@ define([
         Zombie.prototype.init = function() {
 
             this.gameObject.on("collision", function(other) {
+                if (!other) return;
 
-                this.dir += PI;
-                if (!other.hasTag("Player")) return;
-                this.attack(other.character);
+                if (other.hasTag("Player")) {
+                    this.attack(other.character);
+                    return;
+                }
+                if (other.hasTag("Enemy")) {
+                    this.dir += randSign() * PI * 0.1;
+                    return;
+                }
+
+                this.dir -= PI * 0.5;
             }, this);
         };
 
@@ -64,15 +72,15 @@ define([
                 y = this.y,
                 follow;
 
-            this.hitTimer(dt);
-
             if (this.dead) {
+                if (this.deadTimer(dt)) return;
+
                 animation.play("death", Odin.Enums.WrapMode.Clamp);
                 this.collisionObject.mass = 0;
                 return;
             }
 
-            if (player && !player.character.dead) {
+            if (player && player.character && !player.character.dead) {
                 playerPosition = player.transform2d.position;
                 if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.site * this.site)) follow = true;
             }
@@ -97,6 +105,8 @@ define([
 
             position.x += dt * spd * x;
             position.y += dt * spd * y;
+
+            this.hitTimer(dt);
         };
 
 

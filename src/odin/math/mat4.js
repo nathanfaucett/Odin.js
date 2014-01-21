@@ -1190,7 +1190,7 @@ define([
          * @return this
          */
         Mat4.prototype.perspective = function(fov, aspect, near, far) {
-            var ymax = near * Math.tan(degsToRads(fov * 0.5)),
+            var ymax = near * tan(degsToRads(fov * 0.5)),
                 ymin = -ymax,
                 xmin = ymin * aspect,
                 xmax = ymax * aspect;

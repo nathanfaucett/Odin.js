@@ -300,7 +300,7 @@ define([
                 if ((gameObject = gameObjects[i]).hasTag(tag)) return gameObject;
             }
 
-            return out;
+            return undefined;
         };
 
 

@@ -15,6 +15,8 @@ define([
             Odin.Component.call(this, "Character", opts);
 
             this.dead = false;
+            this.deadTime = 2;
+            this._deadTime = 0;
 
             this.hit = false;
             this.hitTime = 0.5;
@@ -57,20 +59,31 @@ define([
 
 
         Character.prototype.attack = function(other) {
-            if (other.dead || other.hit) return;
-            var damage = this.atk * randInt(1, 6) - other.def * randInt(1, 6);
+            if (this.dead) return;
+
+            if (other.takeDamage(this.atk)) {
+                this.exp += floor(other.maxHp * other.level);
+
+                if (this.exp > this.nextLevel) this.setLevel(this.level + 1);
+            }
+        };
+
+
+        Character.prototype.takeDamage = function(atk) {
+            if (this.dead || this.hit) return false;
+            var damage = atk * randInt(1, 6) - this.def * randInt(1, 6);
 
             if (damage > 0) {
-                other.hp -= damage;
-                other.hit = true;
+                this.hp -= damage;
+                this.hit = true;
 
-                if (other.hp <= 0) {
-                    other.dead = true;
-
-                    this.exp += floor(other.maxHp * other.level);
-                    if (this.exp > this.nextLevel) this.setLevel(this.level + 1);
+                if (this.hp <= 0) {
+                    this.dead = true;
+                    return true;
                 }
             }
+
+            return false;
         };
 
 
@@ -83,6 +96,18 @@ define([
                 this.hit = false;
                 this._hitTime = 0;
             }
+        };
+
+
+        Character.prototype.deadTimer = function(dt) {
+            this.collisionObject.active = false;
+
+            if ((this._deadTime += dt) > this.deadTime) {
+                this.gameObject.destroy();
+                return true;
+            }
+
+            return false
         };
 
 

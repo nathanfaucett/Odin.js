@@ -43,8 +43,8 @@ define([
             this.CanvasRenderer2D = undefined;
             this.WebGLRenderer2D = undefined;
 
-            this._CanvasRenderer2DOptions = opts.CanvasRenderer2D;
-            this._WebGLRenderer2DOptions = opts.WebGLRenderer2D;
+            this._CanvasRenderer2DOptions = opts.CanvasRenderer2DOptions;
+            this._WebGLRenderer2DOptions = opts.WebGLRenderer2DOptions;
 
             this.renderer = undefined;
             this.customRenderer = undefined;

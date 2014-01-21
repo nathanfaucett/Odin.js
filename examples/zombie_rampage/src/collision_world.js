@@ -53,6 +53,7 @@ define([
             for (i = pairsi.length; i--;) {
                 bi = pairsi[i];
                 bj = pairsj[i];
+                if (!bi || !bj || !bi.gameObject || !bj.gameObject) return;
 
                 if (bi.collide > 1 || bj.collide > 1) {
                     bi.gameObject.emit("collisionStart", bj.gameObject);
@@ -103,8 +104,8 @@ define([
             bi.collide = bj.collide = 2;
 
             if (mi !== 0 && mj !== 0) {
-                mi *= dt * 5;
-                mj *= dt * 5;
+                mi *= dt * 10;
+                mj *= dt * 10;
             }
 
             xi.x += ox * mi;
@@ -125,6 +126,7 @@ define([
                 for (j = 0; j !== i; j++) {
                     bi = objects[i];
                     bj = objects[j];
+                    if (!bi || !bj || !bi.active || !bj.active) continue;
 
                     if (bi.aabb.intersects(bj.aabb)) {
                         pairsi.push(bi);

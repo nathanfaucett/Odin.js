@@ -12,6 +12,9 @@ define([
 
             Odin.Component.call(this, "Bullet", opts);
 
+            this.owner = undefined;
+            this.damage = 1;
+
             this.x = 0;
             this.y = 0;
 
@@ -24,7 +27,10 @@ define([
         Bullet.prototype.init = function() {
 
             this.gameObject.on("collision", function(other) {
-                if (other.hasTag("Wall")) this.destroy();
+                if (!other || other.hasTag("Player")) return;
+
+                if (other.hasTag("Enemy")) this.bullet.owner.attack(other.character);
+                this.destroy();
             });
         };
 

@@ -30,7 +30,7 @@ define([
                 dt = Time.delta,
                 spd = this.speed;
 
-            if (player && !player.character.dead) {
+            if (player && player.character && !player.character.dead) {
                 playerTransform = player.transform2d;
 
                 transform.follow(playerTransform, dt * spd);
