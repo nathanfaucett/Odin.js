@@ -14,15 +14,11 @@ define([
 
 
         function Component(type, opts) {
-            if (typeof(type) === "object") {
-                opts = type;
-                type = "UnknownComponent";
-            }
             opts || (opts = {});
 
             Class.call(this);
 
-            this._type = type;
+            this._type = type || "UnknownComponent";
             this._name = camelize(this._type, true);
 
             this.sync = opts.sync != undefined ? !! opts.sync : false;

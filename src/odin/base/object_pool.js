@@ -57,6 +57,24 @@ define(
         };
 
 
+        ObjectPool.prototype.clearForEach = function(fn) {
+            var objects = this.objects,
+                pooled = this.pooled,
+                object,
+                i;
+
+            for (i = objects.length; i--;) {
+                object = objects[i];
+                fn(object);
+
+                pooled.push(object);
+            }
+            objects.length = 0;
+
+            return this;
+        };
+
+
         return ObjectPool;
     }
 );

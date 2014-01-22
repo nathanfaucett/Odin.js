@@ -4,7 +4,7 @@ if (typeof(define) !== "function") {
 define([
         "odin/base/class",
         "odin/core/game_object",
-        "odin/core/world",
+        "odin/core/world/world",
         "odin/core/game/log"
     ],
     function(Class, GameObject, World, Log) {

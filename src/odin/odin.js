@@ -14,6 +14,8 @@ define(
 
         function Odin() {
 
+            this.Phys2D = require("odin/phys2d/phys2d");
+
             this.AudioCtx = require("odin/base/audio_ctx");
             this.Class = require("odin/base/class");
             this.Device = require("odin/base/device");
@@ -35,11 +37,13 @@ define(
             this.SpriteSheet = require("odin/core/assets/sprite_sheet");
             this.Texture = require("odin/core/assets/texture");
 
+            this.ParticleSystem = require("odin/core/components/particle_system/particle_system");
             this.AudioSource = require("odin/core/components/audio_source");
             this.Camera = require("odin/core/components/camera");
             this.Camera2D = require("odin/core/components/camera_2d");
             this.Component = require("odin/core/components/component");
-            this.ParticleSystem = require("odin/core/components/particle_system/particle_system");
+            this.MeshFilter = require("odin/core/components/mesh_filter");
+            this.RigidBody2D = require("odin/core/components/rigid_body_2d");
             this.Sprite = require("odin/core/components/sprite");
             this.SpriteAnimation = require("odin/core/components/sprite_animation");
             this.Transform = require("odin/core/components/transform");
@@ -66,7 +70,8 @@ define(
             this.Enums = require("odin/core/enums");
             this.GameObject = require("odin/core/game_object");
             this.Scene = require("odin/core/scene");
-            this.World = require("odin/core/world");
+            this.World = require("odin/core/world/world");
+            this.World2D = require("odin/core/world/world_2d");
 
             this.AABB2 = require("odin/math/aabb2");
             this.AABB3 = require("odin/math/aabb3");

@@ -7,25 +7,23 @@ define(
 
 
         var isArray = Array.isArray,
-            SPLITER = /[ ,]+/;
+            SPLITER = /[ ,]+/,
+            COUNTER = 1;
 
 
         function Enum(enums) {
             enums = isArray(enums) ? enums : enums.split(SPLITER);
             var i = enums.length;
 
-            this.__length__ = i;
-            for (; i--;) this[enums[i]] = i + 1;
+            for (; i--;) this[enums[i]] = COUNTER++;
         }
 
 
         Enum.prototype.add = function(enums) {
             enums = isArray(enums) ? enums : enums.split(SPLITER);
-            var i = enums.length,
-                len = this.__length__;
+            var i = enums.length;
 
-            this.__length__ += i;
-            for (; i--;) this[enums[i]] = len + i + 1;
+            for (; i--;) this[enums[i]] = COUNTER++;
 
             return this;
         };

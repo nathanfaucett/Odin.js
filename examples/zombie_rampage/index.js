@@ -28,7 +28,7 @@ require({
 
         game = new Odin.Game({
             debug: true,
-            forceCanvas: true,
+            forceCanvas: false,
             canvasRenderer2DOptions: {
                 imageSmoothingEnabled: false
             }

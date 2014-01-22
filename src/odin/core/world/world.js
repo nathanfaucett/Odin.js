@@ -9,7 +9,6 @@ define([
         "use strict";
 
 
-
         function World(opts) {
             opts || (opts = {});
 
