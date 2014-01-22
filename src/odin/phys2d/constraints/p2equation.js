@@ -45,7 +45,7 @@ define([
              * @brief number of timesteps it takesto stabilize the constraint
              * @memberof P2Equation
              */
-            this.relaxation = 5;
+            this.relaxation = 3;
 
             /**
              * @property Number stiffness

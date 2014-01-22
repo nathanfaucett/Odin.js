@@ -5,26 +5,27 @@ define([
         "odin/base/event_emitter",
         "odin/base/device",
         "odin/base/dom",
-        "odin/core/game/log",
         "odin/math/mathf",
         "odin/math/vec2",
         "odin/math/mat32",
         "odin/math/mat4",
-        "odin/math/color"
+        "odin/math/color",
+        "odin/core/game/log",
+        "odin/core/enums"
     ],
-    function(EventEmitter, Device, Dom, Log, Mathf, Vec2, Mat32, Mat4, Color) {
+    function(EventEmitter, Device, Dom, Mathf, Vec2, Mat32, Mat4, Color, Log, Enums) {
         "use strict";
 
 
-        var getWebGLContext = Dom.getWebGLContext,
+        var Blending = Enums.Blending,
+
+            getWebGLContext = Dom.getWebGLContext,
             createProgram = Dom.createProgram,
             parseUniformsAttributes = Dom.parseUniformsAttributes,
 
             addEvent = Dom.addEvent,
             removeEvent = Dom.removeEvent,
 
-            min = Math.min,
-            max = Math.max,
             clamp = Mathf.clamp,
             isPowerOfTwo = Mathf.isPowerOfTwo,
 
@@ -32,27 +33,23 @@ define([
             ENUM_WHITE_TEXTURE = -1,
 
             SPRITE_VERTICES = [
-                new Vec2(0.5, 0.5),
                 new Vec2(-0.5, 0.5),
                 new Vec2(-0.5, -0.5),
+                new Vec2(0.5, 0.5),
                 new Vec2(0.5, -0.5)
             ],
             SPRITE_UVS = [
-                new Vec2(1, 0),
                 new Vec2(0, 0),
                 new Vec2(0, 1),
+                new Vec2(1, 0),
                 new Vec2(1, 1)
-            ],
-            SPRITE_INDICES = [
-                0, 1, 2,
-                0, 2, 3
             ],
             ENUM_SPRITE_BUFFER = -1,
 
-            ENUM_SPRITE_SHADER = -1,
-            ENUM_BASIC_SHADER = -2,
+            ENUM_PARTICLE_SHADER = -1,
 
             EMPTY_ARRAY = [];
+
 
         /**
          * @class WebGLRenderer
@@ -104,6 +101,7 @@ define([
                 lastBuffer: undefined
             };
 
+            this._clearBytes = 17664;
             this._lastCamera = undefined;
             this._lastResizeFn = undefined;
             this._lastBackground = new Color;
@@ -147,6 +145,7 @@ define([
             removeEvent(element, "webglcontextlost", this._handleWebGLContextLost, this);
             removeEvent(element, "webglcontextrestored", this._handleWebGLContextRestored, this);
 
+            this._clearBytes = 17664;
             this._lastCamera = undefined;
             this._lastBackground.setRGB(0, 0, 0);
             this._lastBlending = undefined;
@@ -244,9 +243,7 @@ define([
 
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
-            gl.enable(gl.BLEND);
-            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-            gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            this.setBlending(Blending.Default);
 
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
@@ -259,20 +256,15 @@ define([
             buildBuffer(this, {
                 _id: ENUM_SPRITE_BUFFER,
                 vertices: SPRITE_VERTICES,
-                uvs: SPRITE_UVS,
-                indices: SPRITE_INDICES
+                uvs: SPRITE_UVS
+            });
+            buildShader(this, {
+                _id: ENUM_PARTICLE_SHADER,
+                vertexShader: particleVertexShader(precision),
+                fragmentShader: particleFragmentShader(precision)
+            });
 
-            });
-            buildShader(this, {
-                _id: ENUM_SPRITE_SHADER,
-                vertexShader: spriteVertexShader(precision),
-                fragmentShader: spriteFragmentShader(precision)
-            });
-            buildShader(this, {
-                _id: ENUM_BASIC_SHADER,
-                vertexShader: basicVertexShader(precision),
-                fragmentShader: basicFragmentShader(precision)
-            });
+            this._clearBytes = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT;
 
             return this;
         };
@@ -280,7 +272,6 @@ define([
         /**
          * @method setBlending
          * @memberof WebGLRenderer
-         * @brief sets blending mode (empty - default, 0 - none, 1 - additive, 2 - subtractive, or 3 - muliply )
          * @param Number blending
          */
         WebGLRenderer.prototype.setBlending = function(blending) {
@@ -289,28 +280,29 @@ define([
             if (blending !== this._lastBlending) {
 
                 switch (blending) {
-                    case 0:
+                    case Blending.None:
                         gl.disable(gl.BLEND);
                         break;
 
-                    case 1:
+                    case Blending.Additive:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
                         break;
 
-                    case 2:
+                    case Blending.Subtractive:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_COLOR);
                         break;
 
-                    case 3:
+                    case Blending.Muliply:
                         gl.enable(gl.BLEND);
                         gl.blendEquation(gl.FUNC_ADD);
                         gl.blendFunc(gl.ZERO, gl.SRC_COLOR);
                         break;
 
+                    case Blending.Default:
                     default:
                         gl.enable(gl.BLEND);
                         gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
@@ -337,8 +329,8 @@ define([
                 background = scene.world.background,
                 components = scene.components,
                 sprite2ds = components.Sprite || EMPTY_ARRAY,
-                sprite2d,
-                transform2d,
+                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                sprite2d, particleSystem, transform2d,
                 i;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
@@ -367,7 +359,7 @@ define([
                 this._lastCamera = camera;
             }
 
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            gl.clear(this._clearBytes);
 
             for (i = sprite2ds.length; i--;) {
                 sprite2d = sprite2ds[i];
@@ -378,6 +370,16 @@ define([
                 transform2d.updateModelView(camera.view);
                 this.renderSprite(camera, transform2d, sprite2d);
             }
+
+            for (i = particleSystems.length; i--;) {
+                particleSystem = particleSystems[i];
+                transform2d = particleSystem.transform2d;
+
+                if (!transform2d) continue;
+
+                transform2d.updateModelView(camera.view);
+                this.renderParticleSystem(camera, transform2d, particleSystem);
+            }
         };
 
 
@@ -387,40 +389,36 @@ define([
             var gl = this.context,
                 webgl = this._webgl,
                 texture = sprite2d.texture,
-                lastBuffer = webgl.lastBuffer,
-                lastShader = webgl.lastShader,
-                lastTexture = webgl.lastTexture,
 
                 glShader = webgl.shaders[ENUM_SPRITE_SHADER],
                 glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
                 glTexture = buildTexture(this, texture),
                 uniforms = glShader.uniforms,
-                raw, w, h;
+                w, h;
 
-            MAT.mmul(camera.projection, transform2d.modelView);
-            MAT4.fromMat32(MAT);
+            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform2d.modelView));
 
             if (texture && texture.raw) {
-                raw = texture.raw;
-                w = 1 / raw.width;
-                h = 1 / raw.height;
+                w = texture.invWidth;
+                h = texture.invHeight;
             } else {
                 return;
             }
 
-            if (lastShader !== glShader) {
+            if (webgl.lastShader !== glShader) {
                 gl.useProgram(glShader.program);
                 webgl.lastShader = glShader;
             }
-            if (lastBuffer !== glBuffer) {
-                bindBuffers(gl, glShader, glBuffer)
+            if (webgl.lastBuffer !== glBuffer) {
+                bindBuffers(gl, glShader, glBuffer);
                 webgl.lastBuffer = glBuffer;
             }
             gl.uniformMatrix4fv(uniforms.uMatrix, false, MAT4.elements);
             gl.uniform4f(uniforms.uCrop, sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h);
+            gl.uniform2f(uniforms.uSize, sprite2d.width, sprite2d.height);
             gl.uniform1f(uniforms.uAlpha, sprite2d.alpha);
 
-            if (lastTexture !== glTexture) {
+            if (webgl.lastTexture !== glTexture) {
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, glTexture);
                 gl.uniform1i(uniforms.uTexture, 0);
@@ -428,11 +426,83 @@ define([
                 webgl.lastTexture = glTexture;
             }
 
-            if (glBuffer.index) {
-                gl.drawElements(gl.TRIANGLES, glBuffer.indices, gl.UNSIGNED_SHORT, 0);
-            } else {
-                gl.drawArrays(gl.TRIANGLES, 0, glBuffer.vertices);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, glBuffer.vertices);
+        };
+
+
+        WebGLRenderer.prototype.renderParticleSystem = function(camera, transform, particleSystem) {
+            var gl = this.context,
+                webgl = this._webgl,
+
+                glShader = webgl.shaders[ENUM_PARTICLE_SHADER],
+                glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
+
+                vertices = glBuffer.vertices,
+                TRIANGLE_STRIP = gl.TRIANGLE_STRIP,
+
+                uniforms = glShader.uniforms,
+                uMatrix = uniforms.uMatrix,
+                uPos = uniforms.uPos,
+                uAngle = uniforms.uAngle,
+                uSize = uniforms.uSize,
+                uColor = uniforms.uColor,
+                uAlpha = uniforms.uAlpha,
+
+                elements = MAT4.elements,
+                blending = this._lastBlending,
+
+                emitters = particleSystem.emitters,
+                emitter, particles, view, particle, pos, color, glTexture,
+                i = emitters.length,
+                j;
+
+            if (!i) return;
+
+            for (; i--;) {
+                emitter = emitters[i];
+
+                particles = emitter.particles;
+                view = emitter.worldSpace ? camera.view : transform.modelView;
+
+                if (!(j = particles.length)) continue;
+                glTexture = buildTexture(this, emitter.texture);
+
+                if (webgl.lastShader !== glShader) {
+                    gl.useProgram(glShader.program);
+                    webgl.lastShader = glShader;
+                }
+                if (webgl.lastBuffer !== glBuffer) {
+                    bindBuffers(gl, glShader, glBuffer);
+                    webgl.lastBuffer = glBuffer;
+                }
+                this.setBlending(emitter.blending);
+
+                MAT4.mmul(camera.projection, view);
+                gl.uniformMatrix4fv(uMatrix, false, elements);
+
+                if (webgl.lastTexture !== glTexture) {
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, glTexture);
+                    gl.uniform1i(uniforms.uTexture, 0);
+
+                    webgl.lastTexture = glTexture;
+                }
+
+                for (; j--;) {
+                    particle = particles[j];
+                    pos = particle.position;
+                    color = particle.color;
+
+                    gl.uniform3f(uPos, pos.x, pos.y, pos.z);
+                    gl.uniform1f(uAngle, particle.angle);
+                    gl.uniform1f(uSize, particle.size);
+                    gl.uniform3f(uColor, color.r, color.g, color.b);
+                    gl.uniform1f(uAlpha, particle.alpha);
+
+                    gl.drawArrays(TRIANGLE_STRIP, 0, vertices);
+                }
             }
+            this.setBlending(blending);
         };
 
 
@@ -460,10 +530,23 @@ define([
                 FLOAT = gl.FLOAT,
                 ARRAY_BUFFER = gl.ARRAY_BUFFER;
 
+
             if (glBuffer.vertex && attributes.aVertexPosition > -1) {
                 gl.bindBuffer(ARRAY_BUFFER, glBuffer.vertex);
                 gl.enableVertexAttribArray(attributes.aVertexPosition);
-                gl.vertexAttribPointer(attributes.aVertexPosition, 2, FLOAT, false, 0, 0);
+                gl.vertexAttribPointer(attributes.aVertexPosition, 3, FLOAT, false, 0, 0);
+            }
+
+            if (glBuffer.normal && attributes.aVertexNormal > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.normal);
+                gl.enableVertexAttribArray(attributes.aVertexNormal);
+                gl.vertexAttribPointer(attributes.aVertexNormal, 3, FLOAT, false, 0, 0);
+            }
+
+            if (glBuffer.tangent && attributes.aVertexTangent > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.tangent);
+                gl.enableVertexAttribArray(attributes.aVertexTangent);
+                gl.vertexAttribPointer(attributes.aVertexTangent, 4, FLOAT, false, 0, 0);
             }
 
             if (glBuffer.color && attributes.aVertexColor > -1) {
@@ -476,6 +559,18 @@ define([
                 gl.bindBuffer(ARRAY_BUFFER, glBuffer.uv);
                 gl.enableVertexAttribArray(attributes.aVertexUv);
                 gl.vertexAttribPointer(attributes.aVertexUv, 2, FLOAT, false, 0, 0);
+            }
+
+            if (glBuffer.boneWeight && attributes.aBoneWeight > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.boneWeight);
+                gl.enableVertexAttribArray(attributes.aBoneWeight);
+                gl.vertexAttribPointer(attributes.aBoneWeight, 3, FLOAT, false, 0, 0);
+            }
+
+            if (glBuffer.boneIndex && attributes.aBoneIndex > -1) {
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.boneIndex);
+                gl.enableVertexAttribArray(attributes.aBoneIndex);
+                gl.vertexAttribPointer(attributes.aBoneIndex, 3, FLOAT, false, 0, 0);
             }
 
             if (glBuffer.index) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer.index);
@@ -501,16 +596,18 @@ define([
                 items, item,
                 i, il;
 
-            items = buffer.vertices;
-            if (items.length) {
-                compileArray.length = 0;
 
+            items = mesh.vertices;
+            if (items.length) {
+
+                compileArray.length = 0;
                 for (i = 0, il = items.length; i < il; i++) {
                     item = items[i];
-                    compileArray.push(item.x, item.y);
+                    compileArray.push(item.x, item.y, item.z);
                 }
+
                 if (compileArray.length) {
-                    glBuffer.vertex = glBuffer.vertex || gl.createBuffer();
+                    glBuffer.vertex = glBuffer.vertexBuffer || gl.createBuffer();
                     gl.bindBuffer(ARRAY_BUFFER, glBuffer.vertex);
                     gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
                 }
@@ -518,23 +615,88 @@ define([
                 glBuffer.vertices = items.length;
             }
 
-            items = buffer.uvs;
+            items = mesh.normals;
             if (items.length) {
-                compileArray.length = 0;
 
+                compileArray.length = 0;
+                for (i = 0, il = items.length; i < il; i++) {
+                    item = items[i];
+                    compileArray.push(item.x, item.y, item.z);
+                }
+
+                if (compileArray.length) {
+                    glBuffer.normal = glBuffer.normalBuffer || gl.createBuffer();
+                    gl.bindBuffer(ARRAY_BUFFER, glBuffer.normal);
+                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
+                }
+            }
+
+            items = mesh.tangents;
+            if (items.length) {
+
+                compileArray.length = 0;
+                for (i = 0, il = items.length; i < il; i++) {
+                    item = items[i];
+                    compileArray.push(item.x, item.y, item.z, item.w);
+                }
+
+                if (compileArray.length) {
+                    glBuffer.tangent = glBuffer.tangentBuffer || gl.createBuffer();
+                    gl.bindBuffer(ARRAY_BUFFER, glBuffer.tangent);
+                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
+                }
+            }
+
+            items = mesh.colors;
+            if (items.length) {
+
+                compileArray.length = 0;
+                for (i = 0, il = items.length; i < il; i++) {
+                    item = items[i];
+                    compileArray.push(item.r, item.g, item.b);
+                }
+
+                if (compileArray.length) {
+                    glBuffer.color = glBuffer.colorBuffer || gl.createBuffer();
+                    gl.bindBuffer(ARRAY_BUFFER, glBuffer.color);
+                    gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
+                }
+            }
+
+            items = mesh.uvs;
+            if (items.length) {
+
+                compileArray.length = 0;
                 for (i = 0, il = items.length; i < il; i++) {
                     item = items[i];
                     compileArray.push(item.x, item.y);
                 }
+
                 if (compileArray.length) {
-                    glBuffer.uv = glBuffer.uv || gl.createBuffer();
+                    glBuffer.uv = glBuffer.uvBuffer || gl.createBuffer();
                     gl.bindBuffer(ARRAY_BUFFER, glBuffer.uv);
                     gl.bufferData(ARRAY_BUFFER, new Float32Array(compileArray), DRAW);
                 }
             }
 
-            items = buffer.indices || buffer.faces;
+            items = mesh.boneIndices;
             if (items.length) {
+
+                glBuffer.boneIndex = glBuffer.boneIndexBuffer || gl.createBuffer();
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.boneIndex);
+                gl.bufferData(ARRAY_BUFFER, new Float32Array(items), DRAW);
+            }
+
+            items = mesh.boneWeights;
+            if (items.length) {
+
+                glBuffer.boneWeight = glBuffer.boneWeightBuffer || gl.createBuffer();
+                gl.bindBuffer(ARRAY_BUFFER, glBuffer.boneWeight);
+                gl.bufferData(ARRAY_BUFFER, new Float32Array(items), DRAW);
+            }
+
+            items = buffer.indices || buffer.faces;
+            if (items && items.length) {
                 glBuffer.index = glBuffer.index || gl.createBuffer();
                 gl.bindBuffer(ELEMENT_ARRAY_BUFFER, glBuffer.index);
                 gl.bufferData(ELEMENT_ARRAY_BUFFER, new Int16Array(items), DRAW);
@@ -550,17 +712,21 @@ define([
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 shaders = webgl.shaders,
-                glShader = shaders[shader._id];
+                glShader = shaders[shader._id],
+                vertex, fragment;
 
             if (glShader && !shader._needsUpdate) return glShader;
+
             glShader = glShader || (shaders[shader._id] = {});
+            vertex = shader.vertex || shader.vertexShader;
+            fragment = shader.fragment || shader.fragmentShader;
 
-            var program = glShader.program = createProgram(gl, shader.vertexShader, shader.fragmentShader);
+            var program = glShader.program = createProgram(gl, vertex, fragment);
 
-            glShader.vertex = shader.vertexShader;
-            glShader.fragment = shader.fragmentShader;
+            glShader.vertex = vertex;
+            glShader.fragment = fragment;
 
-            parseUniformsAttributes(gl, program, shader.vertexShader, shader.fragmentShader,
+            parseUniformsAttributes(gl, program, vertex, fragment,
                 glShader.attributes || (glShader.attributes = {}),
                 glShader.uniforms || (glShader.uniforms = {})
             );
@@ -619,6 +785,61 @@ define([
             texture._needsUpdate = false;
 
             return glTexture;
+        }
+
+
+        function particleVertexShader(precision) {
+
+            return [
+                "precision " + precision + " float;",
+
+                "uniform mat4 uMatrix;",
+                "uniform vec3 uPos;",
+                "uniform float uAngle;",
+                "uniform float uSize;",
+
+                "attribute vec2 aVertexPosition;",
+                "attribute vec2 aVertexUv;",
+
+                "varying vec2 vUvPosition;",
+
+                "void main() {",
+                "	float c, s, vx, vy, x, y;",
+
+                "	c = cos(uAngle);",
+                "	s = sin(uAngle);",
+                "	vx = aVertexPosition.x;",
+                "	vy = aVertexPosition.y;",
+
+                "	x = vx * c - vy * s;",
+                "	y = vx * s + vy * c;",
+
+                "	vUvPosition = aVertexUv;",
+                "	gl_Position = uMatrix * vec4(uPos.x + x * uSize, uPos.y + y * uSize, uPos.z, 1.0);",
+                "}"
+            ].join("\n");
+        }
+
+
+        function particleFragmentShader(precision) {
+
+            return [
+                "precision " + precision + " float;",
+
+                "uniform float uAlpha;",
+                "uniform vec3 uColor;",
+                "uniform sampler2D uTexture;",
+
+                "varying vec2 vUvPosition;",
+
+                "void main() {",
+                "	vec4 finalColor = texture2D(uTexture, vUvPosition);",
+                "	finalColor.xyz *= uColor;",
+                "	finalColor.w *= uAlpha;",
+
+                "	gl_FragColor = finalColor;",
+                "}"
+            ].join("\n");
         }
 
 

@@ -38,7 +38,7 @@ define([
         }
 
 
-        Loop.prototype.init = Loop.prototype.resume = function() {
+        Loop.prototype.resume = function() {
             if (!this.callback) {
                 Log.warn("Loop.resume: can't run loop without callback");
                 return;

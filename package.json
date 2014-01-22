@@ -4,7 +4,7 @@
   "description": "Node.js Canvas/WebGL Javascript Game Framework",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nathanfaucett/odin.git"
+    "url": "https://github.com/nathanfaucett/Odin.js.git"
   },
   "main": "src/odin_server.js",
   "keywords": [

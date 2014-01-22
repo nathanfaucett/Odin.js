@@ -110,7 +110,7 @@ define([
                 });
             });
 
-            this._loop.init();
+            this._loop.resume();
             this.emit("init");
 
             return this;

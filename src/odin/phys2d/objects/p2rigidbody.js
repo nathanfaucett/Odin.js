@@ -14,7 +14,8 @@ define([
         "use strict";
 
 
-        var pow = Math.pow,
+        var TWO_PI = Math.PI * 2,
+            pow = Math.pow,
 
             BodyType = P2Enums.BodyType,
             MotionState = P2Enums.MotionState,
@@ -32,7 +33,7 @@ define([
             this.angularVelocity = opts.angularVelocity != undefined ? opts.angularVelocity : 0;
             this.torque = 0;
 
-            this.angularDamping = typeof opts.angularDamping === "number" ? opts.angularDamping : 0;
+            this.angularDamping = opts.angularDamping != undefined ? opts.angularDamping : TWO_PI * 0.01;
 
             this.matrix = new Mat32();
 
@@ -43,6 +44,8 @@ define([
             this._shapeHash = {};
 
             this.aabb = new AABB2;
+
+            this.sleepAngularVelocityLimit = opts.sleepAngularVelocityLimit !== undefined ? !! opts.sleepAngularVelocityLimit : TWO_PI * 0.01;
 
             this.wlambda = 0;
 
@@ -312,6 +315,27 @@ define([
 
             for (var i = arguments.length; i--;) this.removeShape(arguments[i]);
             return this;
+        };
+
+
+        P2Rigidbody.prototype.sleepTick = function(time) {
+
+            if (this.allowSleep) {
+                var sleepState = this.sleepState,
+                    velSq = this.velocity.lengthSq(),
+                    sleepVelocityLimit = this.sleepVelocityLimit * this.sleepVelocityLimit,
+                    aVel = this.angularVelocity,
+                    sleepAngularVelocityLimit = this.sleepAngularVelocityLimit;
+
+                if (sleepState === SleepState.Awake && (velSq < sleepVelocityLimit && aVel < sleepAngularVelocityLimit)) {
+                    this.sleepState = SleepState.Sleepy;
+                    this._sleepTime = time;
+                } else if (sleepState === SleepState.Sleepy && (velSq > sleepVelocityLimit || aVel > sleepAngularVelocityLimit)) {
+                    this.wake();
+                } else if (sleepState === SleepState.Sleepy && (time - this._lastSleepyTime) > this.sleepTimeLimit) {
+                    this.sleep();
+                }
+            }
         };
 
 

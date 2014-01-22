@@ -276,7 +276,7 @@ define([
                 body = bodies[i];
 
                 body.update(dt);
-                //body.sleepTick(time);
+                body.sleepTick(time);
             }
             stats.integrate = now() - start;
 

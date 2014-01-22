@@ -4,7 +4,6 @@ if (typeof(define) !== "function") {
 define([
         "odin/base/class",
         "odin/base/device",
-        "odin/base/socket.io",
         "odin/base/time",
         "odin/math/mathf",
         "odin/core/game/config",
@@ -19,7 +18,7 @@ define([
         "odin/core/input/input",
         "odin/core/input/handler"
     ],
-    function(Class, Device, io, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler) {
+    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler) {
         "use strict";
 
 
@@ -56,7 +55,7 @@ define([
         Game.prototype.init = function() {
             this.canvas.init();
 
-            this._loop.init();
+            this._loop.resume();
             this.emit("init");
 
             return this;

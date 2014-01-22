@@ -27,13 +27,13 @@ define([
              * @brief max number of iterations
              * @memberof P2Solver
              */
-            this.iterations = typeof opts.iterations === "number" ? opts.iterations : 10;
+            this.iterations = opts.iterations !== undefined ? opts.iterations : 10;
 
             /**
              * @property Number tolerance
              * @memberof P2Solver
              */
-            this.tolerance = typeof opts.tolerance === "number" ? opts.tolerance : 1e-4;
+            this.tolerance = opts.tolerance !== undefined ? opts.tolerance : 1e-6;
         }
 
         Class.extend(P2Solver, Class);

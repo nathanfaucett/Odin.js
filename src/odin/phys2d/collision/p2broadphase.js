@@ -60,7 +60,6 @@ define([
 
         function bodiesNeedsBroadphase(bi, bj) {
 
-            if (bi.sleepState === SleepState.Sleeping && bj.sleepState === SleepState.Sleeping) return false;
             if (bi.motionState !== MotionState.Dynamic && bj.motionState !== MotionState.Dynamic) return false;
             if (bi.aabb && bj.aabb && !bi.aabb.intersects(bj.aabb)) return false;
 

@@ -31,7 +31,7 @@ define([
             this.velocity = opts.velocity != undefined ? opts.velocity : new Vec2;
             this.force = new Vec2;
 
-            this.linearDamping = opts.linearDamping != undefined ? opts.linearDamping : 0;
+            this.linearDamping = opts.linearDamping != undefined ? opts.linearDamping : 0.01;
 
             this.mass = 0;
             this.invMass = 0;
@@ -40,6 +40,10 @@ define([
 
             this.allowSleep = opts.allowSleep !== undefined ? !! opts.allowSleep : true;
             this.sleepState = SleepState.Awake;
+
+            this.sleepVelocityLimit = opts.sleepVelocityLimit !== undefined ? !! opts.sleepVelocityLimit : 0.01;
+            this.sleepTimeLimit = opts.sleepTimeLimit !== undefined ? !! opts.sleepTimeLimit : 1;
+
             this._sleepTime = 0;
             this._lastSleepyTime = 0;
 
@@ -47,10 +51,6 @@ define([
         }
 
         Class.extend(P2Particle, Class);
-
-
-        P2Particle.LINEAR_MAX_VELOCITY = 0.05;
-        P2Particle.SLEEP_MAX_TIME = 1;
 
 
         P2Particle.prototype.copy = function(other) {
@@ -174,14 +174,14 @@ define([
             if (this.allowSleep) {
                 var sleepState = this.sleepState,
                     velSq = this.velocity.lengthSq(),
-                    LINEAR_MAX_VELOCITY = P2Particle.LINEAR_MAX_VELOCITY * P2Particle.LINEAR_MAX_VELOCITY;
+                    sleepVelocityLimit = this.sleepVelocityLimit * this.sleepVelocityLimit;
 
-                if (sleepState === SleepState.Awake && velSq < LINEAR_MAX_VELOCITY) {
+                if (sleepState === SleepState.Awake && velSq < sleepVelocityLimit) {
                     this.sleepState = SleepState.Sleepy;
                     this._sleepTime = time;
-                } else if (sleepState === SleepState.Sleepy && velSq > LINEAR_MAX_VELOCITY) {
+                } else if (sleepState === SleepState.Sleepy && velSq > sleepVelocityLimit) {
                     this.wake();
-                } else if (sleepState === SleepState.Sleepy && (time - this._lastSleepyTime) > P2Particle.SLEEP_MAX_TIME) {
+                } else if (sleepState === SleepState.Sleepy && (time - this._lastSleepyTime) > this.sleepTimeLimit) {
                     this.sleep();
                 }
             }

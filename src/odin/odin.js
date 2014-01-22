@@ -24,7 +24,6 @@ define(
             this.EventEmitter = require("odin/base/event_emitter");
             this.ObjectPool = require("odin/base/object_pool");
             this.requestAnimationFrame = require("odin/base/request_animation_frame");
-            this.io = require("odin/base/socket.io");
             this.Time = require("odin/base/time");
             this.util = require("odin/base/util");
 
@@ -72,6 +71,8 @@ define(
             this.Scene = require("odin/core/scene");
             this.World = require("odin/core/world/world");
             this.World2D = require("odin/core/world/world_2d");
+
+            this.io = require("odin/lib/socket.io");
 
             this.AABB2 = require("odin/math/aabb2");
             this.AABB3 = require("odin/math/aabb3");
