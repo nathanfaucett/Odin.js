@@ -341,7 +341,7 @@ define([
                 lastBackground = this._lastBackground,
                 background = scene.world.background,
                 components = scene.components,
-                sprite2ds = components.Sprite || EMPTY_ARRAY,
+                sprites = components.Sprite || EMPTY_ARRAY,
                 particleSystems = components.ParticleSystem || EMPTY_ARRAY,
                 sprite2d, particleSystem, transform2d,
                 i;
@@ -374,8 +374,8 @@ define([
 
             gl.clear(this._clearBytes);
 
-            for (i = sprite2ds.length; i--;) {
-                sprite2d = sprite2ds[i];
+            for (i = sprites.length; i--;) {
+                sprite2d = sprites[i];
                 transform2d = sprite2d.transform2d;
 
                 if (!transform2d) continue;

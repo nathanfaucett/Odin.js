@@ -5,10 +5,11 @@ define([
         "odin/base/class",
         "odin/base/time",
         "odin/core/components/component",
+        "odin/core/components/particle_system/emitter",
         "odin/core/components/particle_system/emitter_2d",
         "odin/core/components/particle_system/tween"
     ],
-    function(Class, Time, Component, Emitter2D, Tween) {
+    function(Class, Time, Component, Emitter, Emitter2D, Tween) {
         "use strict";
 
 
@@ -45,6 +46,7 @@ define([
         Component.extend(ParticleSystem);
 
 
+        ParticleSystem.Emitter = Emitter;
         ParticleSystem.Emitter2D = Emitter2D;
         ParticleSystem.Tween = Tween;
 

@@ -12,13 +12,14 @@ define([
         "odin/core/rendering/canvas",
         "odin/core/rendering/canvas_renderer_2d",
         "odin/core/rendering/webgl_renderer_2d",
+        "odin/core/rendering/webgl_renderer",
         "odin/core/game_object",
         "odin/core/components/component",
         "odin/core/scene",
         "odin/core/input/input",
         "odin/core/input/handler"
     ],
-    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler) {
+    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, WebGLRenderer, GameObject, Component, Scene, Input, Handler) {
         "use strict";
 
 
@@ -41,9 +42,11 @@ define([
 
             this.CanvasRenderer2D = undefined;
             this.WebGLRenderer2D = undefined;
+            this.WebGLRenderer = undefined;
 
             this._CanvasRenderer2DOptions = opts.CanvasRenderer2DOptions;
             this._WebGLRenderer2DOptions = opts.WebGLRenderer2DOptions;
+            this._WebGLRendererOptions = opts.WebGLRendererOptions;
 
             this.renderer = undefined;
             this.customRenderer = undefined;
@@ -138,7 +141,10 @@ define([
                 Log.log("Game: setting up custom renderer " + this.customRenderer.name);
             } else {
                 if (gameObject.camera) {
-                    Log.warn("Game.updateRenderer: no renderer for camera component yet");
+                    if (Device.webgl) {
+                        this.renderer = this.WebGLRenderer || (this.WebGLRenderer = new WebGLRenderer(this._WebGLRendererOptions));
+                        Log.log("Game: setting up WebGLRenderer");
+                    }
                 } else if (gameObject.camera2d) {
                     if (!Config.forceCanvas && Device.webgl) {
                         this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._WebGLRenderer2DOptions));

@@ -5,14 +5,14 @@ define([
         "odin/base/object_pool",
         "odin/base/class",
         "odin/math/mathf",
-        "odin/math/vec2",
+        "odin/math/vec3",
         "odin/math/color",
         "odin/core/enums",
         "odin/core/assets/assets",
         "odin/core/components/particle_system/tween",
         "odin/core/components/particle_system/particle_2d"
     ],
-    function(ObjectPool, Class, Mathf, Vec2, Color, Enums, Assets, Tween, Particle2D) {
+    function(ObjectPool, Class, Mathf, Vec3, Color, Enums, Assets, Tween, Particle2D) {
         "use strict";
 
 
@@ -30,10 +30,10 @@ define([
             sin = Math.sin,
             sqrt = Math.sqrt,
 
-            PARTICLE_POOL = Emitter2D.PARTICLE_POOL = new ObjectPool(Particle2D);
+            PARTICLE_POOL = Emitter.PARTICLE_POOL = new ObjectPool(Particle2D);
 
 
-        function Emitter2D(opts) {
+        function Emitter(opts) {
             opts || (opts = {});
 
             Class.call(this);
@@ -44,7 +44,7 @@ define([
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
             this.texture = opts.texture != undefined ? opts.texture : undefined;
 
-            this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec2(0.5, 0.5);
+            this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec3(0.5, 0.5);
             this.positionRadius = opts.positionRadius != undefined ? opts.positionRadius : 0.5;
 
             this.speed = opts.speed != undefined ? opts.speed : 0;
@@ -55,7 +55,7 @@ define([
 
             this.worldSpace = opts.worldSpace != undefined ? opts.worldSpace : true;
 
-            this.position = opts.position != undefined ? opts.position : new Vec2;
+            this.position = opts.position != undefined ? opts.position : new Vec3;
 
             this.minEmission = opts.minEmission != undefined ? opts.minEmission : 1;
             this.maxEmission = opts.maxEmission != undefined ? opts.maxEmission : 2;
@@ -70,11 +70,11 @@ define([
             this.alphaTween = new Tween(opts.alphaTween);
             this.colorTween = new Tween(opts.colorTween);
 
-            this.velocity = opts.velocity != undefined ? opts.velocity : new Vec2;
-            this.velocitySpread = opts.velocitySpread != undefined ? opts.velocitySpread : new Vec2;
+            this.velocity = opts.velocity != undefined ? opts.velocity : new Vec3;
+            this.velocitySpread = opts.velocitySpread != undefined ? opts.velocitySpread : new Vec3;
 
-            this.acceleration = opts.acceleration != undefined ? opts.acceleration : new Vec2;
-            this.accelerationSpread = opts.accelerationSpread != undefined ? opts.accelerationSpread : new Vec2;
+            this.acceleration = opts.acceleration != undefined ? opts.acceleration : new Vec3;
+            this.accelerationSpread = opts.accelerationSpread != undefined ? opts.accelerationSpread : new Vec3;
 
             this.angularVelocity = opts.angularVelocity != undefined ? opts.angularVelocity : 0;
             this.angularVelocitySpread = opts.angularVelocitySpread != undefined ? opts.angularVelocitySpread : 0;
@@ -102,10 +102,10 @@ define([
             this.particles = [];
         }
 
-        Class.extend(Emitter2D);
+        Class.extend(Emitter);
 
 
-        Emitter2D.prototype.copy = function(other) {
+        Emitter.prototype.copy = function(other) {
 
             this.positionType = other.positionType;
             this.velocityType = other.velocityType;
@@ -166,7 +166,7 @@ define([
         };
 
 
-        Emitter2D.prototype.play = function() {
+        Emitter.prototype.play = function() {
 
             this.time = 0;
             this.playing = true;
@@ -176,7 +176,7 @@ define([
         };
 
 
-        Emitter2D.prototype.clear = function() {
+        Emitter.prototype.clear = function() {
             var particles = this.particles,
                 i = particles.length;
 
@@ -194,10 +194,10 @@ define([
         };
 
 
-        var VEC = new Vec2;
-        Emitter2D.prototype.spawn = function(count) {
+        var VEC = new Vec3;
+        Emitter.prototype.spawn = function(count) {
             var transform = this.transform || (this.transform = this.particleSystem.gameObject.transform || this.particleSystem.gameObject.transform2d),
-                transformPosition = transform.toWorld(VEC.set(0, 0)),
+                transformPosition = transform.toWorld(VEC.set(0, 0, 0)),
 
                 position = this.position,
                 positionSpread = this.positionSpread,
@@ -237,12 +237,13 @@ define([
                 positionType = this.positionType,
                 velocityType = this.velocityType,
 
-                limit = clampTop(numParticle2Ds + count, Emitter2D.MAX_PARTICLES) - numParticle2Ds,
-                posx, posy, vel, acc, pos, col, angle, u, r, dx, dy, spd, particle;
+                limit = clampTop(numParticle2Ds + count, Emitter.MAX_PARTICLES) - numParticle2Ds,
+                posx, posy, posz, vel, acc, pos, col, angle, x, y, z, len, r, dx, dy, dz, spd, particle;
 
-            if (positionType === EmitterType.Circle || positionType === EmitterType.CircleEdge) {
+            if (positionType === EmitterType.Circle) {
                 posx = randFloat(-positionSpread.x, positionSpread.x);
                 posy = randFloat(-positionSpread.y, positionSpread.y);
+                posz = randFloat(-positionSpread.z, positionSpread.z);
             }
 
             for (; limit--;) {
@@ -266,84 +267,67 @@ define([
                 if (worldSpace) {
                     pos.x = position.x + transformPosition.x;
                     pos.y = position.y + transformPosition.y;
+                    pos.z = position.z + transformPosition.z;
                 } else {
                     pos.x = position.x;
                     pos.y = position.y;
+                    pos.z = position.z;
                 }
 
                 switch (positionType) {
                     case EmitterType.Box:
                         pos.x += randFloat(-positionSpread.x, positionSpread.x);
                         pos.y += randFloat(-positionSpread.y, positionSpread.y);
+                        pos.z += randFloat(-positionSpread.z, positionSpread.z);
                         break;
 
-                    case EmitterType.BoxEdge:
-                        switch (floor(random() * 4)) {
-                            case 0:
-                                pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                                pos.y += positionSpread.y;
-                                break;
-                            case 1:
-                                pos.x += positionSpread.x;
-                                pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                                break;
-                            case 2:
-                                pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                                pos.y += -positionSpread.y;
-                                break;
-                            case 3:
-                                pos.x += -positionSpread.x;
-                                pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                                break;
-                        }
-                        break;
-
-                    case EmitterType.Circle:
-                        angle = TWO_PI * random();
-                        u = random() + random();
-                        r = u > 1 ? 2 - u : u;
-
-                        pos.x += posx + r * cos(angle) * positionRadius;
-                        pos.y += posy + r * sin(angle) * positionRadius;
-                        break;
-
-                    case EmitterType.CircleEdge:
+                    case EmitterType.Sphere:
                     default:
-                        angle = TWO_PI * random();
-                        pos.x += posx + cos(angle) * positionRadius;
-                        pos.y += posy + sin(angle) * positionRadius;
+                        x = randFloat(-1, 1);
+                        y = randFloat(-1, 1);
+                        z = randFloat(-1, 1);
+
+                        len = x * x + y * y + z * z;
+                        len = len !== 0 ? 1 / sqrt(len) : len;
+
+                        pos.x += posx + x * len * positionRadius;
+                        pos.y += posy + y * len * positionRadius;
+                        pos.z += posz + z * len * positionRadius;
                         break;
                 }
 
                 switch (velocityType) {
                     case EmitterType.Box:
-                    case EmitterType.BoxEdge:
                         vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
                         vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
+                        vel.z = velocity.z + randFloat(-velocitySpread.z, velocitySpread.z);
                         break;
 
-                    case EmitterType.Circle:
-                    case EmitterType.CircleEdge:
+                    case EmitterType.Sphere:
                     default:
                         if (worldSpace) {
                             dx = pos.x - (position.x + transformPosition.x);
                             dy = pos.y - (position.y + transformPosition.y);
+                            dz = pos.z - (position.z + transformPosition.z);
                         } else {
                             dx = pos.x - position.x;
                             dy = pos.y - position.y;
+                            dz = pos.z - position.z;
                         }
                         spd = speed + randFloat(-speedSpread, speedSpread);
 
-                        r = dx * dx + dy * dy;
+                        r = dx * dx + dy * dy + dz * dz;
                         r = r !== 0 ? 1 / sqrt(r) : r;
 
                         vel.x = dx * r * spd;
                         vel.y = dy * r * spd;
+                        vel.z = dz * r * spd;
                         break;
                 }
 
                 acc.x = acceleration.x + randFloat(-accelerationSpread.x, accelerationSpread.x);
                 acc.y = acceleration.y + randFloat(-accelerationSpread.y, accelerationSpread.y);
+                acc.z = acceleration.z + randFloat(-accelerationSpread.z, accelerationSpread.z);
 
                 particle.angularVelocity = angularVelocity + randFloat(-angularVelocitySpread, angularVelocitySpread);
                 particle.angularAcceleration = angularAcceleration + randFloat(-angularAccelerationSpread, angularAccelerationSpread);
@@ -359,7 +343,7 @@ define([
         };
 
 
-        Emitter2D.prototype.update = function(dt) {
+        Emitter.prototype.update = function(dt) {
             if (!this.playing) return;
             var particles = this.particles,
                 sizeTween = this.sizeTween,
@@ -402,7 +386,7 @@ define([
         };
 
 
-        Emitter2D.prototype.toJSON = function(json) {
+        Emitter.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
             json.type = 1;
@@ -464,7 +448,7 @@ define([
         };
 
 
-        Emitter2D.prototype.fromServerJSON = function(json) {
+        Emitter.prototype.fromServerJSON = function(json) {
             Class.prototype.fromServerJSON.call(this, json);
 
             this.positionType = json.positionType;
@@ -524,7 +508,7 @@ define([
         };
 
 
-        Emitter2D.prototype.fromJSON = function(json) {
+        Emitter.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 
             this.positionType = json.positionType;
@@ -584,9 +568,9 @@ define([
         };
 
 
-        Emitter2D.MAX_PARTICLES = 1024;
+        Emitter.MAX_PARTICLES = 1024;
 
 
-        return Emitter2D;
+        return Emitter;
     }
 );

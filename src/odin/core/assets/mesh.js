@@ -2,10 +2,17 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/core/assets/asset"
+        "odin/core/assets/asset",
+        "odin/math/vec2",
+        "odin/math/vec3",
+        "odin/math/vec4",
+        "odin/math/color"
     ],
-    function(Asset) {
+    function(Asset, Vec2, Vec3, Vec4, Color) {
         "use strict";
+
+
+        var EMPTY_ARRAY = [];
 
 
         function Mesh(opts) {
@@ -13,24 +20,24 @@ define([
 
             Asset.call(this, opts);
 
-            this.vertices = opts.vertices !== undefined ? opts.vertices : [];
+            this.vertices = opts.vertices != undefined ? opts.vertices : [];
 
-            this.normals = opts.normals !== undefined ? opts.normals : [];
+            this.normals = opts.normals != undefined ? opts.normals : [];
 
-            this.tangents = opts.tangents !== undefined ? opts.tangents : [];
+            this.tangents = opts.tangents != undefined ? opts.tangents : [];
 
-            this.faces = opts.faces !== undefined ? opts.faces : [];
+            this.faces = opts.faces != undefined ? opts.faces : [];
 
-            this.colors = opts.colors !== undefined ? opts.colors : [];
+            this.colors = opts.colors != undefined ? opts.colors : [];
 
-            this.uvs = opts.uvs !== undefined ? opts.uvs : [];
+            this.uvs = opts.uvs != undefined ? opts.uvs : [];
 
-            this.bones = opts.bones !== undefined ? opts.bones : [];
-            this.boneIndices = opts.boneIndices !== undefined ? opts.boneIndices : [];
-            this.boneWeights = opts.boneWeights !== undefined ? opts.boneWeights : [];
+            this.bones = opts.bones != undefined ? opts.bones : [];
+            this.boneIndices = opts.boneIndices != undefined ? opts.boneIndices : [];
+            this.boneWeights = opts.boneWeights != undefined ? opts.boneWeights : [];
 
-            this.dynamic = opts.dynamic !== undefined ? !! opts.dynamic : false;
-            this.useBones = opts.useBones !== undefined ? !! opts.useBones : false;
+            this.dynamic = opts.dynamic != undefined ? !! opts.dynamic : false;
+            this.useBones = opts.useBones != undefined ? !! opts.useBones : false;
 
             this.aabb = new AABB3;
             if (opts.vertices) this.aabb.fromPoints(this.vertices);
@@ -117,11 +124,10 @@ define([
                 faceNormal = new Vec3;
 
             return function() {
-                var i, il,
-                    vertices = this.vertices,
+                var vertices = this.vertices,
                     normals = this.normals,
                     faces = this.faces,
-                    normal, a, b, c, va, vb, vc;
+                    a, b, c, va, vb, vc, i;
 
                 for (i = vertices.length; i -= 3;) {
                     (normals[i] || (normals[i] = new Vec3)).set(0, 0, 0);
@@ -185,7 +191,7 @@ define([
                     s1, s2, t1, t2,
                     a, b, c,
 
-                    r, w, i, il;
+                    r, w, i;
 
                 for (i = vertices.length; i--;) {
                     (tan1[i] || (tan1[i] = new Vec3)).set(0, 0, 0);
@@ -264,7 +270,7 @@ define([
         }();
 
 
-        Mesh.prototype.addQuad = function(a, b, c, d, uvs, segmentsX, segmentsY) {
+        Mesh.prototype.addQuad = function(a, b, c, d, uvs) {
             var index = this.vertices.length;
 
             if (!uvs || !uvs.length || uvs.length != 4) uvs = [0, 1, 0, 1];
@@ -302,23 +308,23 @@ define([
         Mesh.prototype.toJSON = function(json, pack) {
             json = Asset.prototype.toJSON.call(this, json, pack);
             var vertices = this.vertices,
-                jsonVertices = json.vertices,
+                jsonVertices = json.vertices || (json.vertices = []),
                 normals = this.normals,
-                jsonNormals = json.jsonNormals,
+                jsonNormals = json.normals || (json.normals = []),
                 tangents = this.tangents,
-                jsonTangents = json.jsonTangents,
+                jsonTangents = json.tangents || (json.tangents = []),
                 faces = this.faces,
-                jsonFaces = json.jsonFaces,
+                jsonFaces = json.faces || (json.faces = []),
                 colors = this.colors,
-                jsonColors = json.jsonColors,
+                jsonColors = json.colors || (json.colors = []),
                 uvs = this.uvs,
-                jsonUvs = json.jsonUvs,
+                jsonUvs = json.uvs || (json.uvs = []),
                 bones = this.bones,
-                jsonBones = json.bones,
+                jsonBones = json.bones || (json.bones = []),
                 boneIndices = this.boneIndices,
-                jsonBoneIndices = json.jsonBoneIndices,
+                jsonBoneIndices = json.boneIndices || (json.boneIndices = []),
                 boneWeights = this.boneWeights,
-                jsonBoneWeights = json.jsonBoneWeights,
+                jsonBoneWeights = json.boneWeights || (json.boneWeights = []),
                 i;
 
             jsonVertices.length = jsonNormals.length = jsonTangents.length = jsonFaces.length = jsonColors.length = jsonUvs.length = 0;
@@ -341,34 +347,34 @@ define([
         };
 
 
-        Mesh.prototype.fromServerJSON = function(json, pack) {
-            json = Asset.prototype.fromServerJSON.call(this, json, pack);
-            this.fromJSON(json, pack);
+        Mesh.prototype.fromServerJSON = function(json) {
+            json = Asset.prototype.fromServerJSON.call(this, json);
+            this.fromJSON(json);
 
             return json;
         };
 
 
-        Mesh.prototype.fromJSON = function(json, pack) {
+        Mesh.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
             var vertices = this.vertices,
                 jsonVertices = json.vertices,
                 normals = this.normals,
-                jsonNormals = json.jsonNormals,
+                jsonNormals = json.normals,
                 tangents = this.tangents,
-                jsonTangents = json.jsonTangents,
+                jsonTangents = json.tangents,
                 faces = this.faces,
-                jsonFaces = json.jsonFaces,
+                jsonFaces = json.faces,
                 colors = this.colors,
-                jsonColors = json.jsonColors,
+                jsonColors = json.colors,
                 uvs = this.uvs,
-                jsonUvs = json.jsonUvs,
+                jsonUvs = json.uvs,
                 bones = this.bones,
                 jsonBones = json.bones,
                 boneIndices = this.boneIndices,
-                jsonBoneIndices = json.jsonBoneIndices,
+                jsonBoneIndices = json.boneIndices,
                 boneWeights = this.boneWeights,
-                jsonBoneWeights = json.jsonBoneWeights,
+                jsonBoneWeights = json.boneWeights,
                 i;
 
             vertices.length = normals.length = tangents.length = faces.length = colors.length = uvs.length = 0;
@@ -442,14 +448,10 @@ define([
         };
 
 
-        Mesh.Cube = function(width, height, depth, widthSegments, heightSegments, depthSegments) {
+        Mesh.Cube = function(width, height, depth) {
             var w = (width || 1) * 0.5,
                 h = (height || 1) * 0.5,
                 d = (depth || 1) * 0.5,
-
-                ws = widthSegments || 1,
-                hs = heightSegments || 1,
-                ds = depthSegments || 1,
 
                 mesh = new Mesh;
 

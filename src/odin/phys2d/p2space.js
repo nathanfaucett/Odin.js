@@ -18,7 +18,6 @@ define([
 
 
         var now = Time.now,
-            pow = Math.pow,
             MotionState = P2Enums.MotionState,
 
             FRICTION_POOL = new ObjectPool(P2Friction);

@@ -2,9 +2,10 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/core/assets/asset"
+        "odin/core/assets/asset",
+        "odin/core/assets/shader"
     ],
-    function(Asset) {
+    function(Asset, Shader) {
         "use strict";
 
 

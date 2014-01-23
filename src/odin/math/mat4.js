@@ -627,9 +627,16 @@ define([
 
                 up = up || dup;
 
-                z.vsub(target, eye).normalize();
+                z.vsub(eye, target).normalize();
+                if (z.lengthSq() === 0) z.z = 1;
                 x.vcross(up, z).normalize();
+
+                if (x.lengthSq() === 0) {
+                    z.x += 0.0001;
+                    x.vcross(up, z).normalize();
+                }
                 y.vcross(z, x);
+
 
                 te[0] = x.x;
                 te[4] = y.x;
@@ -1149,7 +1156,7 @@ define([
          * @param Number far
          * @return this
          */
-        Mat4.prototype.frustum = function(left, right, bottom, top, near, far) {
+        Mat4.prototype.frustum = function(left, right, top, bottom, near, far) {
             var te = this.elements,
                 x = 2 * near / (right - left),
                 y = 2 * near / (top - bottom),
@@ -1190,12 +1197,12 @@ define([
          * @return this
          */
         Mat4.prototype.perspective = function(fov, aspect, near, far) {
-            var ymax = near * tan(degsToRads(fov * 0.5)),
+            var ymax = near * tan(fov * 0.5),
                 ymin = -ymax,
                 xmin = ymin * aspect,
                 xmax = ymax * aspect;
 
-            return this.frustum(xmin, xmax, ymin, ymax, near, far);
+            return this.frustum(xmin, xmax, ymax, ymin, near, far);
         };
 
         /**

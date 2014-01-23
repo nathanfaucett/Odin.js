@@ -2,11 +2,12 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/core/assets/assets",
         "odin/core/components/component",
         "odin/core/assets/material",
         "odin/core/assets/mesh"
     ],
-    function(Component, Material, Mesh) {
+    function(Assets, Component, Material, Mesh) {
         "use strict";
 
 
@@ -37,13 +38,13 @@ define([
              * @property Mesh mesh
              * @memberof MeshFilter
              */
-            this.mesh = opts.mesh instanceof Mesh ? opts.mesh : new Mesh(opts.mesh);
+            this.mesh = opts.mesh != undefined ? opts.mesh : undefined;
 
             /**
              * @property Material material
              * @memberof MeshFilter
              */
-            this.material = opts.material instanceof Material ? opts.material : new Material(opts.material);
+            this.material = opts.material != undefined ? opts.material : undefined;
         }
 
         Component.extend(MeshFilter);
@@ -55,7 +56,7 @@ define([
             this.receiveShadows = other.receiveShadows;
 
             this.mesh = other.mesh;
-            this.material.copy(other.material);
+            this.material = other.material;
 
             return this;
         };
@@ -65,6 +66,32 @@ define([
 
             this.mesh = undefined;
             this.material = undefined;
+
+            return this;
+        };
+
+
+        MeshFilter.prototype.toJSON = function(json) {
+            json = Component.prototype.toJSON.call(this, json);
+
+            json.castShadows = this.castShadows;
+            json.receiveShadows = this.receiveShadows;
+
+            json.mesh = this.mesh ? this.mesh.name : undefined;
+            json.material = this.material ? this.material.name : undefined;
+
+            return json;
+        };
+
+
+        MeshFilter.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+
+            this.castShadows = json.castShadows;
+            this.receiveShadows = json.receiveShadows;
+
+            this.mesh = json.mesh ? Assets.hash[json.mesh] : undefined;
+            this.material = json.material ? Assets.hash[json.material] : undefined;
 
             return this;
         };
