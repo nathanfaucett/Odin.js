@@ -10,7 +10,8 @@ define([
 
         var sqrt = Math.sqrt,
             floor = Math.floor,
-            clamp01 = Mathf.clamp01;
+            clamp01 = Mathf.clamp01,
+			defineProperty = Object.defineProperty;
 
         /**
          * @class Color
@@ -47,6 +48,31 @@ define([
 
             this.set(r, g, b);
         }
+		
+		defineProperty(Color.prototype, "x", {
+            get: function() {
+                return this.r;
+            },
+            set: function(value) {
+                this.r = value;
+            }
+        });
+		defineProperty(Color.prototype, "y", {
+            get: function() {
+                return this.g;
+            },
+            set: function(value) {
+                this.g = value;
+            }
+        });
+		defineProperty(Color.prototype, "z", {
+            get: function() {
+                return this.b;
+            },
+            set: function(value) {
+                this.b = value;
+            }
+        });
 
         /**
          * @method clone

@@ -43,7 +43,7 @@ define([
 
         Assets.prototype.add = Assets.prototype.addAssets = function() {
 
-            for (var i = arguments.length; i--;) this.addAsset(arguments[i]);
+            for (var i = 0, il = arguments.length; i < il; i++) this.addAsset(arguments[i]);
         };
 
 
@@ -65,7 +65,7 @@ define([
 
         Assets.prototype.remove = Assets.prototype.removeAssets = function() {
 
-            for (var i = arguments.length; i--;) this.removeAsset(arguments[i]);
+            for (var i = 0, il = arguments.length; i < il; i++) this.removeAsset(arguments[i]);
         };
 
 

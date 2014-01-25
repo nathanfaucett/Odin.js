@@ -146,7 +146,7 @@ define([
             var src = vertexShader + fragmentShader,
                 lines = src.split("\n"),
                 matchAttributes, matchUniforms,
-                name, length, line,
+                isArray, name, location, length, line,
                 i, j;
 
             for (i = lines.length; i--;) {
@@ -157,17 +157,24 @@ define([
                 if (matchAttributes) {
                     name = matchAttributes[3];
                     attributes[name] = gl.getAttribLocation(program, name);
-                }
-                if (matchUniforms) {
+                } else if (matchUniforms) {
                     name = matchUniforms[3];
                     length = parseInt(matchUniforms[5]);
 
                     if (length) {
-                        uniforms[name] = [];
-                        for (j = length; j--;) uniforms[name][j] = gl.getUniformLocation(program, name + "[" + j + "]");
+                        location = [];
+						isArray = true;
+                        for (j = length; j--;) location[j] = gl.getUniformLocation(program, name + "[" + j + "]");
                     } else {
-                        uniforms[name] = gl.getUniformLocation(program, name);
+						isArray = false;
+                        location = gl.getUniformLocation(program, name);
                     }
+					
+					uniforms[name] = {
+						isArray: isArray,
+						type: matchUniforms[2],
+						location: location
+                    };
                 }
             }
         };

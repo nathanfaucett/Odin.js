@@ -20,8 +20,9 @@ define([
             this._name = opts.name != undefined ? opts.name : "Asset_" + this._id;
 
             this.json = opts.json != undefined ? !! opts.json : true;
-
+			
             this.assets = undefined;
+			this.load = opts.load != undefined ? !! opts.load : true;
             this.src = opts.src;
             this.raw = opts.raw;
         }

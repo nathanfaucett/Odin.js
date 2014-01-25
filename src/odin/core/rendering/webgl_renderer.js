@@ -256,22 +256,6 @@ define([
             gl.bindTexture(gl.TEXTURE_2D, null);
             webgl.textures[ENUM_WHITE_TEXTURE] = texture;
 
-            buildBuffer(this, {
-                _id: ENUM_SPRITE_BUFFER,
-                vertices: SPRITE_VERTICES,
-                uvs: SPRITE_UVS
-            });
-            buildShader(this, {
-                _id: ENUM_PARTICLE_SHADER,
-                vertexShader: particleVertexShader(precision),
-                fragmentShader: particleFragmentShader(precision)
-            });
-            buildShader(this, {
-                _id: ENUM_BASIC_SHADER,
-                vertexShader: basicVertexShader(precision),
-                fragmentShader: basicFragmentShader(precision)
-            });
-
             this._clearBytes = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT;
 
             return this;
@@ -391,17 +375,19 @@ define([
         };
 
 
-        var MAT = new Mat4;
         WebGLRenderer.prototype.renderMeshFilter = function(camera, transform, meshFilter) {
             var gl = this.context,
                 webgl = this._webgl,
 
-                glShader = webgl.shaders[ENUM_BASIC_SHADER],
+				material = meshFilter.material,
+                glShader = buildShader(this, material),
                 glBuffer = buildBuffer(this, meshFilter.mesh),
+                uniforms;
 
-                uniforms = glShader.uniforms;
-
-            MAT.mmul(camera.projection, transform.modelView);
+			if (!glShader || !glBuffer) return;
+			
+            uniforms = glShader.uniforms;
+            material.matrix.mmul(camera.projection, transform.modelView);
 
             if (webgl.lastShader !== glShader) {
                 gl.useProgram(glShader.program);
@@ -412,89 +398,13 @@ define([
                 webgl.lastBuffer = glBuffer;
             }
 
-            gl.uniformMatrix4fv(uniforms.uMatrix, false, MAT.elements);
+			bindShader(this, glShader, material);
 
             if (glBuffer.index) {
                 gl.drawElements(gl.TRIANGLES, glBuffer.indices, gl.UNSIGNED_SHORT, 0);
             } else {
                 gl.drawArrays(gl.TRIANGLES, 0, glBuffer.vertices);
             }
-        };
-
-
-        WebGLRenderer.prototype.renderParticleSystem = function(camera, transform, particleSystem) {
-            var gl = this.context,
-                webgl = this._webgl,
-
-                glShader = webgl.shaders[ENUM_PARTICLE_SHADER],
-                glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
-
-                vertices = glBuffer.vertices,
-                TRIANGLE_STRIP = gl.TRIANGLE_STRIP,
-
-                uniforms = glShader.uniforms,
-                uMatrix = uniforms.uMatrix,
-                uPos = uniforms.uPos,
-                uAngle = uniforms.uAngle,
-                uSize = uniforms.uSize,
-                uColor = uniforms.uColor,
-                uAlpha = uniforms.uAlpha,
-
-                elements = MAT.elements,
-                blending = this._lastBlending,
-
-                emitters = particleSystem.emitters,
-                emitter, particles, view, particle, pos, color, glTexture,
-                i = emitters.length,
-                j;
-
-            if (!i) return;
-
-            for (; i--;) {
-                emitter = emitters[i];
-
-                particles = emitter.particles;
-                view = emitter.worldSpace ? camera.view : transform.modelView;
-
-                if (!(j = particles.length)) continue;
-                glTexture = buildTexture(this, emitter.texture);
-
-                if (webgl.lastShader !== glShader) {
-                    gl.useProgram(glShader.program);
-                    webgl.lastShader = glShader;
-                }
-                if (webgl.lastBuffer !== glBuffer) {
-                    bindBuffers(gl, glShader, glBuffer);
-                    webgl.lastBuffer = glBuffer;
-                }
-                this.setBlending(emitter.blending);
-
-                MAT.mmul(camera.projection, view);
-                gl.uniformMatrix4fv(uMatrix, false, elements);
-
-                if (webgl.lastTexture !== glTexture) {
-                    gl.activeTexture(gl.TEXTURE0);
-                    gl.bindTexture(gl.TEXTURE_2D, glTexture);
-                    gl.uniform1i(uniforms.uTexture, 0);
-
-                    webgl.lastTexture = glTexture;
-                }
-
-                for (; j--;) {
-                    particle = particles[j];
-                    pos = particle.position;
-                    color = particle.color;
-
-                    gl.uniform3f(uPos, pos.x, pos.y, pos.z);
-                    gl.uniform1f(uAngle, particle.angle);
-                    gl.uniform1f(uSize, particle.size);
-                    gl.uniform3f(uColor, color.r, color.g, color.b);
-                    gl.uniform1f(uAlpha, particle.alpha);
-
-                    gl.drawArrays(TRIANGLE_STRIP, 0, vertices);
-                }
-            }
-            this.setBlending(blending);
         };
 
 
@@ -567,10 +477,63 @@ define([
 
             if (glBuffer.index) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer.index);
         }
+		
+		
+		function bindShader(renderer, glShader, material) {
+            var gl = renderer.context,
+				webgl = renderer._webgl,
+				uniforms = glShader.uniforms,
+				uniformValue, value, key,
+				glTexture, index = 0;
+			
+			for (key in uniforms) {
+				uniformValue = uniforms[key];
+				value = material[key];
+				if (!value) continue;
+				
+				switch(uniformValue.type) {
+					case "float":
+						gl.uniform1f(uniformValue.location, value);
+						break;
+					
+					case "vec2":
+						gl.uniform2f(uniformValue.location, value.x, value.y);
+						break;
+					case "vec3":
+						gl.uniform3f(uniformValue.location, value.x, value.y, value.z);
+						break;
+					case "vec4":
+						gl.uniform3f(uniformValue.location, value.x, value.y, value.z, value.w);
+						break;
+					
+					case "mat2":
+						gl.uniformMatrix2fv(uniformValue.location, false, value.elements);
+						break;
+					case "mat3":
+						gl.uniformMatrix3fv(uniformValue.location, false, value.elements);
+						break;
+					case "mat4":
+						gl.uniformMatrix4fv(uniformValue.location, false, value.elements);
+						break;
+					
+					case "sampler2D":
+						glTexture = buildTexture(renderer, value);
+						index++;
+						
+						if (webgl.lastTexture !== glTexture) {
+							gl.activeTexture(gl.TEXTURE0 + index);
+							gl.bindTexture(gl.TEXTURE_2D, glTexture);
+							gl.uniform1i(uniformValue.location, index);
+		
+							webgl.lastTexture = glTexture;
+						}
+						break;
+				}
+			}
+        }
 
 
         var COMPILE_ARRAY = [];
-
         function buildBuffer(renderer, buffer) {
             if (!buffer) return undefined;
             var gl = renderer.context,
@@ -701,25 +664,24 @@ define([
             return glBuffer;
         }
 
-
-        function buildShader(renderer, shader) {
+        function buildShader(renderer, material) {
             var gl = renderer.context,
                 webgl = renderer._webgl,
+				gpu = webgl.gpu,
                 shaders = webgl.shaders,
-                glShader = shaders[shader._id],
-                vertex, fragment;
+                glShader = shaders[material._id],
+                precision, program, vertex, fragment;
 
-            if (glShader && !shader._needsUpdate) return glShader;
+            if (glShader && !material._needsUpdate) return glShader;
 
-            glShader = glShader || (shaders[shader._id] = {});
-            vertex = shader.vertex || shader.vertexShader;
-            fragment = shader.fragment || shader.fragmentShader;
+            glShader = glShader || (shaders[material._id] = {});
+			
+			precision = gpu.precision;
+            vertex = "precision " + precision + " float;\n" + material.vertex;
+            fragment = "precision " + precision + " float;\n" + material.fragment;
 
-            var program = glShader.program = createProgram(gl, vertex, fragment);
-
-            glShader.vertex = vertex;
-            glShader.fragment = fragment;
-
+            program = glShader.program = createProgram(gl, vertex, fragment);
+			
             parseUniformsAttributes(gl, program, vertex, fragment,
                 glShader.attributes || (glShader.attributes = {}),
                 glShader.uniforms || (glShader.uniforms = {})
@@ -795,7 +757,7 @@ define([
                 "attribute vec3 aVertexPosition;",
                 "attribute vec2 aVertexUv;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
                 "	float c, s, vx, vy, x, y;",
@@ -808,7 +770,7 @@ define([
                 "	x = vx * c - vy * s;",
                 "	y = vx * s + vy * c;",
 
-                "	vUvPosition = aVertexUv;",
+                "	vVertexUv = aVertexUv;",
                 "	gl_Position = uMatrix * vec4(uPos.x + x * uSize, uPos.y + y * uSize, 0.0, 1.0);",
                 "}"
             ].join("\n");
@@ -824,43 +786,14 @@ define([
                 "uniform vec3 uColor;",
                 "uniform sampler2D uTexture;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
-                "	vec4 finalColor = texture2D(uTexture, vUvPosition);",
+                "	vec4 finalColor = texture2D(uTexture, vVertexUv);",
                 "	finalColor.xyz *= uColor;",
                 "	finalColor.w *= uAlpha;",
 
                 "	gl_FragColor = finalColor;",
-                "}"
-            ].join("\n");
-        }
-
-
-        function basicVertexShader(precision) {
-
-            return [
-                "precision " + precision + " float;",
-
-                "uniform mat4 uMatrix;",
-
-                "attribute vec3 aVertexPosition;",
-
-                "void main() {",
-                "	gl_Position = uMatrix * vec4(aVertexPosition, 1.0);",
-                "}"
-            ].join("\n");
-        }
-
-
-        function basicFragmentShader(precision) {
-
-            return [
-                "precision " + precision + " float;",
-
-                "void main() {",
-
-                "	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);",
                 "}"
             ].join("\n");
         }

@@ -55,12 +55,13 @@ define(
             this.GUIStyleState = require("odin/core/gui/gui_style_state");
 
             this.Input = require("odin/core/input/input");
+			
+            this.World = require("odin/core/world/world");
+            this.World2D = require("odin/core/world/world_2d");
 
             this.Enums = require("odin/core/enums");
             this.GameObject = require("odin/core/game_object");
             this.Scene = require("odin/core/scene");
-            this.World = require("odin/core/world/world");
-            this.World2D = require("odin/core/world/world_2d");
 
             this.AABB2 = require("odin/math/aabb2");
             this.AABB3 = require("odin/math/aabb3");

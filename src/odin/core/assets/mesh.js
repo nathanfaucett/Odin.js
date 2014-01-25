@@ -3,12 +3,13 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/core/assets/asset",
+        "odin/core/assets/bone",
         "odin/math/vec2",
         "odin/math/vec3",
         "odin/math/vec4",
         "odin/math/color"
     ],
-    function(Asset, Vec2, Vec3, Vec4, Color) {
+    function(Asset, Bone, Vec2, Vec3, Vec4, Color) {
         "use strict";
 
 
@@ -90,8 +91,16 @@ define([
                 item = items[i];
 
                 bone = new Bone(item.parent, item.name);
+				
+                bone.position.fromArray(item.position);
+                bone.rotation.fromArray(item.rotation);
+                bone.scale.fromArray(item.scale);
+				
                 bone.bindPose.fromArray(item.bindPose);
+				
                 bone.skinned = item.skinned;
+				
+                bone.inheritPoosition = item.inheritPoosition;
                 bone.inheritRotation = item.inheritRotation;
                 bone.inheritScale = item.inheritScale;
 
@@ -270,37 +279,12 @@ define([
         }();
 
 
-        Mesh.prototype.addQuad = function(a, b, c, d, uvs) {
-            var index = this.vertices.length;
-
-            if (!uvs || !uvs.length || uvs.length != 4) uvs = [0, 1, 0, 1];
-
-            this.uvs.push(
-                new Vec2(uvs[1], uvs[2]),
-                new Vec2(uvs[0], uvs[2]),
-                new Vec2(uvs[0], uvs[3]),
-                new Vec2(uvs[1], uvs[3])
-            );
-
-            this.colors.push(
-                new Vec3(uvs[1], uvs[2], 0),
-                new Vec3(uvs[0], uvs[2], 0),
-                new Vec3(uvs[0], uvs[3], 0),
-                new Vec3(uvs[1], uvs[3], 0)
-            );
-
-            this.vertices.push(a, b, c, d);
-
-            this.faces.push(
-                index, index + 1, index + 2,
-                index, index + 2, index + 3
-            );
-        };
-
-
         Mesh.prototype.clear = function() {
             Asset.prototype.clear.call(this);
-
+			
+			this.vertices.length = this.normals.length = this.tangents.length = this.faces.length = this.colors.length = this.uvs.length = 0;
+            this.bones.length = this.boneWeights.length = this.boneIndices.length = 0;
+			
             return this;
         };
 
@@ -347,14 +331,6 @@ define([
         };
 
 
-        Mesh.prototype.fromServerJSON = function(json) {
-            json = Asset.prototype.fromServerJSON.call(this, json);
-            this.fromJSON(json);
-
-            return json;
-        };
-
-
         Mesh.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
             var vertices = this.vertices,
@@ -392,6 +368,7 @@ define([
 
             this.dynamic = json.dynamic;
             this.useBones = json.useBones;
+			
             this.aabb.fromPoints(this.vertices);
             this._needsUpdate = true;
 
@@ -452,7 +429,6 @@ define([
             var w = (width || 1) * 0.5,
                 h = (height || 1) * 0.5,
                 d = (depth || 1) * 0.5,
-
                 mesh = new Mesh;
 
             mesh.addQuad(
@@ -462,35 +438,35 @@ define([
                 new Vec3(-w, -h, -d)
             );
 
-            mesh.addQuad(
+            addQuad(mesh,
                 new Vec3(w, h, d),
                 new Vec3(-w, h, d),
                 new Vec3(-w, -h, d),
                 new Vec3(w, -h, d)
             );
 
-            mesh.addQuad(
+            addQuad(mesh,
                 new Vec3(w, h, -d),
                 new Vec3(w, h, d),
                 new Vec3(w, -h, d),
                 new Vec3(w, -h, -d)
             );
 
-            mesh.addQuad(
+            addQuad(mesh,
                 new Vec3(-w, h, d),
                 new Vec3(-w, h, -d),
                 new Vec3(-w, -h, -d),
                 new Vec3(-w, -h, d)
             );
 
-            mesh.addQuad(
+            addQuad(mesh,
                 new Vec3(w, -h, d),
                 new Vec3(-w, -h, d),
                 new Vec3(-w, -h, -d),
                 new Vec3(w, -h, -d)
             );
 
-            mesh.addQuad(
+            addQuad(mesh,
                 new Vec3(w, h, d),
                 new Vec3(w, h, -d),
                 new Vec3(-w, h, -d),
@@ -501,6 +477,35 @@ define([
 
             return mesh;
         };
+		
+		
+        function addQuad(mesh, a, b, c, d, uvs) {
+            var index = mesh.vertices.length;
+			
+            mesh.uvs.push(
+                new Vec2(uvs[1], uvs[2]),
+                new Vec2(uvs[0], uvs[2]),
+                new Vec2(uvs[0], uvs[3]),
+                new Vec2(uvs[1], uvs[3])
+            );
+
+            mesh.colors.push(
+                new Vec3(uvs[1], uvs[2], 0),
+                new Vec3(uvs[0], uvs[2], 0),
+                new Vec3(uvs[0], uvs[3], 0),
+                new Vec3(uvs[1], uvs[3], 0)
+            );
+
+            mesh.vertices.push(a, b, c, d);
+
+            mesh.faces.push(
+                index, index + 1, index + 2,
+                index, index + 2, index + 3
+            );
+        };
+		
+		
+		Mesh.Bone = Bone;
 
 
         return Mesh;

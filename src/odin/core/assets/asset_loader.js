@@ -44,7 +44,7 @@ define([
 
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
 
-            if (asset.raw && !reload) {
+            if (!asset.load || asset.raw && !reload) {
                 callback && callback()
                 return;
             };

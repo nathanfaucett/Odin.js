@@ -3,8 +3,8 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/base/device",
+        "odin/base/socket.io",
         "odin/base/time",
-        "odin/lib/socket.io",
         "odin/math/mathf",
         "odin/core/game/config",
         "odin/core/game/base_game",
@@ -20,7 +20,7 @@ define([
         "odin/core/assets/assets",
         "odin/core/assets/asset_loader"
     ],
-    function(Device, Time, io, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
+    function(Device, io, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, GameObject, Component, Scene, Input, Handler, Assets, AssetLoader) {
         "use strict";
 
 

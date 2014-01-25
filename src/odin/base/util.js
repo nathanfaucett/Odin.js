@@ -37,12 +37,38 @@ define(
         function merge(obj, add) {
             var key;
 
-            for (key in add)
+            for (key in add) {
                 if (obj[key] != undefined) obj[key] = add[key];
+            }
 
             return obj;
         };
         util.merge = merge;
+
+
+        function override(obj, add) {
+            var key;
+
+            for (key in add) {
+                if (add[key] != undefined) obj[key] = add[key];
+            }
+
+            return obj;
+        };
+        util.override = override;
+
+
+        function copy(obj) {
+            var c = {},
+				key;
+
+            for (key in add) {
+                if (obj[key] != undefined) c[key] = obj[key];
+            }
+
+            return c;
+        };
+        util.copy = copy;
 
 
         return util;

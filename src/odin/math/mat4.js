@@ -884,9 +884,9 @@ define([
          */
         Mat4.prototype.extractRotationScale = function(other) {
             var te = this.elements,
-                me = other.elements
+                me = other.elements;
 
-                te[0] = me[0];
+            te[0] = me[0];
             te[1] = me[1];
             te[2] = me[2];
 
@@ -1120,7 +1120,8 @@ define([
 
             return this.set(
                 c, 0, s, 0,
-                0, 1, 0, 0, -s, 0, c, 0,
+                0, 1, 0, 0,
+				-s, 0, c, 0,
                 0, 0, 0, 1
             );
         };

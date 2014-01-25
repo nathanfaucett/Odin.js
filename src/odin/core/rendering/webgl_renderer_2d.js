@@ -722,7 +722,7 @@ define([
                 "attribute vec2 aVertexPosition;",
                 "attribute vec2 aVertexUv;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
                 "	float c, s, vx, vy, x, y;",
@@ -735,7 +735,7 @@ define([
                 "	x = vx * c - vy * s;",
                 "	y = vx * s + vy * c;",
 
-                "	vUvPosition = aVertexUv;",
+                "	vVertexUv = aVertexUv;",
                 "	gl_Position = uMatrix * vec4(uPos.x + x * uSize, uPos.y + y * uSize, 0.0, 1.0);",
                 "}"
             ].join("\n");
@@ -751,10 +751,10 @@ define([
                 "uniform vec3 uColor;",
                 "uniform sampler2D uTexture;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
-                "	vec4 finalColor = texture2D(uTexture, vUvPosition);",
+                "	vec4 finalColor = texture2D(uTexture, vVertexUv);",
                 "	finalColor.xyz *= uColor;",
                 "	finalColor.w *= uAlpha;",
 
@@ -808,11 +808,11 @@ define([
                 "attribute vec2 aVertexPosition;",
                 "attribute vec2 aVertexUv;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
 
-                "	vUvPosition = vec2(aVertexUv.x * uCrop.z, aVertexUv.y * uCrop.w) + uCrop.xy;",
+                "	vVertexUv = vec2(aVertexUv.x * uCrop.z, aVertexUv.y * uCrop.w) + uCrop.xy;",
                 "	gl_Position = uMatrix * vec4(aVertexPosition * uSize, 0.0, 1.0);",
                 "}"
             ].join("\n");
@@ -827,10 +827,10 @@ define([
                 "uniform float uAlpha;",
                 "uniform sampler2D uTexture;",
 
-                "varying vec2 vUvPosition;",
+                "varying vec2 vVertexUv;",
 
                 "void main() {",
-                "	vec4 finalColor = texture2D(uTexture, vUvPosition);",
+                "	vec4 finalColor = texture2D(uTexture, vVertexUv);",
                 "	finalColor.w *= uAlpha;",
 
                 "	gl_FragColor = finalColor;",
