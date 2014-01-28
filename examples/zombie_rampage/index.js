@@ -1,8 +1,5 @@
 require({
-        baseUrl: "src",
-		paths: {
-			"odin/odin": "../../../src/odin/odin"
-		}
+        baseUrl: "src"
     }, [
         "odin/odin",
         "level",
