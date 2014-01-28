@@ -3,7 +3,7 @@ Odin
 
 Node.js Canvas/WebGL Javascript Game Framework
 
-[Examples](http://nathanfaucett.github.io/odin/) - [Documentation](http://nathanfaucett.github.io/odin/doc)
+[Examples](http://nathanfaucett.github.io/Odin.js) - [Documentation](http://nathanfaucett.github.io/Odin.js/doc)
 
 
 ## How to install with npm

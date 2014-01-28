@@ -1,5 +1,5 @@
 require({
-        baseUrl: "src"
+        baseUrl: "../../src"
     }, [
         "odin/odin"
     ],
