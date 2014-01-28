@@ -5,6 +5,7 @@ define([
         "odin/base/event_emitter",
         "odin/base/device",
         "odin/base/dom",
+        "odin/base/util",
         "odin/math/mathf",
         "odin/math/vec2",
         "odin/math/vec3",
@@ -14,7 +15,7 @@ define([
         "odin/core/game/log",
         "odin/core/enums"
     ],
-    function(EventEmitter, Device, Dom, Mathf, Vec2, Vec3, Mat32, Mat4, Color, Log, Enums) {
+    function(EventEmitter, Device, Dom, util, Mathf, Vec2, Vec3, Mat32, Mat4, Color, Log, Enums) {
         "use strict";
 
 
@@ -26,6 +27,9 @@ define([
 
             addEvent = Dom.addEvent,
             removeEvent = Dom.removeEvent,
+
+            merge = util.merge,
+            clear = util.clear,
 
             clamp = Mathf.clamp,
             isPowerOfTwo = Mathf.isPowerOfTwo,
@@ -379,15 +383,21 @@ define([
             var gl = this.context,
                 webgl = this._webgl,
 
-				material = meshFilter.material,
-                glShader = buildShader(this, material),
-                glBuffer = buildBuffer(this, meshFilter.mesh),
-                uniforms;
+                mesh = meshFilter.mesh,
+                material = meshFilter.material,
+                glShader = buildShader(this, material, mesh),
+                glBuffer = buildBuffer(this, mesh),
+                uniforms, materialUniforms;
 
-			if (!glShader || !glBuffer) return;
-			
+            if (!glShader || !glBuffer) return;
+
             uniforms = glShader.uniforms;
-            material.matrix.mmul(camera.projection, transform.modelView);
+            materialUniforms = material.uniforms;
+
+            if (uniforms.modelMatrix) materialUniforms.modelMatrix.copy(transform.matrixWorld);
+            if (uniforms.modelViewMatrix) materialUniforms.modelViewMatrix.copy(transform.modelView);
+            if (uniforms.projectionMatrix) materialUniforms.projectionMatrix.copy(camera.projection);
+            if (uniforms.viewMatrix) materialUniforms.viewMatrix.copy(camera.transform.matrixWorld);
 
             if (webgl.lastShader !== glShader) {
                 gl.useProgram(glShader.program);
@@ -398,7 +408,7 @@ define([
                 webgl.lastBuffer = glBuffer;
             }
 
-			bindShader(this, glShader, material);
+            bindShader(this, glShader, material, mesh);
 
             if (glBuffer.index) {
                 gl.drawElements(gl.TRIANGLES, glBuffer.indices, gl.UNSIGNED_SHORT, 0);
@@ -477,63 +487,83 @@ define([
 
             if (glBuffer.index) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, glBuffer.index);
         }
-		
-		
-		function bindShader(renderer, glShader, material) {
+
+
+        function bindShader(renderer, glShader, material) {
             var gl = renderer.context,
-				webgl = renderer._webgl,
-				uniforms = glShader.uniforms,
-				uniformValue, value, key,
-				glTexture, index = 0;
-			
-			for (key in uniforms) {
-				uniformValue = uniforms[key];
-				value = material[key];
-				if (!value) continue;
-				
-				switch(uniformValue.type) {
-					case "float":
-						gl.uniform1f(uniformValue.location, value);
-						break;
-					
-					case "vec2":
-						gl.uniform2f(uniformValue.location, value.x, value.y);
-						break;
-					case "vec3":
-						gl.uniform3f(uniformValue.location, value.x, value.y, value.z);
-						break;
-					case "vec4":
-						gl.uniform3f(uniformValue.location, value.x, value.y, value.z, value.w);
-						break;
-					
-					case "mat2":
-						gl.uniformMatrix2fv(uniformValue.location, false, value.elements);
-						break;
-					case "mat3":
-						gl.uniformMatrix3fv(uniformValue.location, false, value.elements);
-						break;
-					case "mat4":
-						gl.uniformMatrix4fv(uniformValue.location, false, value.elements);
-						break;
-					
-					case "sampler2D":
-						glTexture = buildTexture(renderer, value);
-						index++;
-						
-						if (webgl.lastTexture !== glTexture) {
-							gl.activeTexture(gl.TEXTURE0 + index);
-							gl.bindTexture(gl.TEXTURE_2D, glTexture);
-							gl.uniform1i(uniformValue.location, index);
-		
-							webgl.lastTexture = glTexture;
-						}
-						break;
-				}
-			}
+                webgl = renderer._webgl,
+                uniforms = glShader.uniforms,
+                uniformValue, value, key,
+                materialUniforms = material.uniforms,
+                glTexture, index = 0,
+                i;
+
+            for (key in uniforms) {
+                uniformValue = uniforms[key];
+                value = materialUniforms[key];
+                if (!value && uniformValue.type !== "sampler2D") throw "WebGLRenderer bindShader: material has no uniform named " + key;
+
+                if (uniformValue.isArray) {
+                    for (i = uniformValue.location.length; i--;) {
+                        index = bindUniform(renderer, gl, webgl, uniformValue.type, uniformValue.location[i], value[i], index);
+                    }
+                } else {
+                    index = bindUniform(renderer, gl, webgl, uniformValue.type, uniformValue.location, value, index);
+                }
+            }
+        }
+
+
+        function bindUniform(renderer, gl, webgl, type, location, value, index) {
+
+            switch (type) {
+                case "int":
+                    gl.uniform1i(location, value);
+                    break;
+                case "float":
+                    gl.uniform1f(location, value);
+                    break;
+
+                case "vec2":
+                    gl.uniform2f(location, value.x, value.y);
+                    break;
+                case "vec3":
+                    gl.uniform3f(location, value.x, value.y, value.z);
+                    break;
+                case "vec4":
+                    gl.uniform3f(location, value.x, value.y, value.z, value.w);
+                    break;
+
+                case "mat2":
+                    gl.uniformMatrix2fv(location, false, value.elements);
+                    break;
+                case "mat3":
+                    gl.uniformMatrix3fv(location, false, value.elements);
+                    break;
+                case "mat4":
+                    gl.uniformMatrix4fv(location, false, value.elements);
+                    break;
+
+                case "sampler2D":
+                    var glTexture = buildTexture(renderer, value);
+                    index++;
+
+                    if (webgl.lastTexture !== glTexture) {
+                        gl.activeTexture(gl.TEXTURE0 + index);
+                        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+                        gl.uniform1i(location, index);
+
+                        webgl.lastTexture = glTexture;
+                    }
+                    break;
+            }
+
+            return index;
         }
 
 
         var COMPILE_ARRAY = [];
+
         function buildBuffer(renderer, buffer) {
             if (!buffer) return undefined;
             var gl = renderer.context,
@@ -664,24 +694,29 @@ define([
             return glBuffer;
         }
 
-        function buildShader(renderer, material) {
+        function buildShader(renderer, material, mesh) {
             var gl = renderer.context,
                 webgl = renderer._webgl,
-				gpu = webgl.gpu,
+                gpu = webgl.gpu,
                 shaders = webgl.shaders,
                 glShader = shaders[material._id],
-                precision, program, vertex, fragment;
+                precision, precisionFloat, precisionInt, program, shader, vertex, fragment;
 
             if (glShader && !material._needsUpdate) return glShader;
 
             glShader = glShader || (shaders[material._id] = {});
-			
-			precision = gpu.precision;
-            vertex = "precision " + precision + " float;\n" + material.vertex;
-            fragment = "precision " + precision + " float;\n" + material.fragment;
+
+            shader = material.shader;
+            precision = gpu.precision;
+
+            precisionFloat = "precision " + precision + " float;\n";
+            precisionInt = "precision " + precision + " int;\n";
+
+            vertex = precisionFloat + precisionInt + shader.vertex;
+            fragment = precisionFloat + precisionInt + shader.fragment;
 
             program = glShader.program = createProgram(gl, vertex, fragment);
-			
+
             parseUniformsAttributes(gl, program, vertex, fragment,
                 glShader.attributes || (glShader.attributes = {}),
                 glShader.uniforms || (glShader.uniforms = {})
@@ -796,24 +831,6 @@ define([
                 "	gl_FragColor = finalColor;",
                 "}"
             ].join("\n");
-        }
-
-
-        function merge(obj, add) {
-            var key;
-
-            for (key in add)
-                if (obj[key] == undefined) obj[key] = add[key];
-
-            return obj;
-        }
-
-        function clear(obj) {
-            var key;
-
-            for (key in obj) delete obj[key];
-
-            return obj;
         }
 
 

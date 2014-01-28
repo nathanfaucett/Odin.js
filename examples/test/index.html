@@ -15,8 +15,31 @@
         
         <script type="text/javascript" src="../require.js" data-main="index.js"></script>
         
+		<style>
+			#directions{
+				position: absolute;
+				background: rgba(255,255,255,0.75);
+				z-index: 1000;
+				padding: 10px;
+				margin: 0;
+				right: 0;
+				bottom: 0;
+			}
+			#directions p {
+				padding: 0;
+				margin: 0;
+			}
+		</style>
+		
     </head>
     
-    <body></body>
+    <body>
+		
+		<div id="directions">
+			<p>click and drag to move camera</p>
+			<p>mouse wheel to zoom in and out</p>
+			<p>middle mouse adds bodies(collider random circle or box)</p>
+		</div>
+	</body>
     
 </html>

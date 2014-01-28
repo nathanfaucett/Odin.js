@@ -1,10 +1,8 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define([
-        "odin/core/game/log"
-    ],
-    function(Log) {
+define(
+    function() {
         "use strict";
 
 
@@ -83,15 +81,16 @@ define([
             var key, gl, i;
 
             attributes || (attributes = {});
-            for (key in WEBGL_ATTRIBUTES)
-                if (attributes[key] != undefined) attributes[key] = WEBGL_ATTRIBUTES[key];
+            for (key in WEBGL_ATTRIBUTES) {
+                if (attributes[key] == undefined) attributes[key] = WEBGL_ATTRIBUTES[key];
+            }
 
             for (i = WEBGL_NAMES.length; i--;) {
 
                 try {
                     gl = canvas.getContext(WEBGL_NAMES[i], attributes);
                 } catch (err) {
-                    Log.error("Dom.getWebGLContext: could not get a WebGL Context " + err.message || "");
+                    console.error("Dom.getWebGLContext: could not get a WebGL Context " + (err.message || ""));
                 }
                 if (gl) break;
             }
@@ -107,7 +106,7 @@ define([
             gl.compileShader(shader);
 
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                Log.error("Dom.createShader: problem compiling shader " + gl.getShaderInfoLog(shader));
+                console.error("Dom.createShader: problem compiling shader " + gl.getShaderInfoLog(shader));
                 gl.deleteShader(shader);
                 return undefined;
             }
@@ -133,7 +132,7 @@ define([
             gl.useProgram(program);
 
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                Log.error("Dom.createProgram: problem compiling Program " + gl.getProgramInfoLog(program));
+                console.error("Dom.createProgram: problem compiling Program " + gl.getProgramInfoLog(program));
                 gl.deleteProgram(program);
                 return undefined;
             }
@@ -163,17 +162,17 @@ define([
 
                     if (length) {
                         location = [];
-						isArray = true;
+                        isArray = true;
                         for (j = length; j--;) location[j] = gl.getUniformLocation(program, name + "[" + j + "]");
                     } else {
-						isArray = false;
+                        isArray = false;
                         location = gl.getUniformLocation(program, name);
                     }
-					
-					uniforms[name] = {
-						isArray: isArray,
-						type: matchUniforms[2],
-						location: location
+
+                    uniforms[name] = {
+                        isArray: isArray,
+                        type: matchUniforms[2],
+                        location: location
                     };
                 }
             }

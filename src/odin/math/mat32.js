@@ -1,8 +1,10 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define(
-    function() {
+define([
+        "odin/math/mathf"
+    ],
+    function(Mathf) {
         "use strict";
 
 
@@ -37,6 +39,8 @@ define(
             te[3] = m22 !== undefined ? m22 : 1;
             te[5] = m23 || 0;
         }
+
+        Mathf._classes["Mat32"] = Mat32;
 
         /**
          * @method clone
@@ -721,6 +725,7 @@ define(
             var te = this.elements,
                 je = json.elements || (json.elements = []);
 
+            json._className = "Mat32";
             je[0] = te[0];
             je[1] = te[1];
             je[2] = te[2];

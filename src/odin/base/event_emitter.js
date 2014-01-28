@@ -6,8 +6,7 @@ define(
         "use strict";
 
 
-        var shift = Array.prototype.shift,
-            SPLITER = /[ ,]+/;
+        var shift = Array.prototype.shift;
 
 
         function EventEmitter() {
@@ -17,17 +16,13 @@ define(
 
 
         EventEmitter.prototype.on = function(type, listener, ctx) {
-            var types = type.split(SPLITER),
-                events = this._events,
+            var events = this._events,
                 i;
 
-            for (i = types.length; i--;) {
-                type = types[i];
-                (events[type] || (events[type] = [])).push({
+            (events[type] || (events[type] = [])).push({
                     listener: listener,
                     ctx: ctx || this
                 });
-            }
 
             return this;
         };
@@ -56,34 +51,29 @@ define(
 
 
         EventEmitter.prototype.off = function(type, listener, ctx) {
-            var types = type.split(SPLITER),
-                thisEvents = this._events,
+            var thisEvents = this._events,
                 events, event,
-                i, j;
+                i;
 
-            for (i = types.length; i--;) {
-                type = types[i];
+            if (!type) {
+                for (i in thisEvents) thisEvents[i].length = 0;
+                return this;
+            }
 
-                if (!type) {
-                    for (i in thisEvents) thisEvents[i].length = 0;
-                    return this;
-                }
+            events = thisEvents[type];
+            if (!events) return this;
 
-                events = thisEvents[type];
-                if (!events) return this;
+            if (!listener) {
+                events.length = 0;
+            } else {
+                ctx = ctx || this;
 
-                if (!listener) {
-                    events.length = 0;
-                } else {
-                    ctx = ctx || this;
+                for (i = events.length; i--;) {
+                    event = events[i];
 
-                    for (j = events.length; j--;) {
-                        event = events[j];
-
-                        if (event.listener === listener && event.ctx === ctx) {
-                            events.splice(j, 1);
-                            break;
-                        }
+                    if (event.listener === listener && event.ctx === ctx) {
+                        events.splice(i, 1);
+                        break;
                     }
                 }
             }

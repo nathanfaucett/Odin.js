@@ -65,9 +65,9 @@ define(
 
             for (i = objects.length; i--;) {
                 object = objects[i];
-                fn(object);
 
                 pooled.push(object);
+                fn(object);
             }
             objects.length = 0;
 

@@ -3,11 +3,9 @@ if (typeof define !== "function") {
 }
 define([
         "odin/core/assets/assets",
-        "odin/core/components/component",
-        "odin/core/assets/material",
-        "odin/core/assets/mesh"
+        "odin/core/components/component"
     ],
-    function(Assets, Component, Material, Mesh) {
+    function(Assets, Component) {
         "use strict";
 
 
@@ -68,6 +66,12 @@ define([
             this.material = undefined;
 
             return this;
+        };
+
+
+        MeshFilter.prototype.sort = function(a, b) {
+
+            return a.mesh === b.mesh ? -1 : 1;
         };
 
 

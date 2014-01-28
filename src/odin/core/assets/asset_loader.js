@@ -51,7 +51,7 @@ define([
 
             if ((ext = asset.ext())) {
                 if (!this[ext]) {
-                    callback && callback(new Error("AssetLoader.load: has no loader named " + ext))
+                    callback && callback(new Error("AssetLoader.load: has no loader named " + ext));
                     return;
                 }
 
@@ -65,6 +65,8 @@ define([
                     self.emit("loadAsset", asset);
                     callback && callback();
                 });
+            } else {
+                callback && callback(new Error("AssetLoader.load: could not get an ext from asset " + asset.name));
             }
         };
 
@@ -142,6 +144,28 @@ define([
 
             request.open("GET", src, true);
             request.responseType = "arraybuffer";
+            request.send();
+        };
+
+
+        AssetLoader.prototype.shader = AssetLoader.prototype.glsl = function(src, callback) {
+            var request = new XMLHttpRequest;
+
+            request.onload = function() {
+                var status = this.status;
+
+                if ((status > 199 && status < 301) || status == 304) {
+                    callback && callback(null, this.responseText);
+                } else {
+                    callback && callback(new Error(status));
+                }
+            };
+            request.onerror = function() {
+                callback && callback(new Error("GET " + src + " 404 (Not Found)"));
+            };
+
+            request.open("GET", src, true);
+            request.setRequestHeader("Content-Type", "text/plain");
             request.send();
         };
 

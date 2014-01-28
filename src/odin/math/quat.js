@@ -51,6 +51,8 @@ define([
             this.w = w !== undefined ? w : 1;
         }
 
+        Mathf._classes["Quat"] = Quat;
+
         /**
          * @method clone
          * @memberof Quat
@@ -872,6 +874,7 @@ define([
         Quat.prototype.toJSON = function(json) {
             json || (json = {});
 
+            json._className = "Quat";
             json.x = this.x;
             json.y = this.y;
             json.z = this.z;

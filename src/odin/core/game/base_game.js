@@ -5,14 +5,13 @@ define([
         "odin/base/class",
         "odin/core/game/loop",
         "odin/core/scene",
-        "odin/core/gui/gui",
         "odin/core/game/log"
     ],
-    function(Class, Loop, Scene, GUI, Log) {
+    function(Class, Loop, Scene, Log) {
         "use strict";
 
 
-        function Game(opts) {
+        function BaseGame(opts) {
             opts || (opts = {});
 
             Class.call(this);
@@ -25,10 +24,10 @@ define([
             this._sceneNameHash = {};
         }
 
-        Class.extend(Game);
+        Class.extend(BaseGame);
 
 
-        Game.prototype.clear = function() {
+        BaseGame.prototype.clear = function() {
             var scenes = this.scenes,
                 i;
 
@@ -37,7 +36,7 @@ define([
         };
 
 
-        Game.prototype.destroy = function() {
+        BaseGame.prototype.destroy = function() {
 
             this.emit("destroy");
             this.clear();
@@ -46,9 +45,9 @@ define([
         };
 
 
-        Game.prototype.addScene = function(scene) {
+        BaseGame.prototype.addScene = function(scene) {
             if (!(scene instanceof Scene)) {
-                Log.error("Game.addScene: can't add argument to Game, it's not an instance of Scene");
+                Log.error("BaseGame.addScene: can't add argument to BaseGame, it's not an instance of Scene");
                 return this;
             }
             var sceneHash = this._sceneHash,
@@ -67,21 +66,21 @@ define([
 
                 this.emit("addScene", name);
             } else {
-                Log.error("Game.addScene: Scene is already a member of Game");
+                Log.error("BaseGame.addScene: Scene is already a member of BaseGame");
             }
 
             return this;
         };
 
 
-        Game.prototype.add = Game.prototype.addScenes = function() {
+        BaseGame.prototype.add = BaseGame.prototype.addScenes = function() {
 
             for (var i = arguments.length; i--;) this.addScene(arguments[i]);
             return this;
         };
 
 
-        Game.prototype.removeScene = function(scene) {
+        BaseGame.prototype.removeScene = function(scene) {
             if (typeof(scene) === "string") {
                 scene = this._sceneNameHash[scene];
             } else if (typeof(scene) === "number") {
@@ -104,87 +103,59 @@ define([
 
                 this.emit("removeScene", name);
             } else {
-                Log.error("Game.removeScene: Scene not a member of Game");
+                Log.error("BaseGame.removeScene: Scene not a member of BaseGame");
             }
 
             return this;
         };
 
 
-        Game.prototype.remove = Game.prototype.removeScenes = function() {
+        BaseGame.prototype.remove = BaseGame.prototype.removeScenes = function() {
 
             for (var i = arguments.length; i--;) this.removeScene(arguments[i]);
             return this;
         };
 
 
-        Game.prototype.findByName = function(name) {
+        BaseGame.prototype.findByName = function(name) {
 
             return this._sceneNameHash[name];
         };
 
 
-        Game.prototype.findById = function(id) {
+        BaseGame.prototype.findById = function(id) {
 
             return this._sceneHash[id];
         };
 
 
-        Game.prototype.findByServerId = function(id) {
+        BaseGame.prototype.findByServerId = function(id) {
 
             return this._sceneServerHash[id];
         };
 
 
-        Game.prototype.pause = function() {
+        BaseGame.prototype.pause = function() {
 
             this._loop.pause();
             return this;
         };
 
 
-        Game.prototype.resume = function() {
+        BaseGame.prototype.resume = function() {
 
             this._loop.resume();
             return this;
         };
 
 
-        Game.prototype.loop = function(ms) {
+        BaseGame.prototype.loop = function(ms) {
 
             this.emit("update", ms);
         };
 
 
-        Game.prototype.toSYNC = function(json) {
-            json = Class.prototype.fromSYNC.call(this, json);
-            var scenes = this.scenes,
-                jsonScenes = json.jsonScenes || (json.jsonScenes = []),
-                i;
-
-            for (i = scenes.length; i--;) jsonScenes[i] = scenes[i].toSYNC(jsonScenes[i]);
-
-            return json;
-        };
-
-
-        Game.prototype.fromSYNC = function(json) {
-            Class.prototype.fromSYNC.call(this, json);
-            var jsonScenes = json.scenes,
-                scene, jsonScene,
-                i;
-
-            for (i = jsonScenes.length; i--;) {
-                jsonScene = jsonScenes[i];
-
-                if ((scene = this.findByServerId(jsonScene._serverId))) scene.fromSYNC(jsonScene);
-            }
-
-            return this;
-        };
-
-
-        Game.prototype.toJSON = function(json) {
+        BaseGame.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
             var scenes = this.scenes,
                 jsonScenes = json.scenes || (json.scenes = []),
@@ -196,27 +167,7 @@ define([
         };
 
 
-        Game.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-            var jsonScenes = json.scenes,
-                scene, jsonScene,
-                i;
-
-            for (i = jsonScenes.length; i--;) {
-                jsonScene = jsonScenes[i];
-
-                if ((scene = this.findByServerId(jsonScene._id))) {
-                    scene.fromServerJSON(jsonScene);
-                } else {
-                    this.addScene(new Scene().fromServerJSON(jsonScene));
-                }
-            }
-
-            return this;
-        };
-
-
-        Game.prototype.fromJSON = function(json) {
+        BaseGame.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
                 scene, jsonScene,
@@ -236,6 +187,6 @@ define([
         };
 
 
-        return Game;
+        return BaseGame;
     }
 );

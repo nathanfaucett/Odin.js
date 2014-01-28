@@ -41,16 +41,9 @@ define([
         };
 
 
-        var accumulator = 0;
         World2D.prototype.update = function() {
-            var fixedDelta = Time.fixedDelta;
 
-            accumulator += Time.delta;
-
-            if (fixedDelta <= accumulator) {
-                this.space.step(fixedDelta);
-                accumulator = 0;
-            }
+            this.space.step(Time.fixedDelta);
         };
 
 

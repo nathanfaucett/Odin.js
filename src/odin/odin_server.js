@@ -55,7 +55,7 @@ define(
             this.GUIStyleState = require("odin/core/gui/gui_style_state");
 
             this.Input = require("odin/core/input/input");
-			
+
             this.World = require("odin/core/world/world");
             this.World2D = require("odin/core/world/world_2d");
 

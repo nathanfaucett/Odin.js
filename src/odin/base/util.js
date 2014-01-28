@@ -8,8 +8,41 @@ define(
 
         var util = {},
 
+            ObjectProto = Object.prototype,
+            toString = ObjectProto.toString,
+            hasOwnProperty = ObjectProto.hasOwnProperty,
+
             SPILTER = /[ \_\-\.]+|(?=[A-Z][^A-Z])/g,
-            UNDERSCORE = /([a-z])([A-Z])/g;
+            UNDERSCORE = /([a-z])([A-Z])/g,
+            FORMAT_REGEX = /%[sdj%]/g;
+
+
+        function format(fmt) {
+            var i = 1,
+                args = arguments,
+                len = args.length;
+
+            return String(fmt).replace(FORMAT_REGEX, function(x) {
+                if (x === "%%") return "%";
+                if (i >= len) return x;
+
+                switch (x) {
+                    case "%s":
+                        return String(args[i++]);
+                    case "%d":
+                        return Number(args[i++]);
+                    case "%j":
+                        try {
+                            return JSON.stringify(args[i++]);
+                        } catch (e) {
+                            return "[Circular]";
+                        }
+                    default:
+                        return x;
+                }
+            });
+        }
+        util.format = format;
 
 
         function camelize(word, lowFirstLetter) {
@@ -38,7 +71,7 @@ define(
             var key;
 
             for (key in add) {
-                if (obj[key] != undefined) obj[key] = add[key];
+                if (obj[key] == undefined) obj[key] = add[key];
             }
 
             return obj;
@@ -60,7 +93,7 @@ define(
 
         function copy(obj) {
             var c = {},
-				key;
+                key;
 
             for (key in add) {
                 if (obj[key] != undefined) c[key] = obj[key];
@@ -69,6 +102,41 @@ define(
             return c;
         };
         util.copy = copy;
+
+
+        function clear(obj) {
+            var key;
+
+            for (key in obj) delete obj[key];
+
+            return obj;
+        };
+        util.clear = clear;
+
+
+        var isArray = Array.isArray || (Array.isArray = function(obj) {
+            return toString.call(obj) === "[object Array]";
+        });
+        util.isArray = isArray;
+
+
+        var keys = Object.keys || (Object.keys = function(obj) {
+            var out = [],
+                key;
+
+            for (key in obj) {
+                if (hasOwnProperty.call(obj, key)) out.push(key);
+            }
+            return out;
+        });
+        util.keys = keys;
+
+
+        function has(obj, key) {
+
+            return hasOwnProperty.call(obj, key);
+        }
+        util.has = has;
 
 
         return util;

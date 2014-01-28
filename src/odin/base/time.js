@@ -6,7 +6,8 @@ define(
         "use strict";
 
 
-        var w = typeof(window) !== "undefined" ? window : {},
+        var isServer = typeof(window) === "undefined",
+            w = isServer ? {} : window,
             performance = typeof(w.performance) !== "undefined" ? w.performance : {},
             defineProperty = Object.defineProperty,
             START_MS = Date.now(),
@@ -14,7 +15,25 @@ define(
             delta = 1 / 60,
             fixedDelta = delta,
             globalFixed = delta,
-            scale = 1;
+            scale = 1,
+            DateNow;
+
+
+        if (isServer) {
+            var HR_TIME = process.hrtime();
+
+            DateNow = function() {
+                var hrtime = process.hrtime(HR_TIME),
+                    s = hrtime[0] * 1000,
+                    ns = hrtime[1] * 1e-6;
+
+                return s + ns;
+            }
+        } else {
+            DateNow = function() {
+                return Date.now() - START_MS;
+            }
+        }
 
 
         performance.now = (
@@ -23,9 +42,7 @@ define(
             performance.mozNow ||
             performance.msNow ||
             performance.oNow ||
-            function() {
-                return Date.now() - START_MS;
-            }
+            DateNow
         );
 
         function now() {
@@ -71,6 +88,12 @@ define(
         Time.prototype.stamp = function() {
 
             return Date.now() * 0.001;
+        };
+
+
+        Time.prototype.stampMS = function() {
+
+            return Date.now();
         };
 
 

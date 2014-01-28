@@ -426,15 +426,15 @@ define([
                 bindBuffers(gl, glShader, glBuffer);
                 webgl.lastBuffer = glBuffer;
             }
-            gl.uniformMatrix4fv(uniforms.uMatrix, false, MAT4.elements);
-            gl.uniform4f(uniforms.uCrop, sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h);
-            gl.uniform2f(uniforms.uSize, sprite2d.width, sprite2d.height);
-            gl.uniform1f(uniforms.uAlpha, sprite2d.alpha);
+            gl.uniformMatrix4fv(uniforms.uMatrix.location, false, MAT4.elements);
+            gl.uniform4f(uniforms.uCrop.location, sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h);
+            gl.uniform2f(uniforms.uSize.location, sprite2d.width, sprite2d.height);
+            gl.uniform1f(uniforms.uAlpha.location, sprite2d.alpha);
 
             if (webgl.lastTexture !== glTexture) {
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, glTexture);
-                gl.uniform1i(uniforms.uTexture, 0);
+                gl.uniform1i(uniforms.uTexture.location, 0);
 
                 webgl.lastTexture = glTexture;
             }
@@ -454,12 +454,12 @@ define([
                 TRIANGLE_STRIP = gl.TRIANGLE_STRIP,
 
                 uniforms = glShader.uniforms,
-                uMatrix = uniforms.uMatrix,
-                uPos = uniforms.uPos,
-                uAngle = uniforms.uAngle,
-                uSize = uniforms.uSize,
-                uColor = uniforms.uColor,
-                uAlpha = uniforms.uAlpha,
+                uMatrix = uniforms.uMatrix.location,
+                uPos = uniforms.uPos.location,
+                uAngle = uniforms.uAngle.location,
+                uSize = uniforms.uSize.location,
+                uColor = uniforms.uColor.location,
+                uAlpha = uniforms.uAlpha.location,
 
                 elements = MAT4.elements,
                 blending = this._lastBlending,

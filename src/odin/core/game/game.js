@@ -144,6 +144,8 @@ define([
                     if (Device.webgl) {
                         this.renderer = this.WebGLRenderer || (this.WebGLRenderer = new WebGLRenderer(this._WebGLRendererOptions));
                         Log.log("Game: setting up WebGLRenderer");
+
+                        Log.error("Game: WebGLRenderer not supported yet");
                     }
                 } else if (gameObject.camera2d) {
                     if (!Config.forceCanvas && Device.webgl) {

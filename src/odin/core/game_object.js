@@ -22,16 +22,13 @@ define([
 
             Class.call(this);
 
-            this.sync = opts.sync != undefined ? !! opts.sync : true;
-            this.json = opts.json != undefined ? !! opts.json : true;
-
             this.scene = undefined;
 
             this.tags = [];
 
             this.components = [];
             this._componentHash = {};
-            this._componentHashServer = {};
+            this._componentJSONHash = {};
 
             if (opts.tag) this.addTag(opts.tag);
             if (opts.tags) this.addTags.apply(this, opts.tags);
@@ -140,7 +137,7 @@ define([
 
                 components.push(component);
                 this._componentHash[component._id] = component;
-                if (component._serverId !== -1) this._componentHashServer[component._serverId] = component;
+                if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component._jsonId;
 
                 component.gameObject = this;
                 this[name] = component;
@@ -216,7 +213,7 @@ define([
 
                 components.splice(components.indexOf(component), 1);
                 this._componentHash[component._id] = undefined;
-                if (component._serverId !== -1) this._componentHashServer[component._serverId] = undefined;
+                if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
                 component.gameObject = undefined;
                 this[name] = undefined;
@@ -282,44 +279,9 @@ define([
         };
 
 
-        GameObject.prototype.findComponentByServerId = function(id) {
+        GameObject.prototype.findComponentByJSONId = function(id) {
 
-            return this._componentHashServer[id];
-        };
-
-
-        GameObject.prototype.toSYNC = function(json) {
-            json = Class.prototype.toSYNC.call(this, json);
-            var components = this.components,
-                jsonComponents = json.components || (json.components = []),
-                component,
-                i = components.length;
-
-            for (; i--;) {
-                if ((component = components[i]).sync) jsonComponents[i] = component.toSYNC(jsonComponents[i]);
-            }
-
-            return json;
-        };
-
-
-        GameObject.prototype.fromSYNC = function(json) {
-            Class.prototype.fromSYNC.call(this, json);
-            var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent,
-                i = jsonComponents.length;
-
-            for (; i--;) {
-                if (!(jsonComponent = jsonComponents[i])) continue;
-
-                if ((component = this.findComponentByServerId(jsonComponent._id))) {
-                    component.fromSYNC(jsonComponent);
-                } else {
-                    this.addComponent(Class.fromSYNC(jsonComponent));
-                }
-            }
-
-            return this;
+            return this._componentJSONHash[id];
         };
 
 
@@ -338,32 +300,6 @@ define([
             for (i = tags.length; i--;) jsonTags[i] = tags[i];
 
             return json;
-        };
-
-
-        GameObject.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-            var jsonComponents = json.components || (json.components = []),
-                component, jsonComponent, tag,
-                tags = this.tags,
-                jsonTags = json.tags || (json.tags = []),
-                i = jsonComponents.length;
-
-            for (; i--;) {
-                if (!(jsonComponent = jsonComponents[i])) continue;
-
-                if ((component = this.findComponentByServerId(jsonComponent._id))) {
-                    component.fromServerJSON(jsonComponent);
-                } else {
-                    this.addComponent(Class.fromServerJSON(jsonComponent));
-                }
-            }
-
-            for (i = jsonTags.length; i--;) {
-                if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
-            }
-
-            return this;
         };
 
 

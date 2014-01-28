@@ -1,10 +1,8 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define([
-        "odin/core/game/log"
-    ],
-    function(Log) {
+define(
+    function() {
         "use strict";
 
 
@@ -16,8 +14,6 @@ define([
                 w.oAudioContext ||
                 w.msAudioContext
             );
-
-        if (!ctx) Log.error("AudioContext not supported by this Browser");
 
         return ctx ? new ctx : false;
     }

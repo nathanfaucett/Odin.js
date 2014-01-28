@@ -8,11 +8,7 @@ define([
         "use strict";
 
 
-        var CLASS_ID = 0,
-            IS_SERVER = !(typeof(window) !== "undefined" && window.document),
-            IS_CLIENT = !IS_SERVER,
-
-            defineProperty = Object.defineProperty;
+        var CLASS_ID = 0;
 
 
         function Class() {
@@ -20,26 +16,11 @@ define([
             EventEmitter.call(this);
 
             this._id = ++CLASS_ID;
-            this._serverId = -1;
-
-            this._SYNC = {};
+            this._jsonId = -1;
+            this._name = "";
         }
 
         EventEmitter.extend(Class);
-
-
-        defineProperty(Class.prototype, "isServer", {
-            get: function() {
-                return IS_SERVER;
-            }
-        });
-
-
-        defineProperty(Class.prototype, "isClient", {
-            get: function() {
-                return IS_CLIENT;
-            }
-        });
 
 
         Class.prototype.clone = function() {
@@ -60,47 +41,28 @@ define([
         };
 
 
-        Class.prototype.toSYNC = function(json) {
-            json || (json = this._SYNC);
-
-            json._id = this._id;
-            json.__type__ = this.__type__;
-
-            return json;
-        };
-
-
-        Class.prototype.fromSYNC = function(json) {
-            this._SYNC = json;
-
-            return this;
-        };
-
-
         Class.prototype.toJSON = function(json) {
             json || (json = {});
 
             json._id = this._id;
-            json._serverId = this._serverId;
-            json.__type__ = this.__type__;
+            json._jsonId = this._id;
+            json._className = this._className;
 
             return json;
-        };
-
-
-        Class.prototype.fromServerJSON = function(json) {
-
-            this._serverId = json._id;
-
-            return this;
         };
 
 
         Class.prototype.fromJSON = function(json) {
 
-            this._serverId = json._serverId;
+            this._jsonId = json._jsonId;
 
             return this;
+        };
+
+
+        Class.prototype.toString = function() {
+
+            return this._name;
         };
 
 
@@ -111,9 +73,9 @@ define([
             child.prototype.constructor = child;
 
             child.extend = parent.extend;
-            child.prototype.__type__ = child.__type__ = child.name;
+            child.prototype._className = child._className = child.name;
 
-            Class.__types__[child.name] = child;
+            Class._classes[child.name] = child;
 
             if (parent.onExtend) {
                 if (!child.onExtend) child.onExtend = parent.onExtend;
@@ -126,23 +88,23 @@ define([
 
         Class.fromJSON = function(json) {
 
-            return new Class.__types__[json.__type__]().fromJSON(json);
+            return new Class._classes[json._className]().fromJSON(json);
         };
 
 
         Class.fromServerJSON = function(json) {
 
-            return new Class.__types__[json.__type__]().fromServerJSON(json);
+            return new Class._classes[json._className]().fromServerJSON(json);
         };
 
 
         Class.create = function(type) {
 
-            return new Class.__types__[type];
+            return new Class._classes[type];
         };
 
 
-        Class.__types__ = {};
+        Class._classes = {};
 
 
         return Class;

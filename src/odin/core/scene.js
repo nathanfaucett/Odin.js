@@ -27,12 +27,12 @@ define([
 
             this.gameObjects = [];
             this._gameObjectHash = {};
-            this._gameObjectServerHash = {};
+            this._gameObjectJSONHash = {};
 
             this.components = {};
             this._componentTypes = [];
             this._componentHash = {};
-            this._componentHashServer = {};
+            this._componentJSONHash = {};
 
             this.setWorld(opts.world instanceof World ? opts.world : new World(opts.world));
             if (opts.gameObjects) this.addGameObjects.apply(this, opts.gameObjects);
@@ -46,6 +46,7 @@ define([
                 return this._name;
             },
             set: function(value) {
+                if (this._name === value) return;
                 var game = this.game,
                     sceneNameHash;
 
@@ -57,8 +58,7 @@ define([
                         return;
                     }
 
-                    delete sceneNameHash[this.name];
-                    sceneNameHash[value] = this;
+                    sceneNameHash[value] = this.toJSON();
                 }
 
                 this._name = value;
@@ -82,13 +82,18 @@ define([
         Scene.prototype.init = function() {
             var types = this._componentTypes,
                 gameObjects = this.gameObjects,
-                components, i, j;
+                components, component, i, j;
 
             this.world && this.world.init();
 
             for (i = types.length; i--;) {
                 components = types[i];
-                for (j = components.length; j--;) components[j].init();
+                for (j = components.length; j--;) {
+                    component = components[j];
+
+                    component.emit("init");
+                    component.init();
+                }
             }
 
             for (i = gameObjects.length; i--;) gameObjects[i].emit("init");
@@ -175,7 +180,7 @@ define([
 
                 gameObjects.push(gameObject);
                 this._gameObjectHash[gameObject._id] = gameObject;
-                if (gameObject._serverId !== -1) this._gameObjectServerHash[gameObject._serverId] = gameObject;
+                if (gameObject._jsonId !== -1) this._gameObjectJSONHash[gameObject._jsonId] = gameObject;
 
                 gameObject.scene = this;
 
@@ -183,7 +188,6 @@ define([
                 for (i = components.length; i--;) this._addComponent(components[i]);
 
                 if (this.game) gameObject.emit("init");
-
                 this.emit("addGameObject", gameObject);
             } else {
                 Log.error("Scene.addGameObject: GameObject is already a member of Scene");
@@ -208,7 +212,7 @@ define([
                 types = (components[type] = components[type] || []);
 
             this._componentHash[component._id] = component;
-            if (component._serverId !== -1) this._componentHashServer[component._serverId] = component;
+            if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
             types.push(component);
             types.sort(component.sort);
@@ -235,7 +239,7 @@ define([
             if (index !== -1) {
                 gameObjects.splice(index, 1);
                 this._gameObjectHash[gameObject._id] = undefined;
-                if (gameObject._serverId !== -1) this._gameObjectServerHash[gameObject._serverId] = undefined;
+                if (gameObject._jsonId !== -1) this._gameObjectJSONHash[gameObject._jsonId] = undefined;
 
                 gameObject.scene = undefined;
 
@@ -267,7 +271,7 @@ define([
                 index = types.indexOf(component);
 
             this._componentHash[component._id] = undefined;
-            if (component._serverId !== -1) this._componentHashServer[component._serverId] = undefined;
+            if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
             types.splice(index, 1);
             types.sort(component.sort);
@@ -310,9 +314,9 @@ define([
         };
 
 
-        Scene.prototype.findByServerId = function(id) {
+        Scene.prototype.findByJSONId = function(id) {
 
-            return this._gameObjectServerHash[id];
+            return this._gameObjectJSONHash[id];
         };
 
 
@@ -322,45 +326,9 @@ define([
         };
 
 
-        Scene.prototype.findComponentByServerId = function(id) {
+        Scene.prototype.findComponentByJSONId = function(id) {
 
-            return this._componentHashServer[id];
-        };
-
-
-        Scene.prototype.toSYNC = function(json) {
-            if (!this._needsSync) return this._SYNC;
-            json = Class.prototype.toSYNC.call(this, json);
-            var gameObjects = this.gameObjects,
-                jsonGameObjects = json.gameObjects || (json.gameObjects = []),
-                gameObject,
-                i;
-
-            if (this.world.sync) json.world = this.world.toSYNC(json.world);
-
-            for (i = gameObjects.length; i--;) {
-                if ((gameObject = gameObjects[i]).sync) jsonGameObjects[i] = gameObject.toSYNC(jsonGameObjects[i]);
-            }
-            this._needsSync = false;
-
-            return json;
-        };
-
-
-        Scene.prototype.fromSYNC = function(json) {
-            Class.prototype.fromSYNC.call(this, json);
-            var jsonGameObjects = json.gameObjects,
-                gameObject, jsonGameObject,
-                i;
-
-            if (json.world) this.world.fromSYNC(json.world);
-
-            for (i = jsonGameObjects.length; i--;) {
-                if (!(jsonGameObject = jsonGameObjects[i])) continue;
-                if ((gameObject = this.findByServerId(jsonGameObject._id))) gameObject.fromSYNC(jsonGameObject);
-            }
-
-            return this;
+            return this._componentJSONHash[id];
         };
 
 
@@ -375,34 +343,10 @@ define([
             json.world = this.world.toJSON(json.world);
 
             for (i = gameObjects.length; i--;) {
-                if ((gameObject = gameObjects[i]).json) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
+                if ((gameObject = gameObjects[i])) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
             }
 
             return json;
-        };
-
-
-        Scene.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-            var jsonGameObjects = json.gameObjects,
-                gameObject, jsonGameObject,
-                i;
-
-            this.name = json.name;
-            this.world = Class.fromJSON(json.world);
-            this.world.scene = this;
-
-            for (i = jsonGameObjects.length; i--;) {
-                if (!(jsonGameObject = jsonGameObjects[i])) continue;
-
-                if ((gameObject = this.findByServerId(jsonGameObject._id))) {
-                    gameObject.fromServerJSON(jsonGameObject);
-                } else {
-                    this.addGameObject(Class.fromServerJSON(jsonGameObject));
-                }
-            }
-
-            return this;
         };
 
 

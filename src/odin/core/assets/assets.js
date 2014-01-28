@@ -21,6 +21,12 @@ define([
         Assets.prototype.constructor = Assets;
 
 
+        Assets.prototype.get = function(name) {
+
+            return this.hash[name];
+        };
+
+
         Assets.prototype.addAsset = function(asset) {
             if (!(asset instanceof Asset)) {
                 Log.error("Assets.addAsset: can't add passed argument, it is not an instance of Asset");
@@ -80,26 +86,6 @@ define([
             }
 
             return json;
-        };
-
-
-        Assets.prototype.fromServerJSON = function(json) {
-            var assetsHash = this.hash,
-                jsonAssets = json.assets || (json.assets = []),
-                asset, jsonAsset,
-                i = jsonAssets.length;
-
-            for (; i--;) {
-                if (!(jsonAsset = jsonAssets[i])) continue;
-
-                if ((asset = assetsHash[jsonAsset.name])) {
-                    asset.fromServerJSON(jsonAsset);
-                } else {
-                    this.add(Class.fromServerJSON(jsonAsset));
-                }
-            }
-
-            return this;
         };
 
 

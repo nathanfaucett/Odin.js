@@ -62,6 +62,8 @@ define([
             te[15] = m44 !== undefined ? m44 : 1;
         }
 
+        Mathf._classes["Mat4"] = Mat4;
+
         /**
          * @method clone
          * @memberof Mat4
@@ -1120,8 +1122,7 @@ define([
 
             return this.set(
                 c, 0, s, 0,
-                0, 1, 0, 0,
-				-s, 0, c, 0,
+                0, 1, 0, 0, -s, 0, c, 0,
                 0, 0, 0, 1
             );
         };
@@ -1433,6 +1434,7 @@ define([
             var te = this.elements,
                 je = json.elements || (json.elements = []);
 
+            json._className = "Mat4";
             je[0] = te[0];
             je[1] = te[1];
             je[2] = te[2];

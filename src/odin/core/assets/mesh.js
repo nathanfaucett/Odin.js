@@ -91,15 +91,15 @@ define([
                 item = items[i];
 
                 bone = new Bone(item.parent, item.name);
-				
+
                 bone.position.fromArray(item.position);
                 bone.rotation.fromArray(item.rotation);
                 bone.scale.fromArray(item.scale);
-				
+
                 bone.bindPose.fromArray(item.bindPose);
-				
+
                 bone.skinned = item.skinned;
-				
+
                 bone.inheritPoosition = item.inheritPoosition;
                 bone.inheritRotation = item.inheritRotation;
                 bone.inheritScale = item.inheritScale;
@@ -281,10 +281,10 @@ define([
 
         Mesh.prototype.clear = function() {
             Asset.prototype.clear.call(this);
-			
-			this.vertices.length = this.normals.length = this.tangents.length = this.faces.length = this.colors.length = this.uvs.length = 0;
+
+            this.vertices.length = this.normals.length = this.tangents.length = this.faces.length = this.colors.length = this.uvs.length = 0;
             this.bones.length = this.boneWeights.length = this.boneIndices.length = 0;
-			
+
             return this;
         };
 
@@ -368,7 +368,7 @@ define([
 
             this.dynamic = json.dynamic;
             this.useBones = json.useBones;
-			
+
             this.aabb.fromPoints(this.vertices);
             this._needsUpdate = true;
 
@@ -477,11 +477,11 @@ define([
 
             return mesh;
         };
-		
-		
+
+
         function addQuad(mesh, a, b, c, d, uvs) {
             var index = mesh.vertices.length;
-			
+
             mesh.uvs.push(
                 new Vec2(uvs[1], uvs[2]),
                 new Vec2(uvs[0], uvs[2]),
@@ -503,9 +503,9 @@ define([
                 index, index + 2, index + 3
             );
         };
-		
-		
-		Mesh.Bone = Bone;
+
+
+        Mesh.Bone = Bone;
 
 
         return Mesh;

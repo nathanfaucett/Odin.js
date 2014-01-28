@@ -11,8 +11,8 @@ define([
 
 
         var UNKNOWN = 0;
-		
-		
+
+
         function Bone(parentIndex, name) {
 
             this.name = name != undefined ? name : "Bone_" + UNKNOWN++;
@@ -27,9 +27,9 @@ define([
             this.matrix = new Mat4;
             this.matrixWorld = new Mat4;
             this.bindPose = new Mat4;
-			
-			this.inheritPosition = true;
-			this.inheritRotation = true;
+
+            this.inheritPosition = true;
+            this.inheritRotation = true;
             this.inheritScale = true;
         }
 
@@ -49,8 +49,8 @@ define([
             this.matrixWorld.copy(other.matrixWorld);
             this.bindPose.copy(other.bindPose);
 
-			this.inheritPosition = other.inheritPosition;
-			this.inheritRotation = other.inheritRotation;
+            this.inheritPosition = other.inheritPosition;
+            this.inheritRotation = other.inheritRotation;
             this.inheritScale = other.inheritScale;
 
             return this;
@@ -89,11 +89,11 @@ define([
             json.matrixWorld = this.matrixWorld.toJSON(json.matrixWorld);
             json.bindPose = this.bindPose.toJSON(json.bindPose);
 
-			json.inheritPosition = this.inheritPosition;
-			json.inheritRotation = this.inheritRotation;
+            json.inheritPosition = this.inheritPosition;
+            json.inheritRotation = this.inheritRotation;
             json.inheritScale = this.inheritScale;
 
-			return json;
+            return json;
         };
 
 
@@ -112,8 +112,8 @@ define([
             this.matrixWorld.fromJSON(json.matrixWorld);
             this.bindPose.fromJSON(json.bindPose);
 
-			this.inheritPosition = json.inheritPosition;
-			this.inheritRotation = json.inheritRotation;
+            this.inheritPosition = json.inheritPosition;
+            this.inheritRotation = json.inheritRotation;
             this.inheritScale = json.inheritScale;
 
             return this;

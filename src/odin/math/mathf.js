@@ -68,6 +68,9 @@ define(
              * @memberof Mathf
              */
             this.TO_DEGS = TO_DEGS;
+
+
+            this._classes = {};
         }
 
 
@@ -427,6 +430,18 @@ define(
             }
 
             return i;
+        };
+
+        /**
+         * @method fromJSON
+         * @memberof Mathf
+         * @brief returns Math class based on json _className
+         * @param Object json
+         * @return MATH_CLASS
+         */
+        Mathf.prototype.fromJSON = function(json) {
+
+            return new this._classes[json._className]().fromJSON(json);
         };
 
 

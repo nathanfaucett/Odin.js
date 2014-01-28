@@ -1,8 +1,10 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define(
-    function() {
+define([
+        "odin/math/mathf"
+    ],
+    function(Mathf) {
         "use strict";
 
 
@@ -35,6 +37,8 @@ define(
              */
             this.z = z || 0;
         }
+
+        Mathf._classes["Vec3"] = Vec3;
 
         /**
          * @method clone
@@ -759,6 +763,7 @@ define(
         Vec3.prototype.toJSON = function(json) {
             json || (json = {});
 
+            json._className = "Vec3";
             json.x = this.x;
             json.y = this.y;
             json.z = this.z;

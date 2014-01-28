@@ -17,7 +17,7 @@ require({
 
             Component.call(this, "CameraControl", opts);
 
-            this.speed = 2;
+            this.speed = 1;
             this.zoomSpeed = 6;
         }
 
@@ -53,6 +53,12 @@ require({
                 src: "../content/images/player.png",
                 magFilter: "NEAREST",
                 minFilter: "NEAREST"
+            }),
+            new Texture({
+                name: "img_hospital",
+                src: "../content/images/hospital.png",
+                magFilter: "NEAREST",
+                minFilter: "NEAREST"
             })
         );
 
@@ -76,9 +82,11 @@ require({
 
         var camera = new GameObject({
             components: [
-                new Transform2D,
+                new Transform2D({
+                    position: new Vec2(0, 8)
+                }),
                 new Camera2D({
-                    orthographicSize: 4
+                    orthographicSize: 9
                 }),
                 new CameraControl
             ],
@@ -92,12 +100,14 @@ require({
                     x: 0,
                     y: 0,
                     w: 64,
-                    h: 64
+                    h: 64,
+                    width: 0.5,
+                    height: 0.5
                 }),
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
                     shape: new Phys2D.P2Circle({
-                        radius: 0.5
+                        radius: 0.25
                     })
                 })
             ]
@@ -110,12 +120,14 @@ require({
                     x: 0,
                     y: 0,
                     w: 64,
-                    h: 64
+                    h: 64,
+                    width: 0.5,
+                    height: 0.5
                 }),
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
                     shape: new Phys2D.P2Rect({
-                        extents: new Vec2(0.5, 0.5)
+                        extents: new Vec2(0.25, 0.25)
                     })
                 })
             ]
@@ -126,7 +138,7 @@ require({
                     position: new Vec2(0, 32)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    texture: Assets.hash["img_hospital"],
                     x: 0,
                     y: 0,
                     w: 64,
@@ -145,7 +157,7 @@ require({
             components: [
                 new Transform2D,
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    texture: Assets.hash["img_hospital"],
                     x: 0,
                     y: 0,
                     w: 64,
@@ -166,7 +178,7 @@ require({
                     position: new Vec2(-16, 16)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    texture: Assets.hash["img_hospital"],
                     x: 0,
                     y: 0,
                     w: 64,
@@ -187,7 +199,7 @@ require({
                     position: new Vec2(16, 16)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    texture: Assets.hash["img_hospital"],
                     x: 0,
                     y: 0,
                     w: 64,

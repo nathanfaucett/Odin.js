@@ -20,9 +20,9 @@ define([
             this._name = opts.name != undefined ? opts.name : "Asset_" + this._id;
 
             this.json = opts.json != undefined ? !! opts.json : true;
-			
+
             this.assets = undefined;
-			this.load = opts.load != undefined ? !! opts.load : true;
+            this.load = opts.load != undefined ? !! opts.load : true;
             this.src = opts.src;
             this.raw = opts.raw;
         }
@@ -116,16 +116,6 @@ define([
             if (!pack) json.src = this.src;
 
             return json;
-        };
-
-
-        Asset.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-
-            this.name = json.name;
-            this.src = json.src;
-
-            return this;
         };
 
 

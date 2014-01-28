@@ -11,7 +11,7 @@ define([
         var sqrt = Math.sqrt,
             floor = Math.floor,
             clamp01 = Mathf.clamp01,
-			defineProperty = Object.defineProperty;
+            defineProperty = Object.defineProperty;
 
         /**
          * @class Color
@@ -48,8 +48,10 @@ define([
 
             this.set(r, g, b);
         }
-		
-		defineProperty(Color.prototype, "x", {
+
+        Mathf._classes["Color"] = Color;
+
+        defineProperty(Color.prototype, "x", {
             get: function() {
                 return this.r;
             },
@@ -57,7 +59,7 @@ define([
                 this.r = value;
             }
         });
-		defineProperty(Color.prototype, "y", {
+        defineProperty(Color.prototype, "y", {
             get: function() {
                 return this.g;
             },
@@ -65,7 +67,7 @@ define([
                 this.g = value;
             }
         });
-		defineProperty(Color.prototype, "z", {
+        defineProperty(Color.prototype, "z", {
             get: function() {
                 return this.b;
             },
@@ -684,6 +686,7 @@ define([
         Color.prototype.toJSON = function(json) {
             json || (json = {});
 
+            json._className = "Color";
             json.r = this.r;
             json.g = this.g;
             json.b = this.b;
