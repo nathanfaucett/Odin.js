@@ -12,8 +12,7 @@ define([
         var sqrt = Math.sqrt,
             cos = Math.cos,
             sin = Math.sin,
-            tan = Math.tan,
-            degsToRads = Mathf.degsToRads;
+            tan = Math.tan;
 
         /**
          * @class Mat4

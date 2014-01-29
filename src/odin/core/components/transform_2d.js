@@ -60,6 +60,7 @@ define([
 
 
         Transform2D.prototype.clear = function() {
+            Component.prototype.clear.call(this);
             var children = this.children,
                 i;
 

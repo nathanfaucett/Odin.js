@@ -64,6 +64,7 @@ define([
                 j = bj._index,
                 space = bi.space;
 
+            if (!space) return false;
             space.collisionMatrixSet(i, j, 1, true);
 
             if (space.collisionMatrixGet(i, j, true) !== space.collisionMatrixGet(i, j, false)) {

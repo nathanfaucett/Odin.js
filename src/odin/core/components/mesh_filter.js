@@ -61,6 +61,7 @@ define([
 
 
         MeshFilter.prototype.clear = function() {
+            Component.prototype.clear.call(this);
 
             this.mesh = undefined;
             this.material = undefined;

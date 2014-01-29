@@ -56,6 +56,7 @@ define([
 
 
         Game.prototype.init = function() {
+
             this.canvas.init();
 
             this._loop.resume();

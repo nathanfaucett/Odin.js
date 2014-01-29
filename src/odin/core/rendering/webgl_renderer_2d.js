@@ -496,7 +496,7 @@ define([
                 if (webgl.lastTexture !== glTexture) {
                     gl.activeTexture(gl.TEXTURE0);
                     gl.bindTexture(gl.TEXTURE_2D, glTexture);
-                    gl.uniform1i(uniforms.uTexture, 0);
+                    gl.uniform1i(uniforms.uTexture.location, 0);
 
                     webgl.lastTexture = glTexture;
                 }

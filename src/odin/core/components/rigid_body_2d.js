@@ -24,39 +24,37 @@ define([
 
         RigidBody2D.prototype.copy = function(other) {
 
-            this.body.off("collide", onCollision, this);
+            this.body.off("collide", onCollide, this);
+            this.body.off("colliding", onColliding, this);
             this.body = other.body.clone();
-            this.body.on("collide", onCollision, this);
+            this.body.on("collide", onCollide, this);
+            this.body.on("colliding", onColliding, this);
 
             return this;
         };
 
 
+        RigidBody2D.prototype.clear = function() {
+            Component.prototype.clear.call(this);
+
+            this.body.off("collide", onCollide, this);
+            this.body.off("colliding", onColliding, this);
+            this.body.userData = undefined;
+        };
+
+
         RigidBody2D.prototype.init = function() {
             var body = this.body,
-                shapes = body.shapes,
-                matrix = body.matrix,
                 gameObject = this.gameObject,
-                transform = gameObject.transform2d,
-                aabb = body.aabb,
-                shape,
-                i;
+                transform = gameObject.transform2d;
 
             body.position.copy(transform.position);
             body.rotation = transform.rotation;
 
-            matrix.setPosition(body.position);
-            matrix.setRotation(body.rotation);
-
-            aabb.clear();
-
-            for (i = shapes.length; i--;) {
-                shape = shapes[i];
-                shape.update(matrix);
-                aabb.union(shape.aabb);
-            }
-
-            body.on("collide", onCollision, this);
+            body.init();
+            body.userData = this;
+            body.on("collide", onCollide, this);
+            body.on("colliding", onColliding, this);
         };
 
 
@@ -113,15 +111,22 @@ define([
             Component.prototype.fromJSON.call(this, json);
 
             this.body.fromJSON(json.body);
-            this.body.on("collide", onCollision, this);
 
             return this;
         };
 
 
-        function onCollision(body, si, sj) {
+        function onCollide(body, si, sj) {
+            if (!body.userData) return;
 
-            this.emit("collide", body, si, sj);
+            this.emit("collide", body.userData, body, si, sj);
+        };
+
+
+        function onColliding(body, si, sj) {
+            if (!body.userData) return;
+
+            this.emit("colliding", body.userData, body, si, sj);
         };
 
 

@@ -273,6 +273,7 @@ define([
             start = now();
             for (i = numBodies; i--;) {
                 body = bodies[i];
+                if (!body) continue;
 
                 body.update(dt);
                 body.sleepTick(time);

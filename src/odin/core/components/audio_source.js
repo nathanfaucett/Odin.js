@@ -118,6 +118,7 @@ define([
 
 
         AudioSource.prototype.clear = function() {
+            Component.prototype.clear.call(this);
             if (this.playing) this.stop();
 
             this.clip = undefined;

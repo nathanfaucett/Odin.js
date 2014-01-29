@@ -37,23 +37,6 @@ define([
             WHITE_TEXTURE = new Uint8Array([255, 255, 255, 255]),
             ENUM_WHITE_TEXTURE = -1,
 
-            SPRITE_VERTICES = [
-                new Vec3(-0.5, 0.5, 0),
-                new Vec3(-0.5, -0.5, 0),
-                new Vec3(0.5, 0.5, 0),
-                new Vec3(0.5, -0.5, 0)
-            ],
-            SPRITE_UVS = [
-                new Vec2(0, 0),
-                new Vec2(0, 1),
-                new Vec2(1, 0),
-                new Vec2(1, 1)
-            ],
-            ENUM_SPRITE_BUFFER = -1,
-
-            ENUM_PARTICLE_SHADER = -1,
-            ENUM_BASIC_SHADER = -2,
-
             EMPTY_ARRAY = [];
 
 
@@ -385,7 +368,7 @@ define([
 
                 mesh = meshFilter.mesh,
                 material = meshFilter.material,
-                glShader = buildShader(this, material, mesh),
+                glShader = buildShader(this, material),
                 glBuffer = buildBuffer(this, mesh),
                 uniforms, materialUniforms;
 
@@ -408,7 +391,7 @@ define([
                 webgl.lastBuffer = glBuffer;
             }
 
-            bindShader(this, glShader, material, mesh);
+            bindShader(this, glShader, material);
 
             if (glBuffer.index) {
                 gl.drawElements(gl.TRIANGLES, glBuffer.indices, gl.UNSIGNED_SHORT, 0);
@@ -495,7 +478,7 @@ define([
                 uniforms = glShader.uniforms,
                 uniformValue, value, key,
                 materialUniforms = material.uniforms,
-                glTexture, index = 0,
+                index = 0,
                 i;
 
             for (key in uniforms) {
@@ -694,7 +677,7 @@ define([
             return glBuffer;
         }
 
-        function buildShader(renderer, material, mesh) {
+        function buildShader(renderer, material) {
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 gpu = webgl.gpu,
@@ -776,61 +759,6 @@ define([
             texture._needsUpdate = false;
 
             return glTexture;
-        }
-
-
-        function particleVertexShader(precision) {
-
-            return [
-                "precision " + precision + " float;",
-
-                "uniform mat4 uMatrix;",
-                "uniform vec3 uPos;",
-                "uniform float uAngle;",
-                "uniform float uSize;",
-
-                "attribute vec3 aVertexPosition;",
-                "attribute vec2 aVertexUv;",
-
-                "varying vec2 vVertexUv;",
-
-                "void main() {",
-                "	float c, s, vx, vy, x, y;",
-
-                "	c = cos(uAngle);",
-                "	s = sin(uAngle);",
-                "	vx = aVertexPosition.x;",
-                "	vy = aVertexPosition.y;",
-
-                "	x = vx * c - vy * s;",
-                "	y = vx * s + vy * c;",
-
-                "	vVertexUv = aVertexUv;",
-                "	gl_Position = uMatrix * vec4(uPos.x + x * uSize, uPos.y + y * uSize, 0.0, 1.0);",
-                "}"
-            ].join("\n");
-        }
-
-
-        function particleFragmentShader(precision) {
-
-            return [
-                "precision " + precision + " float;",
-
-                "uniform float uAlpha;",
-                "uniform vec3 uColor;",
-                "uniform sampler2D uTexture;",
-
-                "varying vec2 vVertexUv;",
-
-                "void main() {",
-                "	vec4 finalColor = texture2D(uTexture, vVertexUv);",
-                "	finalColor.xyz *= uColor;",
-                "	finalColor.w *= uAlpha;",
-
-                "	gl_FragColor = finalColor;",
-                "}"
-            ].join("\n");
         }
 
 

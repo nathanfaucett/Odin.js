@@ -16,13 +16,12 @@ define(
 
 
         EventEmitter.prototype.on = function(type, listener, ctx) {
-            var events = this._events,
-                i;
+            var events = this._events;
 
             (events[type] || (events[type] = [])).push({
-                    listener: listener,
-                    ctx: ctx || this
-                });
+                listener: listener,
+                ctx: ctx || this
+            });
 
             return this;
         };
@@ -92,25 +91,29 @@ define(
 
             switch (arguments.length) {
                 case 1:
-                    for (i = events.length; i--;)(event = events[i]).listener.call(event.ctx);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.call(event.ctx);
                     break;
 
                 case 2:
                     a1 = arguments[1];
-                    for (i = events.length; i--;)(event = events[i]).listener.call(event.ctx, a1);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.call(event.ctx, a1);
                     break;
 
                 case 3:
                     a1 = arguments[1];
                     a2 = arguments[2];
-                    for (i = events.length; i--;)(event = events[i]).listener.call(event.ctx, a1, a2);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
                     break;
 
                 case 4:
                     a1 = arguments[1];
                     a2 = arguments[2];
                     a3 = arguments[3];
-                    for (i = events.length; i--;)(event = events[i]).listener.call(event.ctx, a1, a2, a3);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
                     break;
 
                 case 5:
@@ -118,12 +121,14 @@ define(
                     a2 = arguments[2];
                     a3 = arguments[3];
                     a4 = arguments[4];
-                    for (i = events.length; i--;)(event = events[i]).listener.call(event.ctx, a1, a2, a3, a4);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
                     break;
 
                 default:
                     shift.apply(arguments);
-                    for (i = events.length; i--;)(event = events[i]).listener.apply(event.ctx, arguments);
+                    for (i = events.length; i--;)
+                        if ((event = events[i])) event.listener.apply(event.ctx, arguments);
             }
 
             return this;

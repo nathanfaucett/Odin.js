@@ -63,6 +63,7 @@ define([
 
 
         Sprite.prototype.clear = function() {
+            Component.prototype.clear.call(this);
 
             this.texture = undefined;
 

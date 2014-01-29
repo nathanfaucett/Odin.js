@@ -27,6 +27,7 @@ define([
             this.tags = [];
 
             this.components = [];
+            this._componentType = {};
             this._componentHash = {};
             this._componentJSONHash = {};
 
@@ -49,7 +50,7 @@ define([
             for (i = components.length; i--;) this.addComponent(components[i].clone());
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
-            if (other.scene) other.scene.addGameObject(this);
+            if (other.scene && !this.scene) other.scene.addGameObject(this);
 
             return this;
         };
@@ -60,8 +61,12 @@ define([
                 tags = this.tags,
                 i;
 
+            for (i = components.length; i--;) components[i].clear();
+
             for (i = tags.length; i--;) this.removeTag(tags[i]);
-            for (i = components.length; i--;) this.removeComponent(components[i], true);
+            for (i = components.length; i--;) this.removeComponent(components[i]);
+
+            this.off();
 
             return this;
         };
@@ -136,6 +141,7 @@ define([
                 if (component.gameObject) component = component.clone();
 
                 components.push(component);
+                this._componentType[component._type] = component;
                 this._componentHash[component._id] = component;
                 if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component._jsonId;
 
@@ -212,6 +218,7 @@ define([
                 }
 
                 components.splice(components.indexOf(component), 1);
+                this._componentType[component._type] = undefined;
                 this._componentHash[component._id] = undefined;
                 if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
@@ -221,8 +228,8 @@ define([
                 this.emit("remove" + component._type, component);
                 this.emit("removeComponent", component);
 
-                if (clear) component.clear();
                 if (this.scene) this.scene._removeComponent(component);
+                if (clear) component.clear();
             } else {
                 Log.error("GameObject.removeComponent: GameObject does not have a(n) " + type + " Component");
             }
@@ -257,7 +264,7 @@ define([
 
         GameObject.prototype.getComponent = function(type) {
 
-            return this._componentHash[type] || this[type] || this[type.toLowerCase()];
+            return this._componentType[type] || this[type] || this[type.toLowerCase()];
         };
 
 

@@ -44,6 +44,8 @@ define([
             this.sleepVelocityLimit = opts.sleepVelocityLimit !== undefined ? !! opts.sleepVelocityLimit : 0.01;
             this.sleepTimeLimit = opts.sleepTimeLimit !== undefined ? !! opts.sleepTimeLimit : 1;
 
+            this.userData = undefined;
+
             this._sleepTime = 0;
             this._lastSleepyTime = 0;
 

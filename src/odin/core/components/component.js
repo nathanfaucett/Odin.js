@@ -42,6 +42,7 @@ define([
 
         Component.prototype.clear = function() {
 
+            this.off();
         };
 
 
@@ -51,10 +52,8 @@ define([
                 return this;
             }
 
-            this.gameObject.removeComponent(this);
+            this.gameObject.removeComponent(this, true);
             this.emit("destroy");
-
-            this.clear();
 
             return this;
         };

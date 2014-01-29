@@ -1,10 +1,11 @@
 define([
         "odin/odin",
+        "blood",
         "player",
         "zombie",
         "collision_object"
     ],
-    function(Odin, Player, Zombie, CollisionObject) {
+    function(Odin, Blood, Player, Zombie, CollisionObject) {
 
 
         var Assets = Odin.Assets,
@@ -44,6 +45,7 @@ define([
 
         var player = new Odin.GameObject({
             components: [
+                Blood.clone(),
                 new Player,
                 new Odin.Transform2D,
                 new Odin.Sprite({
@@ -63,6 +65,7 @@ define([
         }),
             zombie = new Odin.GameObject({
                 components: [
+                    Blood.clone(),
                     new Zombie({
                         spd: 1,
                         atk: 3,
@@ -86,6 +89,7 @@ define([
             }),
             zombie_red = new Odin.GameObject({
                 components: [
+                    Blood.clone(),
                     new Zombie({
                         spd: 3,
                         atk: 1,

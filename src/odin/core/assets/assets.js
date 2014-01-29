@@ -22,8 +22,11 @@ define([
 
 
         Assets.prototype.get = function(name) {
+            var asset = this.hash[name];
+            if (asset) return asset;
 
-            return this.hash[name];
+            Log.error("Assets.get: can't find asset with name " + name + ", it has not been added to Assets, use Assets.addAsset(asset)");
+            return undefined
         };
 
 

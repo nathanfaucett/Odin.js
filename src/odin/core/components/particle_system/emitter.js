@@ -26,8 +26,6 @@ define([
             randInt = Mathf.randInt,
             randFloat = Mathf.randFloat,
             clampTop = Mathf.clampTop,
-            cos = Math.cos,
-            sin = Math.sin,
             sqrt = Math.sqrt,
 
             PARTICLE_POOL = Emitter.PARTICLE_POOL = new ObjectPool(Particle2D);
@@ -238,7 +236,7 @@ define([
                 velocityType = this.velocityType,
 
                 limit = clampTop(numParticle2Ds + count, Emitter.MAX_PARTICLES) - numParticle2Ds,
-                posx, posy, posz, vel, acc, pos, col, angle, x, y, z, len, r, dx, dy, dz, spd, particle;
+                posx, posy, posz, vel, acc, pos, col, x, y, z, len, r, dx, dy, dz, spd, particle;
 
             if (positionType === EmitterType.Circle) {
                 posx = randFloat(-positionSpread.x, positionSpread.x);

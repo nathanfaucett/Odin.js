@@ -27,6 +27,15 @@ define([
         Class.extend(BaseGame);
 
 
+        BaseGame.prototype.init = function() {
+
+            this._loop.resume();
+            this.emit("init");
+
+            return this;
+        };
+
+
         BaseGame.prototype.clear = function() {
             var scenes = this.scenes,
                 i;

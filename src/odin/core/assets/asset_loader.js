@@ -34,6 +34,8 @@ define([
                     }
                 };
 
+            if (!count) callback && callback();
+
             for (; i--;) this.loadAsset(Assets[i], fn, reload, true);
         };
 

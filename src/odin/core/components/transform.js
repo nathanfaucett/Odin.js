@@ -59,6 +59,7 @@ define([
 
 
         Transform.prototype.clear = function() {
+            Component.prototype.clear.call(this);
             var children = this.children,
                 i;
 

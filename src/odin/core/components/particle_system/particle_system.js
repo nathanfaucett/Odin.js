@@ -28,7 +28,7 @@ define([
              * @property Boolean playing
              * @memberof ParticleSystem
              */
-            this.playing = opts.playing != undefined ? opts.playing : true;
+            this.playing = opts.playing != undefined ? opts.playing : false;
 
             /**
              * @property Array emitters
@@ -66,6 +66,7 @@ define([
 
 
         ParticleSystem.prototype.clear = function() {
+            Component.prototype.clear.call(this);
             var emitters = this.emitters,
                 i = emitters.length;;
 

@@ -4,9 +4,14 @@ define([
     function(Odin) {
 
 
-        var Mathf = Odin.Mathf,
+        var Time = Odin.Time,
+            Mathf = Odin.Mathf,
+            direction = Mathf.direction,
             randInt = Mathf.randInt,
-            floor = Math.floor;
+            floor = Math.floor,
+
+            Loop = Odin.Enums.WrapMode.Loop,
+            Clamp = Odin.Enums.WrapMode.Clamp;
 
 
         function Character(opts) {
@@ -14,12 +19,15 @@ define([
 
             Odin.Component.call(this, "Character", opts);
 
+            this.force = new Odin.Vec2;
+            this.attacking = false;
+
             this.dead = false;
-            this.deadTime = 2;
+            this.deadTime = opts.deadTime != undefined ? opts.deadTime : 2;
             this._deadTime = 0;
 
             this.hit = false;
-            this.hitTime = 0.5;
+            this.hitTime = opts.hitTime != undefined ? opts.hitTime : 0.5;
             this._hitTime = 0;
 
             this.level = opts.level != undefined ? opts.level : 1;
@@ -58,6 +66,32 @@ define([
         };
 
 
+        Character.prototype.update = function() {
+            var animation = this.spriteAnimation,
+                force = this.force,
+                spd = this.spd,
+                dt = Time.delta;
+
+            if (this.dead) {
+                if (this.deadTimer(dt)) return;
+
+                animation.play("death", Clamp, 0.5);
+                return;
+            }
+
+            this.hitTimer(dt);
+
+            if (force.x || force.y) {
+                force.x *= 10 * spd;
+                force.y *= 10 * spd;
+                this.rigidBody2d.applyForce(force);
+                if (!this.hit && !this.attacking) animation.play(direction(force.x, force.y), Loop);
+            }
+
+            if (!this.hit) animation.rate = 1 / (force.length() * 0.5);
+        };
+
+
         Character.prototype.attack = function(other) {
             if (this.dead) return;
 
@@ -74,6 +108,8 @@ define([
             var damage = atk * randInt(1, 6) - this.def * randInt(1, 6);
 
             if (damage > 0) {
+                this.particleSystem.play();
+
                 this.hp -= damage;
                 this.hit = true;
 
@@ -100,7 +136,6 @@ define([
 
 
         Character.prototype.deadTimer = function(dt) {
-            this.collisionObject.active = false;
 
             if ((this._deadTime += dt) > this.deadTime) {
                 this.gameObject.destroy();

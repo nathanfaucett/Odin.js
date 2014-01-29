@@ -69,6 +69,7 @@ define([
 
 
         function collision(dt, bi, bj) {
+            if (!bi.transform2d || !bj.transform2d) return;
             var aabbi = bi.aabb,
                 aabbj = bj.aabb,
                 xi = bi.transform2d.position,

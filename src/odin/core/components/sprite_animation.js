@@ -63,6 +63,7 @@ define([
 
 
         SpriteAnimation.prototype.clear = function() {
+            Component.prototype.clear.call(this);
 
             this.sheet = undefined;
 
@@ -75,7 +76,7 @@ define([
             if ((this.playing && this.current === name) || !this.sheet[name]) return this;
 
             this.current = name;
-            this.rate = rate || (rate = this.rate);
+            this.rate = rate !== undefined ? rate : (rate = this.rate);
             this.mode = mode || (mode = this.mode);
             this._frame = 0;
             this._order = 1;
@@ -101,7 +102,7 @@ define([
 
 
         SpriteAnimation.prototype.update = function() {
-            if (!this.playing || !this.rate) return;
+            if (!this.playing) return;
             var sprite = this.sprite,
                 sheet = this.sheet,
                 current = sheet[this.current],
@@ -113,6 +114,15 @@ define([
             order = this._order;
             frame = this._frame;
             mode = this.mode;
+
+            if (!this.rate || this.rate === Infinity) {
+                animation = current[frame];
+                sprite.x = animation[0];
+                sprite.y = animation[1];
+                sprite.w = animation[2];
+                sprite.h = animation[3];
+                return;
+            }
 
             this._time += dt;
             count = this._time / this.rate;

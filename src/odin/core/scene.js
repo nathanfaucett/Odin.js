@@ -121,8 +121,10 @@ define([
                 i;
 
             this.world = undefined;
-
             for (i = gameObjects.length; i--;) this.removeGameObject(gameObjects[i], true);
+
+            this.off();
+
             return this;
         };
 
@@ -237,6 +239,7 @@ define([
                 i;
 
             if (index !== -1) {
+
                 gameObjects.splice(index, 1);
                 this._gameObjectHash[gameObject._id] = undefined;
                 if (gameObject._jsonId !== -1) this._gameObjectJSONHash[gameObject._jsonId] = undefined;

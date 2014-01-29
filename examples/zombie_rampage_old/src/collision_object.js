@@ -28,6 +28,7 @@ define([
 
         var VEC = new Odin.Vec2;
         CollisionObject.prototype.update = function() {
+            if (!this.transform2d) return;
             var position = this.transform2d.position,
                 offset = this.offset;
 
