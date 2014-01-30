@@ -61,6 +61,7 @@ define(
 
             this.Enums = require("odin/core/enums");
             this.GameObject = require("odin/core/game_object");
+            this.Prefab = require("odin/core/prefab");
             this.Scene = require("odin/core/scene");
 
             this.AABB2 = require("odin/math/aabb2");

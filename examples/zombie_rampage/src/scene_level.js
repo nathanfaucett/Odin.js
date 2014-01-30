@@ -108,7 +108,7 @@ define([
             tags: ["Wall", "Right"]
         });
 
-        sceneLevel.add(camera, wall_top, wall_bottom, wall_left, wall_right, background);
+        sceneLevel.addGameObjects(camera, wall_top, wall_bottom, wall_left, wall_right, background);
 
         return sceneLevel;
     }

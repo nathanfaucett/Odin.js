@@ -67,6 +67,7 @@ define([
 
 
         Enemy.prototype.clear = function() {
+            Character.prototype.clear.call(this);
 
             this.player = undefined;
         };

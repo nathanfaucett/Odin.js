@@ -1,10 +1,12 @@
 define([
         "odin/odin",
         "player",
-        "zombie"
+        "zombie",
+        "zombie_red",
+        "zombie_big"
     ],
-    function(Odin, player, zombie) {
-
+    function(Odin, player, zombie, zombieRed, zombieBig) {
+		
 
         var Time = Odin.Time,
             random = Math.random,
@@ -22,10 +24,9 @@ define([
             this.gameOver = false;
             this.points = 0;
 
-            this.playerAlive = false;
             this.playerLives = 3;
 
-            this.wave = 1;
+            this.wave = 10;
             this.out = 0;
             this.enemies = 0;
 
@@ -35,8 +36,22 @@ define([
             this.waveTime = 0;
 
             var self = this;
-            this.onDestroyEnemy = function() {
+            this.onRemoveEnemy = function() {
                 self.enemies -= 1;
+            };
+            this.onRemovePlayer = function() {
+				
+                self.playerLives -= 1;
+                if (self.playerLives <= 0) {
+                    self.gameOver = true;
+                    return;
+                }
+                var instance = player.create();
+
+                instance.on("remove", self.onRemovePlayer, this);
+                this.playerAlive = true;
+
+                self.gameObject.scene.addGameObject(instance);
             };
         }
 
@@ -44,18 +59,17 @@ define([
 
 
         Level.prototype.init = function() {
-            var z = zombie.clone();
+            var instance = player.create();
 
-            z.transform2d.position.set(0, 8);
-            this.gameObject.scene.addGameObject(z);
-            z.clone();
-            z.clone();
+            instance.on("remove", this.onRemovePlayer, this);
+            this.playerAlive = true;
 
-            this.gameObject.scene.addGameObject(player.clone());
+            this.gameObject.scene.addGameObject(instance);
         };
 
 
         Level.prototype.clear = function() {
+            Odin.Component.prototype.clear.call(this);
 
         };
 
@@ -70,20 +84,20 @@ define([
             if (this._waveTime >= this.waveTime) {
 
                 if (this.out > 0 && (this._spawnTime > this.spawnTime)) {
-                    var enemy;
+                    var enemy,
+                        num = random();
 
-                    switch (randArg(0, 1)) {
-                        case 0:
-                            enemy = zombie.clone();
-                            break;
-
-                        case 1:
-                            enemy = zombie.clone();
-                            break;
+                    if (num <= 0.75) {
+                        enemy = zombie.create();
+                    } else if (num > 0.75 && num < 0.95) {
+                        enemy = zombieRed.create();
+                    } else {
+                        enemy = zombieBig.create();
                     }
+
                     randomDoor(enemy.transform2d.position);
                     enemy.character.setLevel(wave);
-                    enemy.on("destroy", this.onDestroyEnemy);
+                    enemy.on("remove", this.onRemoveEnemy);
 
                     this.gameObject.scene.addGameObject(enemy);
                     this.out -= 1;
@@ -94,7 +108,7 @@ define([
 
                 if (this.enemies <= 0) {
                     this.wave += 1;
-                    this.out = 15 + this.wave;
+                    this.out = 10 + (this.wave * this.wave);
                     this.enemies = this.out;
                     this._waveTime = 0;
                 }

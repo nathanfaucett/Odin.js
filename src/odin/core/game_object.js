@@ -44,14 +44,14 @@ define([
             var components = other.components,
                 tags = other.tags,
                 i;
-
+			
             this.clear();
 
             for (i = components.length; i--;) this.addComponent(components[i].clone());
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
             if (other.scene && !this.scene) other.scene.addGameObject(this);
-
+			
             return this;
         };
 
@@ -83,6 +83,17 @@ define([
 
             this.clear();
 
+            return this;
+        };
+
+
+        GameObject.prototype.remove = function() {
+            if (!this.scene) {
+                Log.error("GameObject.destroy: can't destroy GameObject if it's not added to a Scene");
+                return this;
+            }
+
+            this.scene.removeGameObject(this);
             return this;
         };
 
@@ -172,7 +183,7 @@ define([
         };
 
 
-        GameObject.prototype.add = GameObject.prototype.addComponents = function() {
+        GameObject.prototype.addComponents = function() {
             var length = arguments.length,
                 components = this.components,
                 component, name,
@@ -227,6 +238,7 @@ define([
 
                 this.emit("remove" + component._type, component);
                 this.emit("removeComponent", component);
+                component.emit("remove", component);
 
                 if (this.scene) this.scene._removeComponent(component);
                 if (clear) component.clear();
@@ -238,7 +250,7 @@ define([
         };
 
 
-        GameObject.prototype.remove = GameObject.prototype.removeComponents = function() {
+        GameObject.prototype.removeComponents = function() {
             var length = arguments.length,
                 components = this.components,
                 toRemove = arguments,
@@ -317,11 +329,11 @@ define([
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
-
+			
             for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 
-                if ((component = this.findComponentById(jsonComponent._id))) {
+                if ((component = this.findComponentById(jsonComponent._id)) || (component = this.getComponent(jsonComponent._type))) {
                     component.fromJSON(jsonComponent);
                 } else {
                     this.addComponent(Class.fromJSON(jsonComponent));

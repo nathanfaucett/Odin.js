@@ -50,7 +50,7 @@ define([
             this.wlambda = 0;
 
             if (opts.shape) this.addShape(opts.shape);
-            if (opts.shapes) this.add.apply(this, opts.shapes);
+            if (opts.shapes) this.addShapes.apply(this, opts.shapes);
         }
 
         P2Particle.extend(P2Rigidbody);
@@ -285,7 +285,7 @@ define([
         };
 
 
-        P2Rigidbody.prototype.add = function() {
+        P2Rigidbody.prototype.addShapes = function() {
 
             for (var i = arguments.length; i--;) this.addShape(arguments[i]);
             return this;
@@ -311,10 +311,24 @@ define([
         };
 
 
-        P2Rigidbody.prototype.remove = function() {
+        P2Rigidbody.prototype.removeShapes = function() {
 
             for (var i = arguments.length; i--;) this.removeShape(arguments[i]);
             return this;
+        };
+
+
+        P2Rigidbody.prototype.forEachShape = function(fn, ctx) {
+            var shapes = this.shapes,
+                i;
+
+			if (ctx) {
+				for (i = shapes.length; i--;) if (fn.call(ctx, shapes[i], i, shapes) === false) break;
+			} else {
+				for (i = shapes.length; i--;) if (fn(shapes[i], i, shapes) === false) break;
+			}
+			
+			return this;
         };
 
 

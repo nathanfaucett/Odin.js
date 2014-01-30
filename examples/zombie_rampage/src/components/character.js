@@ -48,6 +48,13 @@ define([
         Odin.Component.extend(Character);
 
 
+        Character.prototype.init = function() {
+
+            this._deadTime = 0;
+            this._hitTime = 0;
+        };
+
+
         Character.prototype.copy = function(other) {
 
             this.level = other.level;
@@ -62,6 +69,12 @@ define([
             this.exp = other.exp;
             this.nextLevel = other.nextLevel;
 
+			this.dead = false;
+			this.attacking = false;
+			this.hit = false;
+            this._deadTime = 0;
+            this._hitTime = 0;
+			
             return this;
         };
 
@@ -74,7 +87,8 @@ define([
 
             if (this.dead) {
                 if (this.deadTimer(dt)) return;
-
+				
+				this.rigidBody2d.body.forEachShape(setAsTrigger);
                 animation.play("death", Clamp, 0.5);
                 return;
             }
@@ -90,6 +104,12 @@ define([
 
             if (!this.hit) animation.rate = 1 / (force.length() * 0.5);
         };
+		
+		
+		function setAsTrigger(shape) {
+			
+			shape.isTrigger = true;
+		}
 
 
         Character.prototype.attack = function(other) {
@@ -138,7 +158,7 @@ define([
         Character.prototype.deadTimer = function(dt) {
 
             if ((this._deadTime += dt) > this.deadTime) {
-                this.gameObject.destroy();
+                this.gameObject.remove();
                 return true;
             }
 
@@ -193,6 +213,12 @@ define([
 
             this.exp = json.exp;
             this.nextLevel = json.nextLevel;
+
+			this.dead = false;
+			this.attacking = false;
+			this.hit = false;
+            this._deadTime = 0;
+            this._hitTime = 0;
 
             return this;
         };

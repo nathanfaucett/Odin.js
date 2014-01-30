@@ -35,8 +35,12 @@ define([
                 dt = Time.delta,
                 spd = this.speed;
 
-            if (player && player.character && !player.character.dead) {
-                transform.follow(player.transform2d, dt * spd);
+            if (player) {
+                if (player.character && !player.character.dead) {
+                    transform.follow(player.transform2d, dt * spd);
+                } else {
+                    this.player = this.gameObject.scene.findByTagFirst("Player");
+                }
             } else {
                 if (Input.mouseButton(0)) {
                     position.x += -dt * spd * Input.axis("mouseX");

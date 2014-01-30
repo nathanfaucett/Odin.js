@@ -144,6 +144,18 @@ define([
         };
 
 
+        Scene.prototype.remove = function() {
+            if (!this.game) {
+                Log.error("Scene.destroy: can't destroy Scene if it's not added to a Game");
+                return this;
+            }
+
+            this.game.removeScene(this);
+
+            return this;
+        };
+
+
         Scene.prototype.setWorld = function(world) {
             if (this.world) this.removeWorld();
 
@@ -199,7 +211,7 @@ define([
         };
 
 
-        Scene.prototype.add = Scene.prototype.addGameObjects = function() {
+        Scene.prototype.addGameObjects = function() {
 
             for (var i = arguments.length; i--;) this.addGameObject(arguments[i]);
             return this;
@@ -250,6 +262,7 @@ define([
                 for (i = components.length; i--;) this._removeComponent(components[i]);
 
                 this.emit("removeGameObject", gameObject);
+                gameObject.emit("remove", gameObject);
                 if (clear) gameObject.clear();
             } else {
                 Log.error("Scene.removeGameObject: GameObject is not a member of Scene");
@@ -259,7 +272,7 @@ define([
         };
 
 
-        Scene.prototype.remove = Scene.prototype.removeGameObjects = function() {
+        Scene.prototype.removeGameObjects = function() {
 
             for (var i = arguments.length; i--;) this.removeGameObject(arguments[i]);
             return this;

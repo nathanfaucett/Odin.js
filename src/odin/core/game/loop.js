@@ -11,29 +11,24 @@ define([
 
         function Loop(callback, ctx) {
             ctx || (ctx = this);
-
-            this._loopState = L_PAUSED;
-            this._runState = R_PAUSED;
-
+			
+			this.paused = true;
+			
             this.callback = callback;
             this.ctx = ctx || this;
 
             var self = this;
             this._run = function(ms) {
 
-                self._runState = R_RUNNING;
+                if (self.callback) {
+                    self.callback.call(ctx, ms);
 
-                if (callback) {
-                    callback.call(ctx, ms);
-
-                    if (self._loopState === L_RUNNING) {
+                    if (!self.paused) {
                         self._pump();
                     } else {
                         self.pause();
                     }
                 }
-
-                self._runState = R_PAUSED;
             }
         }
 
@@ -44,27 +39,26 @@ define([
                 return;
             }
 
-            this._loopState = L_RUNNING;
-
-            if (this._runState === R_PAUSED) this._pump();
+            this.paused = false;
+			this._pump();
         };
 
 
         Loop.prototype.pause = function() {
 
-            this._loopState = L_PAUSED;
+            this.paused = true;
         };
 
 
         Loop.prototype.isRunning = function() {
 
-            return this._loopState === L_RUNNING;
+            return !this.paused;
         };
 
 
         Loop.prototype.isPaused = function() {
 
-            return this._loopState === L_PAUSED;
+            return this.paused;
         };
 
 
@@ -72,13 +66,6 @@ define([
 
             requestAnimationFrame(this._run);
         };
-
-
-        var L_RUNNING = Loop.L_RUNNING = 1,
-            L_PAUSED = Loop.L_PAUSED = 2,
-
-            R_RUNNING = Loop.R_RUNNING = 1,
-            R_PAUSED = Loop.R_PAUSED = 2;
 
 
         return Loop;

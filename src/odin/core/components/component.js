@@ -55,6 +55,19 @@ define([
             this.gameObject.removeComponent(this, true);
             this.emit("destroy");
 
+			this.clear();
+			
+            return this;
+        };
+
+
+        Component.prototype.remove = function() {
+            if (!this.gameObject) {
+                Log.error("Component.destroy: can't destroy Component if it's not added to a GameObject");
+                return this;
+            }
+
+            this.gameObject.removeComponent(this, true);
             return this;
         };
 
@@ -81,20 +94,11 @@ define([
         Component.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
+			json._type = this._type;
             json.sync = this.sync;
             json.json = this.json;
 
             return json;
-        };
-
-
-        Component.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-
-            this.sync = json.sync;
-            this.json = json.json;
-
-            return this;
         };
 
 

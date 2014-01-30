@@ -1,14 +1,15 @@
 define([
         "odin/odin",
-        "components/bullet"
+        "components/enemy",
+        "blood"
     ],
-    function(Odin, Bullet) {
+    function(Odin, Enemy, blood) {
 
 
         Odin.Assets.add(
             new Odin.Texture({
-                name: "img_objects",
-                src: "content/objects.png",
+                name: "img_zombie_red",
+                src: "content/zombie_red.png",
                 magFilter: "NEAREST",
                 minFilter: "NEAREST"
             })
@@ -18,21 +19,35 @@ define([
         return new Odin.Prefab(
 			new Odin.GameObject({
 				components: [
-					new Bullet,
+					new Enemy({
+						lineOfSight: 8,
+						spd: 2,
+						def: 1,
+						atk: 3,
+						hp: 16
+					}),
+					blood.clone(),
 					new Odin.Transform2D,
 					new Odin.Sprite({
-						texture: Odin.Assets.get("img_objects"),
+						texture: Odin.Assets.get("img_zombie_red"),
 						x: 0,
 						y: 0,
-						w: 6,
-						h: 16,
-						width: 0.4,
-						height: 1,
+						w: 16,
+						h: 16
+					}),
+					new Odin.SpriteAnimation({
+						sheet: Odin.Assets.get("ss_small"),
+						rate: 0
 					}),
 					new Odin.RigidBody2D({
 						motionState: Odin.Phys2D.P2Enums.MotionState.Dynamic,
+						linearDamping: 0.999,
 						angularDamping: 1,
 						shapes: [
+							new Odin.Phys2D.P2Rect({
+								position: new Odin.Vec2(0, -0.25),
+								extents: new Odin.Vec2(0.5, 0.25)
+							}),
 							new Odin.Phys2D.P2Rect({
 								isTrigger: true,
 								extents: new Odin.Vec2(0.5, 0.5)
@@ -40,7 +55,7 @@ define([
 						]
 					})
 				],
-				tag: "Bullet"
+				tag: "Enemy"
 			})
 		);
     }
