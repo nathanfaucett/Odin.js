@@ -2,9 +2,10 @@ require({
         baseUrl: "src"
     }, [
         "odin/odin",
+        "assets",
         "scene_level"
     ],
-    function(Odin, sceneLevel) {
+    function(Odin, assets, sceneLevel) {
         window.Odin = Odin;
 
 

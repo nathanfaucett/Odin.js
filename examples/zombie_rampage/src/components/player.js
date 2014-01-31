@@ -8,48 +8,6 @@ define([
     ],
     function(Odin, Character, pistolBullet, smallBullet, rocket, fire) {
 
-        Odin.Assets.addAssets(
-            new Odin.Texture({
-                name: "img_objects",
-                src: "content/objects.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
-            }),
-            new Odin.AudioClip({
-                name: "snd_fire",
-                src: "content/audio/fire.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_rocket",
-                src: "content/audio/rocket.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_shot_short",
-                src: "content/audio/shot_short.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_shot_mid",
-                src: "content/audio/shot_mid.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_shot_long",
-                src: "content/audio/shot_long.ogg"
-            }),
-
-            new Odin.AudioClip({
-                name: "snd_player_moan1",
-                src: "content/audio/player_moan1.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_player_moan2",
-                src: "content/audio/player_moan2.ogg"
-            }),
-            new Odin.AudioClip({
-                name: "snd_player_moan3",
-                src: "content/audio/player_moan3.ogg"
-            })
-        );
-
 
         var snd_shot_short = Odin.Assets.get("snd_shot_short"),
             snd_shot_mid = Odin.Assets.get("snd_shot_mid"),

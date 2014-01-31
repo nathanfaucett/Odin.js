@@ -5,14 +5,6 @@ define([
     function(Odin, Bullet) {
 
 
-        Odin.Assets.addAsset(
-            new Odin.SpriteSheet({
-                name: "ss_fire",
-                src: "content/fire.json"
-            })
-        );
-
-
         return new Odin.Prefab(
             new Odin.GameObject({
                 components: [

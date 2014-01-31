@@ -5,16 +5,6 @@ define([
     function(Odin, Bullet) {
 
 
-        Odin.Assets.addAsset(
-            new Odin.Texture({
-                name: "img_smoke",
-                src: "content/smoke.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
-            })
-        );
-
-
         return new Odin.Prefab(
             new Odin.GameObject({
                 components: [

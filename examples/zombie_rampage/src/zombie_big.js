@@ -6,20 +6,6 @@ define([
     function(Odin, Enemy, blood) {
 
 
-        Odin.Assets.addAssets(
-            new Odin.Texture({
-                name: "img_zombie_big",
-                src: "content/zombie_big.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
-            }),
-            new Odin.SpriteSheet({
-                name: "ss_mid",
-                src: "content/32x32.json"
-            })
-        );
-
-
         return new Odin.Prefab(
             new Odin.GameObject({
                 components: [
