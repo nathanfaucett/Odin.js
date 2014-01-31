@@ -251,7 +251,6 @@ define([
 
                 MAT.mmul(camera.projection, view);
                 ctx.transform(mvp[0], -mvp[2], -mvp[1], mvp[3], mvp[4], mvp[5]);
-                ctx.scale(1, -1);
 
                 if (texture) {
                     w = texture.width;

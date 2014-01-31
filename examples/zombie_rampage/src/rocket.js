@@ -5,7 +5,7 @@ define([
     function(Odin, Bullet) {
 
 
-        Odin.Assets.add(
+        Odin.Assets.addAsset(
             new Odin.Texture({
                 name: "img_smoke",
                 src: "content/smoke.png",

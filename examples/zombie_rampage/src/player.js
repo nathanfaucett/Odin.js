@@ -6,7 +6,7 @@ define([
     function(Odin, Player, blood) {
 
 
-        Odin.Assets.add(
+        Odin.Assets.addAssets(
             new Odin.Texture({
                 name: "img_player",
                 src: "content/player.png",
@@ -37,7 +37,9 @@ define([
                         sheet: Odin.Assets.get("ss_small"),
                         rate: 0
                     }),
-                    new Odin.AudioSource,
+                    new Odin.AudioSource({
+                        dopplerLevel: 0,
+                    }),
                     new Odin.RigidBody2D({
                         motionState: Odin.Phys2D.P2Enums.MotionState.Dynamic,
                         linearDamping: 0.999,

@@ -1,16 +1,30 @@
 define([
         "odin/odin",
-        "components/character"
+        "components/character",
+        "shotgun_ammo",
+        "uzi_ammo",
+        "flamethrower_ammo",
+        "rocket_ammo"
     ],
-    function(Odin, Character) {
+    function(Odin, Character, shotgunAmmo, uziAmmo, flamethrowerAmmo, rocketAmmo) {
 
 
-        Odin.Assets.add(
-            new Odin.Texture({
-                name: "img_objects",
-                src: "content/objects.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+        Odin.Assets.addAssets(
+            new Odin.AudioClip({
+                name: "snd_zombie_moan1",
+                src: "content/audio/zombie_moan1.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_zombie_moan2",
+                src: "content/audio/zombie_moan2.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_zombie_moan3",
+                src: "content/audio/zombie_moan3.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_zombie_moan4",
+                src: "content/audio/zombie_moan4.ogg"
             })
         );
 
@@ -21,6 +35,8 @@ define([
             randFloat = Mathf.randFloat,
             direction = Mathf.direction,
             randSign = Mathf.randSign,
+            randInt = Mathf.randInt,
+            randChoice = Mathf.randChoice,
 
             Loop = Odin.Enums.WrapMode.Loop,
 
@@ -28,7 +44,15 @@ define([
             cos = Math.cos,
             sin = Math.sin,
             atan2 = Math.atan2,
-            PI = Math.PI;
+            PI = Math.PI,
+            random = Math.random,
+
+            moans = [
+                Odin.Assets.get("snd_zombie_moan1"),
+                Odin.Assets.get("snd_zombie_moan2"),
+                Odin.Assets.get("snd_zombie_moan3"),
+                Odin.Assets.get("snd_zombie_moan4")
+            ];
 
 
         function Enemy(opts) {
@@ -114,8 +138,12 @@ define([
                 playerPosition;
 
             if (player && player.character && !player.character.dead) {
-                playerPosition = player.transform2d.position;
-                if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.lineOfSight * this.lineOfSight)) follow = true;
+                if (player.character && !player.character.dead) {
+                    playerPosition = player.transform2d.position;
+                    if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.lineOfSight * this.lineOfSight)) follow = true;
+                } else {
+                    this.player = this.gameObject.scene.findByTagFirst("Player");
+                }
             }
 
             if (follow) this.dir = atan2(playerPosition.y - position.y, playerPosition.x - position.x);
@@ -130,6 +158,50 @@ define([
 
             force.x = cos(this.dir);
             force.y = sin(this.dir);
+        };
+
+
+        Enemy.prototype.takeDamage = function(atk) {
+
+            if (Character.prototype.takeDamage.call(this, atk)) {
+                var num, item;
+
+                if (this.drop === 4) {
+                    item = rocketAmmo.create();
+                    item.item.value = 1;
+                } else {
+                    num = random();
+
+                    if (random() < 0.5) {
+                        if (num <= 0.6) {
+                            item = uziAmmo.create();
+                            item.item.value = randInt(5, 25);
+                        } else if (num > 0.6 && num < 0.9) {
+                            item = shotgunAmmo.create();
+                            item.item.value = randInt(1, 5);
+                        } else {
+                            item = flamethrowerAmmo.create();
+                            item.item.value = randInt(10, 20);
+                        }
+                    }
+                }
+
+                if (item) {
+                    item.transform2d.position.copy(this.transform2d.position);
+                    this.gameObject.scene.addGameObject(item);
+                }
+
+                return true;
+            }
+
+            if (random() < 0.25) {
+                if (!this.audioSource.playing) {
+                    this.audioSource.clip = randChoice(moans);
+                    this.audioSource.play();
+                }
+            }
+
+            return false;
         };
 
 

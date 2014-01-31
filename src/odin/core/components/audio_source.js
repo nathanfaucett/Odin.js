@@ -153,7 +153,7 @@ define([
                 VEC2.sub(cameraTransform.position);
                 VEC2.smul(this.dopplerLevel);
 
-                panner.setPosition(VEC2.x, VEC2.y, camera.orthographicSize);
+                panner.setPosition(VEC2.x, VEC2.y, camera.orthographicSize * 0.5);
             } else {
                 VEC3.vadd(transform.position, this.offset);
                 VEC3.sub(cameraTransform.position);

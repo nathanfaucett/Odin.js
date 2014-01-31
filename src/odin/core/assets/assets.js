@@ -50,7 +50,7 @@ define([
         };
 
 
-        Assets.prototype.add = Assets.prototype.addAssets = function() {
+        Assets.prototype.addAssets = function() {
 
             for (var i = 0, il = arguments.length; i < il; i++) this.addAsset(arguments[i]);
         };
@@ -72,7 +72,7 @@ define([
         };
 
 
-        Assets.prototype.remove = Assets.prototype.removeAssets = function() {
+        Assets.prototype.removeAssets = function() {
 
             for (var i = 0, il = arguments.length; i < il; i++) this.removeAsset(arguments[i]);
         };

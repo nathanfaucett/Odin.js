@@ -24,11 +24,12 @@ define([
             this.gameOver = false;
             this.points = 0;
 
+            this.playerLevel = 1;
             this.playerLives = 3;
 
-            this.wave = 1;
-            this.out = 10;
-            this.enemies = 10;
+            this.wave = 10;
+            this.out = 10 + (this.wave * this.wave);
+            this.enemies = this.out;
 
             this._spawnTime = 0;
             this.spawnTime = 2.5 * (1 / this.wave) + (random() * 5 * (1 / this.wave));
@@ -37,9 +38,10 @@ define([
             this.onRemoveEnemy = function() {
                 self.enemies -= 1;
             };
-            this.onRemovePlayer = function() {
-
+            this.onRemovePlayer = function(gameObject) {
                 self.playerLives -= 1;
+                self.playerLevel = gameObject.character.level;
+
                 if (self.playerLives <= 0) {
                     self.gameOver = true;
                     return;
@@ -47,7 +49,7 @@ define([
                 var instance = player.create();
 
                 instance.on("remove", self.onRemovePlayer, this);
-                this.playerAlive = true;
+                instance.character.setLevel(self.playerLevel);
 
                 self.gameObject.scene.addGameObject(instance);
             };
@@ -60,7 +62,7 @@ define([
             var instance = player.create();
 
             instance.on("remove", this.onRemovePlayer, this);
-            this.playerAlive = true;
+            this.playerLevel = instance.character.level;
 
             this.gameObject.scene.addGameObject(instance);
         };

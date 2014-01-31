@@ -11,8 +11,8 @@ require({
         var game = window.game = new Odin.Game({
             debug: true,
             forceCanvas: false,
-            //width: 960,
-            //height: 640,
+            width: 960,
+            height: 640,
             canvasRenderer2DOptions: {
                 imageSmoothingEnabled: false
             }

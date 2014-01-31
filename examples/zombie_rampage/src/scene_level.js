@@ -5,12 +5,16 @@ define([
     ],
     function(Odin, CameraControl, Level) {
 
-        Odin.Assets.addAsset(
+        Odin.Assets.addAssets(
             new Odin.Texture({
                 src: "content/hospital.png",
                 name: "img_hospital",
                 minFilter: "NEAREST",
                 magFilter: "NEAREST"
+            }),
+            new Odin.AudioClip({
+                name: "snd_sure_shot",
+                src: "content/audio/sure_shot.ogg"
             })
         );
 
@@ -46,6 +50,12 @@ define([
                     h: 320,
                     width: 30,
                     height: 20
+                }),
+                new Odin.AudioSource({
+                    playOnInit: true,
+                    loop: true,
+                    dopplerLevel: 0,
+                    clip: Odin.Assets.get("snd_sure_shot")
                 }),
                 new Level
             ],

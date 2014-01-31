@@ -5,13 +5,7 @@ define([
     function(Odin, Bullet) {
 
 
-        Odin.Assets.add(
-            new Odin.Texture({
-                name: "img_objects",
-                src: "content/objects.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
-            }),
+        Odin.Assets.addAsset(
             new Odin.SpriteSheet({
                 name: "ss_fire",
                 src: "content/fire.json"

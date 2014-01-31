@@ -8,7 +8,7 @@ define([
     ],
     function(Odin, Character, pistolBullet, smallBullet, rocket, fire) {
 
-        Odin.Assets.add(
+        Odin.Assets.addAssets(
             new Odin.Texture({
                 name: "img_objects",
                 src: "content/objects.png",
@@ -24,23 +24,36 @@ define([
                 src: "content/audio/rocket.ogg"
             }),
             new Odin.AudioClip({
-                name: "snd_short_shot",
-                src: "content/audio/short_shot.ogg"
+                name: "snd_shot_short",
+                src: "content/audio/shot_short.ogg"
             }),
             new Odin.AudioClip({
-                name: "snd_short_mid",
-                src: "content/audio/short_mid.ogg"
+                name: "snd_shot_mid",
+                src: "content/audio/shot_mid.ogg"
             }),
             new Odin.AudioClip({
-                name: "snd_short_long",
-                src: "content/audio/short_long.ogg"
+                name: "snd_shot_long",
+                src: "content/audio/shot_long.ogg"
+            }),
+
+            new Odin.AudioClip({
+                name: "snd_player_moan1",
+                src: "content/audio/player_moan1.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_player_moan2",
+                src: "content/audio/player_moan2.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_player_moan3",
+                src: "content/audio/player_moan3.ogg"
             })
         );
 
 
-        var snd_short_shot = Odin.Assets.get("snd_short_shot"),
-            snd_short_mid = Odin.Assets.get("snd_short_mid"),
-            snd_short_long = Odin.Assets.get("snd_short_long"),
+        var snd_shot_short = Odin.Assets.get("snd_shot_short"),
+            snd_shot_mid = Odin.Assets.get("snd_shot_mid"),
+            snd_shot_long = Odin.Assets.get("snd_shot_long"),
             snd_fire = Odin.Assets.get("snd_fire"),
             snd_rocket = Odin.Assets.get("snd_rocket"),
 
@@ -65,10 +78,10 @@ define([
             sqrt = Math.sqrt,
 
             pistol = new Weapon("Pistol", 0.5, 2, Infinity),
-            shotgun = new Weapon("Shotgun", 1, 1, Infinity),
-            uzi = new Weapon("Uzi", 0.1, 1, Infinity),
-            flamethrower = new Weapon("Flamethrower", 0.1, 3, Infinity),
-            bazooka = new Weapon("Bazooka", 1.5, 100, Infinity),
+            shotgun = new Weapon("Shotgun", 1, 1, 0),
+            uzi = new Weapon("Uzi", 0.1, 1, 0),
+            flamethrower = new Weapon("Flamethrower", 0.1, 3, 0),
+            bazooka = new Weapon("Bazooka", 1.5, 100, 0),
 
             weapons = [
                 pistol,
@@ -76,6 +89,15 @@ define([
                 shotgun,
                 flamethrower,
                 bazooka
+            ],
+
+            randChoice = Mathf.randChoice,
+            random = Math.random,
+
+            moans = [
+                Odin.Assets.get("snd_player_moan1"),
+                Odin.Assets.get("snd_player_moan2"),
+                Odin.Assets.get("snd_player_moan3")
             ];
 
 
@@ -114,7 +136,7 @@ define([
 
             this._weapon += sign(Input.mouseWheel);
             this.weapon = abs(this._weapon) % weapons.length;
-            console.log(this.weapon);
+            console.log(this.weapon, weapons[this.weapon].ammo);
         };
 
 
@@ -167,6 +189,16 @@ define([
         };
 
 
+        Player.prototype.takeDamage = function(atk) {
+            if (!this.audioSource.playing) {
+                this.audioSource.clip = randChoice(moans);
+                this.audioSource.play();
+            }
+
+            return Character.prototype.takeDamage.call(this, atk);
+        };
+
+
         var FIRE = new Odin.Vec2;
         Player.prototype.fire = function(position, dx, dy, dt) {
             if (!weapons[this.weapon].fire(dt)) return;
@@ -179,23 +211,21 @@ define([
 
             switch (this.weapon) {
                 case 4: //rocket launcher
-                    audioSource.clip = snd_rocket;
-                    audioSource.play();
+                    if (audioSource.clip !== snd_rocket) audioSource.clip = snd_rocket;
+                    if (!audioSource.playing) audioSource.play();
 
                     scene.addGameObject(createBullet(rocket, this, position, atan2(y, x), 5));
                     break;
 
                 case 3: //flamethrower
-                    if (!audioSource.playing) {
-                        audioSource.clip = snd_fire;
-                        audioSource.play();
-                    }
+                    if (audioSource.clip !== snd_fire) audioSource.clip = snd_fire;
+                    if (!audioSource.playing) audioSource.play();
 
                     scene.addGameObject(createBullet(fire, this, position, atan2(y, x), 5, false, randFloat(0.5, 1)));
                     break;
 
                 case 2: //shotgun
-                    audioSource.clip = snd_short_long;
+                    if (audioSource.clip !== snd_shot_long) audioSource.clip = snd_shot_long;
                     audioSource.play();
 
                     scene.addGameObjects(
@@ -208,14 +238,14 @@ define([
                     break;
 
                 case 1: //uzi
-                    audioSource.clip = snd_short_shot;
+                    if (audioSource.clip !== snd_shot_short) audioSource.clip = snd_shot_short;
                     audioSource.play();
 
                     scene.addGameObject(createBullet(smallBullet, this, position, atan2(y, x), 20, true));
                     break;
 
                 case 0: //pistal
-                    audioSource.clip = snd_short_mid;
+                    if (audioSource.clip !== snd_shot_mid) audioSource.clip = snd_shot_mid;
                     audioSource.play();
 
                     scene.addGameObject(createBullet(pistolBullet, this, position, atan2(y, x), 10, true));
