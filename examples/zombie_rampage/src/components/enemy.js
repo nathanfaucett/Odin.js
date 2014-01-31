@@ -36,6 +36,7 @@ define([
 
             Character.call(this, opts);
 
+            this.drop = opts.drop != undefined ? opts.drop : 1;
             this.lineOfSight = opts.lineOfSight != undefined ? opts.lineOfSight : 10;
 
             this.time = 0;
@@ -50,6 +51,7 @@ define([
         Enemy.prototype.copy = function(other) {
             Character.prototype.copy.call(this, other);
 
+            this.drop = other.drop;
             this.lineOfSight = other.lineOfSight;
 
             return this;
@@ -134,6 +136,7 @@ define([
         Enemy.prototype.toJSON = function(json) {
             json = Character.prototype.toJSON.call(this, json);
 
+            json.drop = this.drop;
             json.lineOfSight = this.lineOfSight;
 
             return json;
@@ -143,7 +146,11 @@ define([
         Enemy.prototype.fromJSON = function(json) {
             Character.prototype.fromJSON.call(this, json);
 
+            this.drop = json.drop;
             this.lineOfSight = json.lineOfSight;
+
+            this.dir = PI * 1.5;
+            this.force.set(0, -10);
 
             return this;
         };

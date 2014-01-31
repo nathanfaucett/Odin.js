@@ -8,13 +8,17 @@ define(
 
         var util = {},
 
+            isServer = typeof(window) === "undefined",
+
             ObjectProto = Object.prototype,
             toString = ObjectProto.toString,
             hasOwnProperty = ObjectProto.hasOwnProperty,
 
             SPILTER = /[ \_\-\.]+|(?=[A-Z][^A-Z])/g,
             UNDERSCORE = /([a-z])([A-Z])/g,
-            FORMAT_REGEX = /%[sdj%]/g;
+            FORMAT_REGEX = /%[sdj%]/g,
+
+            fromCharCode = String.fromCharCode;
 
 
         function format(fmt) {
@@ -137,6 +141,32 @@ define(
             return hasOwnProperty.call(obj, key);
         }
         util.has = has;
+
+
+        function arrayBufferToBase64(buffer) {
+            var binary = "",
+                bytes = new Uint8Array(buffer),
+                len = bytes.byteLength,
+                i = 0;
+
+            for (; i < len; i++) binary += String.fromCharCode(bytes[i]);
+
+            return isServer ? new Buffer(binary.toString(), "binary").toString("base64") : window.btoa(binary);
+        }
+        util.arrayBufferToBase64 = arrayBufferToBase64;
+
+
+        function base64ToArrayBuffer(str) {
+            var binary = isServer ? new Buffer(str, "base64").toString("binary") : window.atob(str),
+                len = binary.length,
+                bytes = new Uint8Array(len).
+                i = 0;
+
+            for (; i < len; i++) bytes[i] = str.charCodeAt(i);
+
+            return bytes.buffer;
+        }
+        util.base64ToArrayBuffer = base64ToArrayBuffer;
 
 
         return util;

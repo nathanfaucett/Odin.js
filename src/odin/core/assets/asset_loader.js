@@ -88,13 +88,14 @@ define([
 
 
         AssetLoader.prototype.json = function(src, callback) {
-            var request = new XMLHttpRequest;
 
-            request.onload = function() {
-                var status = this.status,
-                    json;
+            ajax(src, {
+                before: function() {
+                    this.setRequestHeader("Content-Type", "application/json");
+                },
+                success: function() {
+                    var json = this.responseText;
 
-                if ((status > 199 && status < 301) || status == 304) {
                     try {
                         json = JSON.parse(this.responseText);
                     } catch (err) {
@@ -103,27 +104,21 @@ define([
                     }
 
                     callback && callback(null, json);
-                } else {
-                    callback && callback(new Error(status));
+                },
+                error: function(err) {
+                    callback && callback(err);
                 }
-            };
-            request.onerror = function() {
-                callback && callback(new Error("GET " + src + " 404 (Not Found)"));
-            };
-
-            request.open("GET", src, true);
-            request.setRequestHeader("Content-Type", "application/json");
-            request.send();
+            });
         };
 
 
         AssetLoader.prototype.ogg = AssetLoader.prototype.wav = AssetLoader.prototype.mp3 = AssetLoader.prototype.aac = function(src, callback) {
-            var request = new XMLHttpRequest;
 
-            request.onload = function() {
-                var status = this.status;
-
-                if ((status > 199 && status < 301) || status == 304) {
+            ajax(src, {
+                before: function() {
+                    this.responseType = "arraybuffer";
+                },
+                success: function() {
                     if (AudioCtx) {
                         AudioCtx.decodeAudioData(this.response,
                             function success(buffer) {
@@ -136,38 +131,38 @@ define([
                     } else {
                         callback && callback(new Error("AudioContext (WebAudio API) is not supported by this browser"));
                     }
-                } else {
-                    callback && callback(new Error(status));
+                },
+                error: function(err) {
+                    callback && callback(err);
                 }
-            };
-            request.onerror = function() {
-                callback && callback(new Error("GET " + src + " 404 (Not Found)"));
-            };
-
-            request.open("GET", src, true);
-            request.responseType = "arraybuffer";
-            request.send();
+            });
         };
 
 
-        AssetLoader.prototype.shader = AssetLoader.prototype.glsl = function(src, callback) {
+        function ajax(src, opts) {
+            opts || (opts = {});
+            opts.method || (opts.method = "GET");
             var request = new XMLHttpRequest;
 
             request.onload = function() {
                 var status = this.status;
 
                 if ((status > 199 && status < 301) || status == 304) {
-                    callback && callback(null, this.responseText);
+                    opts.success && opts.success.call(this);
                 } else {
-                    callback && callback(new Error(status));
+                    if (opts.error) {
+                        opts.error.call(this, new Error(opts.method + " " + src + " " + status));
+                    } else {
+                        throw new Error(status);
+                    }
                 }
             };
             request.onerror = function() {
-                callback && callback(new Error("GET " + src + " 404 (Not Found)"));
+                opts.error(new Error(opts.method + " " + src + " 404 (Not Found)"));
             };
 
-            request.open("GET", src, true);
-            request.setRequestHeader("Content-Type", "text/plain");
+            request.open(opts.method, src, true);
+            if (opts.before) opts.before.call(request);
             request.send();
         };
 

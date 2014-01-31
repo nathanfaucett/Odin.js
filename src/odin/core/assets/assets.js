@@ -26,7 +26,7 @@ define([
             if (asset) return asset;
 
             Log.error("Assets.get: can't find asset with name " + name + ", it has not been added to Assets, use Assets.addAsset(asset)");
-            return undefined
+            return undefined;
         };
 
 

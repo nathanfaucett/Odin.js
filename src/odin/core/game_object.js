@@ -44,14 +44,14 @@ define([
             var components = other.components,
                 tags = other.tags,
                 i;
-			
+
             this.clear();
 
             for (i = components.length; i--;) this.addComponent(components[i].clone());
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
             if (other.scene && !this.scene) other.scene.addGameObject(this);
-			
+
             return this;
         };
 
@@ -329,7 +329,7 @@ define([
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
-			
+
             for (; i--;) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 

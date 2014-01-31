@@ -322,13 +322,15 @@ define([
             var shapes = this.shapes,
                 i;
 
-			if (ctx) {
-				for (i = shapes.length; i--;) if (fn.call(ctx, shapes[i], i, shapes) === false) break;
-			} else {
-				for (i = shapes.length; i--;) if (fn(shapes[i], i, shapes) === false) break;
-			}
-			
-			return this;
+            if (ctx) {
+                for (i = shapes.length; i--;)
+                    if (fn.call(ctx, shapes[i], i, shapes) === false) break;
+            } else {
+                for (i = shapes.length; i--;)
+                    if (fn(shapes[i], i, shapes) === false) break;
+            }
+
+            return this;
         };
 
 

@@ -161,8 +161,9 @@ define([
             var buttons = this.buttons,
                 i;
 
-            for (i = buttons.length; i--;)
+            for (i = buttons.length; i--;) {
                 if (buttons[i].value) return true;
+            }
             return false;
         };
 
@@ -172,8 +173,9 @@ define([
                 button,
                 i;
 
-            for (i = buttons.length; i--;)
+            for (i = buttons.length; i--;) {
                 if ((button = buttons[i]).value && (button.frameDown >= this.frameCount)) return true;
+            }
             return false;
         };
 

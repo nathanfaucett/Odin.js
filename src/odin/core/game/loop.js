@@ -11,9 +11,9 @@ define([
 
         function Loop(callback, ctx) {
             ctx || (ctx = this);
-			
-			this.paused = true;
-			
+
+            this.paused = true;
+
             this.callback = callback;
             this.ctx = ctx || this;
 
@@ -40,7 +40,7 @@ define([
             }
 
             this.paused = false;
-			this._pump();
+            this._pump();
         };
 
 

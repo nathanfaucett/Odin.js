@@ -2,15 +2,17 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/util",
         "odin/base/audio_ctx",
         "odin/core/assets/asset"
     ],
-    function(AudioCtx, Asset) {
+    function(util, AudioCtx, Asset) {
         "use strict";
 
 
         var defineProperty = Object.defineProperty,
-            fromCharCode = String.fromCharCode;
+            arrayBufferToBase64 = util.arrayBufferToBase64,
+            base64ToArrayBuffer = util.base64ToArrayBuffer;
 
 
         function AudioClip(opts) {
@@ -60,7 +62,7 @@ define([
         AudioClip.prototype.toJSON = function(json, pack) {
             json = Asset.prototype.toJSON.call(this, json, pack);
 
-            if ((pack || !this.src) && this.raw) json.raw = arrayBufferToString(this.raw);
+            if ((pack || !this.src) && this.raw) json.raw = arrayBufferToBase64(this.raw);
 
             return json;
         };
@@ -69,26 +71,10 @@ define([
         AudioClip.prototype.fromJSON = function(json, pack) {
             Asset.prototype.fromJSON.call(this, json, pack);
 
-            if ((pack || !this.src) && this.raw) this.raw = stringToArrayBuffer(json.raw);
+            if ((pack || !this.src) && this.raw) this.raw = base64ToArrayBuffer(json.raw);
 
             return this;
         };
-
-
-        function arrayBufferToString(arrayBuffer) {
-            return fromCharCode.apply(null, new Uint16Array(arrayBuffer));
-        }
-
-
-        function stringToArrayBuffer(str) {
-            var len = str.length,
-                arrayBuffer = new ArrayBuffer(len * 2),
-                array = new Uint16Array(arrayBuffer),
-                i = len;
-
-            for (; i--;) array[i] = str.charCodeAt(i);
-            return arrayBuffer;
-        }
 
 
         return AudioClip;

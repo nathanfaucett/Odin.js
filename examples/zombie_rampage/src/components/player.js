@@ -7,7 +7,6 @@ define([
         "fire",
     ],
     function(Odin, Character, pistolBullet, smallBullet, rocket, fire) {
-        window.rocket = rocket;
 
         Odin.Assets.add(
             new Odin.Texture({
@@ -15,11 +14,37 @@ define([
                 src: "content/objects.png",
                 magFilter: "NEAREST",
                 minFilter: "NEAREST"
+            }),
+            new Odin.AudioClip({
+                name: "snd_fire",
+                src: "content/audio/fire.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_rocket",
+                src: "content/audio/rocket.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_short_shot",
+                src: "content/audio/short_shot.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_short_mid",
+                src: "content/audio/short_mid.ogg"
+            }),
+            new Odin.AudioClip({
+                name: "snd_short_long",
+                src: "content/audio/short_long.ogg"
             })
         );
 
 
-        var Time = Odin.Time,
+        var snd_short_shot = Odin.Assets.get("snd_short_shot"),
+            snd_short_mid = Odin.Assets.get("snd_short_mid"),
+            snd_short_long = Odin.Assets.get("snd_short_long"),
+            snd_fire = Odin.Assets.get("snd_fire"),
+            snd_rocket = Odin.Assets.get("snd_rocket"),
+
+            Time = Odin.Time,
             Input = Odin.Input,
 
             Mathf = Odin.Mathf,
@@ -47,8 +72,8 @@ define([
 
             weapons = [
                 pistol,
-                shotgun,
                 uzi,
+                shotgun,
                 flamethrower,
                 bazooka
             ];
@@ -64,6 +89,8 @@ define([
 
             this._weapon = 0;
             this.weapon = 0;
+
+            this.weapons = weapons;
         }
 
         Character.extend(Player);
@@ -143,7 +170,8 @@ define([
         var FIRE = new Odin.Vec2;
         Player.prototype.fire = function(position, dx, dy, dt) {
             if (!weapons[this.weapon].fire(dt)) return;
-            var scene = this.gameObject.scene,
+            var audioSource = this.audioSource,
+                scene = this.gameObject.scene,
                 invLen = 1 / sqrt(dx * dx + dy * dy),
                 x = dx * invLen,
                 y = dy * invLen,
@@ -151,18 +179,25 @@ define([
 
             switch (this.weapon) {
                 case 4: //rocket launcher
+                    audioSource.clip = snd_rocket;
+                    audioSource.play();
+
                     scene.addGameObject(createBullet(rocket, this, position, atan2(y, x), 5));
                     break;
 
                 case 3: //flamethrower
+                    if (!audioSource.playing) {
+                        audioSource.clip = snd_fire;
+                        audioSource.play();
+                    }
+
                     scene.addGameObject(createBullet(fire, this, position, atan2(y, x), 5, false, randFloat(0.5, 1)));
                     break;
 
-                case 2: //uzi
-                    scene.addGameObject(createBullet(smallBullet, this, position, atan2(y, x), 20, true));
-                    break;
+                case 2: //shotgun
+                    audioSource.clip = snd_short_long;
+                    audioSource.play();
 
-                case 1: //shotgun
                     scene.addGameObjects(
                         createBullet(smallBullet, this, position, atan2(y, x) - (PI * 0.05), 15, false, randFloat(0.25, 0.75)),
                         createBullet(smallBullet, this, position, atan2(y, x) - (PI * 0.025), 15, false, randFloat(0.25, 0.75)),
@@ -172,7 +207,17 @@ define([
                     );
                     break;
 
+                case 1: //uzi
+                    audioSource.clip = snd_short_shot;
+                    audioSource.play();
+
+                    scene.addGameObject(createBullet(smallBullet, this, position, atan2(y, x), 20, true));
+                    break;
+
                 case 0: //pistal
+                    audioSource.clip = snd_short_mid;
+                    audioSource.play();
+
                     scene.addGameObject(createBullet(pistolBullet, this, position, atan2(y, x), 10, true));
                     break;
             }

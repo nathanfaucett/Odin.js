@@ -1,14 +1,20 @@
 define([
-        "odin/odin"
+        "odin/odin",
+        "shotgun_ammo",
+        "uzi_ammo",
+        "flamethrower_ammo",
+        "rocket_ammo"
     ],
-    function(Odin) {
+    function(Odin, shotgunAmmo, uziAmmo, flamethrowerAmmo, rocketAmmo) {
 
 
         var Time = Odin.Time,
             Mathf = Odin.Mathf,
             direction = Mathf.direction,
             randInt = Mathf.randInt,
+            randArg = Mathf.randArg,
             floor = Math.floor,
+            random = Math.random,
 
             Loop = Odin.Enums.WrapMode.Loop,
             Clamp = Odin.Enums.WrapMode.Clamp;
@@ -69,12 +75,12 @@ define([
             this.exp = other.exp;
             this.nextLevel = other.nextLevel;
 
-			this.dead = false;
-			this.attacking = false;
-			this.hit = false;
+            this.dead = false;
+            this.attacking = false;
+            this.hit = false;
             this._deadTime = 0;
             this._hitTime = 0;
-			
+
             return this;
         };
 
@@ -87,8 +93,8 @@ define([
 
             if (this.dead) {
                 if (this.deadTimer(dt)) return;
-				
-				this.rigidBody2d.body.forEachShape(setAsTrigger);
+
+                this.rigidBody2d.body.forEachShape(setAsTrigger);
                 animation.play("death", Clamp, 0.5);
                 return;
             }
@@ -104,12 +110,14 @@ define([
 
             if (!this.hit) animation.rate = 1 / (force.length() * 0.5);
         };
-		
-		
-		function setAsTrigger(shape) {
-			
-			shape.isTrigger = true;
-		}
+
+
+        function setAsTrigger(shape) {
+
+            shape.isTrigger = true;
+            shape.filterGroup = 2;
+            shape.filterMask = 1;
+        }
 
 
         Character.prototype.attack = function(other) {
@@ -135,6 +143,34 @@ define([
 
                 if (this.hp <= 0) {
                     this.dead = true;
+
+                    if (this.drop) {
+                        var num, item;
+
+                        if (this.drop === 4) {
+                            item = rocketAmmo.create();
+                            item.item.value = 1;
+                        } else {
+                            num = random();
+
+                            if (num > 0.1 && num <= 0.6) {
+                                item = uziAmmo.create();
+                                item.item.value = randInt(5, 25);
+                            } else if (num > 0.6 && num < 0.9) {
+                                item = shotgunAmmo.create();
+                                item.item.value = randInt(1, 5);
+                            } else {
+                                item = flamethrowerAmmo.create();
+                                item.item.value = randInt(10, 20);
+                            }
+                        }
+
+                        if (item) {
+                            item.transform2d.position.copy(this.transform2d.position);
+                            this.gameObject.scene.addGameObject(item);
+                        }
+                    }
+
                     return true;
                 }
             }
@@ -214,9 +250,9 @@ define([
             this.exp = json.exp;
             this.nextLevel = json.nextLevel;
 
-			this.dead = false;
-			this.attacking = false;
-			this.hit = false;
+            this.dead = false;
+            this.attacking = false;
+            this.hit = false;
             this._deadTime = 0;
             this._hitTime = 0;
 

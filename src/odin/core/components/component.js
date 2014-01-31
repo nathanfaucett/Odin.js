@@ -55,8 +55,8 @@ define([
             this.gameObject.removeComponent(this, true);
             this.emit("destroy");
 
-			this.clear();
-			
+            this.clear();
+
             return this;
         };
 
@@ -94,7 +94,7 @@ define([
         Component.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
-			json._type = this._type;
+            json._type = this._type;
             json.sync = this.sync;
             json.json = this.json;
 

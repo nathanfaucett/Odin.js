@@ -44,7 +44,7 @@ define([
                     y: 0,
                     w: 480,
                     h: 320,
-                    width: 32,
+                    width: 30,
                     height: 20
                 }),
                 new Level
@@ -59,6 +59,8 @@ define([
                 new Odin.RigidBody2D({
                     mass: 0,
                     shape: new Odin.Phys2D.P2Rect({
+                        filterGroup: 1,
+                        filterMask: 1 | 4,
                         extents: new Odin.Vec2(16, 4)
                     })
                 })
@@ -73,6 +75,8 @@ define([
                 new Odin.RigidBody2D({
                     mass: 0,
                     shape: new Odin.Phys2D.P2Rect({
+                        filterGroup: 1,
+                        filterMask: 1 | 4,
                         extents: new Odin.Vec2(16, 4)
                     })
                 })
@@ -82,11 +86,13 @@ define([
         var wall_left = new Odin.GameObject({
             components: [
                 new Odin.Transform2D({
-                    position: new Odin.Vec2(-19, 0)
+                    position: new Odin.Vec2(-18, 0)
                 }),
                 new Odin.RigidBody2D({
                     mass: 0,
                     shape: new Odin.Phys2D.P2Rect({
+                        filterGroup: 1,
+                        filterMask: 1 | 4,
                         extents: new Odin.Vec2(4, 16)
                     })
                 })
@@ -96,11 +102,13 @@ define([
         var wall_right = new Odin.GameObject({
             components: [
                 new Odin.Transform2D({
-                    position: new Odin.Vec2(19, 0)
+                    position: new Odin.Vec2(18, 0)
                 }),
                 new Odin.RigidBody2D({
                     mass: 0,
                     shape: new Odin.Phys2D.P2Rect({
+                        filterGroup: 1,
+                        filterMask: 1 | 4,
                         extents: new Odin.Vec2(4, 16)
                     })
                 })

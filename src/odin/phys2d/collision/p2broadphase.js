@@ -81,7 +81,7 @@ define([
                 pairsj.push(bj);
                 return false;
             }
-            if (si.filterGroup & sj.filterMask === 0 || sj.filterGroup & si.filterMask === 0) return false;
+            if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) return false;
 
             return true;
         }
