@@ -35,6 +35,8 @@ define(
             this.Camera = require("odin/core/components/camera");
             this.Camera2D = require("odin/core/components/camera_2d");
             this.Component = require("odin/core/components/component");
+            this.GUIText = require("odin/core/components/gui_text");
+            this.GUITexture = require("odin/core/components/gui_texture");
             this.MeshFilter = require("odin/core/components/mesh_filter");
             this.RigidBody2D = require("odin/core/components/rigid_body_2d");
             this.Sprite = require("odin/core/components/sprite");
@@ -48,9 +50,12 @@ define(
             this.Log = require("odin/core/game/log");
             this.BaseGame = require("odin/core/game/base_game");
 
+            this.GUIComponent = require("odin/core/gui/components/gui_component");
+            this.GUIContent = require("odin/core/gui/components/gui_content");
+            this.GUITransform = require("odin/core/gui/components/gui_transform");
+
             this.GUI = require("odin/core/gui/gui");
-            this.GUIContent = require("odin/core/gui/gui_content");
-            this.GUILayout = require("odin/core/gui/gui_layout");
+            this.GUIObject = require("odin/core/gui/gui_object");
             this.GUIStyle = require("odin/core/gui/gui_style");
             this.GUIStyleState = require("odin/core/gui/gui_style_state");
 

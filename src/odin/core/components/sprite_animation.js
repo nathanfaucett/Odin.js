@@ -206,30 +206,10 @@ define([
         };
 
 
-        SpriteAnimation.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-
-            this.sheet = json.sheet ? Assets.hash[json.sheet] : undefined;
-
-            this.current = json.current;
-            this.mode = json.mode;
-
-            this.rate = json.rate;
-
-            this._time = json._time;
-            this._frame = json._frame;
-            this._order = json._order;
-
-            this.playing = json.playing;
-
-            return this;
-        };
-
-
         SpriteAnimation.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
-            this.sheet = json.sheet ? Assets.hash[json.sheet] : undefined;
+            this.sheet = json.sheet ? Assets.get(json.sheet) : undefined;
 
             this.current = json.current;
             this.mode = json.mode;

@@ -40,7 +40,6 @@ define([
             this._modelViewNeedsUpdate = false;
         }
 
-        Transform2D.type = "Transform2D";
         Component.extend(Transform2D);
 
 
@@ -96,23 +95,18 @@ define([
         }();
 
 
-        Transform2D.prototype.rotate = function() {
-            var vec = new Vec2;
+        Transform2D.prototype.rotate = function(rotation, relativeTo) {
 
-            return function(rotation, relativeTo) {
-                vec.copy(rotation);
+            if (relativeTo instanceof Transform2D) {
+                rotation += relativeTo.rotation;
+            } else if (relativeTo) {
+                rotation += relativeTo;
+            }
 
-                if (relativeTo instanceof Transform2D) {
-                    vec.transformAngle(relativeTo.rotation);
-                } else if (relativeTo) {
-                    vec.transformAngle(relativeTo);
-                }
+            this.rotation += rotation;
 
-                this.rotation.rotate(vec.x, vec.y, vec.z);
-
-                return this;
-            };
-        }();
+            return this;
+        };
 
 
         Transform2D.prototype.lookAt = function() {
@@ -188,7 +182,7 @@ define([
         };
 
 
-        Transform2D.prototype.add = Transform2D.prototype.addChildren = function() {
+        Transform2D.prototype.addChildren = function() {
 
             for (var i = arguments.length; i--;) this.addChild(arguments[i]);
             return this;
@@ -223,7 +217,7 @@ define([
         };
 
 
-        Transform2D.prototype.remove = Transform2D.prototype.removeChildren = function() {
+        Transform2D.prototype.removeChildren = function() {
 
             for (var i = arguments.length; i--;) this.removeChild(arguments[i]);
             return this;
@@ -285,34 +279,6 @@ define([
         };
 
 
-        var VEC = new Vec2;
-        Transform2D.prototype.toSYNC = function(json) {
-            json = Component.prototype.toSYNC.call(this, json);
-
-            if (this.parent) {
-                json.position = this.toWorld(VEC.copy(this.position)).toJSON(json.position);
-                json.scale = this.toWorld(VEC.copy(this.scale)).toJSON(json.scale);
-                json.rotation = this.rotation - this.parent.rotation;
-            } else {
-                json.position = this.position.toJSON(json.position);
-                json.scale = this.scale.toJSON(json.scale);
-                json.rotation = this.rotation;
-            }
-
-            return json;
-        };
-
-
-        Transform2D.prototype.fromSYNC = function(json) {
-
-            this.position.fromJSON(json.position);
-            this.scale.fromJSON(json.scale);
-            this.rotation = json.rotation;
-
-            return this;
-        };
-
-
         Transform2D.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
@@ -321,17 +287,6 @@ define([
             json.rotation = this.rotation
 
             return json;
-        };
-
-
-        Transform2D.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-
-            this.position.fromJSON(json.position);
-            this.scale.fromJSON(json.scale);
-            this.rotation = json.rotation;
-
-            return this;
         };
 
 

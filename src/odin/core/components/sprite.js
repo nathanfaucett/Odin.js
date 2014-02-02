@@ -2,13 +2,11 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/time",
-        "odin/math/vec2",
         "odin/core/enums",
         "odin/core/components/component",
         "odin/core/assets/assets"
     ],
-    function(Time, Vec2, Enums, Component, Assets) {
+    function(Enums, Component, Assets) {
         "use strict";
 
 
@@ -35,7 +33,6 @@ define([
             this.h = opts.h || 1;
         }
 
-        Sprite.type = "Sprite";
         Component.extend(Sprite);
 
 
@@ -71,50 +68,6 @@ define([
         };
 
 
-        Sprite.prototype.toSYNC = function(json) {
-            json = Component.prototype.toSYNC.call(this, json);
-
-            json.visible = this.visible;
-            json.blending = this.blending;
-
-            json.z = this.z;
-
-            json.alpha = this.alpha;
-
-            json.width = this.width;
-            json.height = this.height;
-
-            json.x = this.x;
-            json.y = this.y;
-            json.w = this.w;
-            json.h = this.h;
-
-            return json;
-        };
-
-
-        Sprite.prototype.fromSYNC = function(json) {
-            Component.prototype.fromSYNC.call(this, json);
-
-            this.visible = json.visible;
-            this.blending = json.blending;
-
-            this.z = json.z;
-
-            this.alpha = json.alpha;
-
-            this.width = json.width;
-            this.height = json.height;
-
-            this.x = json.x;
-            this.y = json.y;
-            this.w = json.w;
-            this.h = json.h;
-
-            return this;
-        };
-
-
         Sprite.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
@@ -139,30 +92,6 @@ define([
         };
 
 
-        Sprite.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-
-            this.visible = json.visible;
-            this.blending = json.blending;
-
-            this.z = json.z;
-
-            this.alpha = json.alpha;
-
-            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
-
-            this.width = json.width;
-            this.height = json.height;
-
-            this.x = json.x;
-            this.y = json.y;
-            this.w = json.w;
-            this.h = json.h;
-
-            return this;
-        };
-
-
         Sprite.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
@@ -173,7 +102,7 @@ define([
 
             this.alpha = json.alpha;
 
-            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+            this.texture = json.texture ? Assets.get(json.texture) : undefined;
 
             this.width = json.width;
             this.height = json.height;

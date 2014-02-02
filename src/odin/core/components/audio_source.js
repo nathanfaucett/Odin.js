@@ -61,7 +61,6 @@ define([
             };
         }
 
-        AudioSource.type = "AudioSource";
         Component.extend(AudioSource);
 
 
@@ -230,28 +229,6 @@ define([
         };
 
 
-        AudioSource.prototype.toSYNC = function(json) {
-            json = Component.prototype.toSYNC.call(this, json);
-
-            json.playing = this.playing;
-            json.stopped = this.stopped;
-            json.paused = this.paused;
-
-            return json;
-        };
-
-
-        AudioSource.prototype.fromSYNC = function(json) {
-            Component.prototype.fromSYNC.call(this, json);
-
-            if (json.stopped) this.stop();
-            if (json.paused) this.pause();
-            if (json.playing) this.play();
-
-            return this;
-        };
-
-
         AudioSource.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
@@ -279,37 +256,10 @@ define([
         };
 
 
-        AudioSource.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-
-            this.clip = json.clip ? Assets.hash[json.clip] : undefined;
-
-            this.dopplerLevel = json.dopplerLevel;
-            this.loop = json.loop;
-
-            this.maxDistance = json.maxDistance;
-            this.minDistance = json.minDistance;
-
-            this.offset.fromJSON(json.offset);
-            this.panLevel = json.panLevel;
-
-            this.pitch = json.pitch;
-
-            this.playOnInit = json.playOnInit;
-
-            this.spread = json.spread;
-
-            this.time = json.time;
-            this.volume = json.volume;
-
-            return this;
-        };
-
-
         AudioSource.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
-            this.clip = json.clip ? Assets.hash[json.clip] : undefined;
+            this.clip = json.clip ? Assets.get(json.clip) : undefined;
 
             this.dopplerLevel = json.dopplerLevel;
             this.loop = json.loop;

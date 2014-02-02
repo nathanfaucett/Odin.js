@@ -5,9 +5,10 @@ define([
         "odin/base/event_emitter",
         "odin/base/device",
         "odin/base/dom",
+        "odin/core/game/log",
         "odin/core/game/config"
     ],
-    function(EventEmitter, Device, Dom, Config) {
+    function(EventEmitter, Device, Dom, Log, Config) {
         "use strict";
 
 
@@ -16,6 +17,7 @@ define([
             addMeta = Dom.addMeta,
             floor = Math.floor,
 
+            CANVAS_ID = 0,
             SCALE_REG = /-scale\s *=\s*[.0-9]+/g,
             VIEWPORT = "viewport",
             VIEWPORT_WIDTH = "viewport-width",
@@ -41,27 +43,46 @@ define([
          * @param Number height
          */
 
-        function Canvas(width, height) {
+        function Canvas(opts) {
+            opts || (opts = {});
 
             EventEmitter.call(this);
+
+            /**
+             * @property Number canvasId
+             * @memberof Canvas
+             */
+            this.canvasId = ++CANVAS_ID;
 
             /**
              * @property Boolean fullScreen
              * @memberof Canvas
              */
-            this.fullScreen = (width === undefined && height === undefined) ? true : false;
+            this.fullScreen = opts.fullScreen ? opts.fullScreen : (opts.width == undefined && opts.height == undefined) ? true : false;
+
+            /**
+             * @property String customCursor
+             * @memberof Canvas
+             */
+            this.customCursor = opts.customCursor != undefined ? opts.customCursor : false;
+
+            /**
+             * @property Boolean hideMouse
+             * @memberof Canvas
+             */
+            this.hideMouse = opts.hideMouse != undefined ? opts.hideMouse : false;
 
             /**
              * @property Number width
              * @memberof Canvas
              */
-            this.width = width !== undefined ? width : window.innerWidth;
+            this.width = opts.width !== undefined ? opts.width : window.innerWidth;
 
             /**
              * @property Number height
              * @memberof Canvas
              */
-            this.height = height !== undefined ? height : window.innerHeight;
+            this.height = opts.height !== undefined ? opts.height : window.innerHeight;
 
             /**
              * @property Number aspect
@@ -93,9 +114,12 @@ define([
 
         Canvas.prototype.init = function() {
             if (this.element) this.destroy();
-            var element = document.createElement("canvas");
+            var element = document.createElement("canvas"),
+                style = element.style;
 
-            element.style.cssText = CANVAS_STYLE;
+            element.id = "canvas-" + this.canvasId;
+            style.cssText = CANVAS_STYLE;
+            style.cursor = this.customCursor ? "url(" + this.customCursor + ")" : this.hideMouse ? "none" : "default";
             document.body.appendChild(element);
 
             if (!Config.debug) {
@@ -103,7 +127,33 @@ define([
                     return false;
                 };
             }
+
             addEvent(window, "resize orientationchange", this.handleResize, this);
+
+            element.requestPointerLock || (element.requestPointerLock = (
+                element.webkitRequestPointerLock ||
+                element.mozRequestPointerLock ||
+                element.oRequestPointerLock ||
+                element.msRequestPointerLock
+            ));
+            element.exitPointerLock || (element.exitPointerLock = (
+                document.webkitExitPointerLock ||
+                document.mozExitPointerLock ||
+                document.oExitPointerLock ||
+                document.msExitPointerLock
+            ));
+            element.requestFullscreen || (element.requestFullscreen = (
+                element.webkitRequestFullscreen ||
+                element.mozRequestFullscreen ||
+                element.oRequestFullscreen ||
+                element.msRequestFullscreen
+            ));
+            element.exitFullscreen || (element.exitFullscreen = (
+                element.webkitExitFullscreen ||
+                element.mozExitFullscreen ||
+                element.oExitFullscreen ||
+                element.msExitFullscreen
+            ));
 
             this.element = element;
             this.handleResize();
@@ -175,7 +225,8 @@ define([
          * @method style
          * @memberof Canvas
          * @brief sets style of html element
-         * @param Number height
+         * @param String key
+         * @param String value
          */
         Canvas.prototype.style = function(key, value) {
             if (!this.element) return this;
@@ -188,7 +239,7 @@ define([
          * @method setBackgroundColor
          * @memberof Canvas
          * @brief sets html background color
-         * @param Number height
+         * @param String color
          */
         Canvas.prototype.setBackgroundColor = function(color) {
             if (!this.element) return this;
@@ -239,6 +290,17 @@ define([
 
             this.emit("resize");
         };
+
+
+        function pointerlockchange(e) {
+
+            console.log("pointerlockchange");
+        }
+
+        function fullscreenchange(e) {
+
+            console.log("fullscreenchange");
+        }
 
 
         return Canvas;

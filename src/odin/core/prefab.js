@@ -32,6 +32,25 @@ define([
         };
 
 
+        Prefab.prototype.toJSON = function(json) {
+            json = Class.prototype.toJSON.call(this, json);
+
+            json.object = this.object;
+
+            return json;
+        };
+
+
+        Prefab.prototype.fromJSON = function(json) {
+            Class.prototype.fromJSON.call(this, json);
+
+            this.object = json.object;
+            this.objectPool = new ObjectPool(Class._classes[json.object._className]);
+
+            return this;
+        };
+
+
         function onRemove(object) {
 
             this.objectPool.removeObject(object);

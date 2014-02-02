@@ -77,15 +77,6 @@ define([
         };
 
 
-        World2D.prototype.fromServerJSON = function(json) {
-            World.prototype.fromServerJSON.call(this, json);
-
-            this.space.fromJSON(json.space);
-
-            return this;
-        };
-
-
         World2D.prototype.fromJSON = function(json) {
             World.prototype.fromJSON.call(this, json);
 

@@ -92,12 +92,6 @@ define([
         };
 
 
-        Class.fromServerJSON = function(json) {
-
-            return new Class._classes[json._className]().fromServerJSON(json);
-        };
-
-
         Class.create = function(type) {
 
             return new Class._classes[type];

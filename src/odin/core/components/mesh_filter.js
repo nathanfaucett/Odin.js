@@ -95,8 +95,8 @@ define([
             this.castShadows = json.castShadows;
             this.receiveShadows = json.receiveShadows;
 
-            this.mesh = json.mesh ? Assets.hash[json.mesh] : undefined;
-            this.material = json.material ? Assets.hash[json.material] : undefined;
+            this.mesh = json.mesh ? Assets.get(json.mesh) : undefined;
+            this.material = json.material ? Assets.get(json.material) : undefined;
 
             return this;
         };

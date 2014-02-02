@@ -36,7 +36,7 @@ define([
              */
             this.emitters = [];
             this._emitterHash = {};
-            this._emitterServerHash = {};
+            this._emitterJSONHash = {};
 
             if (opts.emitter) this.addEmitter(opts.emitter);
             if (opts.emitters) this.add.apply(this, opts.emitters);
@@ -85,7 +85,7 @@ define([
                 emitter.particleSystem = this;
                 emitters.push(emitter);
                 this._emitterHash[emitter._id] = emitter;
-                if (emitter._serverId !== -1) this._emitterHash[emitter._serverId] = emitter;
+                if (emitter._jsonId !== -1) this._emitterHash[emitter._jsonId] = emitter;
             } else {
                 Log.error("ParticleSystem.addEmitter: ParticleSystem already has passed Emitter");
             }
@@ -108,7 +108,7 @@ define([
             if (index !== -1) {
                 emitters.splice(index, 1);
                 this._emitterHash[emitter._id] = undefined;
-                if (emitter._serverId !== -1) this._emitterHash[emitter._serverId] = undefined;
+                if (emitter._jsonId !== -1) this._emitterHash[emitter._jsonId] = undefined;
 
                 emitter.clear();
                 emitter.particleSystem = undefined;
@@ -136,7 +136,7 @@ define([
 
         ParticleSystem.prototype.findEmitterByServerId = function(id) {
 
-            return this._emitterServerHash[id];
+            return this._emitterJSONHash[id];
         };
 
 
@@ -186,28 +186,6 @@ define([
             json.playing = this.playing;
 
             return json;
-        };
-
-
-        ParticleSystem.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-            var jsonEmitters = json.emitters,
-                emitter, jsonEmitter,
-                i = 0,
-                il = jsonEmitters.length;
-
-            for (; i < il; i++) {
-                jsonEmitter = jsonEmitters[i];
-
-                if ((emitter = this.findEmitterByServerId(jsonEmitter._id))) {
-                    emitter.fromServerJSON(jsonEmitter);
-                } else {
-                    this.addEmitter(Class.fromServerJSON(jsonEmitter));
-                }
-            }
-            this.playing = json.playing;
-
-            return this;
         };
 
 

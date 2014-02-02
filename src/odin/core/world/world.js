@@ -16,8 +16,6 @@ define([
 
             this.scene = undefined;
             this.sync = false;
-
-            this.background = opts.background != undefined ? opts.background : new Color(0.5, 0.5, 0.5);
         }
 
         Class.extend(World);
@@ -35,7 +33,6 @@ define([
 
         World.prototype.clear = function() {
 
-            this.background.set(0.5, 0.5, 0.5);
             return this;
         };
 
@@ -50,51 +47,6 @@ define([
             this.emit("destroy");
 
             this.clear();
-
-            return this;
-        };
-
-
-        World.prototype.toSYNC = function(json) {
-            json = Class.prototype.toSYNC.call(this, json);
-
-            json.background = this.background.toJSON(json.background);
-
-            return json;
-        };
-
-
-        World.prototype.fromSYNC = function(json) {
-            Class.prototype.fromSYNC.call(this, json);
-
-            this.background.fromJSON(json.background);
-
-            return this;
-        };
-
-
-        World.prototype.toJSON = function(json) {
-            json = Class.prototype.toJSON.call(this, json);
-
-            json.background = this.background.toJSON(json.background);
-
-            return json;
-        };
-
-
-        World.prototype.fromServerJSON = function(json) {
-            Class.prototype.fromServerJSON.call(this, json);
-
-            this.background.fromJSON(json.background);
-
-            return this;
-        };
-
-
-        World.prototype.fromJSON = function(json) {
-            Class.prototype.fromJSON.call(this, json);
-
-            this.background.fromJSON(json.background);
 
             return this;
         };

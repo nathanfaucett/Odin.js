@@ -20,6 +20,9 @@ define(
             this.touch = "ontouchstart" in window;
             this.mobile = /android|webos|iphone|ipad|ipod|blackberry/i.test(userAgent);
 
+            this.pointerLock = "pointerLockElement" in document || "mozPointerLockElement" in document || "webkitPointerLockElement" in document;
+            this.fullScreen = "fullscreenElement" in document || "mozFullscreenElement" in document || "webkitFullscreenElement" in document;
+
             this.webgl = (function() {
                 var canvas = document.createElement("canvas"),
                     names = ["3d", "moz-webgl", "experimental-webgl", "webkit-3d", "webgl"],

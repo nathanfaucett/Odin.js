@@ -56,6 +56,8 @@ define([
             this.context = undefined;
             this._context = false;
 
+            this.autoClear = opts.autoClear != undefined ? opts.autoClear : true;
+
             this.attributes = merge(opts.attributes || {}, {
                 alpha: true,
                 antialias: true,
@@ -294,27 +296,16 @@ define([
         };
 
 
-        /**
-         * @method render
-         * @memberof WebGLRenderer
-         * @brief renderers scene from camera's perspective
-         * @param Scene scene
-         * @param Camera camera
-         */
-        WebGLRenderer.prototype.render = function(scene, camera) {
+        WebGLRenderer.prototype.preRender = function(camera) {
             if (!this._context) return;
             var gl = this.context,
                 lastBackground = this._lastBackground,
-                background = scene.world.background,
-                components = scene.components,
-                meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                meshFilter, particleSystem, transform,
-                i;
+                background = camera.background;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
                 lastBackground.copy(background);
                 gl.clearColor(background.r, background.g, background.b, 1);
+                if (!this.autoClear) gl.clear(this._clearBytes);
             }
             if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
@@ -338,7 +329,35 @@ define([
                 this._lastCamera = camera;
             }
 
-            gl.clear(this._clearBytes);
+            if (this.autoClear) gl.clear(this._clearBytes);
+        };
+
+
+        WebGLRenderer.prototype.renderGUI = function(gui, camera) {
+            if (!this._context) return;
+            var gl = this.context,
+                components = gui.components,
+                transform,
+                i;
+
+        };
+
+
+        /**
+         * @method render
+         * @memberof WebGLRenderer
+         * @brief renderers scene from camera's perspective
+         * @param Scene scene
+         * @param Camera camera
+         */
+        WebGLRenderer.prototype.render = function(scene, camera) {
+            if (!this._context) return;
+            var gl = this.context,
+                components = scene.components,
+                meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                meshFilter, particleSystem, transform,
+                i;
 
             for (i = meshFilters.length; i--;) {
                 meshFilter = meshFilters[i];

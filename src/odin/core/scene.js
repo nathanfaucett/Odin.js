@@ -58,7 +58,7 @@ define([
                         return;
                     }
 
-                    sceneNameHash[value] = this.toJSON();
+                    sceneNameHash[value].name = value;
                 }
 
                 this._name = value;
@@ -130,27 +130,9 @@ define([
 
 
         Scene.prototype.destroy = function() {
-            if (!this.game) {
-                Log.error("Scene.destroy: can't destroy Scene if it's not added to a Game");
-                return this;
-            }
 
-            this.game.removeScene(this);
             this.emit("destroy");
-
             this.clear();
-
-            return this;
-        };
-
-
-        Scene.prototype.remove = function() {
-            if (!this.game) {
-                Log.error("Scene.destroy: can't destroy Scene if it's not added to a Game");
-                return this;
-            }
-
-            this.game.removeScene(this);
 
             return this;
         };

@@ -3,26 +3,27 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/base/class",
-        "odin/core/components/component",
+        "odin/core/gui/components/gui_component",
+        "odin/core/gui/components/gui_transform",
         "odin/core/game/log"
     ],
-    function(Class, Component, Log) {
+    function(Class, GUIComponent, GUITransform, Log) {
         "use strict";
 
 
         /**
-         * @class GameObject
+         * @class GUIObject
          * @extends Class
-         * @brief base class for entities in scenes
+         * @brief base class for gui elements in a gui
          * @param Object options
          */
 
-        function GameObject(opts) {
+        function GUIObject(opts) {
             opts || (opts = {});
 
             Class.call(this);
 
-            this.scene = undefined;
+            this.gui = undefined;
 
             this.tags = [];
 
@@ -34,13 +35,14 @@ define([
             if (opts.tag) this.addTag(opts.tag);
             if (opts.tags) this.addTags.apply(this, opts.tags);
 
+            this.addComponent(new GUITransform(opts));
             if (opts.components) this.addComponents.apply(this, opts.components);
         }
 
-        Class.extend(GameObject);
+        Class.extend(GUIObject);
 
 
-        GameObject.prototype.copy = function(other) {
+        GUIObject.prototype.copy = function(other) {
             var components = other.components,
                 tags = other.tags,
                 otherComponent, component,
@@ -57,13 +59,13 @@ define([
             }
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
-            if (other.scene && !this.scene) other.scene.addGameObject(this);
+            if (other.gui && !this.gui) other.gui.addGUIObject(this);
 
             return this;
         };
 
 
-        GameObject.prototype.clear = function() {
+        GUIObject.prototype.clear = function() {
             var components = this.components,
                 tags = this.tags,
                 i;
@@ -79,13 +81,13 @@ define([
         };
 
 
-        GameObject.prototype.destroy = function() {
-            if (!this.scene) {
-                Log.error("GameObject.destroy: can't destroy GameObject if it's not added to a Scene");
+        GUIObject.prototype.destroy = function() {
+            if (!this.gui) {
+                Log.error("GUIObject.destroy: can't destroy GUIObject if it's not added to a Scene");
                 return this;
             }
 
-            this.scene.removeGameObject(this);
+            this.gui.removeGUIObject(this);
             this.emit("destroy");
 
             this.clear();
@@ -94,18 +96,18 @@ define([
         };
 
 
-        GameObject.prototype.remove = function() {
-            if (!this.scene) {
-                Log.error("GameObject.remove: can't remove GameObject if it's not added to a Scene");
+        GUIObject.prototype.remove = function() {
+            if (!this.gui) {
+                Log.error("GUIObject.destroy: can't destroy GUIObject if it's not added to a Scene");
                 return this;
             }
 
-            this.scene.removeGameObject(this);
+            this.gui.removeGUIObject(this);
             return this;
         };
 
 
-        GameObject.prototype.addTag = function(tag) {
+        GUIObject.prototype.addTag = function(tag) {
             var tags = this.tags;
 
             if (tags.indexOf(tag) === -1) tags.push(tag);
@@ -114,14 +116,14 @@ define([
         };
 
 
-        GameObject.prototype.addTags = function() {
+        GUIObject.prototype.addTags = function() {
 
             for (var i = arguments.length; i--;) this.addTag(arguments[i]);
             return this;
         };
 
 
-        GameObject.prototype.removeTag = function(tag) {
+        GUIObject.prototype.removeTag = function(tag) {
             var tags = this.tags,
                 index = tags.indexOf(tag);
 
@@ -131,23 +133,23 @@ define([
         };
 
 
-        GameObject.prototype.removeTags = function() {
+        GUIObject.prototype.removeTags = function() {
 
             for (var i = arguments.length; i--;) this.removeTag(arguments[i]);
             return this;
         };
 
 
-        GameObject.prototype.hasTag = function(tag) {
+        GUIObject.prototype.hasTag = function(tag) {
 
             return this.tags.indexOf(tag) !== -1;
         };
 
 
-        GameObject.prototype.addComponent = function(component, others) {
+        GUIObject.prototype.addComponent = function(component, others) {
             if (typeof(component) === "string") component = new Class._classes[component];
-            if (!(component instanceof Component)) {
-                Log.error("GameObject.addComponent: can't add passed argument, it is not an instance of Component");
+            if (!(component instanceof GUIComponent)) {
+                Log.error("GUIObject.addComponent: can't add passed argument, it is not an instance of GUIComponent");
                 return this;
             }
             var name = component._name,
@@ -156,14 +158,14 @@ define([
 
 
             if (!this[name]) {
-                if (component.gameObject) component = component.clone();
+                if (component.guiObject) component = component.clone();
 
                 components.push(component);
                 this._componentType[component._type] = component;
                 this._componentHash[component._id] = component;
                 if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component._jsonId;
 
-                component.gameObject = this;
+                component.guiObject = this;
                 this[name] = component;
 
                 if (!others) {
@@ -181,16 +183,16 @@ define([
                 this.emit("add" + component._type, component);
                 this.emit("addComponent", component);
 
-                if (this.scene) this.scene._addComponent(component);
+                if (this.gui) this.gui._addComponent(component);
             } else {
-                Log.error("GameObject.addComponent: GameObject already has a(n) " + component._type + " Component");
+                Log.error("GUIObject.addComponent: GUIObject already has a(n) " + component._type + " GUIComponent");
             }
 
             return this;
         };
 
 
-        GameObject.prototype.addComponents = function() {
+        GUIObject.prototype.addComponents = function() {
             var length = arguments.length,
                 components = this.components,
                 component, name,
@@ -212,10 +214,10 @@ define([
         };
 
 
-        GameObject.prototype.removeComponent = function(component, clear, others) {
+        GUIObject.prototype.removeComponent = function(component, clear, others) {
             if (typeof(component) === "string") component = this.getComponent(component);
-            if (!(component instanceof Component)) {
-                Log.error("GameObject.removeComponent: can't remove passed argument, it is not an instance of Component");
+            if (!(component instanceof GUIComponent)) {
+                Log.error("GUIObject.removeComponent: can't remove passed argument, it is not an instance of GUIComponent");
                 return this;
             }
             var name = component._name,
@@ -240,24 +242,24 @@ define([
                 this._componentHash[component._id] = undefined;
                 if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
-                component.gameObject = undefined;
+                component.guiObject = undefined;
                 this[name] = undefined;
 
                 this.emit("remove" + component._type, component);
                 this.emit("removeComponent", component);
                 component.emit("remove", component);
 
-                if (this.scene) this.scene._removeComponent(component);
+                if (this.gui) this.gui._removeComponent(component);
                 if (clear) component.clear();
             } else {
-                Log.error("GameObject.removeComponent: GameObject does not have a(n) " + type + " Component");
+                Log.error("GUIObject.removeComponent: GUIObject does not have a(n) " + type + " GUIComponent");
             }
 
             return this;
         };
 
 
-        GameObject.prototype.removeComponents = function() {
+        GUIObject.prototype.removeComponents = function() {
             var length = arguments.length,
                 components = this.components,
                 toRemove = arguments,
@@ -281,13 +283,13 @@ define([
         };
 
 
-        GameObject.prototype.getComponent = function(type) {
+        GUIObject.prototype.getComponent = function(type) {
 
             return this._componentType[type] || this[type] || this[type.toLowerCase()];
         };
 
 
-        GameObject.prototype.hasComponent = function(type) {
+        GUIObject.prototype.hasComponent = function(type) {
             var components = this.components,
                 i;
 
@@ -299,19 +301,19 @@ define([
         };
 
 
-        GameObject.prototype.findComponentById = function(id) {
+        GUIObject.prototype.findComponentById = function(id) {
 
             return this._componentHash[id];
         };
 
 
-        GameObject.prototype.findComponentByJSONId = function(id) {
+        GUIObject.prototype.findComponentByJSONId = function(id) {
 
             return this._componentJSONHash[id];
         };
 
 
-        GameObject.prototype.toJSON = function(json) {
+        GUIObject.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
             var components = this.components,
                 jsonComponents = json.components || (json.components = []),
@@ -329,7 +331,7 @@ define([
         };
 
 
-        GameObject.prototype.fromJSON = function(json) {
+        GUIObject.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonComponents = json.components || (json.components = []),
                 component, jsonComponent, tag,
@@ -355,6 +357,6 @@ define([
         };
 
 
-        return GameObject;
+        return GUIObject;
     }
 );

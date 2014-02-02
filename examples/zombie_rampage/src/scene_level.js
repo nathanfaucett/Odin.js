@@ -21,7 +21,6 @@ define([
         var sceneLevel = new Odin.Scene({
             name: "Level",
             world: new Odin.World2D({
-                background: new Odin.Color("black"),
                 space: {
                     useGravity: false
                 }
@@ -31,7 +30,9 @@ define([
             components: [
                 new Odin.Transform2D,
                 new Odin.Camera2D({
-                    orthographicSize: 8,
+                    background: new Odin.Color("black"),
+
+                    orthographicSize: 6,
                     minOrthographicSize: 2,
                     maxOrthographicSize: 8
                 }),
@@ -52,7 +53,7 @@ define([
                     height: 20
                 }),
                 new Odin.AudioSource({
-                    playOnInit: true,
+                    playOnInit: false,
                     loop: true,
                     dopplerLevel: 0,
                     clip: Odin.Assets.get("snd_sure_shot")

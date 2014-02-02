@@ -36,8 +36,8 @@ define([
 
             this.isTrigger = opts.isTrigger != undefined ? !! opts.isTrigger : false;
 
-            this.filterMask = opts.filterMask != undefined ? opts.filterMask : 0;
-            this.filterGroup = opts.filterGroup != undefined ? opts.filterGroup : 0;
+            this.filterMask = opts.filterMask != undefined ? opts.filterMask : 1;
+            this.filterGroup = opts.filterGroup != undefined ? opts.filterGroup : 1;
 
             this.aabb = new AABB2;
         }

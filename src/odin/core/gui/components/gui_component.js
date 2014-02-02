@@ -13,46 +13,46 @@ define([
         var camelize = util.camelize;
 
 
-        function Component(type, opts) {
+        function GUIComponent(type, opts) {
             opts || (opts = {});
 
             Class.call(this);
 
-            this._type = type || "UnknownComponent";
+            this._type = type || "UnknownGUIComponent";
             this._name = camelize(this._type, true);
 
             this.sync = opts.sync != undefined ? !! opts.sync : false;
             this.json = opts.json != undefined ? !! opts.json : true;
 
-            this.gameObject = undefined;
+            this.guiObject = undefined;
         }
 
-        Class.extend(Component);
+        Class.extend(GUIComponent);
 
 
-        Component.prototype.init = function() {
-
-        };
-
-
-        Component.prototype.update = function() {
+        GUIComponent.prototype.init = function() {
 
         };
 
 
-        Component.prototype.clear = function() {
+        GUIComponent.prototype.update = function() {
+
+        };
+
+
+        GUIComponent.prototype.clear = function() {
 
             this.off();
         };
 
 
-        Component.prototype.destroy = function() {
-            if (!this.gameObject) {
-                Log.error("Component.destroy: can't destroy Component if it's not added to a GameObject");
+        GUIComponent.prototype.destroy = function() {
+            if (!this.guiObject) {
+                Log.error("GUIComponent.destroy: can't destroy GUIComponent if it's not added to a GameObject");
                 return this;
             }
 
-            this.gameObject.removeComponent(this, true);
+            this.guiObject.removeGUIComponent(this, true);
             this.emit("destroy");
 
             this.clear();
@@ -61,24 +61,24 @@ define([
         };
 
 
-        Component.prototype.remove = function() {
-            if (!this.gameObject) {
-                Log.error("Component.remove: can't remove Component if it's not added to a GameObject");
+        GUIComponent.prototype.remove = function() {
+            if (!this.guiObject) {
+                Log.error("GUIComponent.destroy: can't destroy GUIComponent if it's not added to a GameObject");
                 return this;
             }
 
-            this.gameObject.removeComponent(this, true);
+            this.guiObject.removeGUIComponent(this, true);
             return this;
         };
 
 
-        Component.prototype.sort = function(a, b) {
+        GUIComponent.prototype.sort = function(a, b) {
 
             return a === b ? -1 : 1;
         };
 
 
-        Component.prototype.toJSON = function(json) {
+        GUIComponent.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
             json._type = this._type;
@@ -89,7 +89,7 @@ define([
         };
 
 
-        Component.prototype.fromJSON = function(json) {
+        GUIComponent.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 
             this.sync = json.sync;
@@ -99,6 +99,6 @@ define([
         };
 
 
-        return Component;
+        return GUIComponent;
     }
 );

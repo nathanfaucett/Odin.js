@@ -7,7 +7,7 @@ define([
         "fire",
     ],
     function(Odin, Character, pistolBullet, smallBullet, rocket, fire) {
-
+        window.pistolBullet = pistolBullet;
 
         var snd_shot_short = Odin.Assets.get("snd_shot_short"),
             snd_shot_mid = Odin.Assets.get("snd_shot_mid"),
@@ -221,7 +221,7 @@ define([
 
             life || (life = Infinity);
 
-            transform2d.position.copy(position).add(FIRE.set(x, y).smul(0.5));
+            transform2d.position.copy(position).add(FIRE.set(x, y).smul(0.25));
             transform2d.rotation = angle - HALF_PI;
             instance.rigidBody2d.body.velocity.set(x, y).smul(spd);
             bullet.owner = owner;

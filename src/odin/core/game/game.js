@@ -35,10 +35,12 @@ define([
             this._handler = Handler;
             this.input = Input;
 
+            this.gui = undefined;
+
             this.scene = undefined;
             this.camera = undefined;
 
-            this.canvas = new Canvas(opts.width, opts.height);
+            this.canvas = new Canvas(opts);
 
             this.CanvasRenderer2D = undefined;
             this.WebGLRenderer2D = undefined;
@@ -66,6 +68,31 @@ define([
         };
 
 
+        Game.prototype.setGUI = function(gui) {
+            if (typeof(gui) === "string") {
+                gui = this._guiNameHash[gui];
+            } else if (typeof(gui) === "number") {
+                gui = this.guis[gui];
+            }
+
+            if (this._guiNameHash[gui.name] && this._guiHash[gui._id]) {
+                if (this.gui) this.gui.destroy();
+
+                gui = Class.fromJSON(gui);
+                this.gui = gui;
+
+                gui.game = this;
+                gui.init();
+
+                this.emit("setGUI", this.gui);
+            } else {
+                Log.error("Game.setGUI: GUI is not a member of Game");
+            }
+
+            return this;
+        };
+
+
         Game.prototype.setScene = function(scene) {
             if (typeof(scene) === "string") {
                 scene = this._sceneNameHash[scene];
@@ -74,11 +101,13 @@ define([
             }
 
             if (this._sceneNameHash[scene.name] && this._sceneHash[scene._id]) {
+                if (this.scene) this.scene.destroy();
+
                 scene = Class.fromJSON(scene);
+                this.scene = scene;
 
                 scene.game = this;
                 scene.init();
-                this.scene = scene;
 
                 this.emit("setScene", this.scene);
             } else {
@@ -180,6 +209,8 @@ define([
         Game.prototype.loop = function() {
             var camera = this.camera,
                 scene = this.scene,
+                gui = this.gui,
+                renderer = this.renderer,
                 MIN_DELTA = Config.MIN_DELTA,
                 MAX_DELTA = Config.MAX_DELTA;
 
@@ -206,9 +237,21 @@ define([
 
             Input.update();
 
-            if (scene) {
-                scene.update();
-                if (camera) this.renderer.render(scene, camera);
+            if (camera) {
+                renderer.preRender(camera);
+
+                if (scene) {
+                    scene.emit("update");
+                    scene.update();
+
+                    renderer.render(scene, camera);
+                }
+                if (gui) {
+                    gui.emit("update");
+                    gui.update();
+
+                    renderer.renderGUI(gui, camera);
+                }
             }
 
             this.emit("update", time);

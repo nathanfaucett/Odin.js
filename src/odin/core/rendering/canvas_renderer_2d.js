@@ -28,11 +28,13 @@ define([
 
             EventEmitter.call(this);
 
-            this.imageSmoothingEnabled = opts.imageSmoothingEnabled != undefined ? opts.imageSmoothingEnabled : false;
+            this.imageSmoothingEnabled = opts.imageSmoothingEnabled != undefined ? opts.imageSmoothingEnabled : true;
 
             this.canvas = undefined;
             this.context = undefined;
             this._context = false;
+
+            this.autoClear = opts.autoClear != undefined ? opts.autoClear : true;
 
             this._offContext = undefined;
 
@@ -115,20 +117,16 @@ define([
         };
 
 
-        CanvasRenderer2D.prototype.render = function(scene, camera) {
+        CanvasRenderer2D.prototype.preRender = function(camera) {
             if (!this._context) return;
             var ctx = this.context,
                 lastBackground = this._lastBackground,
-                background = scene.world.background,
-                components = scene.components,
-                sprites = components.Sprite || EMPTY_ARRAY,
-                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                sprite2d, particleSystem, transform2d,
-                i;
+                background = camera.background;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
                 lastBackground.copy(background);
                 ctx.fillStyle = background.toRGB();
+                if (!this.autoClear) ctx.fillRect(-1, -1, 2, 2);
             }
             if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
@@ -162,7 +160,28 @@ define([
                 this._lastCamera = camera;
             }
 
-            ctx.fillRect(-1, -1, 2, 2);
+            if (this.autoClear) ctx.fillRect(-1, -1, 2, 2);
+        };
+
+
+        CanvasRenderer2D.prototype.renderGUI = function(gui, camera) {
+            if (!this._context) return;
+            var ctx = this.context,
+                components = gui.components,
+                transform,
+                i;
+
+        };
+
+
+        CanvasRenderer2D.prototype.render = function(scene, camera) {
+            if (!this._context) return;
+            var ctx = this.context,
+                components = scene.components,
+                sprites = components.Sprite || EMPTY_ARRAY,
+                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                sprite2d, particleSystem, transform2d,
+                i;
 
             for (i = sprites.length; i--;) {
                 sprite2d = sprites[i];

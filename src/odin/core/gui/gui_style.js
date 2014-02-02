@@ -23,6 +23,7 @@ define([
             opts || (opts = {});
 
             this._id = ++GUI_STYLE_ID;
+            this._state = "normal";
             this.name = opts.name || "GUIStyle_" + this._id;
 
             this.alignment = opts.alignment || TextAnchor.MiddleLeft;
@@ -37,10 +38,11 @@ define([
             this.focused = new GUIStyleState(opts.focused);
             this.hover = new GUIStyleState(opts.hover);
 
-            this.font = "";
-            this.fontSize = opts.fontSize || 0;
+            this.font = opts.font || "Arial";
+            this.fontSize = opts.fontSize || 16;
             this.fontStyle = opts.fontStyle || FontStyle.Normal;
-            this.lineHeight = opts.lineHeight || 25;
+            this.lineHeight = opts.lineHeight || 24;
+            this.lineSpacing = opts.lineSpacing || 0;
 
             this.margin = opts.margin || new RectOffset;
             this.padding = opts.padding || new RectOffset;
@@ -110,10 +112,10 @@ define([
             json.focused = this.focused.toJSON(json.focused);
             json.hover = this.hover.toJSON(json.hover);
 
-            json.font = json.font;
-            json.fontSize = json.fontSize;
-            json.fontStyle = json.fontStyle;
-            json.lineHeight = json.lineHeight;
+            json.font = this.font;
+            json.fontSize = this.fontSize;
+            json.fontStyle = this.fontStyle;
+            json.lineHeight = this.lineHeight;
 
             json.margin = this.margin.toJSON(json.margin);
             json.padding = this.padding.toJSON(json.padding);

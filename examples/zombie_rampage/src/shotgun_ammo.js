@@ -3,7 +3,7 @@ define([
         "components/item"
     ],
     function(Odin, Item) {
-	
+
 
         return new Odin.Prefab(
             new Odin.GameObject({

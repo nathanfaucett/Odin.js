@@ -147,24 +147,24 @@ define([
                 var num, item;
 
                 if (random() < 0.75) {
-					if (this.drop === 4) {
-						item = rocketAmmo.create();
-						item.item.value = 1;
-					} else {
-						num = random();
-	
-						if (num <= 0.6) {
-							item = uziAmmo.create();
-							item.item.value = randInt(5, 25);
-						} else if (num > 0.6 && num < 0.9) {
-							item = shotgunAmmo.create();
-							item.item.value = randInt(1, 5);
-						} else {
-							item = flamethrowerAmmo.create();
-							item.item.value = randInt(10, 20);
-						}
-					}
-				}
+                    if (this.drop === 4) {
+                        item = rocketAmmo.create();
+                        item.item.value = 1;
+                    } else {
+                        num = random();
+
+                        if (num <= 0.6) {
+                            item = uziAmmo.create();
+                            item.item.value = randInt(5, 25);
+                        } else if (num > 0.6 && num < 0.9) {
+                            item = shotgunAmmo.create();
+                            item.item.value = randInt(1, 5);
+                        } else {
+                            item = flamethrowerAmmo.create();
+                            item.item.value = randInt(10, 20);
+                        }
+                    }
+                }
 
                 if (item) {
                     item.transform2d.position.copy(this.transform2d.position);

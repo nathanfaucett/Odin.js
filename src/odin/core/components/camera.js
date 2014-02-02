@@ -22,18 +22,22 @@ define([
 
             this.width = 960;
             this.height = 640;
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
+
+            this.background = opts.background != undefined ? opts.background : new Color(0.5, 0.5, 0.5);
 
             this.aspect = this.width / this.height;
-            this.fov = opts.fov !== undefined ? opts.fov : 35;
+            this.fov = opts.fov != undefined ? opts.fov : 35;
 
-            this.near = opts.near !== undefined ? opts.near : 0.1;
-            this.far = opts.far !== undefined ? opts.far : 512;
+            this.near = opts.near != undefined ? opts.near : 0.1;
+            this.far = opts.far != undefined ? opts.far : 512;
 
-            this.orthographic = opts.orthographic !== undefined ? !! opts.orthographic : false;
-            this.orthographicSize = opts.orthographicSize !== undefined ? opts.orthographicSize : 2;
+            this.orthographic = opts.orthographic != undefined ? !! opts.orthographic : false;
+            this.orthographicSize = opts.orthographicSize != undefined ? opts.orthographicSize : 2;
 
-            this.minOrthographicSize = opts.minOrthographicSize !== undefined ? opts.minOrthographicSize : 0.01;
-            this.maxOrthographicSize = opts.maxOrthographicSize !== undefined ? opts.maxOrthographicSize : 1024;
+            this.minOrthographicSize = opts.minOrthographicSize != undefined ? opts.minOrthographicSize : 0.01;
+            this.maxOrthographicSize = opts.maxOrthographicSize != undefined ? opts.maxOrthographicSize : 1024;
 
             this.projection = new Mat4;
             this.view = new Mat4;
@@ -42,7 +46,6 @@ define([
             this._active = false;
         }
 
-        Camera.type = "Camera";
         Component.extend(Camera);
 
 
@@ -51,6 +54,9 @@ define([
             this.width = other.width;
             this.height = other.height;
             this.aspect = other.aspect;
+
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
 
             this.far = other.far;
             this.near = other.near;
@@ -71,6 +77,10 @@ define([
 
             this.width = width;
             this.height = height;
+
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
+
             this.aspect = width / height;
             this._needsUpdate = true;
         };
@@ -80,6 +90,9 @@ define([
 
             this.width = width;
             this.aspect = width / this.height;
+
+            this.invWidth = 1 / this.width;
+
             this._needsUpdate = true;
         };
 
@@ -88,6 +101,9 @@ define([
 
             this.height = height;
             this.aspect = this.width / height;
+
+            this.invHeight = 1 / this.height;
+
             this._needsUpdate = true;
         };
 
@@ -140,8 +156,8 @@ define([
         Camera.prototype.toWorld = function(v, out) {
             out || (out = new Vec3);
 
-            out.x = 2 * v.x / this.width - 1;
-            out.y = -2 * v.y / this.height + 1;
+            out.x = 2 * (v.x * this.invWidth) - 1;
+            out.y = -2 * (v.y * this.invHeight) + 1;
             out.transformMat4(MAT4.mmul(this.projection, this.view).inverse());
             out.z = this.near;
 
@@ -194,47 +210,6 @@ define([
         };
 
 
-        Camera.prototype.toSYNC = function(json) {
-            json = Component.prototype.toSYNC.call(this, json);
-
-            json.width = this.width;
-            json.height = this.height;
-            json.aspect = this.aspect;
-
-            json.far = this.far;
-            json.near = this.near;
-            json.fov = this.fov;
-
-            json.orthographic = this.orthographic;
-            json.orthographicSize = this.orthographicSize;
-            json.minOrthographicSize = this.minOrthographicSize;
-            json.maxOrthographicSize = this.maxOrthographicSize;
-
-            return json;
-        };
-
-
-        Camera.prototype.fromSYNC = function(json) {
-            Component.prototype.fromSYNC.call(this, json);
-            if (json.width !== this.width || json.height !== this.height) this._needsUpdate = true;
-
-            this.width = json.width;
-            this.height = json.height;
-            this.aspect = json.aspect;
-
-            this.far = json.far;
-            this.near = json.near;
-            this.fov = json.fov;
-
-            this.orthographic = json.orthographic;
-            this.orthographicSize = json.orthographicSize;
-            this.minOrthographicSize = json.minOrthographicSize;
-            this.maxOrthographicSize = json.maxOrthographicSize;
-
-            return this;
-        };
-
-
         Camera.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
@@ -252,28 +227,6 @@ define([
             json.maxOrthographicSize = this.maxOrthographicSize;
 
             return json;
-        };
-
-
-        Camera.prototype.fromServerJSON = function(json) {
-            Component.prototype.fromServerJSON.call(this, json);
-
-            this.width = json.width;
-            this.height = json.height;
-            this.aspect = json.aspect;
-
-            this.far = json.far;
-            this.near = json.near;
-            this.fov = json.fov;
-
-            this.orthographic = json.orthographic;
-            this.orthographicSize = json.orthographicSize;
-            this.minOrthographicSize = json.minOrthographicSize;
-            this.maxOrthographicSize = json.maxOrthographicSize;
-
-            this._needsUpdate = true;
-
-            return this;
         };
 
 

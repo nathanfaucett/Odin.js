@@ -47,7 +47,7 @@ require({
         };
 
 
-        Assets.add(
+        Assets.addAssets(
             new Texture({
                 name: "img_player",
                 src: "../content/images/player.png",
@@ -65,7 +65,8 @@ require({
         game = new Game({
             debug: true,
             forceCanvas: false,
-            canvasRenderer2DOptions: {
+            CanvasRenderer2DOptions: {
+                autoClear: true,
                 imageSmoothingEnabled: false
             }
         });
@@ -215,11 +216,34 @@ require({
             ]
         });
 
-        scene.add(camera, left, right, top, bottom);
+        scene.addGameObjects(camera, left, right, top, bottom);
+
+        var gui = new Odin.GUI({
+            name: "Level"
+        });
+        var guiObject = new Odin.GUIObject({
+            components: [
+                new Odin.GUITransform({
+                    position: new Odin.Rect(0, 0, 0.1, 0.1)
+                }),
+                new Odin.GUIContent({
+                    text: "Menu",
+                    style: {
+                        normal: {
+                            text: new Odin.Color(0.5, 0.5, 0.5)
+                        }
+                    }
+                })
+            ]
+        });
+        gui.addGUIObject(guiObject);
+
+        game.addGUI(gui);
         game.addScene(scene);
 
 
         function start() {
+            game.setGUI("Level");
             game.setScene("PlayGround");
             game.setCamera(game.scene.findByTagFirst("Camera"));
         }

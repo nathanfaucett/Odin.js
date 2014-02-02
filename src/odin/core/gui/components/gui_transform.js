@@ -3,24 +3,26 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/math/mathf",
-        "odin/math/vec3",
-        "odin/math/quat",
+        "odin/math/vec2",
+        "odin/math/rect",
+        "odin/math/mat32",
         "odin/math/mat4",
-        "odin/core/components/component",
+        "odin/core/gui/components/gui_component",
+        "odin/core/game/config",
         "odin/core/game/log"
     ],
-    function(Mathf, Vec3, Quat, Mat4, Component, Log) {
+    function(Mathf, Vec2, Rect, Mat32, Mat4, GUIComponent, Config, Log) {
         "use strict";
 
 
         var EPSILON = Mathf.EPSILON;
 
 
-        function Transform(opts) {
+        function GUITransform(opts) {
             opts || (opts = {});
             opts.sync = opts.sync != undefined ? opts.sync : true;
 
-            Component.call(this, "Transform", opts);
+            GUIComponent.call(this, "GUITransform", opts);
 
             this.root = this;
             this.depth = 0;
@@ -28,27 +30,24 @@ define([
             this.parent = undefined;
             this.children = [];
 
-            this.position = opts.position !== undefined ? opts.position : new Vec3;
-            this.rotation = opts.rotation !== undefined ? opts.rotation : new Quat;
-            this.scale = opts.scale !== undefined ? opts.scale : new Vec3(1, 1, 1);
+            this.position = opts.position != undefined ? opts.position : new Rect;
+            this.rotation = opts.rotation != undefined ? opts.rotation : 0;
+            this.scale = opts.scale != undefined ? opts.scale : new Vec2(1, 1);
 
-            this.matrix = new Mat4;
-            this.matrixWorld = new Mat4;
-
-            this.modelView = new Mat4;
-            this._modelViewNeedsUpdate = false;
+            this.matrix = new Mat32;
+            this.matrixWorld = new Mat32;
         }
 
-        Component.extend(Transform);
+        GUIComponent.extend(GUITransform);
 
 
-        Transform.prototype.copy = function(other) {
+        GUITransform.prototype.copy = function(other) {
             var children = other.children,
                 i;
 
             this.position.copy(other.position);
             this.scale.copy(other.scale);
-            this.rotation.copy(other.rotation);
+            this.rotation = other.rotation;
 
             for (i = children.length; i--;) this.addChild(children[i].gameObject.clone().transform);
             if (other.parent) other.parent.addChild(this);
@@ -57,16 +56,16 @@ define([
         };
 
 
-        Transform.prototype.clear = function() {
-            Component.prototype.clear.call(this);
+        GUITransform.prototype.clear = function() {
+            GUIComponent.prototype.clear.call(this);
             var children = this.children,
                 i;
 
             for (i = children.length; i--;) this.removeChild(children[i]);
 
-            this.position.set(0, 0, 0);
-            this.scale.set(1, 1, 1);
-            this.rotation.set(0, 0, 0, 1);
+            this.position.set(0, 0, 0, 0);
+            this.scale.set(1, 1);
+            this.rotation = 0;
 
             this.root = this;
             this.depth = 0;
@@ -75,74 +74,70 @@ define([
         };
 
 
-        Transform.prototype.translate = function() {
-            var vec = new Vec3;
+        GUITransform.prototype.translate = function() {
+            var vec = new Vec2;
 
             return function(translation, relativeTo) {
                 vec.copy(translation);
+                var position = this.position;
 
-                if (relativeTo instanceof Transform) {
-                    vec.transformQuat(relativeTo.rotation);
-                } else if (relativeTo instanceof Quat) {
-                    vec.transformQuat(relativeTo);
+                if (relativeTo instanceof GUITransform) {
+                    vec.transformAngle(relativeTo.rotation);
+                } else if (relativeTo) {
+                    vec.transformAngle(relativeTo);
                 }
 
-                this.position.add(vec);
+                position.x += vec.x;
+                position.y += vec.y;
 
                 return this;
             };
         }();
 
 
-        Transform.prototype.rotate = function() {
-            var vec = new Vec3;
+        GUITransform.prototype.rotate = function(rotation, relativeTo) {
 
-            return function(rotation, relativeTo) {
-                vec.copy(rotation);
+            if (relativeTo instanceof GUITransform) {
+                rotation += relativeTo.rotation;
+            } else if (relativeTo) {
+                rotation += relativeTo;
+            }
 
-                if (relativeTo instanceof Transform) {
-                    vec.transformQuat(relativeTo.rotation);
-                } else if (relativeTo instanceof Quat) {
-                    vec.transformQuat(relativeTo);
-                }
+            this.rotation += rotation;
 
-                this.rotation.rotate(vec.x, vec.y, vec.z);
-
-                return this;
-            };
-        }();
+            return this;
+        };
 
 
-        Transform.prototype.lookAt = function() {
-            var mat = new Mat4,
-                vec = new Vec3,
-                dup = new Vec3(0, 0, 1);
+        GUITransform.prototype.lookAt = function() {
+            var mat = new Mat32,
+                vec = new Vec2;
 
             return function(target, up) {
                 up = up || dup;
 
-                if (target instanceof Transform) {
+                if (target instanceof GUITransform) {
                     vec.copy(target.position);
                 } else {
                     vec.copy(target);
                 }
 
-                mat.lookAt(this.position, vec, up);
-                this.rotation.fromMat4(mat);
+                mat.lookAt(this.position, vec);
+                this.rotation = mat.getRotation();
 
                 return this;
             };
         }();
 
 
-        Transform.prototype.follow = function() {
-            var target = new Vec3,
-                position = new Vec3,
-                delta = new Vec3;
+        GUITransform.prototype.follow = function() {
+            var target = new Vec2,
+                position = new Vec2,
+                delta = new Vec2;
 
             return function(transform, speed) {
-                position.set(0, 0, 0).transformMat4(this.matrixWorld);
-                target.set(0, 0, 0).transformMat4(transform.matrixWorld);
+                position.set(0, 0).transformMat32(this.matrixWorld);
+                target.set(0, 0).transformMat32(transform.matrixWorld);
 
                 delta.vsub(target, position);
 
@@ -153,9 +148,9 @@ define([
         }();
 
 
-        Transform.prototype.addChild = function(child) {
-            if (!(child instanceof Transform)) {
-                Log.error("Transform.add: can\'t add passed argument, it is not an instance of Transform");
+        GUITransform.prototype.addChild = function(child) {
+            if (!(child instanceof GUITransform)) {
+                Log.error("GUITransform.add: can\'t add passed argument, it is not an instance of GUITransform");
                 return this;
             }
             var children = this.children,
@@ -180,21 +175,21 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                Log.error("Transform.add: child is not a member of this Transform");
+                Log.error("GUITransform.add: child is not a member of this GUITransform");
             }
 
             return this;
         };
 
 
-        Transform.prototype.addChildren = function() {
+        GUITransform.prototype.addChildren = function() {
 
             for (var i = arguments.length; i--;) this.addChild(arguments[i]);
             return this;
         };
 
 
-        Transform.prototype.removeChild = function(child) {
+        GUITransform.prototype.removeChild = function(child) {
             var children = this.children,
                 index = children.indexOf(child),
                 root, depth;
@@ -215,21 +210,21 @@ define([
 
                 updateDepth(this, depth);
             } else {
-                Log.error("Transform.remove: child is not a member of this Transform");
+                Log.error("GUITransform.remove: child is not a member of this GUITransform");
             }
 
             return this;
         };
 
 
-        Transform.prototype.removeChildren = function() {
+        GUITransform.prototype.removeChildren = function() {
 
             for (var i = arguments.length; i--;) this.removeChild(arguments[i]);
             return this;
         };
 
 
-        Transform.prototype.detachChildren = function() {
+        GUITransform.prototype.detachChildren = function() {
             var children = this.children,
                 i;
 
@@ -238,69 +233,63 @@ define([
         };
 
 
-        Transform.prototype.toWorld = function(v) {
+        GUITransform.prototype.toWorld = function(v) {
 
-            return v.transformMat4(this.matrixWorld);
+            return v.transformMat32(this.matrixWorld);
         };
 
 
-        Transform.prototype.toLocal = function() {
-            var mat = new Mat4;
+        GUITransform.prototype.toLocal = function() {
+            var mat = new Mat32;
 
             return function(v) {
 
-                return v.transformMat4(mat.inverseMat(this.matrixWorld));
+                return v.transformMat32(mat.inverseMat(this.matrixWorld));
             };
         }();
 
 
-        Transform.prototype.update = function() {
+        var CENTER = new Vec2;
+        GUITransform.prototype.update = function() {
             var matrix = this.matrix,
-                parent = this.parent;
+                parent = this.parent,
+                position = this.position;
 
-            matrix.compose(this.position, this.scale, this.rotation);
+            CENTER.x = position.x + (position.width * 0.5);
+            CENTER.y = position.y + (position.height * 0.5);
+            matrix.compose(CENTER, this.scale, this.rotation);
 
             if (parent) {
                 this.matrixWorld.mmul(parent.matrixWorld, matrix);
             } else {
                 this.matrixWorld.copy(matrix);
             }
-
-            this._modelViewNeedsUpdate = true;
         };
 
 
-        Transform.prototype.updateModelView = function(viewMatrix) {
-            if (!this._modelViewNeedsUpdate) return;
-
-            this.modelView.mmul(viewMatrix, this.matrixWorld);
-            this._modelViewNeedsUpdate = false;
-        };
-
-
-        Transform.prototype.sort = function(a, b) {
+        GUITransform.prototype.sort = function(a, b) {
 
             return b.depth - a.depth;
         };
 
 
-        Transform.prototype.toJSON = function(json) {
-            json = Component.prototype.toJSON.call(this, json);
+        GUITransform.prototype.toJSON = function(json) {
+            json = GUIComponent.prototype.toJSON.call(this, json);
 
             json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);
-            json.rotation = this.rotation.toJSON(json.rotation);
+            json.rotation = this.rotation
 
             return json;
         };
 
 
-        Transform.prototype.fromJSON = function(json) {
-            Component.prototype.fromJSON.call(this, json);
+        GUITransform.prototype.fromJSON = function(json) {
+            GUIComponent.prototype.fromJSON.call(this, json);
 
             this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
-            this.rotation.fromJSON(json.rotation);
+            this.rotation = json.rotation;
 
             return this;
         };
@@ -311,11 +300,10 @@ define([
                 i;
 
             transform.depth = depth;
-
             for (i = children.length; i--;) updateDepth(children[i], depth + 1);
         }
 
 
-        return Transform;
+        return GUITransform;
     }
 );

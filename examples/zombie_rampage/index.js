@@ -14,22 +14,25 @@ require({
             forceCanvas: false,
             width: 960,
             height: 640,
-            canvasRenderer2DOptions: {
-                imageSmoothingEnabled: false
+            CanvasRenderer2DOptions: {
+                imageSmoothingEnabled: false,
+                autoClear: false
+            },
+            WebGLRenderer2DOptions: {
+                autoClear: false
             }
         });
 
-
-        game.add(sceneLevel);
+        game.addScene(sceneLevel);
 
 
         function startLevel() {
             game.setScene("Level");
             game.setCamera(game.scene.findByTagFirst("Camera"));
+            var scene = game.scene,
+                level = scene.findByTagFirst("Level").sprite;
 
-            var level = game.scene.findByTagFirst("Level").sprite;
-
-            game.on("update", function() {
+            scene.on("update", function() {
                 var sprites = game.scene.components.Sprite;
 
                 sprites.sort(function(a, b) {

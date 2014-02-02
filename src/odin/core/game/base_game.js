@@ -5,6 +5,7 @@ define([
         "odin/base/class",
         "odin/core/game/loop",
         "odin/core/scene",
+        //"odin/core/gui/gui",
         "odin/core/game/log"
     ],
     function(Class, Loop, Scene, Log) {
@@ -18,9 +19,14 @@ define([
 
             this._loop = new Loop(this.loop, this);
 
+            this.guis = [];
+            this._guiHash = {};
+            this._guiJSONHash = {};
+            this._guiNameHash = {};
+
             this.scenes = [];
             this._sceneHash = {};
-            this._sceneServerHash = {};
+            this._sceneJSONHash = {};
             this._sceneNameHash = {};
         }
 
@@ -71,7 +77,7 @@ define([
                 sceneNameHash[name] = json;
                 sceneHash[id] = json;
                 this.scenes.push(json);
-                if (scene._serverId !== -1) this._sceneServerHash[scene._serverId] = json;
+                if (scene._jsonId !== -1) this._sceneJSONHash[scene._jsonId] = json;
 
                 this.emit("addScene", name);
             } else {
@@ -82,7 +88,7 @@ define([
         };
 
 
-        BaseGame.prototype.add = BaseGame.prototype.addScenes = function() {
+        BaseGame.prototype.addScenes = function() {
 
             for (var i = arguments.length; i--;) this.addScene(arguments[i]);
             return this;
@@ -108,7 +114,7 @@ define([
                 sceneNameHash[name] = undefined;
                 sceneHash[id] = undefined;
                 scenes.splice(scenes.indexOf(json), 1);
-                if (json._serverId !== -1) this._sceneServerHash[json._serverId] = undefined;
+                if (json._jsonId !== -1) this._sceneJSONHash[json._jsonId] = undefined;
 
                 this.emit("removeScene", name);
             } else {
@@ -119,28 +125,100 @@ define([
         };
 
 
-        BaseGame.prototype.remove = BaseGame.prototype.removeScenes = function() {
+        BaseGame.prototype.removeScenes = function() {
 
             for (var i = arguments.length; i--;) this.removeScene(arguments[i]);
             return this;
         };
 
 
-        BaseGame.prototype.findByName = function(name) {
+        BaseGame.prototype.addGUI = function(gui) {
+            if (!(gui instanceof GUI)) {
+                Log.error("BaseGame.addGUI: can't add argument to BaseGame, it's not an instance of GUI");
+                return this;
+            }
+            var guiHash = this._guiHash,
+                guiNameHash = this._guiNameHash,
+                name = gui.name,
+                id = gui._id,
+                json;
+
+            if (!guiNameHash[name] && !guiHash[id]) {
+                json = gui.toJSON();
+
+                guiNameHash[name] = json;
+                guiHash[id] = json;
+                this.guis.push(json);
+                if (gui._jsonId !== -1) this._guiJSONHash[gui._jsonId] = json;
+
+                this.emit("addGUI", name);
+            } else {
+                Log.error("BaseGame.addGUI: GUI is already a member of BaseGame");
+            }
+
+            return this;
+        };
+
+
+        BaseGame.prototype.addGUIs = function() {
+
+            for (var i = arguments.length; i--;) this.addGUI(arguments[i]);
+            return this;
+        };
+
+
+        BaseGame.prototype.removeGUI = function(gui) {
+            if (typeof(gui) === "string") {
+                gui = this._guiNameHash[gui];
+            } else if (typeof(gui) === "number") {
+                gui = this._guiHash[gui];
+            }
+            var guis = this.guis,
+                guiHash = this._guiHash,
+                guiNameHash = this._guiNameHash,
+                name = gui.name,
+                id = gui._id,
+                json;
+
+            if (guiNameHash[name] && guiHash[id]) {
+                json = guiNameHash[name];
+
+                guiNameHash[name] = undefined;
+                guiHash[id] = undefined;
+                guis.splice(guis.indexOf(json), 1);
+                if (json._jsonId !== -1) this._guiJSONHash[json._jsonId] = undefined;
+
+                this.emit("removeGUI", name);
+            } else {
+                Log.error("BaseGame.removeGUI: GUI not a member of BaseGame");
+            }
+
+            return this;
+        };
+
+
+        BaseGame.prototype.removeGUIs = function() {
+
+            for (var i = arguments.length; i--;) this.removeGUI(arguments[i]);
+            return this;
+        };
+
+
+        BaseGame.prototype.findSceneByName = function(name) {
 
             return this._sceneNameHash[name];
         };
 
 
-        BaseGame.prototype.findById = function(id) {
+        BaseGame.prototype.findSceneById = function(id) {
 
             return this._sceneHash[id];
         };
 
 
-        BaseGame.prototype.findByServerId = function(id) {
+        BaseGame.prototype.findSceneByJSONId = function(id) {
 
-            return this._sceneServerHash[id];
+            return this._sceneJSONHash[id];
         };
 
 

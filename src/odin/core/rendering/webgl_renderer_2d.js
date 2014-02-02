@@ -17,7 +17,11 @@ define([
         "use strict";
 
 
-        var Blending = Enums.Blending,
+        var FontStyle = Enums.FontStyle,
+            TextClipping = Enums.TextClipping,
+            TextAnchor = Enums.TextAnchor,
+
+            Blending = Enums.Blending,
 
             getWebGLContext = Dom.getWebGLContext,
             createProgram = Dom.createProgram,
@@ -46,11 +50,29 @@ define([
             ],
             ENUM_SPRITE_BUFFER = -1,
 
+            SCREEN_VERTICES = [
+                new Vec2(0, 0),
+                new Vec2(0, 1),
+                new Vec2(1, 0),
+                new Vec2(1, 1)
+            ],
+            SCREEN_UVS = [
+                new Vec2(0, 0),
+                new Vec2(0, 1),
+                new Vec2(1, 0),
+                new Vec2(1, 1)
+            ],
+            ENUM_SCREEN_BUFFER = -2,
+
             ENUM_SPRITE_SHADER = -1,
             ENUM_BASIC_SHADER = -2,
             ENUM_PARTICLE_SHADER = -3,
+            ENUM_CANVAS_SHADER = -4,
 
-            EMPTY_ARRAY = [];
+            EMPTY_ARRAY = [],
+
+            MAT = new Mat32,
+            MAT4 = new Mat4;
 
 
         /**
@@ -68,6 +90,8 @@ define([
             this.canvas = undefined;
             this.context = undefined;
             this._context = false;
+
+            this.autoClear = opts.autoClear != undefined ? opts.autoClear : true;
 
             this.attributes = merge(opts.attributes || {}, {
                 alpha: true,
@@ -97,6 +121,7 @@ define([
                 textures: {},
                 shaders: {},
                 buffers: {},
+                texts: {},
 
                 lastTexture: undefined,
                 lastShader: undefined,
@@ -236,8 +261,8 @@ define([
             gl.clearDepth(1);
             gl.clearStencil(0);
 
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
+            //gl.enable(gl.DEPTH_TEST);
+            //gl.depthFunc(gl.LEQUAL);
 
             gl.frontFace(gl.CCW);
             gl.cullFace(gl.BACK);
@@ -247,7 +272,7 @@ define([
 
             this.setBlending(Blending.Default);
 
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
             var texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -259,11 +284,21 @@ define([
                 _id: ENUM_SPRITE_BUFFER,
                 vertices: SPRITE_VERTICES,
                 uvs: SPRITE_UVS
-
             });
+            buildBuffer(this, {
+                _id: ENUM_SCREEN_BUFFER,
+                vertices: SCREEN_VERTICES,
+                uvs: SCREEN_UVS
+            });
+
             buildShader(this, {
                 _id: ENUM_SPRITE_SHADER,
                 vertexShader: spriteVertexShader(precision),
+                fragmentShader: spriteFragmentShader(precision)
+            });
+            buildShader(this, {
+                _id: ENUM_CANVAS_SHADER,
+                vertexShader: guiVertexShader(precision),
                 fragmentShader: spriteFragmentShader(precision)
             });
             buildShader(this, {
@@ -328,27 +363,16 @@ define([
         };
 
 
-        /**
-         * @method render
-         * @memberof WebGLRenderer2D
-         * @brief renderers scene from camera's perspective
-         * @param Scene scene
-         * @param Camera camera
-         */
-        WebGLRenderer2D.prototype.render = function(scene, camera) {
+        WebGLRenderer2D.prototype.preRender = function(camera) {
             if (!this._context) return;
             var gl = this.context,
                 lastBackground = this._lastBackground,
-                background = scene.world.background,
-                components = scene.components,
-                sprites = components.Sprite || EMPTY_ARRAY,
-                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                sprite2d, particleSystem, transform2d,
-                i;
+                background = camera.background;
 
             if (lastBackground.r !== background.r || lastBackground.g !== background.g || lastBackground.b !== background.b) {
                 lastBackground.copy(background);
                 gl.clearColor(background.r, background.g, background.b, 1);
+                if (!this.autoClear) gl.clear(this._clearBytes);
             }
             if (this._lastCamera !== camera) {
                 var canvas = this.canvas,
@@ -372,13 +396,208 @@ define([
                 this._lastCamera = camera;
             }
 
-            gl.clear(this._clearBytes);
+            if (this.autoClear) gl.clear(this._clearBytes);
+        };
+
+
+        WebGLRenderer2D.prototype.renderGUI = function(gui, camera) {
+            if (!this._context) return;
+            var gl = this.context,
+                components = gui.components,
+                GUIContent = components.GUIContent || EMPTY_ARRAY,
+                content, transform,
+                i;
+
+            for (i = GUIContent.length; i--;) {
+                content = GUIContent[i];
+                transform = content.guiTransform;
+
+                if (!transform) continue;
+
+                this.renderGUIContent(camera, transform, content);
+            }
+        };
+
+
+        var TEXT_CACHE = {},
+            TEXT_CACHE_ID = -1;
+        WebGLRenderer2D.prototype.renderGUIContent = function(camera, transform, content) {
+            var gl = this.context,
+                webgl = this._webgl,
+
+                position = transform.position,
+                text = content.text,
+                texture = content.texture,
+                style = content.style,
+                state = style[style._state],
+
+                glShader = webgl.shaders[ENUM_CANVAS_SHADER],
+                glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
+                uniforms = glShader.uniforms,
+                glText, texture;
+
+            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform.matrixWorld));
+
+            if (webgl.lastShader !== glShader) {
+                gl.useProgram(glShader.program);
+                webgl.lastShader = glShader;
+            }
+            if (webgl.lastBuffer !== glBuffer) {
+                bindBuffers(gl, glShader, glBuffer);
+                webgl.lastBuffer = glBuffer;
+            }
+
+            if (text) {
+                glText = buildText(this, position, content, style, state, text);
+                texture = glText.texture;
+
+                if (texture) {
+                    if (webgl.lastTexture !== texture) {
+                        gl.activeTexture(gl.TEXTURE0);
+                        gl.bindTexture(gl.TEXTURE_2D, texture);
+                        gl.uniform1i(uniforms.uTexture.location, 0);
+
+                        webgl.lastTexture = texture;
+                    }
+
+                    gl.uniformMatrix4fv(uniforms.uMatrix.location, false, MAT4.elements);
+                    gl.uniform1f(uniforms.uAlpha.location, content.alpha);
+                    gl.uniform2f(uniforms.uSize.location, glText.canvas.width * 0.01, glText.canvas.height * 0.01);
+
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, glBuffer.vertices);
+                }
+            }
+        };
+
+
+        function buildText(renderer, position, content, style, state, text) {
+            var gl = renderer.context,
+                webgl = renderer._webgl,
+                texts = webgl.texts,
+                glText = texts[content._id];
+
+            if (glText && !content._needsUpdate) return glText;
+            glText = glText || (texts[content._id] = {});
+
+            var canvas = glText.canvas || document.createElement("canvas"),
+                ctx = glText.ctx || canvas.getContext("2d"),
+                width = position.width,
+                height = position.height,
+                texture;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            document.body.appendChild(canvas);
+            canvas.style.position = "absolute";
+            canvas.style.zIndex = 1000;
+
+            ctx.font = style.fontSize + "px " + style.font;
+            ctx.fillStyle = state.text.toRGB();
+
+            if (!style.wordWrap) {
+                wrapText(ctx, text, 0, style.fontSize, width, style.lineHeight);
+            } else {
+                ctx.fillText(text, 0, style.fontSize);
+            }
+
+            switch (style.alignment) {
+                case TextAnchor.UpperLeft:
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "top";
+                    break;
+                case TextAnchor.UpperCenter:
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "top";
+                    break;
+                case TextAnchor.UpperRight:
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "top";
+                    break;
+                case TextAnchor.MiddleLeft:
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "middle";
+                    break;
+                case TextAnchor.MiddleCenter:
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    break;
+                case TextAnchor.MiddleRight:
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "middle";
+                    break;
+                case TextAnchor.LowerLeft:
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "bottom";
+                    break;
+                case TextAnchor.LowerCenter:
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    break;
+                case TextAnchor.LowerRight:
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "bottom";
+                    break;
+            }
+
+            glText.canvas = canvas;
+            glText.ctx = ctx;
+            glText.texture = buildTexture(renderer, {
+                _id: content._id,
+                raw: canvas
+            });
+
+            return glText;
+        }
+
+
+        var SPLITTER = /[\s]+/;
+
+        function wrapText(ctx, text, x, y, width, lineHeight) {
+            var words = text.split(SPLITTER),
+                line = "",
+                maxX = -Infinity,
+                testLine, testWidth, i, il;
+
+            for (i = 0, il = words.length; i < il; i++) {
+                testLine = line + words[i] + " ";
+                testWidth = ctx.measureText(testLine).width;
+
+                if (testWidth > width && i > 0) {
+                    ctx.fillText(line, x, y);
+                    line = words[i] + " ";
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y);
+        }
+
+
+        /**
+         * @method render
+         * @memberof WebGLRenderer2D
+         * @brief renderers scene from camera's perspective
+         * @param Scene scene
+         * @param Camera camera
+         */
+
+        WebGLRenderer2D.prototype.render = function(scene, camera) {
+            if (!this._context) return;
+            var gl = this.context,
+                components = scene.components,
+                sprites = components.Sprite || EMPTY_ARRAY,
+                particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                guiTextures = components.GUITexture || EMPTY_ARRAY,
+                sprite2d, particleSystem, guiTexture, transform2d,
+                i;
 
             for (i = sprites.length; i--;) {
                 sprite2d = sprites[i];
                 transform2d = sprite2d.transform2d;
 
-                if (!transform2d) continue;
+                if (!transform2d || !sprite2d.visible) continue;
 
                 transform2d.updateModelView(camera.view);
                 this.renderSprite(camera, transform2d, sprite2d);
@@ -393,11 +612,79 @@ define([
                 transform2d.updateModelView(camera.view);
                 this.renderParticleSystem(camera, transform2d, particleSystem);
             }
+
+            for (i = guiTextures.length; i--;) {
+                guiTexture = guiTextures[i];
+                transform2d = guiTexture.transform2d;
+
+                if (!transform2d) continue;
+
+                this.renderGUITexture(camera, transform2d, guiTexture);
+            }
         };
 
 
-        var MAT = new Mat32,
-            MAT4 = new Mat4;
+        var SCREEN_MAT = new Mat4().orthographic(0, 1, 0, 1, -1, 1),
+            SCREEN_VEC = new Vec2;
+        WebGLRenderer2D.prototype.renderGUITexture = function(camera, transform2d, guiTexture) {
+            var gl = this.context,
+                webgl = this._webgl,
+                texture = guiTexture.texture,
+                position = guiTexture.position,
+
+                glShader = webgl.shaders[ENUM_SPRITE_SHADER],
+                glBuffer = webgl.buffers[ENUM_SCREEN_BUFFER],
+                glTexture = buildTexture(this, texture),
+                uniforms = glShader.uniforms,
+
+                aspect = camera.aspect,
+                invW = camera.invWidth,
+                invH = camera.invHeight,
+
+                width = position.width,
+                height = position.height,
+                w, h;
+
+            if (texture && texture.raw) {
+                w = texture.invWidth;
+                h = texture.invHeight;
+            } else {
+                return;
+            }
+
+            MAT4.copy(SCREEN_MAT).translate(position);
+
+            if (aspect < 1) {
+                width /= aspect;
+            } else {
+                height *= aspect;
+            }
+
+            if (webgl.lastShader !== glShader) {
+                gl.useProgram(glShader.program);
+                webgl.lastShader = glShader;
+            }
+            if (webgl.lastBuffer !== glBuffer) {
+                bindBuffers(gl, glShader, glBuffer);
+                webgl.lastBuffer = glBuffer;
+            }
+            gl.uniformMatrix4fv(uniforms.uMatrix.location, false, MAT4.elements);
+            gl.uniform4f(uniforms.uCrop.location, guiTexture.x * w, guiTexture.y * h, guiTexture.w * w, guiTexture.h * h);
+            gl.uniform2f(uniforms.uSize.location, width, height);
+            gl.uniform1f(uniforms.uAlpha.location, guiTexture.alpha);
+
+            if (webgl.lastTexture !== glTexture) {
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, glTexture);
+                gl.uniform1i(uniforms.uTexture.location, 0);
+
+                webgl.lastTexture = glTexture;
+            }
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, glBuffer.vertices);
+        };
+
+
         WebGLRenderer2D.prototype.renderSprite = function(camera, transform2d, sprite2d) {
             var gl = this.context,
                 webgl = this._webgl,
@@ -409,14 +696,14 @@ define([
                 uniforms = glShader.uniforms,
                 w, h;
 
-            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform2d.modelView));
-
             if (texture && texture.raw) {
                 w = texture.invWidth;
                 h = texture.invHeight;
             } else {
                 return;
             }
+
+            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform2d.modelView));
 
             if (webgl.lastShader !== glShader) {
                 gl.useProgram(glShader.program);
@@ -673,7 +960,7 @@ define([
                 TFA = ext.textureFilterAnisotropic,
 
                 isPOT = isPowerOfTwo(raw.width) && isPowerOfTwo(raw.height),
-                anisotropy = clamp(texture.anisotropy, 1, gpu.maxAnisotropy),
+                anisotropy = texture.anisotropy != undefined ? clamp(texture.anisotropy, 1, gpu.maxAnisotropy) : 1,
 
                 TEXTURE_2D = gl.TEXTURE_2D,
                 WRAP = isPOT ? gl.REPEAT : gl.CLAMP_TO_EDGE,
@@ -791,6 +1078,28 @@ define([
 
                 "void main() {",
                 "	gl_FragColor = vec4(uColor, uAlpha);",
+                "}"
+            ].join("\n");
+        }
+
+
+        function guiVertexShader(precision) {
+
+            return [
+                "precision " + precision + " float;",
+
+                "uniform mat4 uMatrix;",
+                "uniform vec2 uSize;",
+
+                "attribute vec2 aVertexPosition;",
+                "attribute vec2 aVertexUv;",
+
+                "varying vec2 vVertexUv;",
+
+                "void main() {",
+
+                "	vVertexUv = vec2(aVertexUv.x, aVertexUv.y);",
+                "	gl_Position = uMatrix * vec4(aVertexPosition * uSize, 0.0, 1.0);",
                 "}"
             ].join("\n");
         }

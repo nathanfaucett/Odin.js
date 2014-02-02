@@ -6,7 +6,7 @@ define([
         "zombie_big"
     ],
     function(Odin, player, zombie, zombieRed, zombieBig) {
-	
+
 
         var Time = Odin.Time,
             random = Math.random,
@@ -27,7 +27,7 @@ define([
             this.playerLevel = 1;
             this.playerLives = 3;
 
-            this.wave = 1;
+            this.wave = 0;
             this.out = 10 + (this.wave * this.wave);
             this.enemies = this.out;
 
