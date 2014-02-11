@@ -57,8 +57,6 @@ define([
             }
             for (i = tags.length; i--;) this.addTag(tags[i]);
 
-            if (other.scene && !this.scene) other.scene.addGameObject(this);
-
             return this;
         };
 

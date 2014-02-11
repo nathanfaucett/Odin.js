@@ -10,16 +10,14 @@ define([
         "odin/core/game/base_game",
         "odin/core/game/log",
         "odin/core/rendering/canvas",
-        "odin/core/rendering/canvas_renderer_2d",
-        "odin/core/rendering/webgl_renderer_2d",
-        "odin/core/rendering/webgl_renderer",
+        "odin/core/rendering/renderer",
         "odin/core/game_object",
         "odin/core/components/component",
         "odin/core/scene",
         "odin/core/input/input",
         "odin/core/input/handler"
     ],
-    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, CanvasRenderer2D, WebGLRenderer2D, WebGLRenderer, GameObject, Component, Scene, Input, Handler) {
+    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, Renderer, GameObject, Component, Scene, Input, Handler) {
         "use strict";
 
 
@@ -40,26 +38,19 @@ define([
             this.scene = undefined;
             this.camera = undefined;
 
-            this.canvas = new Canvas(opts);
-
-            this.CanvasRenderer2D = undefined;
-            this.WebGLRenderer2D = undefined;
-            this.WebGLRenderer = undefined;
-
-            this._CanvasRenderer2DOptions = opts.CanvasRenderer2DOptions;
-            this._WebGLRenderer2DOptions = opts.WebGLRenderer2DOptions;
-            this._WebGLRendererOptions = opts.WebGLRendererOptions;
-
-            this.renderer = undefined;
-            this.customRenderer = undefined;
+            this.canvas = new Canvas(opts.canvas);
+            this.renderer = new Renderer(opts.renderer);
         }
 
         BaseGame.extend(Game);
 
 
         Game.prototype.init = function() {
+            var canvas = this.canvas;
 
-            this.canvas.init();
+            canvas.init();
+            this.renderer.init(canvas);
+            Handler.setElement(canvas.element);
 
             this._loop.resume();
             this.emit("init");
@@ -144,57 +135,12 @@ define([
                 this.camera._active = true;
                 if (lastCamera) lastCamera._active = false;
 
-                this.updateRenderer();
                 this.emit("setCamera", this.camera);
             } else {
                 Log.error("Game.setCamera: GameObject does't have a Camera or a Camera2D Component");
             }
 
             return this;
-        };
-
-
-        Game.prototype.updateRenderer = function() {
-            var camera = this.camera,
-                lastRenderer = this.renderer,
-                canvas = this.canvas,
-                gameObject;
-
-            if (!camera) {
-                Log.error("Game: can't set Renderer without a Camera");
-                return;
-            }
-            gameObject = camera.gameObject;
-
-            if (typeof(this.customRenderer) === "function") {
-                this.renderer = this.customRenderer;
-                Log.log("Game: setting up custom renderer " + this.customRenderer.name);
-            } else {
-                if (gameObject.camera) {
-                    if (Device.webgl) {
-                        this.renderer = this.WebGLRenderer || (this.WebGLRenderer = new WebGLRenderer(this._WebGLRendererOptions));
-                        Log.log("Game: setting up WebGLRenderer");
-
-                        Log.error("Game: WebGLRenderer not supported yet");
-                    }
-                } else if (gameObject.camera2d) {
-                    if (!Config.forceCanvas && Device.webgl) {
-                        this.renderer = this.WebGLRenderer2D || (this.WebGLRenderer2D = new WebGLRenderer2D(this._WebGLRenderer2DOptions));
-                        Log.log("Game: setting up WebGLRenderer2D");
-                    } else if (Device.canvas) {
-                        this.renderer = this.CanvasRenderer2D || (this.CanvasRenderer2D = new CanvasRenderer2D(this._CanvasRenderer2DOptions));
-                        Log.log("Game: setting up CanvasRenderer2D");
-                    } else {
-                        Log.error("Game.updateRenderer: Could not get a renderer for this device");
-                    }
-                }
-            }
-
-            if (lastRenderer === this.renderer) return;
-            if (lastRenderer) lastRenderer.clear();
-
-            this.renderer.init(canvas);
-            Handler.setElement(canvas.element);
         };
 
 
@@ -237,8 +183,10 @@ define([
 
             Input.update();
 
+            if (this.fun) this.fun();
+
             if (camera) {
-                renderer.preRender(camera);
+                renderer.preRender(scene, gui, camera);
 
                 if (scene) {
                     scene.emit("update");
@@ -247,6 +195,12 @@ define([
                     renderer.render(scene, camera);
                 }
                 if (gui) {
+                    gui.aspect = camera.aspect;
+                    gui.width = camera.width;
+                    gui.height = camera.height;
+                    gui.invWidth = camera.invWidth;
+                    gui.invHeight = camera.invHeight;
+
                     gui.emit("update");
                     gui.update();
 

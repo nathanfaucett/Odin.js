@@ -74,39 +74,32 @@ define([
 
         function handleTouches(e) {
             e.preventDefault();
-            var touches = this.touches,
+            var type = e.type,
+                touches = this.touches,
                 evtTouches = e.touches,
                 changedTouches = e.changedTouches,
                 i;
 
-            switch (e.type) {
+            if (type === "touchstart") {
 
-                case "touchstart":
+                for (i = evtTouches.length; i--;) this.emit("touchstart", touches.start(evtTouches[i]));
 
-                    for (i = evtTouches.length; i--;) this.emit("touchstart", touches.start(evtTouches[i]));
-                    break;
+            } else if (type === "touchend") {
 
-                case "touchend":
+                for (i = changedTouches.length; i--;) this.emit("touchend", touches.end(i));
 
-                    for (i = changedTouches.length; i--;) this.emit("touchend", touches.end(i));
-                    break;
+            } else if (type === "touchcancel") {
 
-                case "touchcancel":
+                touches.cancel();
+                this.emit("touchcancel");
 
-                    touches.cancel();
-                    this.emit("touchcancel");
+            } else if (type === "touchmove") {
 
-                    break;
+                if (this.touchesMoveNeedsUpdate) {
 
-                case "touchmove":
-
-                    if (this.touchesMoveNeedsUpdate) {
-
-                        for (i = changedTouches.length; i--;) this.emit("touchmove", touches.move(i, changedTouches[i]));
-                        this.touchesMoveNeedsUpdate = false;
-                    }
-
-                    break;
+                    for (i = changedTouches.length; i--;) this.emit("touchmove", touches.move(i, changedTouches[i]));
+                    this.touchesMoveNeedsUpdate = false;
+                }
             }
         }
 
@@ -117,49 +110,44 @@ define([
 
         function handleMouse(e) {
             e.preventDefault();
+            var type = e.type,
+                button;
 
-            switch (e.type) {
+            if (type === "mousedown") {
+                button = MOUSE_BUTTONS[e.button];
 
-                case "mousedown":
+                this.buttons.on(button);
+                updateMousePosition(this, e);
+                this.emit("mousedown", button);
 
-                    this.buttons.on(MOUSE_BUTTONS[e.button]);
+            } else if (type === "mouseup") {
+                button = MOUSE_BUTTONS[e.button];
+
+                this.buttons.off(button);
+                updateMousePosition(this, e);
+                this.emit("mouseup", button);
+
+            } else if (type === "mouseout") {
+                button = MOUSE_BUTTONS[e.button];
+
+                this.buttons.off(button);
+                updateMousePosition(this, e);
+                this.emit("mouseout", button);
+
+            } else if (type === "mousewheel" || type === "DOMMouseScroll") {
+
+                mouseWheel = max(-1, min(1, (e.wheelDelta || -e.detail)));
+                this.mouseWheel = mouseWheel;
+                this.emit("mousewheel", mouseWheel);
+
+            } else if (type === "mousemove") {
+
+                if (this.mouseMoveNeedsUpdate) {
+
                     updateMousePosition(this, e);
-                    this.emit("mousedown");
-                    break;
-
-                case "mouseup":
-
-                    this.buttons.off(MOUSE_BUTTONS[e.button]);
-                    updateMousePosition(this, e);
-                    this.emit("mouseup");
-                    break;
-
-                case "mouseout":
-
-                    this.buttons.off(MOUSE_BUTTONS[e.button]);
-                    updateMousePosition(this, e);
-                    this.emit("mouseout");
-                    break;
-
-                case "mousewheel":
-                case "DOMMouseScroll":
-
-                    mouseWheel = max(-1, min(1, (e.wheelDelta || -e.detail)));
-                    this.mouseWheel = mouseWheel;
-                    this.emit("mousewheel", mouseWheel);
-
-                    break;
-
-                case "mousemove":
-
-                    if (this.mouseMoveNeedsUpdate) {
-
-                        updateMousePosition(this, e);
-                        this.mouseMoveNeedsUpdate = false;
-                    }
+                    this.mouseMoveNeedsUpdate = false;
                     this.emit("mousemove");
-
-                    break;
+                }
             }
         }
 
@@ -188,23 +176,15 @@ define([
 
         function handleKeys(e) {
             e.preventDefault();
-            var key;
+            var type = e.type,
+                key = KEY_CODES[e.keyCode];
 
-            switch (e.type) {
-
-                case "keydown":
-                    key = KEY_CODES[e.keyCode];
-
-                    this.buttons.on(key);
-                    this.emit("keydown", key);
-                    break;
-
-                case "keyup":
-                    key = KEY_CODES[e.keyCode];
-
-                    this.buttons.off(key);
-                    this.emit("keyup", key);
-                    break;
+            if (type === "keydown") {
+                this.buttons.on(key);
+                this.emit("keydown", key);
+            } else if (type === "keyup") {
+                this.buttons.off(key);
+                this.emit("keyup", key);
             }
         }
 

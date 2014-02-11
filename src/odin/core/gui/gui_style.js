@@ -14,7 +14,6 @@ define([
 
         var GUI_STYLE_ID = 0,
 
-            FontStyle = Enums.FontStyle,
             TextAnchor = Enums.TextAnchor,
             TextClipping = Enums.TextClipping;
 
@@ -26,7 +25,7 @@ define([
             this._state = "normal";
             this.name = opts.name || "GUIStyle_" + this._id;
 
-            this.alignment = opts.alignment || TextAnchor.MiddleLeft;
+            this.alignment = opts.alignment || TextAnchor.Left;
             this.clipping = opts.alignment || TextClipping.Clip;
             this.contentOffset = opts.contentOffset || new Vec2;
 
@@ -40,8 +39,8 @@ define([
 
             this.font = opts.font || "Arial";
             this.fontSize = opts.fontSize || 16;
-            this.fontStyle = opts.fontStyle || FontStyle.Normal;
-            this.lineHeight = opts.lineHeight || 24;
+            this.fontStyle = opts.fontStyle || "normal";
+            this.lineHeight = opts.lineHeight || 0;
             this.lineSpacing = opts.lineSpacing || 0;
 
             this.margin = opts.margin || new RectOffset;

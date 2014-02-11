@@ -63,7 +63,7 @@ define([
             var axes = this.axes,
                 buttons = this.buttons.hash,
                 button, altButton,
-                axis, value, sensitivity, pos, neg, tmp, dt = Time.delta,
+                axis, value, type, touch, sensitivity, pos, neg, tmp, dt = Time.delta,
                 i;
 
             this.frameCount = this._frameCount ? this._frameCount : Time.frameCount;
@@ -75,41 +75,34 @@ define([
             for (i = axes.length; i--;) {
                 axis = axes[i];
                 value = axis.value;
+                type = axis.type;
                 sensitivity = axis.sensitivity;
 
-                switch (axis.type) {
+                if (type === AxisType.Button) {
+                    button = buttons[axis.negButton];
+                    altButton = buttons[axis.altNegButton];
+                    neg = button && button.value || altButton && altButton.value;
 
-                    case AxisType.Button:
+                    button = buttons[axis.posButton];
+                    altButton = buttons[axis.altPosButton];
+                    pos = button && button.value || altButton && altButton.value;
 
-                        button = buttons[axis.negButton];
-                        altButton = buttons[axis.altNegButton];
-                        neg = button && button.value || altButton && altButton.value;
+                } else if (type === AxisType.Mouse) {
+                    axis.value = this.mouseDelta[axis.axis];
 
-                        button = buttons[axis.posButton];
-                        altButton = buttons[axis.altPosButton];
-                        pos = button && button.value || altButton && altButton.value;
+                } else if (type === AxisType.Touch) {
+                    touch = this.touches[axis.index];
 
-                        break;
-
-                    case AxisType.Mouse:
-
-                        axis.value = this.mouseDelta[axis.axis];
+                    if (touch) {
+                        axis.value = touch.delta[axis.axis];
+                    } else {
                         continue;
+                    }
+                } else if (type === AxisType.MouseWheel) {
+                    value += this.mouseWheel;
 
-                    case AxisType.Touch:
+                } else if (type === AxisType.Joystick) {
 
-                        var touch = this.touches[axis.index];
-                        axis.value = touch ? touch.delta[axis.axis] : 0;
-                        continue;
-
-                    case AxisType.MouseWheel:
-
-                        value += this.mouseWheel;
-                        break;
-
-                    case AxisType.Joystick:
-
-                        break;
                 }
 
                 if (neg) value -= sensitivity * dt;

@@ -20,7 +20,13 @@ define([
 
             this.game = undefined;
 
-            this._name = opts.name != undefined ? opts.name : "GUI_" + this._id;
+            this.name = opts.name != undefined ? opts.name : "GUI_" + this._id;
+
+            this.aspect = 1.5;
+            this.width = 960;
+            this.height = 640;
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
 
             this.guiObjects = [];
             this._guiObjectHash = {};
@@ -35,31 +41,6 @@ define([
         }
 
         Class.extend(GUI);
-
-
-        defineProperty(GUI.prototype, "name", {
-            get: function() {
-                return this._name;
-            },
-            set: function(value) {
-                if (this._name === value) return;
-                var game = this.game,
-                    guiNameHash;
-
-                if (game) {
-                    guiNameHash = game._guiNameHash;
-
-                    if (guiNameHash[value]) {
-                        Log.warn("GUI.set name: can't change name to " + value + " Game already have an GUI with same name");
-                        return;
-                    }
-
-                    guiNameHash[value] = this.toJSON();
-                }
-
-                this._name = value;
-            }
-        });
 
 
         GUI.prototype.copy = function(other) {

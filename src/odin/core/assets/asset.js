@@ -55,12 +55,6 @@ define([
         });
 
 
-        Asset.prototype.clone = function() {
-
-            return new this.constructor().copy(this);
-        };
-
-
         Asset.prototype.copy = function(other) {
 
             this.sync = other.sync;
@@ -70,15 +64,9 @@ define([
             this.src = other.src;
             this.raw = other.raw;
 
-            if (other.assets) other.assets.addAsset(this);
+            if (other.assets && this.assets !== other.assets) other.assets.addAsset(this);
 
             return this;
-        };
-
-
-        Asset.prototype.ext = function() {
-
-            return this.src ? this.src.split(".").pop() : false;
         };
 
 

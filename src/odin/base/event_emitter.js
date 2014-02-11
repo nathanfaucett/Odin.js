@@ -84,57 +84,47 @@ define(
         EventEmitter.prototype.emit = function(type) {
             var events = this._events[type],
                 a1, a2, a3, a4,
-                event,
+                length, event,
                 i;
 
             if (!events || !events.length) return this;
+            length = arguments.length;
 
-            switch (arguments.length) {
-                case 1:
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.call(event.ctx);
-                    }
-                    break;
-
-                case 2:
-                    a1 = arguments[1];
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.call(event.ctx, a1);
-                    }
-                    break;
-
-                case 3:
-                    a1 = arguments[1];
-                    a2 = arguments[2];
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
-                    }
-                    break;
-
-                case 4:
-                    a1 = arguments[1];
-                    a2 = arguments[2];
-                    a3 = arguments[3];
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
-                    }
-                    break;
-
-                case 5:
-                    a1 = arguments[1];
-                    a2 = arguments[2];
-                    a3 = arguments[3];
-                    a4 = arguments[4];
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
-                    }
-                    break;
-
-                default:
-                    shift.apply(arguments);
-                    for (i = events.length; i--;) {
-                        if ((event = events[i])) event.listener.apply(event.ctx, arguments);
-                    }
+            if (length === 1) {
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx);
+                }
+            } else if (length === 2) {
+                a1 = arguments[1];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1);
+                }
+            } else if (length === 3) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
+                }
+            } else if (length === 4) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                a3 = arguments[3];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
+                }
+            } else if (length === 5) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                a3 = arguments[3];
+                a4 = arguments[4];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
+                }
+            } else {
+                shift.apply(arguments);
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.apply(event.ctx, arguments);
+                }
             }
 
             return this;

@@ -271,75 +271,36 @@ define([
                     pos.y = position.y;
                 }
 
-                switch (positionType) {
-                    case EmitterType.Box:
-                        pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                        pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                        break;
+                if (positionType === EmitterType.Box) {
+                    pos.x += randFloat(-positionSpread.x, positionSpread.x);
+                    pos.y += randFloat(-positionSpread.y, positionSpread.y);
+                } else { //EmitterType.Circle
+                    angle = TWO_PI * random();
+                    u = random() + random();
+                    r = u > 1 ? 2 - u : u;
 
-                    case EmitterType.BoxEdge:
-                        switch (floor(random() * 4)) {
-                            case 0:
-                                pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                                pos.y += positionSpread.y;
-                                break;
-                            case 1:
-                                pos.x += positionSpread.x;
-                                pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                                break;
-                            case 2:
-                                pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                                pos.y += -positionSpread.y;
-                                break;
-                            case 3:
-                                pos.x += -positionSpread.x;
-                                pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                                break;
-                        }
-                        break;
-
-                    case EmitterType.Circle:
-                        angle = TWO_PI * random();
-                        u = random() + random();
-                        r = u > 1 ? 2 - u : u;
-
-                        pos.x += posx + r * cos(angle) * positionRadius;
-                        pos.y += posy + r * sin(angle) * positionRadius;
-                        break;
-
-                    case EmitterType.CircleEdge:
-                    default:
-                        angle = TWO_PI * random();
-                        pos.x += posx + cos(angle) * positionRadius;
-                        pos.y += posy + sin(angle) * positionRadius;
-                        break;
+                    pos.x += posx + r * cos(angle) * positionRadius;
+                    pos.y += posy + r * sin(angle) * positionRadius;
                 }
 
-                switch (velocityType) {
-                    case EmitterType.Box:
-                    case EmitterType.BoxEdge:
-                        vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
-                        vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
-                        break;
+                if (velocityType === EmitterType.Box) {
+                    vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
+                    vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
+                } else { //EmitterType.Circle
+                    if (worldSpace) {
+                        dx = pos.x - (position.x + transformPosition.x);
+                        dy = pos.y - (position.y + transformPosition.y);
+                    } else {
+                        dx = pos.x - position.x;
+                        dy = pos.y - position.y;
+                    }
+                    spd = speed + randFloat(-speedSpread, speedSpread);
 
-                    case EmitterType.Circle:
-                    case EmitterType.CircleEdge:
-                    default:
-                        if (worldSpace) {
-                            dx = pos.x - (position.x + transformPosition.x);
-                            dy = pos.y - (position.y + transformPosition.y);
-                        } else {
-                            dx = pos.x - position.x;
-                            dy = pos.y - position.y;
-                        }
-                        spd = speed + randFloat(-speedSpread, speedSpread);
+                    r = dx * dx + dy * dy;
+                    r = r !== 0 ? 1 / sqrt(r) : r;
 
-                        r = dx * dx + dy * dy;
-                        r = r !== 0 ? 1 / sqrt(r) : r;
-
-                        vel.x = dx * r * spd;
-                        vel.y = dy * r * spd;
-                        break;
+                    vel.x = dx * r * spd;
+                    vel.y = dy * r * spd;
                 }
 
                 acc.x = acceleration.x + randFloat(-accelerationSpread.x, accelerationSpread.x);

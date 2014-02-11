@@ -272,55 +272,46 @@ define([
                     pos.z = position.z;
                 }
 
-                switch (positionType) {
-                    case EmitterType.Box:
-                        pos.x += randFloat(-positionSpread.x, positionSpread.x);
-                        pos.y += randFloat(-positionSpread.y, positionSpread.y);
-                        pos.z += randFloat(-positionSpread.z, positionSpread.z);
-                        break;
+                if (positionType === EmitterType.Box) {
+                    pos.x += randFloat(-positionSpread.x, positionSpread.x);
+                    pos.y += randFloat(-positionSpread.y, positionSpread.y);
+                    pos.z += randFloat(-positionSpread.z, positionSpread.z);
+                } else { //EmitterType.Sphere
+                    x = randFloat(-1, 1);
+                    y = randFloat(-1, 1);
+                    z = randFloat(-1, 1);
 
-                    case EmitterType.Sphere:
-                    default:
-                        x = randFloat(-1, 1);
-                        y = randFloat(-1, 1);
-                        z = randFloat(-1, 1);
+                    len = x * x + y * y + z * z;
+                    len = len !== 0 ? 1 / sqrt(len) : len;
 
-                        len = x * x + y * y + z * z;
-                        len = len !== 0 ? 1 / sqrt(len) : len;
-
-                        pos.x += posx + x * len * positionRadius;
-                        pos.y += posy + y * len * positionRadius;
-                        pos.z += posz + z * len * positionRadius;
-                        break;
+                    pos.x += posx + x * len * positionRadius;
+                    pos.y += posy + y * len * positionRadius;
+                    pos.z += posz + z * len * positionRadius;
                 }
 
-                switch (velocityType) {
-                    case EmitterType.Box:
-                        vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
-                        vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
-                        vel.z = velocity.z + randFloat(-velocitySpread.z, velocitySpread.z);
-                        break;
+                if (velocityType === EmitterType.Box) {
+                    vel.x = velocity.x + randFloat(-velocitySpread.x, velocitySpread.x);
+                    vel.y = velocity.y + randFloat(-velocitySpread.y, velocitySpread.y);
+                    vel.z = velocity.z + randFloat(-velocitySpread.z, velocitySpread.z);
+                } else { //EmitterType.Sphere
+                    if (worldSpace) {
+                        dx = pos.x - (position.x + transformPosition.x);
+                        dy = pos.y - (position.y + transformPosition.y);
+                        dz = pos.z - (position.z + transformPosition.z);
+                    } else {
+                        dx = pos.x - position.x;
+                        dy = pos.y - position.y;
+                        dz = pos.z - position.z;
+                    }
+                    spd = speed + randFloat(-speedSpread, speedSpread);
 
-                    case EmitterType.Sphere:
-                    default:
-                        if (worldSpace) {
-                            dx = pos.x - (position.x + transformPosition.x);
-                            dy = pos.y - (position.y + transformPosition.y);
-                            dz = pos.z - (position.z + transformPosition.z);
-                        } else {
-                            dx = pos.x - position.x;
-                            dy = pos.y - position.y;
-                            dz = pos.z - position.z;
-                        }
-                        spd = speed + randFloat(-speedSpread, speedSpread);
+                    r = dx * dx + dy * dy + dz * dz;
+                    r = r !== 0 ? 1 / sqrt(r) : r;
 
-                        r = dx * dx + dy * dy + dz * dz;
-                        r = r !== 0 ? 1 / sqrt(r) : r;
-
-                        vel.x = dx * r * spd;
-                        vel.y = dy * r * spd;
-                        vel.z = dz * r * spd;
-                        break;
+                    vel.x = dx * r * spd;
+                    vel.y = dy * r * spd;
+                    vel.z = dz * r * spd;
+                    break;
                 }
 
                 acc.x = acceleration.x + randFloat(-accelerationSpread.x, accelerationSpread.x);

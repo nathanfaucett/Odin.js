@@ -2,13 +2,19 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/math/vec2",
-        "odin/math/mat4",
+        "odin/base/util",
+        "odin/math/vec3",
+        "odin/math/rect",
+        "odin/math/color",
         "odin/core/assets/asset",
-        "odin/core/assets/assets"
+        "odin/core/assets/assets",
+        "odin/core/enums"
     ],
-    function(Vec2, Mat4, Asset, Assets) {
+    function(util, Rect, Vec3, Color, Asset, Assets, Enums) {
         "use strict";
+
+
+        var merge = util.merge;
 
 
         function Material(opts) {
@@ -16,24 +22,52 @@ define([
 
             Asset.call(this, opts);
 
-            this.matrix = new Mat4;
+            this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
+            this.shading = opts.shading != undefined ? opts.shading : Enums.Shading.Lambert;
+            this.side = opts.side != undefined ? opts.side : Enums.Side.Front;
 
-            this.vertex = opts.vertex || "void main() {}";
-            this.fragment = opts.fragment || "void main() {}";
+            this.lineWidth = opts.lineWidth != undefined ? opts.lineWidth : 1;
 
-            this.color = opts.color != undefined ? opts.color : new Color(0, 0, 0);
-            this.specular = opts.specular != undefined ? opts.specular : new Color(0.5, 0.5, 0.5);
-            this.emissive = opts.emissive != undefined ? opts.emissive : new Color(0, 0, 0);
+            this.wireframe = opts.wireframe != undefined ? opts.wireframe : false;
+            this.wireframeLineWidth = opts.wireframeLineWidth != undefined ? opts.wireframeLineWidth : 1;
 
-            this.alpha = opts.alpha != undefined ? opts.alpha : 1;
-            this.shininess = opts.shininess != undefined ? opts.shininess : 0.5;
+            this.shader = opts.shader != undefined ? opts.shader : undefined;
 
-            this.mainTexture = opts.mainTexture != undefined ? opts.mainTexture : undefined;
-            this.mainTextureOffset = opts.mainTextureOffset != undefined ? opts.mainTextureOffset : new Vec2;
-            this.mainTextureScale = opts.mainTextureScale != undefined ? opts.mainTextureScale : new Vec2(1, 1);
+            this._webgl = undefined;
+
+            this.attributes = opts.attributes || {};
+            this.attributesNeedUpdate = true;
+
+            this.uniforms = merge(opts.uniforms || {}, {
+                diffuseMap: undefined,
+                diffuseColor: new Color(1, 1, 1)
+            });
+
+            this.needsUpdate = true;
         }
 
         Asset.extend(Material);
+
+
+        Material.prototype.copy = function(other) {
+            Asset.prototype.copy.call(this, other);
+
+            this.blending = other.blending;
+            this.shading = other.shading;
+            this.side = other.side;
+
+            this.lineWidth = other.lineWidth;
+
+            this.wireframe = other.wireframe;
+            this.wireframeLineWidth = other.wireframeLineWidth;
+
+            this.shader = other.shader;
+
+            this.attributes = other.attributes;
+            this.uniforms = other.uniforms;
+
+            return this;
+        };
 
 
         Material.prototype.parse = function(raw) {
@@ -48,11 +82,6 @@ define([
         Material.prototype.clear = function() {
             Asset.prototype.clear.call(this);
 
-            this.vertex = "";
-            this.fragment = "";
-
-            this.mainTexture = undefined;
-
             return this;
         };
 
@@ -60,19 +89,19 @@ define([
         Material.prototype.toJSON = function(json, pack) {
             json = Asset.prototype.toJSON.call(this, json, pack);
 
-            json.vertex = this.vertex;
-            json.fragment = this.fragment;
+            json.blending = this.blending;
+            json.shading = this.shading;
+            json.side = this.side;
 
-            json.color = this.color.toJSON(json.color);
-            json.specular = this.specular.toJSON(json.specular);
-            json.emissive = this.emissive.toJSON(json.emissive);
+            json.lineWidth = this.lineWidth;
 
-            json.alpha = this.alpha;
-            json.shininess = this.shininess;
+            json.wireframe = this.wireframe;
+            json.wireframeLineWidth = this.wireframeLineWidth;
 
-            json.mainTexture = json.mainTexture != undefined ? json.mainTexture.name : undefined;
-            json.mainTextureOffset = this.mainTextureOffset.toJSON(json.mainTextureOffset);
-            json.mainTextureScale = this.mainTextureScale.toJSON(json.mainTextureScale);
+            json.shader = this.shader != undefined ? this.shader.name : undefined;
+
+            toJSON(this.uniforms, json.uniforms || (json.uniforms = {}));
+            toJSON(this.attributes, json.attributes || (json.attributes = {}));
 
             return json;
         };
@@ -81,22 +110,62 @@ define([
         Material.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
 
-            this.vertex = json.vertex;
-            this.fragment = json.fragment;
+            this.blending = json.blending;
+            this.shading = json.shading;
+            this.side = json.side;
 
-            this.color.fromJSON(json.color);
-            this.specular.fromJSON(json.specular);
-            this.emissive.fromJSON(json.emissive);
+            this.lineWidth = json.lineWidth;
 
-            this.alpha = json.alpha;
-            this.shininess = json.shininess;
+            this.wireframe = json.wireframe;
+            this.wireframeLineWidth = json.wireframeLineWidth;
 
-            this.mainTexture = json.mainTexture != undefined ? Assets.hash[json.mainTexture] : undefined;
-            this.mainTextureOffset.fromJSON(json.mainTextureOffset);
-            this.mainTextureScale.fromJSON(json.mainTextureScale);
+            this.shader = json.shader != undefined ? Assets.get(json.shader) : undefined;
+
+            fromJSON(this.uniforms, json.uniforms);
+            fromJSON(this.attributes, json.attributes);
 
             return this;
         };
+
+
+        function toJSON(obj, json) {
+            var value, key;
+
+            for (key in obj) {
+                value = obj[key];
+
+                if (typeof(value) !== "object") {
+                    json[key] = value;
+                } else if (value.toJSON) {
+                    json[key] = value.toJSON(json[key]);
+                } else {
+                    json[key] = value;
+                }
+            }
+
+            return json;
+        }
+
+
+        function fromJSON(obj, json) {
+            var classes = Class._classes,
+                mathClasses = Mathf._classes,
+                value, key;
+
+            for (key in json) {
+                value = json[key];
+
+                if (typeof(value) !== "object") {
+                    obj[key] = value;
+                } else if (mathClasses[value._className]) {
+                    obj[key] = Mathf.fromJSON(value);
+                } else if (classes[value._className]) {
+                    obj[key] = Class.fromJSON(value);
+                } else {
+                    obj[key] = value;
+                }
+            }
+        }
 
 
         return Material;

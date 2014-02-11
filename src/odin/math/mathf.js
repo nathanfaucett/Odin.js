@@ -21,6 +21,7 @@ define(
             keys = Object.keys,
             modulo, clamp01, standardRadian, standardAngle, radsToDegs;
 
+
         /**
          * @class Mathf
          * @brief collection of common math functions
@@ -376,7 +377,20 @@ define(
          */
         Mathf.prototype.randChoice = function(array) {
 
-            return array[~~(random() * array.length)];
+            return array[(random() * array.length) | 0];
+        };
+
+        /**
+         * @method shuffle
+         * @memberof Mathf
+         * @brief shuffles array
+         * @param Array array
+         * @return Array
+         */
+        Mathf.prototype.shuffle = function(array) {
+
+            for (var j, x, i = array.length; i; j = floor(random() * i), x = array[--i], array[i] = array[j], array[j] = x);
+            return array;
         };
 
         /**
@@ -387,7 +401,7 @@ define(
          */
         Mathf.prototype.randArg = function() {
 
-            return arguments[~~(random() * arguments.length)];
+            return arguments[(random() * arguments.length) | 0];
         };
 
         /**
@@ -400,7 +414,7 @@ define(
         Mathf.prototype.randChoiceObject = function(obj) {
             var array = keys(obj);
 
-            return array[~~(random() * array.length)];
+            return array[(random() * array.length) | 0];
         };
 
         /**

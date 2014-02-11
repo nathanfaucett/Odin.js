@@ -189,7 +189,7 @@ define([
 
                 if (!transform2d) continue;
 
-                transform2d.updateModelView(camera.view);
+                transform2d.updateModelViewMat32(camera.view);
                 this.renderSprite(camera, transform2d, sprite2d);
             }
 
@@ -199,7 +199,7 @@ define([
 
                 if (!transform2d) continue;
 
-                transform2d.updateModelView(camera.view);
+                transform2d.updateModelViewMat32(camera.view);
                 this.renderParticleSystem(camera, transform2d, particleSystem);
             }
         };

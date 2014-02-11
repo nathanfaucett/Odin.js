@@ -35,6 +35,25 @@ define([
         };
 
 
+        var CACHE = {};
+        Log.prototype.once = function() {
+            if (!(Config.debug || Config.error) || CACHE[cacheKey(arguments)]) return;
+
+            CACHE[cacheKey(arguments)] = true;
+            console.error.apply(console, arguments);
+        };
+
+
+        function cacheKey(args) {
+            var key = "",
+                i;
+
+            for (i = args.length; i--;) key += args[i];
+
+            return key;
+        };
+
+
         Log.prototype.object = function(obj) {
             if (!Config.debug) return "";
             var str = "",

@@ -16,6 +16,8 @@ define([
 
             this.scene = undefined;
             this.sync = false;
+
+            this.ambient = opts.ambient != undefined ? opts.ambient : new Color;
         }
 
         Class.extend(World);
@@ -47,6 +49,24 @@ define([
             this.emit("destroy");
 
             this.clear();
+
+            return this;
+        };
+
+
+        World.prototype.toJSON = function(json) {
+            json = Class.prototype.toJSON.call(this, json);
+
+            json.ambient = this.ambient.toJSON(json.ambient);
+
+            return json;
+        };
+
+
+        World.prototype.fromJSON = function(json) {
+            Class.prototype.fromJSON.call(this, json);
+
+            this.ambient.fromJSON(json.ambient);
 
             return this;
         };

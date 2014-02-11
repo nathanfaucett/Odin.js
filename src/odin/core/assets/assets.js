@@ -5,6 +5,7 @@ define([
         "odin/base/class",
         "odin/core/assets/asset",
         "odin/core/game/log"
+
     ],
     function(Class, Asset, Log) {
         "use strict";

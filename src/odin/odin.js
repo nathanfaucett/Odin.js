@@ -28,14 +28,18 @@ define(
             this.Time = require("odin/base/time");
             this.util = require("odin/base/util");
 
+            this.Shader = require("odin/core/assets/shaders/shader");
+            this.ShaderLib = require("odin/core/assets/shaders/shader_lib");
             this.Asset = require("odin/core/assets/asset");
             this.AssetLoader = require("odin/core/assets/asset_loader");
             this.Assets = require("odin/core/assets/assets");
             this.AudioClip = require("odin/core/assets/audio_clip");
+            this.Bone = require("odin/core/assets/bone");
             this.Material = require("odin/core/assets/material");
             this.Mesh = require("odin/core/assets/mesh");
             this.SpriteSheet = require("odin/core/assets/sprite_sheet");
             this.Texture = require("odin/core/assets/texture");
+            this.TextureCube = require("odin/core/assets/texture_cube");
 
             this.ParticleSystem = require("odin/core/components/particle_system/particle_system");
             this.AudioSource = require("odin/core/components/audio_source");
@@ -44,7 +48,9 @@ define(
             this.Component = require("odin/core/components/component");
             this.GUIText = require("odin/core/components/gui_text");
             this.GUITexture = require("odin/core/components/gui_texture");
+            this.Light = require("odin/core/components/light");
             this.MeshFilter = require("odin/core/components/mesh_filter");
+            this.OrbitControl = require("odin/core/components/orbit_control");
             this.RigidBody2D = require("odin/core/components/rigid_body_2d");
             this.Sprite = require("odin/core/components/sprite");
             this.SpriteAnimation = require("odin/core/components/sprite_animation");

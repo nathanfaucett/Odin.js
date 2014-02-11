@@ -9,10 +9,6 @@ define([
         "use strict";
 
 
-        var VERTEX = /(#VERTEX)([\s\S]*)(?=#VERTEX_END)/,
-            FRAGMENT = /(#FRAGMENT)([\s\S]*)(?=#FRAGMENT_END)/;
-
-
         function Shader(opts) {
             opts || (opts = {});
 
@@ -20,23 +16,39 @@ define([
 
             this.vertex = opts.vertex || "void main(void) {}";
             this.fragment = opts.fragment || "void main(void) {}";
+
+            this.lights = opts.lights != undefined ? opts.lights : false;
+            this.vertexLit = opts.vertexLit != undefined ? opts.vertexLit : false;
+            this.shadows = opts.shadows != undefined ? opts.shadows : false;
+            this.fog = opts.fog != undefined ? opts.fog : false;
+
+            this.standardDerivatives = opts.standardDerivatives != undefined ? opts.standardDerivatives : false;
         }
 
         Asset.extend(Shader);
 
 
+        Shader.prototype.copy = function(other) {
+            Asset.prototype.copy.call(this, other);
+
+            this.vertex = other.vertex;
+            this.fragment = other.fragment;
+
+            this.lights = other.lights;
+            this.vertexLit = other.vertexLit;
+            this.shadows = other.shadows;
+            this.fog = other.fog;
+
+            this.standardDerivatives = other.standardDerivatives;
+
+            return this;
+        };
+
+
         Shader.prototype.parse = function(raw) {
             Asset.prototype.parse.call(this, raw);
-            var vertex = raw.match(VERTEX),
-                fragment = raw.match(FRAGMENT);
 
-            if (!vertex || !fragment) {
-                Log.error("Shader.parse: failed to parse shader");
-                return this;
-            }
-
-            this.vertex = vertex[2].trim();
-            this.fragment = fragment[2].trim();
+            this.fromJSON(raw);
 
             return this;
         };
@@ -58,6 +70,13 @@ define([
             json.vertex = this.vertex;
             json.fragment = this.fragment;
 
+            json.lights = this.lights;
+            json.vertexLit = this.vertexLit;
+            json.shadows = this.shadows;
+            json.fog = this.fog;
+
+            json.standardDerivatives = this.standardDerivatives;
+
             return json;
         };
 
@@ -67,6 +86,13 @@ define([
 
             this.vertex = json.vertex;
             this.fragment = json.fragment;
+
+            this.lights = json.lights;
+            this.vertexLit = json.vertexLit;
+            this.shadows = json.shadows;
+            this.fog = json.fog;
+
+            this.standardDerivatives = json.standardDerivatives;
 
             return this;
         };

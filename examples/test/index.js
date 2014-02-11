@@ -65,6 +65,8 @@ require({
         game = new Game({
             debug: true,
             forceCanvas: false,
+            width: 960,
+            height: 640,
             CanvasRenderer2DOptions: {
                 autoClear: true,
                 imageSmoothingEnabled: false
@@ -218,22 +220,46 @@ require({
 
         scene.addGameObjects(camera, left, right, top, bottom);
 
-        var gui = new Odin.GUI({
+
+        function TEST(opts) {
+
+            GUIComponent.call(this, "TEST", opts);
+
+            this.i = 0;
+        }
+
+        GUIComponent.extend(TEST);
+
+
+        GUIComponent.prototype.update = function() {
+            var guiContent = this.guiContent;
+
+            guiContent.setText("FPS: " + Mathf.truncate(Time.fps, 2));
+        };
+
+
+        gui = new Odin.GUI({
             name: "Level"
         });
-        var guiObject = new Odin.GUIObject({
+        guiObject = new Odin.GUIObject({
+            position: new Odin.Rect(0, 0, 0.25, 0.25),
             components: [
-                new Odin.GUITransform({
-                    position: new Odin.Rect(0, 0, 0.1, 0.1)
-                }),
                 new Odin.GUIContent({
-                    text: "Menu",
+                    text: "My Name is Nathan",
                     style: {
                         normal: {
-                            text: new Odin.Color(0.5, 0.5, 0.5)
-                        }
+                            text: new Odin.Color()
+                        },
+                        hover: {
+                            text: new Odin.Color("red")
+                        },
+                        active: {
+                            text: new Odin.Color("blue")
+                        },
+                        wordWrap: true
                     }
-                })
+                }),
+                new TEST
             ]
         });
         gui.addGUIObject(guiObject);

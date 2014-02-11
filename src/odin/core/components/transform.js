@@ -5,11 +5,12 @@ define([
         "odin/math/mathf",
         "odin/math/vec3",
         "odin/math/quat",
+        "odin/math/mat3",
         "odin/math/mat4",
         "odin/core/components/component",
         "odin/core/game/log"
     ],
-    function(Mathf, Vec3, Quat, Mat4, Component, Log) {
+    function(Mathf, Vec3, Quat, Mat3, Mat4, Component, Log) {
         "use strict";
 
 
@@ -36,7 +37,8 @@ define([
             this.matrixWorld = new Mat4;
 
             this.modelView = new Mat4;
-            this._modelViewNeedsUpdate = false;
+            this.normalMatrix = new Mat3;
+            this._matricesViewNeedsUpdate = false;
         }
 
         Component.extend(Transform);
@@ -266,15 +268,16 @@ define([
                 this.matrixWorld.copy(matrix);
             }
 
-            this._modelViewNeedsUpdate = true;
+            this._matricesViewNeedsUpdate = true;
         };
 
 
-        Transform.prototype.updateModelView = function(viewMatrix) {
-            if (!this._modelViewNeedsUpdate) return;
+        Transform.prototype.updateMatrices = function(viewMatrix) {
+            if (!this._matricesViewNeedsUpdate) return;
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
-            this._modelViewNeedsUpdate = false;
+            this.normalMatrix.inverseMat4(this.modelView).transpose();
+            this._matricesViewNeedsUpdate = false;
         };
 
 

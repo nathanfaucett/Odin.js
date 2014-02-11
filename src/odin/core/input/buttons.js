@@ -55,6 +55,8 @@ define([
                 button._first = false;
             }
             button.value = true;
+
+            return button;
         };
 
 
@@ -65,6 +67,8 @@ define([
             button.timeUp = Time.stamp();
             button.value = false;
             button._first = true;
+
+            return button;
         };
 
 

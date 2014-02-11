@@ -292,17 +292,6 @@ define([
         };
 
 
-        function pointerlockchange(e) {
-
-            console.log("pointerlockchange");
-        }
-
-        function fullscreenchange(e) {
-
-            console.log("fullscreenchange");
-        }
-
-
         return Canvas;
     }
 );

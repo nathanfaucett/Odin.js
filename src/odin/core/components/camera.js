@@ -12,7 +12,8 @@ define([
         "use strict";
 
 
-        var degsToRads = Mathf.degsToRads;
+        var degsToRads = Mathf.degsToRads,
+            EPSILON = Mathf.EPSILON;
 
 
         function Camera(opts) {
@@ -30,19 +31,19 @@ define([
             this.aspect = this.width / this.height;
             this.fov = opts.fov != undefined ? opts.fov : 35;
 
-            this.near = opts.near != undefined ? opts.near : 0.1;
-            this.far = opts.far != undefined ? opts.far : 512;
+            this.near = opts.near != undefined ? opts.near : 0.0625;
+            this.far = opts.far != undefined ? opts.far : 16384;
 
             this.orthographic = opts.orthographic != undefined ? !! opts.orthographic : false;
             this.orthographicSize = opts.orthographicSize != undefined ? opts.orthographicSize : 2;
 
-            this.minOrthographicSize = opts.minOrthographicSize != undefined ? opts.minOrthographicSize : 0.01;
+            this.minOrthographicSize = opts.minOrthographicSize != undefined ? opts.minOrthographicSize : EPSILON;
             this.maxOrthographicSize = opts.maxOrthographicSize != undefined ? opts.maxOrthographicSize : 1024;
 
             this.projection = new Mat4;
             this.view = new Mat4;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
             this._active = false;
         }
 
@@ -58,6 +59,8 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.background.copy(other.background);
+
             this.far = other.far;
             this.near = other.near;
             this.fov = other.fov;
@@ -67,7 +70,7 @@ define([
             this.minOrthographicSize = other.minOrthographicSize;
             this.maxOrthographicSize = other.maxOrthographicSize;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
 
             return this;
         };
@@ -82,7 +85,7 @@ define([
             this.invHeight = 1 / this.height;
 
             this.aspect = width / height;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -93,7 +96,7 @@ define([
 
             this.invWidth = 1 / this.width;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -104,49 +107,49 @@ define([
 
             this.invHeight = 1 / this.height;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.setFov = function(value) {
 
             this.fov = value;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.setNear = function(value) {
 
             this.near = value;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.setFar = function(value) {
 
             this.far = value;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.setOrthographic = function(value) {
 
             this.orthographic = !! value;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.toggleOrthographic = function() {
 
             this.orthographic = !this.orthographic;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera.prototype.setOrthographicSize = function(size) {
 
             this.orthographicSize = clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -181,7 +184,7 @@ define([
         Camera.prototype.update = function() {
             if (!this._active) return;
 
-            if (this._needsUpdate) {
+            if (this.needsUpdate) {
 
                 if (!this.orthographic) {
                     this.projection.perspective(degsToRads(this.fov), this.aspect, this.near, this.far);
@@ -197,7 +200,7 @@ define([
                     this.projection.orthographic(left, right, top, bottom, this.near, this.far);
                 }
 
-                this._needsUpdate = false;
+                this.needsUpdate = false;
             }
 
             this.view.inverseMat(this.transform.matrixWorld);
@@ -216,6 +219,8 @@ define([
             json.width = this.width;
             json.height = this.height;
             json.aspect = this.aspect;
+
+            json.background = this.background.toJSON(json.background);
 
             json.far = this.far;
             json.near = this.near;
@@ -237,6 +242,8 @@ define([
             this.height = json.height;
             this.aspect = json.aspect;
 
+            this.background.fromJSON(json.background);
+
             this.far = json.far;
             this.near = json.near;
             this.fov = json.fov;
@@ -246,7 +253,7 @@ define([
             this.minOrthographicSize = json.minOrthographicSize;
             this.maxOrthographicSize = json.maxOrthographicSize;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
 
             return this;
         };

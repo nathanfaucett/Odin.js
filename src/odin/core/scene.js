@@ -3,11 +3,13 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/base/class",
+        "odin/core/components/transform",
+        "odin/core/components/transform_2d",
         "odin/core/game_object",
         "odin/core/world/world",
         "odin/core/game/log"
     ],
-    function(Class, GameObject, World, Log) {
+    function(Class, Transform, Transform2D, GameObject, World, Log) {
         "use strict";
 
 
@@ -21,7 +23,7 @@ define([
 
             this.game = undefined;
 
-            this._name = opts.name != undefined ? opts.name : "Scene_" + this._id;
+            this.name = opts.name != undefined ? opts.name : "Scene_" + this._id;
 
             this.world = undefined;
 
@@ -39,31 +41,6 @@ define([
         }
 
         Class.extend(Scene);
-
-
-        defineProperty(Scene.prototype, "name", {
-            get: function() {
-                return this._name;
-            },
-            set: function(value) {
-                if (this._name === value) return;
-                var game = this.game,
-                    sceneNameHash;
-
-                if (game) {
-                    sceneNameHash = game._sceneNameHash;
-
-                    if (sceneNameHash[value]) {
-                        Log.warn("Scene.set name: can't change name to " + value + " Game already have an Scene with same name");
-                        return;
-                    }
-
-                    sceneNameHash[value].name = value;
-                }
-
-                this._name = value;
-            }
-        });
 
 
         Scene.prototype.copy = function(other) {
@@ -205,21 +182,30 @@ define([
             var type = component._type,
                 components = this.components,
                 isNew = !components[type],
-                types = (components[type] = components[type] || []);
+                types = components[type] || (components[type] = []),
+                componentTypes = this._componentTypes;
 
             this._componentHash[component._id] = component;
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
             types.push(component);
             types.sort(component.sort);
-
-            if (isNew) this._componentTypes.push(types);
+            if (isNew) {
+                componentTypes.push(types);
+                componentTypes.sort(sortComponentTypes);
+            }
 
             if (this.game) component.init();
 
             this.emit("add" + type, component);
             this.emit("addComponent", component);
         };
+
+
+        function sortComponentTypes(a, b) {
+
+            return (a[0] instanceof Transform || a[0] instanceof Transform2D) ? 1 : -1;
+        }
 
 
         Scene.prototype.removeGameObject = function(gameObject, clear) {

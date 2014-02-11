@@ -30,6 +30,7 @@ define([
             addEvent = Dom.addEvent,
             removeEvent = Dom.removeEvent,
 
+            max = Math.max,
             clamp = Mathf.clamp,
             isPowerOfTwo = Mathf.isPowerOfTwo,
 
@@ -122,6 +123,7 @@ define([
                 shaders: {},
                 buffers: {},
                 texts: {},
+                textsTextureCache: {},
 
                 lastTexture: undefined,
                 lastShader: undefined,
@@ -182,6 +184,8 @@ define([
             clear(webgl.textures);
             clear(webgl.buffers);
             clear(webgl.shaders);
+            clear(webgl.texts);
+            clear(webgl.textsTextureCache);
 
             return this;
         };
@@ -419,8 +423,6 @@ define([
         };
 
 
-        var TEXT_CACHE = {},
-            TEXT_CACHE_ID = -1;
         WebGLRenderer2D.prototype.renderGUIContent = function(camera, transform, content) {
             var gl = this.context,
                 webgl = this._webgl,
@@ -430,13 +432,25 @@ define([
                 texture = content.texture,
                 style = content.style,
                 state = style[style._state],
+                background = state.background,
 
-                glShader = webgl.shaders[ENUM_CANVAS_SHADER],
-                glBuffer = webgl.buffers[ENUM_SPRITE_BUFFER],
+                glShader = webgl.shaders[ENUM_BASIC_SHADER],
+                glBuffer = webgl.buffers[ENUM_SCREEN_BUFFER],
                 uniforms = glShader.uniforms,
+
+                aspect = camera.aspect,
+                width = position.width,
+                height = position.height,
+
                 glText, texture;
 
-            MAT4.mmul(camera._projectionMat4, MAT4.fromMat32(transform.matrixWorld));
+            MAT4.copy(SCREEN_MAT).translate(position);
+
+            if (aspect >= 1) {
+                width /= aspect;
+            } else {
+                height *= aspect;
+            }
 
             if (webgl.lastShader !== glShader) {
                 gl.useProgram(glShader.program);
@@ -447,8 +461,21 @@ define([
                 webgl.lastBuffer = glBuffer;
             }
 
+            gl.uniformMatrix4fv(uniforms.uMatrix.location, false, MAT4.elements);
+            gl.uniform3f(uniforms.uColor.location, background.r, background.g, background.b);
+            gl.uniform1f(uniforms.uAlpha.location, content.alpha);
+            gl.uniform2f(uniforms.uSize.location, width, height);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, glBuffer.vertices);
+
             if (text) {
-                glText = buildText(this, position, content, style, state, text);
+                glShader = webgl.shaders[ENUM_CANVAS_SHADER];
+                uniforms = glShader.uniforms;
+
+                gl.useProgram(glShader.program);
+                bindBuffers(gl, glShader, glBuffer);
+
+                glText = buildText(this, camera, position, content, style, state, text);
                 texture = glText.texture;
 
                 if (texture) {
@@ -462,7 +489,7 @@ define([
 
                     gl.uniformMatrix4fv(uniforms.uMatrix.location, false, MAT4.elements);
                     gl.uniform1f(uniforms.uAlpha.location, content.alpha);
-                    gl.uniform2f(uniforms.uSize.location, glText.canvas.width * 0.01, glText.canvas.height * 0.01);
+                    gl.uniform2f(uniforms.uSize.location, glText.width, glText.height);
 
                     gl.drawArrays(gl.TRIANGLE_STRIP, 0, glBuffer.vertices);
                 }
@@ -470,108 +497,98 @@ define([
         };
 
 
-        function buildText(renderer, position, content, style, state, text) {
+        var SPLITTER = /[\r\n]+/,
+            TOP = "top",
+            LEFT = "left",
+            CENTER = "center",
+            RIGHT = "right";
+
+        function buildText(renderer, camera, position, content, style, state, text) {
             var gl = renderer.context,
                 webgl = renderer._webgl,
                 texts = webgl.texts,
+                textsTextureCache = webgl.textsTextureCache,
                 glText = texts[content._id];
 
-            if (glText && !content._needsUpdate) return glText;
+            if (glText && !content.needsUpdate) return glText;
             glText = glText || (texts[content._id] = {});
 
             var canvas = glText.canvas || document.createElement("canvas"),
                 ctx = glText.ctx || canvas.getContext("2d"),
-                width = position.width,
-                height = position.height,
-                texture;
+                texture = textsTextureCache[content._id] || (textsTextureCache[content._id] = {
+                    _id: content._id,
+                    needsUpdate: true,
+                    raw: canvas
+                }),
+                font = style.fontStyle + " " + style.fontSize + "pt " + style.font,
+                wordWrap = style.wordWrap,
+                lineHeight = style.lineHeight,
+                width = 0,
+                height = 0,
+                lines, lineWidth, i, il;
+
+            lines = text.split(SPLITTER);
+            for (i = 0, il = lines.length; i < il; i++) {
+                lineWidth = ctx.measureText(lines[i]).width;
+                width = max(width, lineWidth);
+            }
+            height = lineHeight ? lineHeight * il : (lineHeight = determineFontHeight(font)) * il;
 
             canvas.width = width;
             canvas.height = height;
 
-            document.body.appendChild(canvas);
-            canvas.style.position = "absolute";
-            canvas.style.zIndex = 1000;
-
-            ctx.font = style.fontSize + "px " + style.font;
             ctx.fillStyle = state.text.toRGB();
-
-            if (!style.wordWrap) {
-                wrapText(ctx, text, 0, style.fontSize, width, style.lineHeight);
-            } else {
-                ctx.fillText(text, 0, style.fontSize);
-            }
+            ctx.font = font;
+            ctx.textBaseline = TOP;
 
             switch (style.alignment) {
-                case TextAnchor.UpperLeft:
-                    ctx.textAlign = "left";
-                    ctx.textBaseline = "top";
+                case TextAnchor.Left:
+                    ctx.textAlign = LEFT;
                     break;
-                case TextAnchor.UpperCenter:
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "top";
+                case TextAnchor.Center:
+                    ctx.textAlign = CENTER;
                     break;
-                case TextAnchor.UpperRight:
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "top";
-                    break;
-                case TextAnchor.MiddleLeft:
-                    ctx.textAlign = "left";
-                    ctx.textBaseline = "middle";
-                    break;
-                case TextAnchor.MiddleCenter:
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    break;
-                case TextAnchor.MiddleRight:
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "middle";
-                    break;
-                case TextAnchor.LowerLeft:
-                    ctx.textAlign = "left";
-                    ctx.textBaseline = "bottom";
-                    break;
-                case TextAnchor.LowerCenter:
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "bottom";
-                    break;
-                case TextAnchor.LowerRight:
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "bottom";
+                case TextAnchor.Right:
+                    ctx.textAlign = RIGHT;
                     break;
             }
+
+            for (i = 0; i < il; i++) ctx.fillText(lines[i], 0, lineHeight * i);
 
             glText.canvas = canvas;
             glText.ctx = ctx;
-            glText.texture = buildTexture(renderer, {
-                _id: content._id,
-                raw: canvas
-            });
+            glText.width = width * camera.invWidth;
+            glText.height = height * camera.invHeight;
+
+            texture.needsUpdate = true;
+            glText.texture = buildTexture(renderer, texture);
+
+            content.needsUpdate = false;
 
             return glText;
         }
 
+        var HEIGHT_CACHE = {};
 
-        var SPLITTER = /[\s]+/;
+        function determineFontHeight(font) {
+            var result = HEIGHT_CACHE[font];
 
-        function wrapText(ctx, text, x, y, width, lineHeight) {
-            var words = text.split(SPLITTER),
-                line = "",
-                maxX = -Infinity,
-                testLine, testWidth, i, il;
+            if (!result) {
+                var body = document.getElementsByTagName("body")[0],
+                    dummy = document.createElement("div"),
+                    dummyText = document.createTextNode("M");
 
-            for (i = 0, il = words.length; i < il; i++) {
-                testLine = line + words[i] + " ";
-                testWidth = ctx.measureText(testLine).width;
+                dummy.appendChild(dummyText);
+                dummy.setAttribute("style", "font: " + font + ";position:absolute;top:0;left:0");
+                body.appendChild(dummy);
 
-                if (testWidth > width && i > 0) {
-                    ctx.fillText(line, x, y);
-                    line = words[i] + " ";
-                    y += lineHeight;
-                } else {
-                    line = testLine;
-                }
+                result = dummy.offsetHeight;
+                HEIGHT_CACHE[font] = result;
+
+                body.removeChild(dummy);
             }
-            ctx.fillText(line, x, y);
+
+            return result;
         }
 
 
@@ -599,7 +616,7 @@ define([
 
                 if (!transform2d || !sprite2d.visible) continue;
 
-                transform2d.updateModelView(camera.view);
+                transform2d.updateModelViewMat32(camera.view);
                 this.renderSprite(camera, transform2d, sprite2d);
             }
 
@@ -609,7 +626,7 @@ define([
 
                 if (!transform2d) continue;
 
-                transform2d.updateModelView(camera.view);
+                transform2d.updateModelViewMat32(camera.view);
                 this.renderParticleSystem(camera, transform2d, particleSystem);
             }
 
@@ -624,8 +641,7 @@ define([
         };
 
 
-        var SCREEN_MAT = new Mat4().orthographic(0, 1, 0, 1, -1, 1),
-            SCREEN_VEC = new Vec2;
+        var SCREEN_MAT = new Mat4().orthographic(0, 1, 0, 1, -1, 1);
         WebGLRenderer2D.prototype.renderGUITexture = function(camera, transform2d, guiTexture) {
             var gl = this.context,
                 webgl = this._webgl,
@@ -638,8 +654,6 @@ define([
                 uniforms = glShader.uniforms,
 
                 aspect = camera.aspect,
-                invW = camera.invWidth,
-                invH = camera.invHeight,
 
                 width = position.width,
                 height = position.height,
@@ -654,10 +668,10 @@ define([
 
             MAT4.copy(SCREEN_MAT).translate(position);
 
-            if (aspect < 1) {
-                width /= aspect;
-            } else {
+            if (aspect >= 1) {
                 height *= aspect;
+            } else {
+                width /= aspect;
             }
 
             if (webgl.lastShader !== glShader) {
@@ -861,7 +875,7 @@ define([
                 buffers = webgl.buffers,
                 glBuffer = buffers[buffer._id];
 
-            if (glBuffer && !buffer._needsUpdate) return glBuffer;
+            if (glBuffer && !buffer.needsUpdate) return glBuffer;
             glBuffer = glBuffer || (buffers[buffer._id] = {});
 
             var compileArray = COMPILE_ARRAY,
@@ -923,7 +937,7 @@ define([
                 glShader = shaders[shader._id],
                 vertex, fragment;
 
-            if (glShader && !shader._needsUpdate) return glShader;
+            if (glShader && !shader.needsUpdate) return glShader;
 
             glShader = glShader || (shaders[shader._id] = {});
             vertex = shader.vertex || shader.vertexShader;
@@ -952,7 +966,7 @@ define([
                 glTexture = textures[texture._id],
                 raw = texture.raw;
 
-            if (glTexture && !texture._needsUpdate) return glTexture;
+            if (glTexture && !texture.needsUpdate) return glTexture;
             glTexture = glTexture || (textures[texture._id] = gl.createTexture());
 
             var ext = webgl.ext,
@@ -990,7 +1004,7 @@ define([
             if (isPOT) gl.generateMipmap(TEXTURE_2D);
 
             webgl.lastTexture = glTexture;
-            texture._needsUpdate = false;
+            texture.needsUpdate = false;
 
             return glTexture;
         }
@@ -1057,12 +1071,13 @@ define([
                 "precision " + precision + " float;",
 
                 "uniform mat4 uMatrix;",
+                "uniform vec2 uSize;",
 
                 "attribute vec2 aVertexPosition;",
 
                 "void main() {",
 
-                "	gl_Position = uMatrix * vec4(aVertexPosition, 0.0, 1.0);",
+                "	gl_Position = uMatrix * vec4(aVertexPosition * uSize, 0.0, 1.0);",
                 "}"
             ].join("\n");
         }

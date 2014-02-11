@@ -2,14 +2,26 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/util",
         "odin/base/event_emitter",
         "odin/base/audio_ctx",
         "odin/core/assets/asset",
         "odin/core/assets/assets",
         "odin/core/game/log"
     ],
-    function(EventEmitter, AudioCtx, Asset, Assets, Log) {
+    function(util, EventEmitter, AudioCtx, Asset, Assets, Log) {
         "use strict";
+
+
+        var isArray = util.isArray,
+            ajax = util.ajax,
+            each = util.each;
+
+
+        function getExt(src) {
+
+            return src ? src.split(".").pop() : "none";
+        };
 
 
         function AssetLoader() {
@@ -42,7 +54,7 @@ define([
 
         AssetLoader.prototype.loadAsset = function(asset, callback, reload, known) {
             var self = this,
-                ext;
+                src = asset.src;
 
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
 
@@ -51,13 +63,44 @@ define([
                 return;
             };
 
-            if ((ext = asset.ext())) {
+            if (isArray(src)) {
+                var raw = [],
+                    loaded = src.length;
+
+                each(src, function(s, i) {
+                    var ext = getExt(s);
+
+                    if (!this[ext]) {
+                        callback && callback(new Error("AssetLoader.load: has no loader named " + ext));
+                        return false;
+                    }
+
+                    this[ext](s, function(err, data) {
+                        if (err) {
+                            callback && callback(new Error("AssetLoader.load: " + err.message));
+                            return;
+                        }
+                        loaded--;
+                        raw[i] = data;
+
+                        if (loaded <= 0) {
+                            asset.parse(raw);
+                            self.emit("loadAsset", asset);
+                            callback && callback();
+                        }
+                    });
+
+                    return true;
+                }, this);
+            } else {
+                var ext = getExt(src);
+
                 if (!this[ext]) {
                     callback && callback(new Error("AssetLoader.load: has no loader named " + ext));
                     return;
                 }
 
-                this[ext](asset.src, function(err, raw) {
+                this[ext](src, function(err, raw) {
                     if (err) {
                         callback && callback(new Error("AssetLoader.load: " + err.message));
                         return;
@@ -67,8 +110,6 @@ define([
                     self.emit("loadAsset", asset);
                     callback && callback();
                 });
-            } else {
-                callback && callback(new Error("AssetLoader.load: could not get an ext from asset " + asset.name));
             }
         };
 
@@ -89,7 +130,8 @@ define([
 
         AssetLoader.prototype.json = function(src, callback) {
 
-            ajax(src, {
+            ajax({
+                src: src,
                 before: function() {
                     this.setRequestHeader("Content-Type", "application/json");
                 },
@@ -114,13 +156,15 @@ define([
 
         AssetLoader.prototype.ogg = AssetLoader.prototype.wav = AssetLoader.prototype.mp3 = AssetLoader.prototype.aac = function(src, callback) {
 
-            ajax(src, {
+            ajax({
+                src: src,
                 before: function() {
                     this.responseType = "arraybuffer";
                 },
                 success: function() {
                     if (AudioCtx) {
-                        AudioCtx.decodeAudioData(this.response,
+                        AudioCtx.decodeAudioData(
+                            this.response,
                             function success(buffer) {
                                 callback && callback(null, buffer);
                             },
@@ -136,34 +180,6 @@ define([
                     callback && callback(err);
                 }
             });
-        };
-
-
-        function ajax(src, opts) {
-            opts || (opts = {});
-            opts.method || (opts.method = "GET");
-            var request = new XMLHttpRequest;
-
-            request.onload = function() {
-                var status = this.status;
-
-                if ((status > 199 && status < 301) || status == 304) {
-                    opts.success && opts.success.call(this);
-                } else {
-                    if (opts.error) {
-                        opts.error.call(this, new Error(opts.method + " " + src + " " + status));
-                    } else {
-                        throw new Error(status);
-                    }
-                }
-            };
-            request.onerror = function() {
-                opts.error(new Error(opts.method + " " + src + " 404 (Not Found)"));
-            };
-
-            request.open(opts.method, src, true);
-            if (opts.before) opts.before.call(request);
-            request.send();
         };
 
 

@@ -101,6 +101,22 @@ define(
                 this._height = value - this._yMin;
             }
         });
+        defineProperty(Rect.prototype, "z", {
+            get: function() {
+                return this.width;
+            },
+            set: function(value) {
+                this.width = value;
+            }
+        });
+        defineProperty(Rect.prototype, "w", {
+            get: function() {
+                return this.height;
+            },
+            set: function(value) {
+                this.height = value;
+            }
+        });
 
 
         Rect.prototype.clone = function() {

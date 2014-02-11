@@ -13,7 +13,8 @@ define([
         "use strict";
 
 
-        var clamp = Mathf.clamp;
+        var clamp = Mathf.clamp,
+            EPSILON = Mathf.EPSILON;
 
 
         function Camera2D(opts) {
@@ -32,7 +33,7 @@ define([
 
             this.orthographicSize = opts.orthographicSize !== undefined ? opts.orthographicSize : 2;
 
-            this.minOrthographicSize = opts.minOrthographicSize !== undefined ? opts.minOrthographicSize : 0.01;
+            this.minOrthographicSize = opts.minOrthographicSize !== undefined ? opts.minOrthographicSize : EPSILON;
             this.maxOrthographicSize = opts.maxOrthographicSize !== undefined ? opts.maxOrthographicSize : 1024;
 
             this.projection = new Mat32;
@@ -40,7 +41,7 @@ define([
 
             this.view = new Mat32;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
             this._active = false;
         }
 
@@ -61,7 +62,7 @@ define([
             this.minOrthographicSize = other.minOrthographicSize;
             this.maxOrthographicSize = other.maxOrthographicSize;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
 
             return this;
         };
@@ -76,7 +77,7 @@ define([
             this.invHeight = 1 / this.height;
 
             this.aspect = width / height;
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -87,7 +88,7 @@ define([
 
             this.invWidth = 1 / this.width;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -98,14 +99,14 @@ define([
 
             this.invHeight = 1 / this.height;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
         Camera2D.prototype.setOrthographicSize = function(size) {
 
             this.orthographicSize = clamp(size, this.minOrthographicSize, this.maxOrthographicSize);
-            this._needsUpdate = true;
+            this.needsUpdate = true;
         };
 
 
@@ -137,7 +138,7 @@ define([
         Camera2D.prototype.update = function() {
             if (!this._active) return;
 
-            if (this._needsUpdate) {
+            if (this.needsUpdate) {
                 var orthographicSize = this.orthographicSize,
                     right = orthographicSize * this.aspect,
                     left = -right,
@@ -146,7 +147,7 @@ define([
 
                 this.projection.orthographic(left, right, top, bottom);
                 this._projectionMat4.orthographic(left, right, top, bottom, -1, 1);
-                this._needsUpdate = false;
+                this.needsUpdate = false;
             }
 
             this.view.inverseMat(this.transform2d.matrixWorld);
@@ -187,7 +188,7 @@ define([
             this.minOrthographicSize = json.minOrthographicSize;
             this.maxOrthographicSize = json.maxOrthographicSize;
 
-            this._needsUpdate = true;
+            this.needsUpdate = true;
 
             return this;
         };

@@ -17,6 +17,17 @@ define([
         Asset.extend(SpriteSheet);
 
 
+        SpriteSheet.prototype.copy = function(other) {
+            Asset.prototype.copy.call(this, other);
+            var raw = other.raw,
+                key;
+
+            for (key in raw) this[key] = raw[key];
+
+            return this;
+        };
+
+
         SpriteSheet.prototype.parse = function(raw) {
             Asset.prototype.parse.call(this, raw);
 

@@ -13,9 +13,6 @@ define([
         "use strict";
 
 
-        var EMPTY_ARRAY = [];
-
-
         function Mesh(opts) {
             opts || (opts = {});
 
@@ -27,7 +24,7 @@ define([
 
             this.tangents = opts.tangents != undefined ? opts.tangents : [];
 
-            this.faces = opts.faces != undefined ? opts.faces : [];
+            this.indices = opts.indices != undefined ? opts.indices : [];
 
             this.colors = opts.colors != undefined ? opts.colors : [];
 
@@ -43,20 +40,122 @@ define([
             this.aabb = new AABB3;
             if (opts.vertices) this.aabb.fromPoints(this.vertices);
 
-            this._needsUpdate = true;
+            this._webgl = {};
 
-            if (opts.data) this.fromJSON(opts.data);
+            this.verticesNeedUpdate = true;
+            this.normalsNeedUpdate = true;
+            this.tangentsNeedUpdate = true;
+            this.indicesNeedUpdate = true;
+            this.colorsNeedUpdate = true;
+            this.uvsNeedUpdate = true;
+
+            this.boneIndicesNeedUpdate = true;
+            this.boneWeightsNeedUpdate = true;
+
+            if (opts.json) this.fromJSON(opts.json);
         }
 
         Asset.extend(Mesh);
 
+
+        Mesh.prototype.copy = function(other) {
+            Asset.prototype.copy.call(this, other);
+            var vertices = this.vertices,
+                otherVertices = other.vertices,
+                normals = this.normals,
+                otherNormals = other.normals,
+                tangents = this.tangents,
+                otherTangents = other.tangents,
+                indices = this.indices,
+                otherIndices = other.indices,
+                colors = this.colors,
+                otherColors = other.colors,
+                uvs = this.uvs,
+                otherUvs = other.uvs,
+                bones = this.bones,
+                otherBones = other.bones,
+                boneIndices = this.boneIndices,
+                otherBoneIndices = other.boneIndices,
+                boneWeights = this.boneWeights,
+                otherBoneWeights = other.boneWeights,
+                i;
+
+            vertices.length = otherVertices.length;
+            normals.length = otherNormals.length;
+            tangents.length = otherTangents.length;
+            indices.length = otherIndices.length;
+            colors.length = otherColors.length;
+            uvs.length = otherUvs.length;
+
+            bones.length = otherBones.length;
+            boneIndices.length = otherBoneIndices.length;
+            boneWeights.length = otherBoneWeights.length;
+
+            for (i = otherVertices.length; i--;) vertices[i] = (vertices[i] || new Vec3).copy(otherVertices[i]);
+            for (i = otherNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy.fromJSON(otherNormals[i]);
+            for (i = otherTangents.length; i--;) tangents[i] = (tangents[i] || new Vec4).fromJSON(otherTangents[i]);
+            for (i = otherIndices.length; i--;) indices[i] = otherIndices[i];
+            for (i = otherColors.length; i--;) colors[i] = (colors[i] || new Color).fromJSON(otherColors[i]);
+            for (i = otherUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).fromJSON(otherUvs[i]);
+            for (i = otherBones.length; i--;) bones[i] = (bones[i] || new Bone).fromJSON(otherBones[i]);
+            for (i = otherBoneIndices.length; i--;) boneIndices[i] = otherBoneIndices[i];
+            for (i = otherBoneWeights.length; i--;) boneWeights[i] = otherBoneWeights[i];
+
+            this.dynamic = other.dynamic;
+            this.useBones = other.useBones;
+
+            this.aabb.fromPoints(this.vertices);
+
+            this.verticesNeedUpdate = true;
+            this.normalsNeedUpdate = true;
+            this.tangentsNeedUpdate = true;
+            this.indicesNeedUpdate = true;
+            this.colorsNeedUpdate = true;
+            this.uvsNeedUpdate = true;
+            this.boneIndicesNeedUpdate = true;
+            this.boneWeightsNeedUpdate = true;
+
+            return this;
+        };
+
+
+        Mesh.prototype.clear = function() {
+            Asset.prototype.clear.call(this);
+
+            this.vertices.length = 0;
+            this.normals.length = 0;
+            this.tangents.length = 0;
+            this.indices.length = 0;
+            this.colors.length = 0;
+            this.uvs.length = 0;
+
+            this.bones.length = 0;
+            this.boneIndices.length = 0;
+            this.boneWeights.length = 0;
+
+            this.aabb.clear();
+
+            this.verticesNeedUpdate = true;
+            this.normalsNeedUpdate = true;
+            this.tangentsNeedUpdate = true;
+            this.indicesNeedUpdate = true;
+            this.colorsNeedUpdate = true;
+            this.uvsNeedUpdate = true;
+            this.boneIndicesNeedUpdate = true;
+            this.boneWeightsNeedUpdate = true;
+
+            return this;
+        };
+
+
+        var EMPTY_ARRAY = [];
 
         Mesh.prototype.parse = function(raw) {
             Asset.prototype.parse.call(this, raw);
             var vertices = this.vertices,
                 normals = this.normals,
                 tangents = this.tangents,
-                faces = this.faces,
+                indices = this.indices,
                 colors = this.colors,
                 uvs = this.uvs,
                 bones = this.bones,
@@ -65,7 +164,7 @@ define([
                 bone, items, item,
                 i, il;
 
-            vertices.length = normals.length = tangents.length = faces.length = colors.length = uvs.length = 0;
+            vertices.length = normals.length = tangents.length = indices.length = colors.length = uvs.length = 0;
             bones.length = boneWeights.length = boneIndices.length = 0;
 
             items = raw.vertices || EMPTY_ARRAY;
@@ -77,8 +176,8 @@ define([
             items = raw.tangents || EMPTY_ARRAY;
             for (i = 0, il = items.length; i < il; i += 4) tangents.push(new Vec4(items[i], items[i + 1], items[i + 2], items[i + 3]));
 
-            items = raw.faces || raw.indices || EMPTY_ARRAY;
-            for (i = 0, il = items.length; i < il; i += 3) faces.push(items[i], items[i + 1], items[i + 2]);
+            items = raw.indices || raw.faces || EMPTY_ARRAY;
+            for (i = 0, il = items.length; i < il; i += 3) indices.push(items[i], items[i + 1], items[i + 2]);
 
             items = raw.colors || EMPTY_ARRAY;
             for (i = 0, il = items.length; i < il; i += 3) colors.push(new Color(items[i], items[i + 1], items[i + 2]));
@@ -116,6 +215,15 @@ define([
 
             this.aabb.fromPoints(this.vertices);
 
+            this.verticesNeedUpdate = true;
+            this.normalsNeedUpdate = true;
+            this.tangentsNeedUpdate = true;
+            this.indicesNeedUpdate = true;
+            this.colorsNeedUpdate = true;
+            this.uvsNeedUpdate = true;
+            this.boneIndicesNeedUpdate = true;
+            this.boneWeightsNeedUpdate = true;
+
             return this;
         };
 
@@ -135,17 +243,15 @@ define([
             return function() {
                 var vertices = this.vertices,
                     normals = this.normals,
-                    faces = this.faces,
+                    indices = this.indices,
                     a, b, c, va, vb, vc, i;
 
-                for (i = vertices.length; i -= 3;) {
-                    (normals[i] || (normals[i] = new Vec3)).set(0, 0, 0);
-                }
+                for (i = vertices.length; i--;)(normals[i] || (normals[i] = new Vec3)).set(0, 0, 0);
 
-                for (i = faces.length; i -= 3;) {
-                    a = i;
-                    b = i + 1;
-                    c = i + 2;
+                for (i = indices.length; i -= 3;) {
+                    a = indices[i];
+                    b = indices[i + 1];
+                    c = indices[i + 2];
 
                     va = vertices[a];
                     vb = vertices[b];
@@ -163,13 +269,13 @@ define([
                     normals[c].add(faceNormal);
                 }
 
-                for (i = faces.length; i -= 3;) {
-                    normals[i].normalize();
-                    normals[i + 1].normalize();
-                    normals[i + 2].normalize();
+                for (i = indices.length; i -= 3;) {
+                    normals[indices[i]].normalize();
+                    normals[indices[i + 1]].normalize();
+                    normals[indices[i + 2]].normalize();
                 }
 
-                this._needsUpdate = true;
+                this.normalsNeedUpdate = true;
 
                 return this;
             };
@@ -187,7 +293,7 @@ define([
                 tmp2 = new Vec3;
 
             return function() {
-                var faces = this.faces,
+                var indices = this.indices,
                     vertices = this.vertices,
                     normals = this.normals,
                     tangents = this.tangents,
@@ -208,14 +314,12 @@ define([
                     (tangents[i] || (tangents[i] = new Vec4)).set(0, 0, 0, 1);
                 }
 
-                for (i = vertices.length; i--;) {
-                    uvs[i] = uvs[i] || (uvs[i] = new Vec2);
-                }
+                for (i = vertices.length; i--;) uvs[i] = uvs[i] || (uvs[i] = new Vec2);
 
-                for (i = faces.length; i -= 3;) {
-                    a = i;
-                    b = i + 1;
-                    c = i + 2;
+                for (i = indices.length; i -= 3;) {
+                    a = indices[i];
+                    b = indices[i + 1];
+                    c = indices[i + 2];
 
                     v1 = vertices[a];
                     v2 = vertices[b];
@@ -272,21 +376,11 @@ define([
                     tangents[i].set(tmp1.x, tmp1.y, tmp1.z, w);
                 }
 
-                this._needsUpdate = true;
+                this.tangentsNeedUpdate = true;
 
                 return this;
             };
         }();
-
-
-        Mesh.prototype.clear = function() {
-            Asset.prototype.clear.call(this);
-
-            this.vertices.length = this.normals.length = this.tangents.length = this.faces.length = this.colors.length = this.uvs.length = 0;
-            this.bones.length = this.boneWeights.length = this.boneIndices.length = 0;
-
-            return this;
-        };
 
 
         Mesh.prototype.toJSON = function(json, pack) {
@@ -297,8 +391,8 @@ define([
                 jsonNormals = json.normals || (json.normals = []),
                 tangents = this.tangents,
                 jsonTangents = json.tangents || (json.tangents = []),
-                faces = this.faces,
-                jsonFaces = json.faces || (json.faces = []),
+                indices = this.indices,
+                jsonIndices = json.indices || (json.indices = []),
                 colors = this.colors,
                 jsonColors = json.colors || (json.colors = []),
                 uvs = this.uvs,
@@ -311,13 +405,21 @@ define([
                 jsonBoneWeights = json.boneWeights || (json.boneWeights = []),
                 i;
 
-            jsonVertices.length = jsonNormals.length = jsonTangents.length = jsonFaces.length = jsonColors.length = jsonUvs.length = 0;
-            jsonBones.length = jsonBoneWeights.length = jsonBoneIndices.length = 0;
+            jsonVertices.length = vertices.length;
+            jsonNormals.length = normals.length;
+            jsonTangents.length = tangents.length;
+            jsonIndices.length = indices.length;
+            jsonColors.length = colors.length;
+            jsonUvs.length = uvs.length;
+
+            jsonBones.length = bones.length;
+            jsonBoneIndices.length = boneIndices.length;
+            jsonBoneWeights.length = boneWeights.length;
 
             for (i = vertices.length; i--;) jsonVertices[i] = vertices[i].toJSON(jsonVertices[i]);
             for (i = normals.length; i--;) jsonNormals[i] = normals[i].toJSON(jsonNormals[i]);
             for (i = tangents.length; i--;) jsonTangents[i] = tangents[i].toJSON(jsonTangents[i]);
-            for (i = faces.length; i--;) faces[i] = jsonFaces[i];
+            for (i = indices.length; i--;) indices[i] = jsonIndices[i];
             for (i = colors.length; i--;) jsonColors[i] = colors[i].toJSON(jsonColors[i]);
             for (i = uvs.length; i--;) jsonUvs[i] = uvs[i].toJSON(jsonUvs[i]);
             for (i = bones.length; i--;) jsonBones[i] = bones[i].toJSON(jsonBones[i]);
@@ -339,8 +441,8 @@ define([
                 jsonNormals = json.normals,
                 tangents = this.tangents,
                 jsonTangents = json.tangents,
-                faces = this.faces,
-                jsonFaces = json.faces,
+                indices = this.indices,
+                jsonIndices = json.indices,
                 colors = this.colors,
                 jsonColors = json.colors,
                 uvs = this.uvs,
@@ -353,16 +455,24 @@ define([
                 jsonBoneWeights = json.boneWeights,
                 i;
 
-            vertices.length = normals.length = tangents.length = faces.length = colors.length = uvs.length = 0;
-            bones.length = boneWeights.length = boneIndices.length = 0;
+            vertices.length = jsonVertices.length;
+            normals.length = jsonNormals.length;
+            tangents.length = jsonTangents.length;
+            indices.length = jsonIndices.length;
+            colors.length = jsonColors.length;
+            uvs.length = jsonUvs.length;
 
-            for (i = jsonVertices.length; i--;) vertices[i] = new Vec3().fromJSON(jsonVertices[i]);
-            for (i = jsonNormals.length; i--;) normals[i] = new Vec3().fromJSON(jsonNormals[i]);
-            for (i = jsonTangents.length; i--;) tangents[i] = new Vec4().fromJSON(jsonTangents[i]);
-            for (i = jsonFaces.length; i--;) faces[i] = jsonFaces[i];
-            for (i = jsonColors.length; i--;) colors[i] = new Color().fromJSON(jsonColors[i]);
-            for (i = jsonUvs.length; i--;) uvs[i] = new Vec2().fromJSON(jsonUvs[i]);
-            for (i = jsonBones.length; i--;) bones[i] = new Bone().fromJSON(jsonBones[i]);
+            bones.length = jsonBones.length;
+            boneIndices.length = jsonBoneIndices.length;
+            boneWeights.length = jsonBoneWeights.length;
+
+            for (i = jsonVertices.length; i--;) vertices[i] = (vertices[i] || new Vec3).copy(jsonVertices[i]);
+            for (i = jsonNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy.fromJSON(jsonNormals[i]);
+            for (i = jsonTangents.length; i--;) tangents[i] = (tangents[i] || new Vec4).fromJSON(jsonTangents[i]);
+            for (i = jsonIndices.length; i--;) indices[i] = jsonIndices[i];
+            for (i = jsonColors.length; i--;) colors[i] = (colors[i] || new Color).fromJSON(jsonColors[i]);
+            for (i = jsonUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).fromJSON(jsonUvs[i]);
+            for (i = jsonBones.length; i--;) bones[i] = (bones[i] || new Bone).fromJSON(jsonBones[i]);
             for (i = jsonBoneIndices.length; i--;) boneIndices[i] = jsonBoneIndices[i];
             for (i = jsonBoneWeights.length; i--;) boneWeights[i] = jsonBoneWeights[i];
 
@@ -370,29 +480,43 @@ define([
             this.useBones = json.useBones;
 
             this.aabb.fromPoints(this.vertices);
-            this._needsUpdate = true;
+
+            this.verticesNeedUpdate = true;
+            this.normalsNeedUpdate = true;
+            this.tangentsNeedUpdate = true;
+            this.indicesNeedUpdate = true;
+            this.colorsNeedUpdate = true;
+            this.uvsNeedUpdate = true;
+            this.boneIndicesNeedUpdate = true;
+            this.boneWeightsNeedUpdate = true;
 
             return this;
         };
 
 
-        Mesh.Sphere = function(radius, segments, rings) {
-            radius = radius !== undefined ? radius : 0.5;
-            segments = (segments !== undefined ? floor(max(segments, 3)) : 16) + 1;
-            rings = (rings !== undefined ? floor(max(rings, 3)) : 8) + 2;
+        var PI = Math.PI,
+            HALF_PI = PI * 0.5,
+            TWO_PI = PI * 2,
+            sin = Math.sin,
+            cos = Math.cos;
+        Mesh.Sphere = function(opts) {
+            opts || (opts = {});
+            var radius = opts.radius != undefined ? opts.radius : 0.5,
+                segments = (opts.segments != undefined ? floor(max(opts.segments, 3)) : 16) + 1,
+                rings = (opts.rings != undefined ? floor(max(opts.rings, 3)) : 8) + 2,
 
-            var R = 1 / (rings - 1),
+                R = 1 / (rings - 1),
                 S = 1 / (segments - 1),
                 r, s,
                 x, y, z,
                 a, b, c, d,
 
-                mesh = new Mesh,
+                mesh = new Mesh(opts),
                 vertices = mesh.vertices,
                 normals = mesh.normals,
                 uvs = mesh.uvs,
                 colors = mesh.colors,
-                faces = mesh.faces;
+                indices = mesh.indices;
 
             for (r = 0; r < rings; r++) {
                 for (s = 0; s < segments; s++) {
@@ -414,95 +538,127 @@ define([
                     c = (r + 1) * segments + (s + 1);
                     d = (r + 1) * segments + s;
 
-                    faces.push(a, b, c);
-                    faces.push(a, c, d);
+                    indices.push(a, b, c);
+                    indices.push(a, c, d);
                 }
             }
 
             mesh.calculateAABB();
+            mesh.load = false;
 
             return mesh;
         };
 
 
-        Mesh.Cube = function(width, height, depth) {
-            var w = (width || 1) * 0.5,
-                h = (height || 1) * 0.5,
-                d = (depth || 1) * 0.5,
-                mesh = new Mesh;
+        Mesh.Cube = function(opts) {
+            opts || (opts = {});
+            var w = opts.width || 1,
+                h = opts.height || 1,
+                d = opts.depth || 1,
+                hw = w * 0.5,
+                hh = h * 0.5,
+                hd = d * 0.5,
+                ws = (opts.widthSegments || 1),
+                hs = (opts.heightSegments || 1),
+                ds = (opts.depthSegments || 1),
+                mesh = new Mesh(opts);
 
-            mesh.addQuad(
-                new Vec3(-w, h, -d),
-                new Vec3(w, h, -d),
-                new Vec3(w, -h, -d),
-                new Vec3(-w, -h, -d)
-            );
-
-            addQuad(mesh,
-                new Vec3(w, h, d),
-                new Vec3(-w, h, d),
-                new Vec3(-w, -h, d),
-                new Vec3(w, -h, d)
-            );
-
-            addQuad(mesh,
-                new Vec3(w, h, -d),
-                new Vec3(w, h, d),
-                new Vec3(w, -h, d),
-                new Vec3(w, -h, -d)
-            );
-
-            addQuad(mesh,
-                new Vec3(-w, h, d),
-                new Vec3(-w, h, -d),
-                new Vec3(-w, -h, -d),
-                new Vec3(-w, -h, d)
-            );
-
-            addQuad(mesh,
-                new Vec3(w, -h, d),
-                new Vec3(-w, -h, d),
-                new Vec3(-w, -h, -d),
-                new Vec3(w, -h, -d)
-            );
-
-            addQuad(mesh,
-                new Vec3(w, h, d),
-                new Vec3(w, h, -d),
-                new Vec3(-w, h, -d),
-                new Vec3(-w, h, d)
-            );
+            buildPlane(mesh, "z", "y", -1, -1, d, ds, h, hs, hw, ws);
+            buildPlane(mesh, "z", "y", 1, -1, d, ds, h, hs, -hw, ws);
+            buildPlane(mesh, "x", "z", 1, 1, w, ws, d, ds, hh, hs);
+            buildPlane(mesh, "x", "z", 1, -1, w, ws, d, ds, -hh, hs);
+            buildPlane(mesh, "x", "y", 1, -1, w, ws, h, hs, hd, ds);
+            buildPlane(mesh, "x", "y", -1, -1, w, ws, h, hs, -hd, ds);
 
             mesh.calculateAABB();
+            mesh.load = false;
 
             return mesh;
         };
 
 
-        function addQuad(mesh, a, b, c, d, uvs) {
-            var index = mesh.vertices.length;
+        Mesh.Plane = function(opts) {
+            opts || (opts = {});
+            var w = opts.width || 1,
+                h = opts.height || 1,
+                hw = w * 0.5,
+                hh = h * 0.5,
+                ws = (opts.widthSegments || 1),
+                hs = (opts.heightSegments || 1),
+                mesh = new Mesh(opts);
 
-            mesh.uvs.push(
-                new Vec2(uvs[1], uvs[2]),
-                new Vec2(uvs[0], uvs[2]),
-                new Vec2(uvs[0], uvs[3]),
-                new Vec2(uvs[1], uvs[3])
-            );
+            buildPlane(mesh, "x", "y", 1, 1, w, ws, h, hs, 0, 0);
 
-            mesh.colors.push(
-                new Vec3(uvs[1], uvs[2], 0),
-                new Vec3(uvs[0], uvs[2], 0),
-                new Vec3(uvs[0], uvs[3], 0),
-                new Vec3(uvs[1], uvs[3], 0)
-            );
+            mesh.calculateAABB();
+            mesh.load = false;
 
-            mesh.vertices.push(a, b, c, d);
-
-            mesh.faces.push(
-                index, index + 1, index + 2,
-                index, index + 2, index + 3
-            );
+            return mesh;
         };
+
+
+        function buildPlane(mesh, u, v, udir, vdir, width, ws, height, hs, depth, ds) {
+            var vertices = mesh.vertices,
+                normals = mesh.normals,
+                indices = mesh.indices,
+                uvs = mesh.uvs,
+                gridX = ws,
+                gridY = hs,
+                width_half = width / 2,
+                height_half = height / 2,
+                offset = vertices.length,
+                w, ix, iy;
+
+            if ((u === "x" && v === "y") || (u === "y" && v === "x")) {
+                w = "z";
+            } else if ((u === "x" && v === "z") || (u === "z" && v === "x")) {
+                w = "y";
+                gridY = ds;
+            } else if ((u === "z" && v === "y") || (u === "y" && v === "z")) {
+                w = "x";
+                gridX = ds;
+            }
+
+            var gridX1 = gridX + 1,
+                gridY1 = gridY + 1,
+                segment_width = width / gridX,
+                segment_height = height / gridY,
+                normal = new Vec3();
+
+            normal[w] = depth > 0 ? 1 : -1;
+
+            for (iy = 0; iy < gridY1; iy++) {
+                for (ix = 0; ix < gridX1; ix++) {
+                    var vector = new Vec3();
+
+                    vector[u] = (ix * segment_width - width_half) * udir;
+                    vector[v] = (iy * segment_height - height_half) * vdir;
+                    vector[w] = depth;
+
+                    vertices.push(vector);
+                }
+            }
+
+            for (iy = 0; iy < gridY; iy++) {
+                for (ix = 0; ix < gridX; ix++) {
+                    var a = offset + (ix + gridX1 * iy),
+                        b = offset + (ix + gridX1 * (iy + 1)),
+                        c = offset + ((ix + 1) + gridX1 * (iy + 1)),
+                        d = offset + ((ix + 1) + gridX1 * iy),
+
+                        uva = new Vec2(ix / gridX, 1 - iy / gridY),
+                        uvb = new Vec2(ix / gridX, 1 - (iy + 1) / gridY),
+                        uvc = new Vec2((ix + 1) / gridX, 1 - iy / gridY),
+                        uvd = new Vec2((ix + 1) / gridX, 1 - (iy + 1) / gridY);
+
+                    normals.push(normal.clone(), normal.clone(), normal.clone(), normal.clone());
+                    uvs.push(uva, uvb, uvc, uvd);
+                    indices.push(
+                        a, b, c,
+                        a, c, d
+                    );
+                }
+            }
+        }
 
 
         Mesh.Bone = Bone;

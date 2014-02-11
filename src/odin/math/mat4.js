@@ -454,6 +454,7 @@ define([
          */
         Mat4.prototype.inverse = function() {
             var te = this.elements,
+
                 m11 = te[0],
                 m12 = te[4],
                 m13 = te[8],
@@ -471,19 +472,19 @@ define([
                 m43 = te[11],
                 m44 = te[15],
 
-                m0 = m23 * m34 * m42 - m24 * m33 * m42 + m24 * m32 * m43 - m22 * m34 * m43 - m23 * m32 * m44 + m22 * m33 * m44,
-                m4 = m14 * m33 * m42 - m13 * m34 * m42 - m14 * m32 * m43 + m12 * m34 * m43 + m13 * m32 * m44 - m12 * m33 * m44,
-                m8 = m13 * m24 * m42 - m14 * m23 * m42 + m14 * m22 * m43 - m12 * m24 * m43 - m13 * m22 * m44 + m12 * m23 * m44,
-                m12 = m14 * m23 * m32 - m13 * m24 * m32 - m14 * m22 * m33 + m12 * m24 * m33 + m13 * m22 * m34 - m12 * m23 * m34,
+                me0 = m23 * m34 * m42 - m24 * m33 * m42 + m24 * m32 * m43 - m22 * m34 * m43 - m23 * m32 * m44 + m22 * m33 * m44,
+                me4 = m14 * m33 * m42 - m13 * m34 * m42 - m14 * m32 * m43 + m12 * m34 * m43 + m13 * m32 * m44 - m12 * m33 * m44,
+                me8 = m13 * m24 * m42 - m14 * m23 * m42 + m14 * m22 * m43 - m12 * m24 * m43 - m13 * m22 * m44 + m12 * m23 * m44,
+                me12 = m14 * m23 * m32 - m13 * m24 * m32 - m14 * m22 * m33 + m12 * m24 * m33 + m13 * m22 * m34 - m12 * m23 * m34,
 
-                det = m11 * m0 + m21 * m4 + m31 * m8 + m41 * m12;
+                det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            det = det === 0 ? 0 : 1 / det;
+            if (det === 0) return this.identity();
 
-            te[0] = m0 * det;
-            te[4] = m4 * det;
-            te[8] = m8 * det;
-            te[12] = m12 * det;
+            te[0] = me0 * det;
+            te[4] = me4 * det;
+            te[8] = me8 * det;
+            te[12] = me12 * det;
             te[1] = (m24 * m33 * m41 - m23 * m34 * m41 - m24 * m31 * m43 + m21 * m34 * m43 + m23 * m31 * m44 - m21 * m33 * m44) * det;
             te[5] = (m13 * m34 * m41 - m14 * m33 * m41 + m14 * m31 * m43 - m11 * m34 * m43 - m13 * m31 * m44 + m11 * m33 * m44) * det;
             te[9] = (m14 * m23 * m41 - m13 * m24 * m41 - m14 * m21 * m43 + m11 * m24 * m43 + m13 * m21 * m44 - m11 * m23 * m44) * det;
@@ -510,6 +511,7 @@ define([
         Mat4.prototype.inverseMat = function(other) {
             var te = this.elements,
                 me = other.elements,
+
                 m11 = me[0],
                 m12 = me[4],
                 m13 = me[8],
@@ -527,19 +529,19 @@ define([
                 m43 = me[11],
                 m44 = me[15],
 
-                m0 = m23 * m34 * m42 - m24 * m33 * m42 + m24 * m32 * m43 - m22 * m34 * m43 - m23 * m32 * m44 + m22 * m33 * m44,
-                m4 = m14 * m33 * m42 - m13 * m34 * m42 - m14 * m32 * m43 + m12 * m34 * m43 + m13 * m32 * m44 - m12 * m33 * m44,
-                m8 = m13 * m24 * m42 - m14 * m23 * m42 + m14 * m22 * m43 - m12 * m24 * m43 - m13 * m22 * m44 + m12 * m23 * m44,
-                m12 = m14 * m23 * m32 - m13 * m24 * m32 - m14 * m22 * m33 + m12 * m24 * m33 + m13 * m22 * m34 - m12 * m23 * m34,
+                me0 = m23 * m34 * m42 - m24 * m33 * m42 + m24 * m32 * m43 - m22 * m34 * m43 - m23 * m32 * m44 + m22 * m33 * m44,
+                me4 = m14 * m33 * m42 - m13 * m34 * m42 - m14 * m32 * m43 + m12 * m34 * m43 + m13 * m32 * m44 - m12 * m33 * m44,
+                me8 = m13 * m24 * m42 - m14 * m23 * m42 + m14 * m22 * m43 - m12 * m24 * m43 - m13 * m22 * m44 + m12 * m23 * m44,
+                me12 = m14 * m23 * m32 - m13 * m24 * m32 - m14 * m22 * m33 + m12 * m24 * m33 + m13 * m22 * m34 - m12 * m23 * m34,
 
-                det = m11 * m0 + m21 * m4 + m31 * m8 + m41 * m12;
+                det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            det = det === 0 ? 0 : 1 / det;
+            if (det === 0) return this.identity();
 
-            te[0] = m0 * det;
-            te[4] = m4 * det;
-            te[8] = m8 * det;
-            te[12] = m12 * det;
+            te[0] = me0 * det;
+            te[4] = me4 * det;
+            te[8] = me8 * det;
+            te[12] = me12 * det;
             te[1] = (m24 * m33 * m41 - m23 * m34 * m41 - m24 * m31 * m43 + m21 * m34 * m43 + m23 * m31 * m44 - m21 * m33 * m44) * det;
             te[5] = (m13 * m34 * m41 - m14 * m33 * m41 + m14 * m31 * m43 - m11 * m34 * m43 - m13 * m31 * m44 + m11 * m33 * m44) * det;
             te[9] = (m14 * m23 * m41 - m13 * m24 * m41 - m14 * m21 * m43 + m11 * m24 * m43 + m13 * m21 * m44 - m11 * m23 * m44) * det;
@@ -626,16 +628,16 @@ define([
             return function(eye, target, up) {
                 var te = this.elements;
 
-                up = up || dup;
-
                 z.vsub(eye, target).normalize();
-                if (z.lengthSq() === 0) z.z = 1;
+                if (z.length() === 0) z.z = 1;
+
                 x.vcross(up, z).normalize();
 
-                if (x.lengthSq() === 0) {
+                if (x.length() === 0) {
                     z.x += 0.0001;
                     x.vcross(up, z).normalize();
                 }
+
                 y.vcross(z, x);
 
 
@@ -1428,7 +1430,7 @@ define([
          * @brief returns json object of this
          * @return Object
          */
-        Mat4.prototype.toJSON = function() {
+        Mat4.prototype.toJSON = function(json) {
             json || (json = {});
             var te = this.elements,
                 je = json.elements || (json.elements = []);

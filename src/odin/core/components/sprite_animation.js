@@ -106,7 +106,7 @@ define([
             var sprite = this.sprite,
                 sheet = this.sheet,
                 current = sheet[this.current],
-                dt, count, length, order, frame, mode, animation;
+                w, h, dt, count, length, order, frame, mode, animation;
 
             if (!sprite || !sheet || !current) return;
 
@@ -132,47 +132,38 @@ define([
                 length = current.length;
                 frame += (order * floor(count));
 
-                switch (mode) {
-
-                    case WrapMode.Loop:
-                        frame = frame % length;
-                        break;
-
-                    case WrapMode.Once:
-                        if (order > 0) {
-                            if (frame >= length) {
-                                frame = length - 1;
-                                this.stop();
-                            }
-                        } else {
-                            if (frame < 0) {
-                                frame = 0;
-                                this.stop();
-                            }
+                if (mode === WrapMode.Loop) {
+                    frame = frame % length;
+                } else if (mode === WrapMode.Once) {
+                    if (order > 0) {
+                        if (frame >= length) {
+                            frame = length - 1;
+                            this.stop();
                         }
-                        break;
-
-                    case WrapMode.PingPong:
-                        if (order > 0) {
-                            if (frame >= length) {
-                                this._order = -1;
-                                frame = length - 1;
-                            }
-                        } else {
-                            if (frame < 0) {
-                                this._order = 1;
-                                frame = 0;
-                            }
+                    } else {
+                        if (frame < 0) {
+                            frame = 0;
+                            this.stop();
                         }
-                        break;
-
-                    case WrapMode.Clamp:
-                        if (order > 0) {
-                            if (frame >= length) frame = length - 1;
-                        } else {
-                            if (frame < 0) frame = 0;
+                    }
+                } else if (mode === WrapMode.PingPong) {
+                    if (order > 0) {
+                        if (frame >= length) {
+                            this._order = -1;
+                            frame = length - 1;
                         }
-                        break;
+                    } else {
+                        if (frame < 0) {
+                            this._order = 1;
+                            frame = 0;
+                        }
+                    }
+                } else if (mode === WrapMode.Clamp) {
+                    if (order > 0) {
+                        if (frame >= length) frame = length - 1;
+                    } else {
+                        if (frame < 0) frame = 0;
+                    }
                 }
 
                 animation = current[frame];

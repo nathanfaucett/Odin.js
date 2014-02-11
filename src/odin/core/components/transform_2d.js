@@ -35,9 +35,13 @@ define([
 
             this.matrix = new Mat32;
             this.matrixWorld = new Mat32;
+            this._matrixWorldMat4 = new Mat4;
 
             this.modelView = new Mat32;
+            this._modelViewMat4 = new Mat4;
+
             this._modelViewNeedsUpdate = false;
+            this._modelViewMat4NeedsUpdate = false;
         }
 
         Component.extend(Transform2D);
@@ -261,15 +265,28 @@ define([
                 this.matrixWorld.copy(matrix);
             }
 
+            this._matrixWorldMat4.fromMat32(this.matrixWorld);
+
             this._modelViewNeedsUpdate = true;
+            this._modelViewMat4NeedsUpdate = true;
+        };
+
+
+        Transform2D.prototype.updateModelViewMat32 = function(viewMatrix) {
+            if (!this._modelViewNeedsUpdate) return;
+
+            this.modelView.mmul(viewMatrix, this.matrixWorld);
+
+            this._modelViewNeedsUpdate = false;
         };
 
 
         Transform2D.prototype.updateModelView = function(viewMatrix) {
-            if (!this._modelViewNeedsUpdate) return;
+            if (!this._modelViewMat4NeedsUpdate) return;
 
-            this.modelView.mmul(viewMatrix, this.matrixWorld);
-            this._modelViewNeedsUpdate = false;
+            this._modelViewMat4.mmul(viewMatrix, this._matrixWorldMat4);
+
+            this._modelViewMat4NeedsUpdate = false;
         };
 
 

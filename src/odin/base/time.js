@@ -36,14 +36,13 @@ define(
         }
 
 
-        performance.now = (
-            performance.now ||
+        performance.now || (performance.now = (
             performance.webkitNow ||
             performance.mozNow ||
             performance.msNow ||
             performance.oNow ||
             DateNow
-        );
+        ));
 
         function now() {
 

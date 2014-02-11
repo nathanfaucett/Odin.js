@@ -10,11 +10,26 @@ define([
 
         return {
             AxisType: new Enum("Button Mouse MouseWheel Touch Joystick"),
-            Blending: new Enum("Default None Additive Subtractive Muliply"),
-            EmitterType: new Enum("Circle CircleEdge Box BoxEdge Sphere"),
-            FontStyle: new Enum("Normal Bold Italic BoldAnditalic"),
+
+            Blending: new Enum("Default None Additive Subtractive Muliply Custom"),
+            Shading: new Enum("Lambert Phong"),
+            Side: new Enum("Front Back Both"),
+
+            CullFace: new Enum("None Back Front FrontBack"),
+
+            EmitterType: new Enum("Circle Box Sphere"),
+
+            LightType: new Enum("Point Directional Spot Hemi"),
+
             TextClipping: new Enum("Overflow Clip"),
-            TextAnchor: new Enum("UpperLeft UpperCenter UpperRight MiddleLeft MiddleCenter MiddleRight LowerLeft LowerCenter LowerRight"),
+            TextAnchor: new Enum("Left Center Right"),
+
+            ShadowMapType: new Enum("BasicShadowMap PCFShadowMap PCFSoftShadowMap"),
+
+            FilterMode: new Enum("None Linear"),
+            TextureFormat: new Enum("RGB RGBA"),
+            TextureWrap: new Enum("Repeat Clamp"),
+
             WrapMode: new Enum("Once Loop PingPong Clamp")
         };
     }

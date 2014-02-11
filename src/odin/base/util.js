@@ -7,6 +7,7 @@ define(
 
 
         var util = {},
+            random = Math.random,
 
             isServer = typeof(window) === "undefined",
 
@@ -14,11 +15,131 @@ define(
             toString = ObjectProto.toString,
             hasOwnProperty = ObjectProto.hasOwnProperty,
 
+            ArrayProto = Array.prototype,
+            ArrayForEach = ArrayProto.forEach,
+
+            keys = Object.keys || (Object.keys = function(obj) {
+                var out = [],
+                    key;
+
+                for (key in obj) {
+                    if (hasOwnProperty.call(obj, key)) out.push(key);
+                }
+                return out;
+            }),
+
+            isArray = Array.isArray || (Array.isArray = function(obj) {
+                return toString.call(obj) === "[object Array]";
+            }),
+
             SPILTER = /[ \_\-\.]+|(?=[A-Z][^A-Z])/g,
             UNDERSCORE = /([a-z])([A-Z])/g,
-            FORMAT_REGEX = /%[sdj%]/g,
+            FORMAT_REGEX = /%[sdj%]/g;
 
-            fromCharCode = String.fromCharCode;
+
+        function isObject(obj) {
+
+            return obj === Object(obj);
+        }
+        util.isObject = isObject;
+
+
+        function isArrayLike(obj) {
+
+            return typeof(obj) === "object" && typeof(obj.length) === "number";
+        }
+        util.isArrayLike = isArrayLike;
+        util.isArray = isArray;
+
+
+        function isArguments(obj) {
+
+            return toString.call(obj) === "[object Arguments]";
+        }
+        util.isArguments = isArguments;
+
+
+        function isFunction(obj) {
+
+            return typeof(obj) === "function"
+        }
+        util.isFunction = isFunction;
+
+
+        function isString(obj) {
+
+            return toString.call(obj) === "[object String]";
+        }
+        util.isString = isString;
+
+
+        function isNumber(obj) {
+
+            return toString.call(obj) === "[object Number]";
+        }
+        util.isNumber = isNumber;
+
+
+        function isDecimal(obj) {
+
+            return isNumber(obj) && obj % 1 !== 0;
+        }
+        util.isDecimal = isDecimal;
+
+
+        function isInteger(obj) {
+
+            return isNumber(obj) && obj % 1 === 0;
+        }
+        util.isInteger = isInteger;
+
+
+        function isDate(obj) {
+
+            return toString.call(obj) === "[object Date]";
+        }
+        util.isDate = isDate;
+
+
+        function isRegExp(obj) {
+
+            return toString.call(obj) === "[object RegExp]";
+        }
+        util.isRegExp = isRegExp;
+
+
+        util.isFinite = isFinite;
+
+
+        util.isNaN = isNaN;
+
+
+        function isBoolean(obj) {
+
+            return obj === true || obj === false || toString.call(obj) === "[object Boolean]";
+        }
+        util.isBoolean = isBoolean;
+
+
+        function isNull(obj) {
+
+            return obj === null;
+        }
+        util.isNull = isNull;
+
+
+        function isUndefined(obj) {
+
+            return obj === void 0;
+        }
+        util.isUndefined = isUndefined;
+
+
+        function has(obj, key) {
+
+            return hasOwnProperty.call(obj, key);
+        }
+        util.has = has;
 
 
         function format(fmt) {
@@ -30,19 +151,18 @@ define(
                 if (x === "%%") return "%";
                 if (i >= len) return x;
 
-                switch (x) {
-                    case "%s":
-                        return String(args[i++]);
-                    case "%d":
-                        return Number(args[i++]);
-                    case "%j":
-                        try {
-                            return JSON.stringify(args[i++]);
-                        } catch (e) {
-                            return "[Circular]";
-                        }
-                    default:
-                        return x;
+                if (x === "%s") {
+                    return String(args[i++]);
+                } else if (x === "%d") {
+                    return Number(args[i++]);
+                } else if (x === "%j") {
+                    try {
+                        return JSON.stringify(args[i++]);
+                    } catch (e) {
+                        return "[Circular]";
+                    }
+                } else {
+                    return x;
                 }
             });
         }
@@ -118,29 +238,7 @@ define(
         util.clear = clear;
 
 
-        var isArray = Array.isArray || (Array.isArray = function(obj) {
-            return toString.call(obj) === "[object Array]";
-        });
-        util.isArray = isArray;
-
-
-        var keys = Object.keys || (Object.keys = function(obj) {
-            var out = [],
-                key;
-
-            for (key in obj) {
-                if (hasOwnProperty.call(obj, key)) out.push(key);
-            }
-            return out;
-        });
         util.keys = keys;
-
-
-        function has(obj, key) {
-
-            return hasOwnProperty.call(obj, key);
-        }
-        util.has = has;
 
 
         function arrayBufferToBase64(buffer) {
@@ -167,6 +265,75 @@ define(
             return bytes.buffer;
         }
         util.base64ToArrayBuffer = base64ToArrayBuffer;
+
+
+        function uid() {
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(UID_REPLACER, function(c) {
+                var a = 16 * random() | 0;
+                return ("x" == c ? a : a & 3 | 8).toString(16);
+            })
+        }
+        var UID_REPLACER = /[xy]/g;
+        util.uid = uid;
+
+
+        function each(obj, iterator, ctx) {
+            if (obj == null) return;
+
+            if (ArrayForEach && obj.forEach === ArrayForEach) {
+                obj.forEach(iterator, ctx);
+            } else if (obj.length === +obj.length) {
+                for (var i = 0, length = obj.length; i < length; i++) {
+                    if (iterator.call(ctx, obj[i], i, obj) === false) return;
+                }
+            } else {
+                var keys = keys(obj);
+
+                for (var i = 0, length = keys.length; i < length; i++) {
+                    if (iterator.call(ctx, obj[keys[i]], keys[i], obj) === false) return;
+                }
+            }
+        }
+        util.each = each;
+
+
+        if (!isServer) {
+            util.ajax = function ajax(opts) {
+                opts || (opts = {});
+                var request = new XMLHttpRequest,
+                    src = opts.src,
+                    method = opts.method || (opts.method = "GET"),
+                    before = opts.before,
+                    success = opts.success,
+                    error = opts.error,
+                    asyn = opts.asyn != undefined ? !! opts.asyn : true;
+
+                request.onload = function() {
+                    var status = this.status;
+
+                    if ((status > 199 && status < 301) || status == 304) {
+                        if (typeof(success) === "function") success.call(this);
+                    } else {
+                        if (typeof(error) === "function") {
+                            error.call(this, new Error(method + " " + src + " " + status));
+                        } else {
+                            throw new Error(method + " " + src + " " + status);
+                        }
+                    }
+                };
+                request.onerror = function() {
+                    if (typeof(error) === "function") {
+                        error(new Error(method + " " + src));
+                    } else {
+                        throw new Error(method + " " + src);
+                    }
+                };
+
+                request.open(method, src, asyn);
+                if (typeof(before) === "function") before.call(request);
+                request.send();
+            };
+        }
 
 
         return util;

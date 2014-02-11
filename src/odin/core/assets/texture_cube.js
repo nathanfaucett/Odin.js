@@ -9,16 +9,10 @@ define([
         "use strict";
 
 
-        function Texture(opts) {
+        function TextureCube(opts) {
             opts || (opts = {});
 
             Asset.call(this, opts);
-
-            this.width = 0;
-            this.height = 0;
-
-            this.invWidth = 0;
-            this.invHeight = 0;
 
             this.flipY = opts.flipY != undefined ? !! opts.flipY : false;
             this.premultiplyAlpha = opts.premultiplyAlpha != undefined ? !! opts.premultiplyAlpha : false;
@@ -34,10 +28,10 @@ define([
             this.needsUpdate = true;
         }
 
-        Asset.extend(Texture);
+        Asset.extend(TextureCube);
 
 
-        Texture.prototype.copy = function(other) {
+        TextureCube.prototype.copy = function(other) {
             Asset.prototype.copy.call(this, other);
 
             this.anisotropy = other.anisotropy;
@@ -45,72 +39,52 @@ define([
             this.format = other.format;
             this.wrap = other.wrap;
 
-            this.width = other.width;
-            this.height = other.height;
-            this.invWidth = other.invWidth;
-            this.invHeight = other.invHeight;
-
             return this;
         };
 
 
-        Texture.prototype.parse = function(raw) {
-            Asset.prototype.parse.call(this, raw);
-
-            this.width = raw.width;
-            this.height = raw.height;
-
-            this.invWidth = 1 / this.width;
-            this.invHeight = 1 / this.height;
-
-            return this;
-        };
-
-
-        Texture.prototype.setAnisotropy = function(value) {
+        TextureCube.prototype.setAnisotropy = function(value) {
 
             this.anisotropy = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setFilter = function(value) {
+        TextureCube.prototype.setFilter = function(value) {
 
             this.filter = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setFormat = function(value) {
+        TextureCube.prototype.setFormat = function(value) {
 
             this.format = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setWrap = function(value) {
+        TextureCube.prototype.setWrap = function(value) {
 
             this.wrap = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.toJSON = function(json, pack) {
+
+        TextureCube.prototype.toJSON = function(json, pack) {
             json = Asset.prototype.toJSON.call(this, json);
 
             if ((pack || !this.src) && this.raw) {
                 if (typeof(window) === "undefined") {
                     json.raw = this.raw;
                 } else {
-                    var raw = this.raw,
-                        canvas = document.createElement("canvas"),
-                        ctx = canvas.getContext("2d");
+                    var jsonRaw = json.raw || (json.raw = []),
+                        raw = this.raw,
+                        i = 0,
+                        il = raw.length;
 
-                    canvas.width = raw.width;
-                    canvas.height = raw.height;
-                    ctx.drawImage(raw, 0, 0);
-
-                    json.raw = canvas.toDataURL();
+                    for (; i < il; i++) jsonRaw[i] = imageToDataUrl(raw[i]);
                 }
             }
 
@@ -119,25 +93,27 @@ define([
             json.format = this.format;
             json.wrap = this.wrap;
 
-            json.width = this.width;
-            json.height = this.height;
-            json.invWidth = this.invWidth;
-            json.invHeight = this.invHeight;
-
             return json;
         };
 
 
-        Texture.prototype.fromJSON = function(json) {
+        TextureCube.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
 
             if (!json.src && json.raw) {
                 if (typeof(window) === "undefined") {
                     this.raw = json.raw;
                 } else {
-                    var image = new Image;
-                    image.src = json.raw;
-                    this.raw = image;
+                    var jsonRaw = json.raw,
+                        raw = this.raw,
+                        i = 0,
+                        il = jsonRaw.length;
+
+                    for (; i < il; i++) {
+                        var image = new Image;
+                        image.src = sonRaw[i];
+                        raw[i] = image;
+                    }
                 }
             }
 
@@ -146,15 +122,23 @@ define([
             this.format = json.format;
             this.wrap = json.wrap;
 
-            this.width = json.width;
-            this.height = json.height;
-            this.invWidth = json.invWidth;
-            this.invHeight = json.invHeight;
-
             return this;
         };
 
 
-        return Texture;
+        function imageToDataUrl(image) {
+            if (typeof(window) === "undefined") return image;
+            var canvas = document.createElement("canvas"),
+                ctx = canvas.getContext("2d");
+
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+
+            return canvas.toDataURL();
+        };
+
+
+        return TextureCube;
     }
 );

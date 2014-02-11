@@ -22,7 +22,8 @@ define([
 
             this.alpha = opts.alpha != undefined ? opts.alpha : 1;
 
-            this.texture = opts.texture != undefined ? opts.texture : undefined;
+            this.texture = opts.texture != undefined ? opts.texture : "diffuse";
+            this.material = opts.material != undefined ? opts.material : undefined;
 
             this.width = opts.width || 1;
             this.height = opts.height || 1;
@@ -46,6 +47,7 @@ define([
             this.alpha = other.alpha;
 
             this.texture = other.texture;
+            this.material = other.material;
 
             this.width = other.width;
             this.height = other.height;
@@ -62,7 +64,7 @@ define([
         Sprite.prototype.clear = function() {
             Component.prototype.clear.call(this);
 
-            this.texture = undefined;
+            this.material = undefined;
 
             return this;
         };
@@ -78,7 +80,8 @@ define([
 
             json.alpha = this.alpha;
 
-            json.texture = this.texture ? this.texture.name : undefined;
+            json.texture = this.texture;
+            json.material = this.material ? this.material.name : undefined;
 
             json.width = this.width;
             json.height = this.height;
@@ -102,7 +105,8 @@ define([
 
             this.alpha = json.alpha;
 
-            this.texture = json.texture ? Assets.get(json.texture) : undefined;
+            this.texture = json.texture;
+            this.material = json.material ? Assets.get(json.material) : undefined;
 
             this.width = json.width;
             this.height = json.height;
