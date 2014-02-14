@@ -12,6 +12,10 @@ define(
             defineProperty = Object.defineProperty;
 
 
+        /**
+         * Holds all accessible Classes
+         * @class Odin
+         */
         function Odin() {
 
             this.Phys2D = require("odin/phys2d/phys2d");
@@ -124,6 +128,9 @@ define(
         });
 
 
+        /**
+         * attaches Odin to window/global and all subclasses
+         */
         Odin.prototype.globalize = function() {
 
             for (var key in this) window[key] = this[key];

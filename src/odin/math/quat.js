@@ -18,7 +18,7 @@ define([
 
         /**
          * @class Quat
-         * @brief quaterian
+         * quaterian
          * @param Number x
          * @param Number y
          * @param Number z
@@ -28,25 +28,25 @@ define([
 
             /**
              * @property Number x
-             * @memberof Quat
+             * @memberof Odin.Quat
              */
             this.x = x || 0;
 
             /**
              * @property Number y
-             * @memberof Quat
+             * @memberof Odin.Quat
              */
             this.y = y || 0;
 
             /**
              * @property Number z
-             * @memberof Quat
+             * @memberof Odin.Quat
              */
             this.z = z || 0;
 
             /**
              * @property Number w
-             * @memberof Quat
+             * @memberof Odin.Quat
              */
             this.w = w !== undefined ? w : 1;
         }
@@ -55,8 +55,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Quat
-         * @brief returns new instance of this
+         * @memberof Odin.Quat
+         * returns new instance of this
          * @return Quat
          */
         Quat.prototype.clone = function() {
@@ -66,8 +66,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Quat
-         * @brief copies other
+         * @memberof Odin.Quat
+         * copies other
          * @param Quat other
          * @return this
          */
@@ -83,8 +83,8 @@ define([
 
         /**
          * @method set
-         * @memberof Quat
-         * @brief sets values of this
+         * @memberof Odin.Quat
+         * sets values of this
          * @param Number x
          * @param Number y
          * @param Number z
@@ -103,8 +103,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Quat
-         * @brief muliples this's values by other's
+         * @memberof Odin.Quat
+         * muliples this's values by other's
          * @param Quat other
          * @return this
          */
@@ -128,8 +128,8 @@ define([
 
         /**
          * @method qmul
-         * @memberof Quat
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Quat
+         * muliples a and b saves it in this
          * @param Quat a
          * @param Quat b
          * @return this
@@ -154,8 +154,8 @@ define([
 
         /**
          * @method div
-         * @memberof Quat
-         * @brief divides this's values by other's
+         * @memberof Odin.Quat
+         * divides this's values by other's
          * @param Quat other
          * @return this
          */
@@ -179,8 +179,8 @@ define([
 
         /**
          * @method qdiv
-         * @memberof Quat
-         * @brief divides b from a saves it in this
+         * @memberof Odin.Quat
+         * divides b from a saves it in this
          * @param Quat a
          * @param Quat b
          * @return this
@@ -205,8 +205,8 @@ define([
 
         /**
          * @method length
-         * @memberof Quat
-         * @brief returns the length of this
+         * @memberof Odin.Quat
+         * returns the length of this
          * @return Number
          */
         Quat.prototype.length = function() {
@@ -221,8 +221,8 @@ define([
 
         /**
          * @method lengthSq
-         * @memberof Quat
-         * @brief returns the squared length of this
+         * @memberof Odin.Quat
+         * returns the squared length of this
          * @return Number
          */
         Quat.prototype.lengthSq = function() {
@@ -236,8 +236,8 @@ define([
 
         /**
          * @method normalize
-         * @memberof Quat
-         * @brief returns this with a length of 1
+         * @memberof Odin.Quat
+         * returns this with a length of 1
          * @return this
          */
         Quat.prototype.normalize = function() {
@@ -259,8 +259,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Quat
-         * @brief returns the inverse of this
+         * @memberof Odin.Quat
+         * returns the inverse of this
          * @return this
          */
         Quat.prototype.inverse = function() {
@@ -281,8 +281,8 @@ define([
 
         /**
          * @method inverseQuat
-         * @memberof Quat
-         * @brief returns the inverse of other
+         * @memberof Odin.Quat
+         * returns the inverse of other
          * @param Quat other
          * @return this
          */
@@ -304,8 +304,8 @@ define([
 
         /**
          * @method conjugate
-         * @memberof Quat
-         * @brief this faster than inverse, if quat is normalized and produces the same result
+         * @memberof Odin.Quat
+         * this faster than inverse, if quat is normalized and produces the same result
          * @return this
          */
         Quat.prototype.conjugate = function() {
@@ -319,8 +319,8 @@ define([
 
         /**
          * @method calculateW
-         * @memberof Quat
-         * @brief calculates w component of quat
+         * @memberof Odin.Quat
+         * calculates w component of quat
          * @return this
          */
         Quat.prototype.calculateW = function() {
@@ -335,8 +335,8 @@ define([
 
         /**
          * @method lerp
-         * @memberof Quat
-         * @brief linear interpolation between this and other by x
+         * @memberof Odin.Quat
+         * linear interpolation between this and other by x
          * @param Quat other
          * @param Number x
          * @return this
@@ -353,8 +353,8 @@ define([
 
         /**
          * @method qlerp
-         * @memberof Quat
-         * @brief linear interpolation between a and b by x
+         * @memberof Odin.Quat
+         * linear interpolation between a and b by x
          * @param Quat a
          * @param Quat b
          * @param Number x
@@ -376,8 +376,8 @@ define([
 
         /**
          * @method nlerp
-         * @memberof Quat
-         * @brief faster but less accurate than slerp
+         * @memberof Odin.Quat
+         * faster but less accurate than slerp
          * @param Quat other
          * @param Number x
          * @return this
@@ -394,8 +394,8 @@ define([
 
         /**
          * @method qnlerp
-         * @memberof Quat
-         * @brief faster but less accurate than qslerp
+         * @memberof Odin.Quat
+         * faster but less accurate than qslerp
          * @param Quat a
          * @param Quat b
          * @param Number x
@@ -417,8 +417,8 @@ define([
 
         /**
          * @method slerp
-         * @memberof Quat
-         * @brief spherical linear Interpolation of this and other by x
+         * @memberof Odin.Quat
+         * spherical linear Interpolation of this and other by x
          * @param Quat other
          * @param Number x
          * @return this
@@ -464,8 +464,8 @@ define([
 
         /**
          * @method qslerp
-         * @memberof Quat
-         * @brief spherical linear Interpolation between a and b by x
+         * @memberof Odin.Quat
+         * spherical linear Interpolation between a and b by x
          * @param Quat a
          * @param Quat b
          * @param Number x
@@ -512,8 +512,8 @@ define([
 
         /**
          * @method qdot
-         * @memberof Quat
-         * @brief dot product of two quats, can be called as a static function Quat.qdot( a, b )
+         * @memberof Odin.Quat
+         * dot product of two quats, can be called as a static function Quat.qdot( a, b )
          * @param Quat a
          * @param Quat b
          * @return Number
@@ -525,8 +525,8 @@ define([
 
         /**
          * @method dot
-         * @memberof Quat
-         * @brief dot product of this and other
+         * @memberof Odin.Quat
+         * dot product of this and other
          * @param Quat other
          * @return Number
          */
@@ -537,8 +537,8 @@ define([
 
         /**
          * @method rotateX
-         * @memberof Quat
-         * @brief sets quat's x rotation
+         * @memberof Odin.Quat
+         * sets quat's x rotation
          * @param Number angle
          * @return this
          */
@@ -561,8 +561,8 @@ define([
 
         /**
          * @method rotateY
-         * @memberof Quat
-         * @brief sets quat's y rotation
+         * @memberof Odin.Quat
+         * sets quat's y rotation
          * @param Number angle
          * @return this
          */
@@ -585,8 +585,8 @@ define([
 
         /**
          * @method rotateZ
-         * @memberof Quat
-         * @brief sets quat's z rotation
+         * @memberof Odin.Quat
+         * sets quat's z rotation
          * @param Number angle
          * @return this
          */
@@ -609,8 +609,8 @@ define([
 
         /**
          * @method rotate
-         * @memberof Quat
-         * @brief rotates quat by z then x then y in that order
+         * @memberof Odin.Quat
+         * rotates quat by z then x then y in that order
          * @param Number x
          * @param Number y
          * @param Number z
@@ -627,8 +627,8 @@ define([
 
         /**
          * @method lookRotation
-         * @memberof Quat
-         * @brief creates a rotation with the specified forward and upwards directions
+         * @memberof Odin.Quat
+         * creates a rotation with the specified forward and upwards directions
          * @param Vec3 forward
          * @param Vec3 up
          * @return this
@@ -659,8 +659,8 @@ define([
 
         /**
          * @method fromAxisAngle
-         * @memberof Quat
-         * @brief sets quat from axis and angle
+         * @memberof Odin.Quat
+         * sets quat from axis and angle
          * @param Vec3 axis
          * @param Number angle
          * @return this
@@ -679,8 +679,8 @@ define([
 
         /**
          * @method fromVec3s
-         * @memberof Quat
-         * @brief sets quat from two vectors
+         * @memberof Odin.Quat
+         * sets quat from two vectors
          * @param Vec3 u
          * @param Vec3 v
          * @return this
@@ -702,8 +702,8 @@ define([
 
         /**
          * @method fromMat3
-         * @memberof Quat
-         * @brief sets values from Mat3
+         * @memberof Odin.Quat
+         * sets values from Mat3
          * @param Mat3 m
          * @return this
          */
@@ -759,8 +759,8 @@ define([
 
         /**
          * @method fromMat4
-         * @memberof Quat
-         * @brief sets values from Mat4
+         * @memberof Odin.Quat
+         * sets values from Mat4
          * @param Mat4 m
          * @return this
          */
@@ -816,8 +816,8 @@ define([
 
         /**
          * @method fromArray
-         * @memberof Quat
-         * @brief sets values from array
+         * @memberof Odin.Quat
+         * sets values from array
          * @param Array array
          * @return this
          */
@@ -832,9 +832,24 @@ define([
         };
 
         /**
+         * @memberof Odin.Quat
+         * @param Odin.Quat other
+         * @return this
+         */
+        Quat.prototype.equals = function(other) {
+
+            return !(
+                this.x !== other.x ||
+                this.y !== other.y ||
+                this.z !== other.z ||
+                this.w !== other.w
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Quat
-         * @brief sets values from JSON object
+         * @memberof Odin.Quat
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -850,8 +865,8 @@ define([
 
         /**
          * @method toArray
-         * @memberof Quat
-         * @brief returns array of this
+         * @memberof Odin.Quat
+         * returns array of this
          * @return Object
          */
         Quat.prototype.toArray = function(array) {
@@ -867,8 +882,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Quat
-         * @brief returns json object of this
+         * @memberof Odin.Quat
+         * returns json object of this
          * @return Object
          */
         Quat.prototype.toJSON = function(json) {
@@ -885,8 +900,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Quat
-         * @brief returns string of this
+         * @memberof Odin.Quat
+         * returns string of this
          * @return String
          */
         Quat.prototype.toString = function() {

@@ -15,7 +15,7 @@ define([
 
         /**
          * @class Mat32
-         * @brief 3x2 matrix
+         * 3x2 matrix
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -28,7 +28,7 @@ define([
 
             /**
              * @property Float32Array elements
-             * @memberof Mat32
+             * @memberof Odin.Mat32
              */
             this.elements = te;
 
@@ -44,8 +44,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Mat32
-         * @brief returns new instance of this
+         * @memberof Odin.Mat32
+         * returns new instance of this
          * @return Mat32
          */
         Mat32.prototype.clone = function() {
@@ -59,8 +59,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Mat32
-         * @brief copies other
+         * @memberof Odin.Mat32
+         * copies other
          * @param Mat32 other
          * @return this
          */
@@ -80,8 +80,8 @@ define([
 
         /**
          * @method set
-         * @memberof Mat32
-         * @brief sets values of this
+         * @memberof Odin.Mat32
+         * sets values of this
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -105,8 +105,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Mat32
-         * @brief muliples this's values by other's
+         * @memberof Odin.Mat32
+         * muliples this's values by other's
          * @param Mat32 other
          * @return this
          */
@@ -142,8 +142,8 @@ define([
 
         /**
          * @method mmul
-         * @memberof Mat32
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Mat32
+         * muliples a and b saves it in this
          * @param Mat32 a
          * @param Mat32 b
          * @return this
@@ -181,8 +181,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Mat32
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Mat32
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -201,8 +201,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Mat32
-         * @brief divides this by scalar value
+         * @memberof Odin.Mat32
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -223,8 +223,8 @@ define([
 
         /**
          * @method identity
-         * @memberof Mat32
-         * @brief identity matrix
+         * @memberof Odin.Mat32
+         * identity matrix
          * @return this
          */
         Mat32.prototype.identity = function() {
@@ -242,8 +242,8 @@ define([
 
         /**
          * @method zero
-         * @memberof Mat32
-         * @brief zero matrix
+         * @memberof Odin.Mat32
+         * zero matrix
          * @return this
          */
         Mat32.prototype.zero = function() {
@@ -261,8 +261,8 @@ define([
 
         /**
          * @method determinant
-         * @memberof Mat32
-         * @brief returns the determinant of this
+         * @memberof Odin.Mat32
+         * returns the determinant of this
          * @return this
          */
         Mat32.prototype.determinant = function() {
@@ -273,8 +273,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Mat32
-         * @brief returns the inverse of this
+         * @memberof Odin.Mat32
+         * returns the inverse of this
          * @return this
          */
         Mat32.prototype.inverse = function() {
@@ -304,8 +304,8 @@ define([
 
         /**
          * @method inverseMat
-         * @memberof Mat32
-         * @brief returns the inverse of other
+         * @memberof Odin.Mat32
+         * returns the inverse of other
          * @param Mat32 other
          * @return this
          */
@@ -337,8 +337,8 @@ define([
 
         /**
          * @method transpose
-         * @memberof Mat32
-         * @brief transposes this matrix
+         * @memberof Odin.Mat32
+         * transposes this matrix
          * @return this
          */
         Mat32.prototype.transpose = function() {
@@ -354,8 +354,8 @@ define([
 
         /**
          * @method setTrace
-         * @memberof Mat32
-         * @brief sets the diagonal of matrix
+         * @memberof Odin.Mat32
+         * sets the diagonal of matrix
          * @param Number x
          * @param Number y
          * @return this
@@ -371,8 +371,8 @@ define([
 
         /**
          * @method lookAt
-         * @memberof Mat32
-         * @brief makes matrix look from eye to target
+         * @memberof Odin.Mat32
+         * makes matrix look from eye to target
          * @param Vec2 eye
          * @param Vec2 target
          * @return this
@@ -395,8 +395,8 @@ define([
 
         /**
          * @method compose
-         * @memberof Mat32
-         * @brief sets matrix from position, scale, and an angle in radians
+         * @memberof Odin.Mat32
+         * sets matrix from position, scale, and an angle in radians
          * @param Vec2 position
          * @param Vec2 scale
          * @param Number angle
@@ -422,8 +422,8 @@ define([
 
         /**
          * @method decompose
-         * @memberof Mat32
-         * @brief gets matrix position, scale, and returns its angle in radians
+         * @memberof Odin.Mat32
+         * gets matrix position, scale, and returns its angle in radians
          * @param Vec2 position
          * @param Vec2 scale
          * @return Number
@@ -446,8 +446,8 @@ define([
 
         /**
          * @method setRotation
-         * @memberof Mat32
-         * @brief sets the rotation in radians this
+         * @memberof Odin.Mat32
+         * sets the rotation in radians this
          * @param Number angle
          * @return this
          */
@@ -466,8 +466,8 @@ define([
 
         /**
          * @method getRotation
-         * @memberof Mat32
-         * @brief returns the rotation in radians of this
+         * @memberof Odin.Mat32
+         * returns the rotation in radians of this
          * @return Number
          */
         Mat32.prototype.getRotation = function() {
@@ -478,8 +478,8 @@ define([
 
         /**
          * @method setPosition
-         * @memberof Mat32
-         * @brief sets the position of this
+         * @memberof Odin.Mat32
+         * sets the position of this
          * @param Vec2 v
          * @return this
          */
@@ -494,8 +494,8 @@ define([
 
         /**
          * @method getPosition
-         * @memberof Mat32
-         * @brief gets the position of this
+         * @memberof Odin.Mat32
+         * gets the position of this
          * @param Vec2 v
          * @return Vec2
          */
@@ -510,8 +510,8 @@ define([
 
         /**
          * @method extractPosition
-         * @memberof Mat32
-         * @brief gets position from other saves it in this
+         * @memberof Odin.Mat32
+         * gets position from other saves it in this
          * @param Mat32 other
          * @return this
          */
@@ -527,8 +527,8 @@ define([
 
         /**
          * @method extractRotation
-         * @memberof Mat32
-         * @brief gets rotation from other saves it in this
+         * @memberof Odin.Mat32
+         * gets rotation from other saves it in this
          * @param Mat32 other
          * @return this
          */
@@ -558,8 +558,8 @@ define([
 
         /**
          * @method translate
-         * @memberof Mat32
-         * @brief translates matrix by vector
+         * @memberof Odin.Mat32
+         * translates matrix by vector
          * @param Vec2 v
          * @return this
          */
@@ -576,8 +576,8 @@ define([
 
         /**
          * @method rotate
-         * @memberof Mat32
-         * @brief rotates this by angle in radians
+         * @memberof Odin.Mat32
+         * rotates this by angle in radians
          * @param Number angle
          * @return this
          */
@@ -602,8 +602,8 @@ define([
 
         /**
          * @method scale
-         * @memberof Mat32
-         * @brief scales matrix by vector
+         * @memberof Odin.Mat32
+         * scales matrix by vector
          * @param Vec2 v
          * @return this
          */
@@ -625,8 +625,8 @@ define([
 
         /**
          * @method orthographic
-         * @memberof Mat32
-         * @brief makes orthographic matrix
+         * @memberof Odin.Mat32
+         * makes orthographic matrix
          * @param Number left
          * @param Number right
          * @param Number bottom
@@ -653,8 +653,8 @@ define([
 
         /**
          * @method fromMat3
-         * @memberof Mat32
-         * @brief sets this from Mat3
+         * @memberof Odin.Mat32
+         * sets this from Mat3
          * @param Mat3 m
          * @return this
          */
@@ -674,8 +674,8 @@ define([
 
         /**
          * @method fromMat4
-         * @memberof Mat32
-         * @brief sets this from Mat4
+         * @memberof Odin.Mat32
+         * sets this from Mat4
          * @param Mat4 m
          * @return this
          */
@@ -694,9 +694,28 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat32
+         * @param Odin.Mat32 other
+         * @return this
+         */
+        Mat32.prototype.equals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return !(
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5]
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Mat32
-         * @brief sets values from JSON object
+         * @memberof Odin.Mat32
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -716,8 +735,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Mat32
-         * @brief returns json object of this
+         * @memberof Odin.Mat32
+         * returns json object of this
          * @return Object
          */
         Mat32.prototype.toJSON = function(json) {
@@ -738,8 +757,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Mat32
-         * @brief returns string of this
+         * @memberof Odin.Mat32
+         * returns string of this
          * @return String
          */
         Mat32.prototype.toString = function() {

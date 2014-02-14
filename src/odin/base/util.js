@@ -215,15 +215,21 @@ define(
         util.override = override;
 
 
-        function copy(obj) {
-            var c = {},
-                key;
+        function copy(obj, out) {
+            var type = typeof(obj),
+                key, i, il;
 
-            for (key in add) {
-                if (obj[key] != undefined) c[key] = obj[key];
+            if (type !== "object") return obj;
+
+            if (isArrayLike(obj)) {
+                out = [];
+                for (i = 0, il = obj.length; i < il; i++) out[i] = copy(obj[i]);
+            } else if (isObject(obj)) {
+                out = {};
+                for (key in obj) out[key] = copy(obj[key]);
             }
 
-            return c;
+            return out;
         };
         util.copy = copy;
 

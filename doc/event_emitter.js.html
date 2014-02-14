@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: base/event_emitter.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: base/event_emitter.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
+}
+define(
+    function() {
+        "use strict";
+
+
+        var shift = Array.prototype.shift;
+
+
+        /**
+         * @class Odin.EventEmitter
+         */
+        function EventEmitter() {
+
+            this._events = {};
+        }
+
+        /**
+         * attaches function to an event
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
+        EventEmitter.prototype.on = function(type, listener, ctx) {
+            var events = this._events;
+
+            (events[type] || (events[type] = [])).push({
+                listener: listener,
+                ctx: ctx || this
+            });
+
+            return this;
+        };
+
+        /**
+         * attaches function to an event, on the first call its removed
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
+        EventEmitter.prototype.once = function(type, listener, ctx) {
+            var self = this;
+            ctx = ctx || this;
+
+            function once() {
+                self.off(type, once);
+                listener.apply(ctx, arguments);
+            }
+
+            return this.on(type, once, ctx);
+        };
+
+        /**
+         * attaches function to an event on another object
+         * @memberof Odin.EventEmitter
+         * @param {object} obj
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
+        EventEmitter.prototype.listenTo = function(obj, type, listener, ctx) {
+            if (!obj.on || !obj.addEventListenerTo) throw "Can't listen to Object, it's not a instance of EventEmitter";
+
+            obj.on(type, listener, ctx || this);
+
+            return this;
+        };
+
+        /**
+         * removes function from an event
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
+        EventEmitter.prototype.off = function(type, listener, ctx) {
+            var thisEvents = this._events,
+                events, event,
+                i;
+
+            if (!type) {
+                for (i in thisEvents) thisEvents[i].length = 0;
+                return this;
+            }
+
+            events = thisEvents[type];
+            if (!events) return this;
+
+            if (!listener) {
+                events.length = 0;
+            } else {
+                ctx = ctx || this;
+
+                for (i = events.length; i--;) {
+                    event = events[i];
+
+                    if (event.listener === listener && event.ctx === ctx) {
+                        events.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+
+            return this;
+        };
+
+        /**
+         * emits event type
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @return this
+         */
+        EventEmitter.prototype.emit = function(type) {
+            var events = this._events[type],
+                a1, a2, a3, a4,
+                length, event,
+                i;
+
+            if (!events || !events.length) return this;
+            length = arguments.length;
+
+            if (length === 1) {
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx);
+                }
+            } else if (length === 2) {
+                a1 = arguments[1];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1);
+                }
+            } else if (length === 3) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
+                }
+            } else if (length === 4) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                a3 = arguments[3];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
+                }
+            } else if (length === 5) {
+                a1 = arguments[1];
+                a2 = arguments[2];
+                a3 = arguments[3];
+                a4 = arguments[4];
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
+                }
+            } else {
+                shift.apply(arguments);
+                for (i = events.length; i--;) {
+                    if ((event = events[i])) event.listener.apply(event.ctx, arguments);
+                }
+            }
+
+            return this;
+        };
+
+        /**
+         * @memberof Odin.EventEmitter
+         * @param {constructor} child
+         * @param {constructor} parent
+         * @return child
+         */
+        EventEmitter.extend = function(child, parent) {
+            if (!parent) parent = this;
+
+            child.prototype = Object.create(parent.prototype);
+            child.prototype.constructor = child;
+
+            child.extend = parent.extend || this.extend;
+
+            if (parent.onExtend) {
+                if (!child.onExtend) child.onExtend = parent.onExtend;
+                parent.onExtend(child);
+            }
+
+            return child;
+        };
+
+
+        return EventEmitter;
+    }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 22:33:35 GMT-0600 (CST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

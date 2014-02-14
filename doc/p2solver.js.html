@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: phys2d/p2solver.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: phys2d/p2solver.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>if (typeof define !== "function") {
+    var define = require("amdefine")(module);
+}
+define([
+        "odin/base/class",
+        "odin/math/mathf"
+    ],
+    function(Class, Mathf) {
+        "use strict";
+
+
+        var clamp = Mathf.clamp;
+
+        /**
+         * @class P2Solver
+         * @extends Class
+         * @brief World Solver
+         * @param Object opts sets Class properties from passed Object
+         */
+        function P2Solver(opts) {
+            opts || (opts = {});
+
+            Class.call(this);
+
+            /**
+             * @property Number iterations
+             * @brief max number of iterations
+             * @memberof P2Solver
+             */
+            this.iterations = opts.iterations !== undefined ? opts.iterations : 10;
+
+            /**
+             * @property Number tolerance
+             * @memberof P2Solver
+             */
+            this.tolerance = opts.tolerance !== undefined ? opts.tolerance : 1e-6;
+        }
+
+        Class.extend(P2Solver, Class);
+
+        /**
+         * @method solve
+         * @memberof P2Solver
+         * @brief solves all equations
+         * @param Number h
+         * @param Array equations
+         */
+        P2Solver.prototype.solve = function(h, equations) {
+            var num = equations.length,
+                eq, bi, bj,
+                vlambdai, vlambdaj, vi, vj,
+                iterations = this.iterations,
+                iter = 0,
+                toleranceSq = this.tolerance * this.tolerance,
+                GWlambda, lambda, deltaLambda, deltaLambdaTotal,
+                i, j;
+
+            if (num > -1) {
+
+                for (i = num; i--;) {
+                    eq = equations[i];
+
+                    eq.updateConstants(h);
+                    eq.init(h);
+                }
+
+                for (i = iterations; i--;) {
+
+                    iter++;
+                    deltaLambdaTotal = 0;
+
+                    for (j = num; j--;) {
+                        eq = equations[j];
+
+                        GWlambda = eq.calculateGWlambda();
+                        lambda = eq.lambda;
+                        deltaLambda = eq.invC * (eq.B - GWlambda - eq.eps * lambda);
+
+                        eq.lambda = clamp(lambda + deltaLambda, eq.minForce, eq.maxForce);
+                        deltaLambda = eq.lambda - lambda;
+
+                        eq.addToLambda(deltaLambda);
+                        deltaLambdaTotal += deltaLambda;
+                    }
+
+                    if (deltaLambdaTotal * deltaLambdaTotal &lt; toleranceSq) break;
+                }
+
+                for (i = num; i--;) {
+                    eq = equations[i];
+
+                    bi = eq.bi;
+                    vi = bi.velocity;
+                    vlambdai = bi.vlambda;
+                    bj = eq.bj;
+                    vj = bj.velocity;
+                    vlambdaj = bj.vlambda;
+
+                    vi.x += vlambdai.x;
+                    vi.y += vlambdai.y;
+
+                    vj.x += vlambdaj.x;
+                    vj.y += vlambdaj.y;
+
+                    vlambdai.x = vlambdai.y = vlambdaj.x = vlambdaj.y = 0;
+
+                    if (bi.wlambda !== undefined) {
+                        bi.angularVelocity += bi.wlambda;
+                        bi.wlambda = 0;
+                    }
+                    if (bj.wlambda !== undefined) {
+                        bj.angularVelocity += bj.wlambda;
+                        bj.wlambda = 0;
+                    }
+                }
+            }
+
+            return iter;
+        };
+
+
+        return P2Solver;
+    }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 22:33:35 GMT-0600 (CST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

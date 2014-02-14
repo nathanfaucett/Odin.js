@@ -92,12 +92,12 @@ define([
             boneWeights.length = otherBoneWeights.length;
 
             for (i = otherVertices.length; i--;) vertices[i] = (vertices[i] || new Vec3).copy(otherVertices[i]);
-            for (i = otherNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy.fromJSON(otherNormals[i]);
-            for (i = otherTangents.length; i--;) tangents[i] = (tangents[i] || new Vec4).fromJSON(otherTangents[i]);
+            for (i = otherNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy(otherNormals[i]);
+            for (i = otherTangents.length; i--;) tangents[i] = (tangents[i] || new Vec4).copy(otherTangents[i]);
             for (i = otherIndices.length; i--;) indices[i] = otherIndices[i];
-            for (i = otherColors.length; i--;) colors[i] = (colors[i] || new Color).fromJSON(otherColors[i]);
-            for (i = otherUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).fromJSON(otherUvs[i]);
-            for (i = otherBones.length; i--;) bones[i] = (bones[i] || new Bone).fromJSON(otherBones[i]);
+            for (i = otherColors.length; i--;) colors[i] = (colors[i] || new Color).copy(otherColors[i]);
+            for (i = otherUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).copy(otherUvs[i]);
+            for (i = otherBones.length; i--;) bones[i] = (bones[i] || new Bone).copy(otherBones[i]);
             for (i = otherBoneIndices.length; i--;) boneIndices[i] = otherBoneIndices[i];
             for (i = otherBoneWeights.length; i--;) boneWeights[i] = otherBoneWeights[i];
 

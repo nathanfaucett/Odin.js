@@ -111,7 +111,6 @@ define([
             this.glExtensionStandardDerivatives = undefined;
             this.glExtensionTextureFilterAnisotropic = undefined;
             this.glExtensionCompressedTextureS3TC = undefined;
-            this.glExtensionInstancedArrays = undefined;
             this.glExtensionDrawBuffers = undefined;
 
             this._lastProgram = undefined;
@@ -182,6 +181,7 @@ define([
             this.glExtensionStandardDerivatives = undefined;
             this.glExtensionTextureFilterAnisotropic = undefined;
             this.glExtensionCompressedTextureS3TC = undefined;
+            this.glExtensionDrawBuffers = undefined;
 
             this.supportsVertexTextures = false;
             this.supportsFloatTextures = false;
@@ -264,6 +264,7 @@ define([
             this.glExtensionStandardDerivatives = gl.getExtension("OES_standard_derivatives");
             this.glExtensionTextureFloat = gl.getExtension("OES_texture_float");
             this.glExtensionTextureFloatLinear = gl.getExtension("OES_texture_float_linear");
+            this.glExtensionDrawBuffers = gl.getExtension("WEBGL_draw_buffers");
 
             this.precision = precision;
             this.maxAnisotropy = glExtensionTextureFilterAnisotropic ? gl.getParameter(glExtensionTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 1;

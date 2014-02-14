@@ -12,7 +12,7 @@ define([
 
         /**
          * @class Vec2
-         * @brief 2d vector
+         * 2d vector
          * @param Number x
          * @param Number y
          */
@@ -20,13 +20,13 @@ define([
 
             /**
              * @property Number x
-             * @memberof Vec2
+             * @memberof Odin.Vec2
              */
             this.x = x || 0;
 
             /**
              * @property Number y
-             * @memberof Vec2
+             * @memberof Odin.Vec2
              */
             this.y = y || 0;
         }
@@ -35,8 +35,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Vec2
-         * @brief returns new instance of this
+         * @memberof Odin.Vec2
+         * returns new instance of this
          * @return Vec2
          */
         Vec2.prototype.clone = function() {
@@ -46,8 +46,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Vec2
-         * @brief copies other
+         * @memberof Odin.Vec2
+         * copies other
          * @param Vec2 other
          * @return this
          */
@@ -61,8 +61,8 @@ define([
 
         /**
          * @method set
-         * @memberof Vec2
-         * @brief sets values of this
+         * @memberof Odin.Vec2
+         * sets values of this
          * @param Number x
          * @param Number y
          * @return this
@@ -77,8 +77,8 @@ define([
 
         /**
          * @method add
-         * @memberof Vec2
-         * @brief adds other's values to this
+         * @memberof Odin.Vec2
+         * adds other's values to this
          * @param Vec2 other
          * @return this
          */
@@ -92,8 +92,8 @@ define([
 
         /**
          * @method vadd
-         * @memberof Vec2
-         * @brief adds a and b together saves it in this
+         * @memberof Odin.Vec2
+         * adds a and b together saves it in this
          * @param Vec2 a
          * @param Vec2 b
          * @return this
@@ -108,8 +108,8 @@ define([
 
         /**
          * @method sadd
-         * @memberof Vec2
-         * @brief adds scalar value to this
+         * @memberof Odin.Vec2
+         * adds scalar value to this
          * @param Number s
          * @return this
          */
@@ -123,8 +123,8 @@ define([
 
         /**
          * @method sub
-         * @memberof Vec2
-         * @brief subtracts other's values from this
+         * @memberof Odin.Vec2
+         * subtracts other's values from this
          * @param Vec2 other
          * @return this
          */
@@ -138,8 +138,8 @@ define([
 
         /**
          * @method vsub
-         * @memberof Vec2
-         * @brief subtracts b from a saves it in this
+         * @memberof Odin.Vec2
+         * subtracts b from a saves it in this
          * @param Vec2 a
          * @param Vec2 b
          * @return this
@@ -154,8 +154,8 @@ define([
 
         /**
          * @method ssub
-         * @memberof Vec2
-         * @brief subtracts this by a scalar value
+         * @memberof Odin.Vec2
+         * subtracts this by a scalar value
          * @param Number s
          * @return this
          */
@@ -169,8 +169,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Vec2
-         * @brief muliples this's values by other's
+         * @memberof Odin.Vec2
+         * muliples this's values by other's
          * @param Vec2 other
          * @return this
          */
@@ -184,8 +184,8 @@ define([
 
         /**
          * @method vmul
-         * @memberof Vec2
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Vec2
+         * muliples a and b saves it in this
          * @param Vec2 a
          * @param Vec2 b
          * @return this
@@ -200,8 +200,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Vec2
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Vec2
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -215,8 +215,8 @@ define([
 
         /**
          * @method div
-         * @memberof Vec2
-         * @brief divides this's values by other's
+         * @memberof Odin.Vec2
+         * divides this's values by other's
          * @param Vec2 other
          * @return this
          */
@@ -232,8 +232,8 @@ define([
 
         /**
          * @method vdiv
-         * @memberof Vec2
-         * @brief divides b from a saves it in this
+         * @memberof Odin.Vec2
+         * divides b from a saves it in this
          * @param Vec2 a
          * @param Vec2 b
          * @return this
@@ -250,8 +250,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Vec2
-         * @brief divides this by scalar value
+         * @memberof Odin.Vec2
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -266,8 +266,8 @@ define([
 
         /**
          * @method length
-         * @memberof Vec2
-         * @brief returns the length of this
+         * @memberof Odin.Vec2
+         * returns the length of this
          * @return Number
          */
         Vec2.prototype.length = function() {
@@ -282,8 +282,8 @@ define([
 
         /**
          * @method lengthSq
-         * @memberof Vec2
-         * @brief returns the squared length of this
+         * @memberof Odin.Vec2
+         * returns the squared length of this
          * @return Number
          */
         Vec2.prototype.lengthSq = function() {
@@ -295,8 +295,8 @@ define([
 
         /**
          * @method setLength
-         * @memberof Vec2
-         * @brief sets this so its magnitude is equal to length
+         * @memberof Odin.Vec2
+         * sets this so its magnitude is equal to length
          * @param Number length
          * @return Vec2
          */
@@ -322,8 +322,8 @@ define([
 
         /**
          * @method normalize
-         * @memberof Vec2
-         * @brief returns this with a length of 1
+         * @memberof Odin.Vec2
+         * returns this with a length of 1
          * @return this
          */
         Vec2.prototype.normalize = function() {
@@ -343,8 +343,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Vec2
-         * @brief returns the inverse of this
+         * @memberof Odin.Vec2
+         * returns the inverse of this
          * @return this
          */
         Vec2.prototype.inverse = function() {
@@ -357,8 +357,8 @@ define([
 
         /**
          * @method inverseVec
-         * @memberof Vec2
-         * @brief returns the inverse of other
+         * @memberof Odin.Vec2
+         * returns the inverse of other
          * @param Vec2 other
          * @return this
          */
@@ -372,8 +372,8 @@ define([
 
         /**
          * @method lerp
-         * @memberof Vec2
-         * @brief linear interpolation between this and other by x
+         * @memberof Odin.Vec2
+         * linear interpolation between this and other by x
          * @param Vec2 other
          * @param Number x
          * @return Vec2
@@ -388,8 +388,8 @@ define([
 
         /**
          * @method vlerp
-         * @memberof Vec2
-         * @brief linear interpolation between a and b by x
+         * @memberof Odin.Vec2
+         * linear interpolation between a and b by x
          * @param Vec2 a
          * @param Vec2 b
          * @param Number x
@@ -407,8 +407,8 @@ define([
 
         /**
          * @method vdot
-         * @memberof Vec2
-         * @brief dot product of two vectors, can be called as a static function Vec2.vdot( a, b )
+         * @memberof Odin.Vec2
+         * dot product of two vectors, can be called as a static function Vec2.vdot( a, b )
          * @param Vec2 a
          * @param Vec2 b
          * @return Number
@@ -420,8 +420,8 @@ define([
 
         /**
          * @method dot
-         * @memberof Vec2
-         * @brief dot product of this and other vector
+         * @memberof Odin.Vec2
+         * dot product of this and other vector
          * @param Vec2 other
          * @return Number
          */
@@ -432,8 +432,8 @@ define([
 
         /**
          * @method vcross
-         * @memberof Vec2
-         * @brief cross product between a vector and b vector, can be called as a static function Vec2.vcross( a, b )
+         * @memberof Odin.Vec2
+         * cross product between a vector and b vector, can be called as a static function Vec2.vcross( a, b )
          * @param Vec2 a
          * @param Vec2 b
          * @return Number
@@ -445,8 +445,8 @@ define([
 
         /**
          * @method cross
-         * @memberof Vec2
-         * @brief cross product between this vector and other
+         * @memberof Odin.Vec2
+         * cross product between this vector and other
          * @param Vec2 other
          * @return Number
          */
@@ -457,8 +457,8 @@ define([
 
         /**
          * @method min
-         * @memberof Vec2
-         * @brief returns min values from this and other vector
+         * @memberof Odin.Vec2
+         * returns min values from this and other vector
          * @param Vec2 other
          * @return this
          */
@@ -476,8 +476,8 @@ define([
 
         /**
          * @method max
-         * @memberof Vec2
-         * @brief returns max values from this and other vector
+         * @memberof Odin.Vec2
+         * returns max values from this and other vector
          * @param Vec2 other
          * @return this
          */
@@ -495,8 +495,8 @@ define([
 
         /**
          * @method clamp
-         * @memberof Vec2
-         * @brief clamp values between min and max's values
+         * @memberof Odin.Vec2
+         * clamp values between min and max's values
          * @param Vec2 min
          * @param Vec2 max
          * @return this
@@ -517,8 +517,8 @@ define([
 
         /**
          * @method transformAngle
-         * @memberof Vec2
-         * @brief transforms this with angle
+         * @memberof Odin.Vec2
+         * transforms this with angle
          * @param Mat2 m
          * @return this
          */
@@ -536,8 +536,8 @@ define([
 
         /**
          * @method transformMat2
-         * @memberof Vec2
-         * @brief transforms this with Mat2
+         * @memberof Odin.Vec2
+         * transforms this with Mat2
          * @param Mat2 m
          * @return this
          */
@@ -554,8 +554,8 @@ define([
 
         /**
          * @method untransformMat2
-         * @memberof Vec2
-         * @brief untransforms this with Mat2
+         * @memberof Odin.Vec2
+         * untransforms this with Mat2
          * @param Mat2 m
          * @return this
          */
@@ -572,8 +572,8 @@ define([
 
         /**
          * @method transformMat32
-         * @memberof Vec2
-         * @brief transforms this with Mat32
+         * @memberof Odin.Vec2
+         * transforms this with Mat32
          * @param Mat32 m
          * @return this
          */
@@ -590,8 +590,8 @@ define([
 
         /**
          * @method untransformMat32
-         * @memberof Vec2
-         * @brief untransforms this with Mat32
+         * @memberof Odin.Vec2
+         * untransforms this with Mat32
          * @param Mat32 m
          * @return this
          */
@@ -608,8 +608,8 @@ define([
 
         /**
          * @method transformMat3
-         * @memberof Vec2
-         * @brief transforms this with Mat3
+         * @memberof Odin.Vec2
+         * transforms this with Mat3
          * @param Mat3 m
          * @return this
          */
@@ -626,8 +626,8 @@ define([
 
         /**
          * @method transformMat4
-         * @memberof Vec2
-         * @brief transforms this with Mat4
+         * @memberof Odin.Vec2
+         * transforms this with Mat4
          * @param Mat4 m
          * @return this
          */
@@ -644,8 +644,8 @@ define([
 
         /**
          * @method fromVec3
-         * @memberof Vec2
-         * @brief sets values from Vec3
+         * @memberof Odin.Vec2
+         * sets values from Vec3
          * @param Vec3 v
          * @return this
          */
@@ -659,8 +659,8 @@ define([
 
         /**
          * @method fromVec4
-         * @memberof Vec2
-         * @brief sets values from Vec4
+         * @memberof Odin.Vec2
+         * sets values from Vec4
          * @param Vec4 v
          * @return this
          */
@@ -674,8 +674,8 @@ define([
 
         /**
          * @method positionFromMat32
-         * @memberof Vec2
-         * @brief sets position from Mat32
+         * @memberof Odin.Vec2
+         * sets position from Mat32
          * @param Mat32 m
          * @return this
          */
@@ -690,8 +690,8 @@ define([
 
         /**
          * @method positionFromMat4
-         * @memberof Vec2
-         * @brief sets position from Mat4
+         * @memberof Odin.Vec2
+         * sets position from Mat4
          * @param Mat4 m
          * @return this
          */
@@ -706,8 +706,8 @@ define([
 
         /**
          * @method scaleFromMat2
-         * @memberof Vec2
-         * @brief sets this from Mat2 scale
+         * @memberof Odin.Vec2
+         * sets this from Mat2 scale
          * @param Mat2 m
          * @return this
          */
@@ -724,17 +724,30 @@ define([
 
         /**
          * @method scaleFromMat32
-         * @memberof Vec2
-         * @brief sets this from Mat32 scale
+         * @memberof Odin.Vec2
+         * sets this from Mat32 scale
          * @param Mat32 m
          * @return this
          */
         Vec2.prototype.scaleFromMat32 = Vec2.prototype.scaleFromMat2;
 
         /**
+         * @memberof Odin.Vec2
+         * @param Odin.Vec2 other
+         * @return this
+         */
+        Vec2.prototype.equals = function(other) {
+
+            return !(
+                this.x !== other.x ||
+                this.y !== other.y
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Vec2
-         * @brief sets values from JSON object
+         * @memberof Odin.Vec2
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -748,8 +761,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Vec2
-         * @brief returns json object of this
+         * @memberof Odin.Vec2
+         * returns json object of this
          * @return Object
          */
         Vec2.prototype.toJSON = function(json) {
@@ -764,8 +777,8 @@ define([
 
         /**
          * @method fromArray
-         * @memberof Vec2
-         * @brief sets values from Array object
+         * @memberof Odin.Vec2
+         * sets values from Array object
          * @param Array array
          * @return this
          */
@@ -779,8 +792,8 @@ define([
 
         /**
          * @method toArray
-         * @memberof Vec2
-         * @brief returns array object of this
+         * @memberof Odin.Vec2
+         * returns array object of this
          * @return Array
          */
         Vec2.prototype.toArray = function(array) {
@@ -794,8 +807,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Vec2
-         * @brief returns string of this
+         * @memberof Odin.Vec2
+         * returns string of this
          * @return String
          */
         Vec2.prototype.toString = function() {

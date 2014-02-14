@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: core/components/particle_system/particle_system.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: core/components/particle_system/particle_system.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>if (typeof define !== "function") {
+    var define = require("amdefine")(module);
+}
+define([
+        "odin/base/class",
+        "odin/base/time",
+        "odin/core/components/component",
+        "odin/core/components/particle_system/emitter",
+        "odin/core/components/particle_system/emitter_2d",
+        "odin/core/components/particle_system/tween"
+    ],
+    function(Class, Time, Component, Emitter, Emitter2D, Tween) {
+        "use strict";
+
+
+        /**
+         * @class ParticleSystem
+         * @extends Component
+         * @brief 2d particle emitter
+         * @param Object options
+         */
+        function ParticleSystem(opts) {
+            opts || (opts = {});
+
+            Component.call(this, "ParticleSystem", opts);
+
+            /**
+             * @property Boolean playing
+             * @memberof ParticleSystem
+             */
+            this.playing = opts.playing != undefined ? opts.playing : false;
+
+            /**
+             * @property Array emitters
+             * @memberof ParticleSystem
+             */
+            this.emitters = [];
+            this._emitterHash = {};
+            this._emitterJSONHash = {};
+
+            if (opts.emitter) this.addEmitter(opts.emitter);
+            if (opts.emitters) this.add.apply(this, opts.emitters);
+        }
+
+        ParticleSystem.type = "ParticleSystem";
+        Component.extend(ParticleSystem);
+
+
+        ParticleSystem.Emitter = Emitter;
+        ParticleSystem.Emitter2D = Emitter2D;
+        ParticleSystem.Tween = Tween;
+
+
+        ParticleSystem.prototype.copy = function(other) {
+            var otherEmitters = other.emitters,
+                i = 0,
+                il = otherEmitters.length;;
+
+            this.clear();
+
+            for (; i &lt; il; i++) this.addEmitter(otherEmitters[i].clone());
+            this.playing = other.playing;
+
+            return this;
+        };
+
+
+        ParticleSystem.prototype.clear = function() {
+            Component.prototype.clear.call(this);
+            var emitters = this.emitters,
+                i = emitters.length;;
+
+            for (; i--;) this.removeEmitter(emitters[i]);
+            return this;
+        };
+
+
+        ParticleSystem.prototype.addEmitter = function(emitter) {
+            var emitters = this.emitters,
+                index = emitters.indexOf(emitter);
+
+            if (index === -1) {
+                if (emitter.particleSystem) emitter = emitter.clone();
+
+                emitter.particleSystem = this;
+                emitters.push(emitter);
+                this._emitterHash[emitter._id] = emitter;
+                if (emitter._jsonId !== -1) this._emitterHash[emitter._jsonId] = emitter;
+            } else {
+                Log.error("ParticleSystem.addEmitter: ParticleSystem already has passed Emitter");
+            }
+
+            return this;
+        };
+
+
+        ParticleSystem.prototype.add = function() {
+
+            for (var i = arguments.length; i--;) this.addEmitter(arguments[i]);
+            return this;
+        };
+
+
+        ParticleSystem.prototype.removeEmitter = function(emitter) {
+            var emitters = this.emitters,
+                index = emitters.indexOf(emitter);
+
+            if (index !== -1) {
+                emitters.splice(index, 1);
+                this._emitterHash[emitter._id] = undefined;
+                if (emitter._jsonId !== -1) this._emitterHash[emitter._jsonId] = undefined;
+
+                emitter.clear();
+                emitter.particleSystem = undefined;
+                emitter.transform = undefined;
+            } else {
+                Log.error("ParticleSystem.removeEmitter: ParticleSystem does not have passed Emitter");
+            }
+
+            return this;
+        };
+
+
+        ParticleSystem.prototype.remove = function() {
+
+            for (var i = arguments.length; i--;) this.removeEmitter(arguments[i]);
+            return this;
+        };
+
+
+        ParticleSystem.prototype.findEmitterById = function(id) {
+
+            return this._emitterHash[id];
+        };
+
+
+        ParticleSystem.prototype.findEmitterByServerId = function(id) {
+
+            return this._emitterJSONHash[id];
+        };
+
+
+        /**
+         * @method play
+         * @memberof ParticleSystem
+         */
+        ParticleSystem.prototype.play = function() {
+            var emitters = this.emitters,
+                i;
+
+            for (i = emitters.length; i--;) emitters[i].play();
+            this.playing = true;
+
+            return this;
+        };
+
+
+        ParticleSystem.prototype.update = function() {
+            if (this.isServer || !this.playing) return;
+
+            var dt = Time.delta,
+                emitters = this.emitters,
+                emitter, playing = false,
+                i;
+
+            for (i = emitters.length; i--;) {
+                emitter = emitters[i];
+                emitter.update(dt);
+                if (emitter.playing) playing = true;
+            }
+
+            this.playing = playing;
+        };
+
+
+        ParticleSystem.prototype.toJSON = function(json) {
+            json = Component.prototype.toJSON.call(this, json);
+            var emitters = this.emitters,
+                jsonEmitters = json.emitters || (json.emitters = []),
+                i = 0,
+                il = emitters.length;
+
+            for (; i &lt; il; i++) {
+                jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
+            }
+            json.playing = this.playing;
+
+            return json;
+        };
+
+
+        ParticleSystem.prototype.fromJSON = function(json) {
+            Component.prototype.fromJSON.call(this, json);
+            var jsonEmitters = json.emitters,
+                emitter, jsonEmitter,
+                i = 0,
+                il = jsonEmitters.length;
+
+            for (; i &lt; il; i++) {
+                jsonEmitter = jsonEmitters[i];
+
+                if ((emitter = this.findEmitterById(jsonEmitter._id))) {
+                    emitter.fromJSON(jsonEmitter);
+                } else {
+                    this.addEmitter(Class.fromJSON(jsonEmitter));
+                }
+            }
+            this.playing = json.playing;
+
+            return this;
+        };
+
+
+        return ParticleSystem;
+    }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 22:33:35 GMT-0600 (CST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

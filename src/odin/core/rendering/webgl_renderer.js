@@ -379,6 +379,7 @@ define([
          */
         WebGLRenderer.prototype.render = function(scene, camera) {
             if (!this._context) return;
+
             var gl = this.context,
                 components = scene.components,
                 sprites = components.Sprite || EMPTY_ARRAY,

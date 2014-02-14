@@ -15,7 +15,12 @@ define([
 
         var defineProperty = Object.defineProperty;
 
-
+        /**
+         * Scenes manage GameObjects and their Components
+         * @class Odin.Scene
+         * @extends Odin.Class
+         * @param Object options
+         */
         function Scene(opts) {
             opts || (opts = {});
 

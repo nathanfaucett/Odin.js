@@ -13,10 +13,10 @@ define([
         /**
          * @class GameObject
          * @extends Class
-         * @brief base class for entities in scenes
+         * @memberof Odin
+         * @brief Base class for entities in scenes
          * @param Object options
          */
-
         function GameObject(opts) {
             opts || (opts = {});
 

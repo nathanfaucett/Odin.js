@@ -35,9 +35,6 @@ define([
 
             this._webgl = undefined;
 
-            this.attributes = opts.attributes || {};
-            this.attributesNeedUpdate = true;
-
             this.uniforms = merge(opts.uniforms || {}, {
                 diffuseMap: undefined,
                 diffuseColor: new Color(1, 1, 1)
@@ -63,7 +60,6 @@ define([
 
             this.shader = other.shader;
 
-            this.attributes = other.attributes;
             this.uniforms = other.uniforms;
 
             return this;
@@ -101,7 +97,6 @@ define([
             json.shader = this.shader != undefined ? this.shader.name : undefined;
 
             toJSON(this.uniforms, json.uniforms || (json.uniforms = {}));
-            toJSON(this.attributes, json.attributes || (json.attributes = {}));
 
             return json;
         };
@@ -122,7 +117,6 @@ define([
             this.shader = json.shader != undefined ? Assets.get(json.shader) : undefined;
 
             fromJSON(this.uniforms, json.uniforms);
-            fromJSON(this.attributes, json.attributes);
 
             return this;
         };

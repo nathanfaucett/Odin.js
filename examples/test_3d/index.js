@@ -15,7 +15,8 @@ require({
 
 
         Assets.addAssets(
-			new ShaderLib.VertexLit,
+            new ShaderLib.VertexLit,
+            new ShaderLib.ReflectiveVertexLit,
             new Texture({
                 name: "img_marine_dif",
                 src: "../content/images/marine_dif.jpg"
@@ -37,6 +38,10 @@ require({
             })
         );
         Assets.addAssets(
+            new Mesh({
+                name: "mesh_odin",
+                src: "../content/geometry/marine.json"
+            }),
             Mesh.Cube({
                 name: "mesh_cube"
             }),
@@ -55,16 +60,36 @@ require({
 
                 uniforms: {
                     diffuseColor: new Color("white"),
-                    diffuseMap: Assets.get("img_marine_dif"),
-                    envMap: Assets.get("cm_sky")
+                    diffuseMap: Assets.get("img_marine_dif")
                 },
 
                 shader: Assets.get("shader_vertex_lit")
+            }),
+            new Material({
+                name: "mat_env",
+
+                wireframe: false,
+                wireframeLineWidth: 1,
+
+                uniforms: {
+                    diffuseMap: Assets.get("img_marine_dif"),
+                    envMap: Assets.get("cm_sky"),
+                    reflectivity: 0.5,
+                    combine: 3
+                },
+
+                shader: Assets.get("shader_reflective_vertex_lit")
             })
         );
 
         game = new Game({
             debug: true
+        });
+
+
+        Assets.get("mesh_odin").on("load", function() {
+
+            this.calculateNormals();
         });
 
         var scene = new Scene({
@@ -98,6 +123,18 @@ require({
             ],
             tag: "Mesh"
         });
+        odin = new GameObject({
+            components: [
+                new Transform({
+                    position: new Vec3(-1, 0, 0)
+                }),
+                new MeshFilter({
+                    mesh: Assets.get("mesh_odin"),
+                    material: Assets.get("mat_default")
+                })
+            ],
+            tag: "Mesh"
+        });
         cube = new GameObject({
             components: [
                 new Transform({
@@ -124,7 +161,9 @@ require({
         });
         pointLight = new GameObject({
             components: [
-                new Transform,
+                new Transform({
+                    position: new Vec3(0, 0, 25)
+                }),
                 new MeshFilter({
                     mesh: Assets.get("mesh_sphere"),
                     material: Assets.get("mat_default")
@@ -137,9 +176,9 @@ require({
                 })
             ],
             tags: [
-				"Light",
-				"PointLight"
-			]
+                "Light",
+                "PointLight"
+            ]
         });
         directionalLight = new GameObject({
             components: [
@@ -157,9 +196,9 @@ require({
                 })
             ],
             tags: [
-				"Light",
-				"DirectionalLight"
-			]
+                "Light",
+                "DirectionalLight"
+            ]
         });
         spotLight = new GameObject({
             components: [
@@ -179,9 +218,9 @@ require({
                 })
             ],
             tags: [
-				"Light",
-				"SpotLight"
-			]
+                "Light",
+                "SpotLight"
+            ]
         });
         hemiLight = new GameObject({
             components: [
@@ -199,9 +238,9 @@ require({
                 })
             ],
             tags: [
-				"Light",
-				"HemiLight"
-			]
+                "Light",
+                "HemiLight"
+            ]
         });
 
         scene.addGameObjects(camera, pointLight, directionalLight, spotLight, hemiLight);
@@ -211,10 +250,12 @@ require({
             var num = random(),
                 instance;
 
-            if (num > 0.3333 && num < 0.6666) {
+            if (num < 0.25) {
                 instance = cube.clone();
-            } else if (num >= 0.6666) {
+            } else if (num > 0.25 && num < 0.5) {
                 instance = sphere.clone();
+            } else if (num > 0.5 && num < 0.75) {
+                instance = odin.clone();
             } else {
                 instance = plane.clone();
             }
@@ -233,22 +274,24 @@ require({
                 pLight = currentScene.findByTagFirst("PointLight"),
                 sLight = currentScene.findByTagFirst("SpotLight"),
                 i;
-            for (i = 500; i--;) addObject(currentScene);
-			
-			game.on("update", function() {
-				var time = Time.time;
-				
-				pLight.transform.position.set(
-					cos(time) * 15,
-					sin(time) * 15,
-					0
-				);
-				sLight.transform.position.set(
-					cos(time) * 15,
-					sin(time) * 15,
-					sin(time) * 15
-				);
-			});
+            for (i = 100; i--;) addObject(currentScene);
+
+            game.on("update", function() {
+                var time = Time.time,
+                    cosTime = cos(time),
+                    sinTime = sin(time);
+
+                pLight.transform.position.set(
+                    cosTime * 15,
+                    sinTime * 15,
+                    0
+                );
+                sLight.transform.position.set(
+                    cosTime * 15,
+                    sinTime * 15,
+                    sinTime * 15
+                );
+            });
         }
 
         restart = function() {

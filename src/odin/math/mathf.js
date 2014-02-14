@@ -8,6 +8,7 @@ define(
 
         var random = Math.random,
             abs = Math.abs,
+            cos = Math.cos,
             pow = Math.pow,
             floor = Math.floor,
             ceil = Math.ceil,
@@ -24,49 +25,49 @@ define(
 
         /**
          * @class Mathf
-         * @brief collection of common math functions
+         * collection of common math functions
          */
         function Mathf() {
 
             /**
              * @property Number PI
-             * @brief The infamous 3.1415926535897932384626433832795028841968
-             * @memberof Mathf
+             * The infamous 3.1415926535897932384626433832795028841968
+             * @memberof Odin.Mathf
              */
             this.PI = PI;
 
             /**
              * @property Number TWO_PI
-             * @brief 2 * PI
-             * @memberof Mathf
+             * 2 * PI
+             * @memberof Odin.Mathf
              */
             this.TWO_PI = TWO_PI;
 
             /**
              * @property Number HALF_PI
-             * @brief PI / 2
-             * @memberof Mathf
+             * PI / 2
+             * @memberof Odin.Mathf
              */
             this.HALF_PI = HALF_PI;
 
             /**
              * @property Number EPSILON
-             * @brief A small number value
-             * @memberof Mathf
+             * A small number value
+             * @memberof Odin.Mathf
              */
             this.EPSILON = EPSILON;
 
             /**
              * @property Number TO_RADS
-             * @brief Degrees to radians conversion constant
-             * @memberof Mathf
+             * Degrees to radians conversion constant
+             * @memberof Odin.Mathf
              */
             this.TO_RADS = TO_RADS;
 
             /**
              * @property Number TO_DEGS
-             * @brief Radians to degrees conversion constant
-             * @memberof Mathf
+             * Radians to degrees conversion constant
+             * @memberof Odin.Mathf
              */
             this.TO_DEGS = TO_DEGS;
 
@@ -98,8 +99,8 @@ define(
 
         /**
          * @method equals
-         * @memberof Mathf
-         * @brief returns if a = b within some value, defaults to Mathf.EPSILON
+         * @memberof Odin.Mathf
+         * returns if a = b within some value, defaults to Mathf.EPSILON
          * @param Number a
          * @param Number b
          * @param Number e
@@ -112,8 +113,8 @@ define(
 
         /**
          * @method modulo
-         * @memberof Mathf
-         * @brief returns remainder of a / b
+         * @memberof Odin.Mathf
+         * returns remainder of a / b
          * @param Number a
          * @param Number b
          * @return Number
@@ -126,8 +127,8 @@ define(
 
         /**
          * @method standardRadian
-         * @memberof Mathf
-         * @brief convertes x to radian where 0 <= x < 2PI
+         * @memberof Odin.Mathf
+         * convertes x to radian where 0 <= x < 2PI
          * @param Number x
          * @return Number
          */
@@ -138,8 +139,8 @@ define(
 
         /**
          * @method standardAngle
-         * @memberof Mathf
-         * @brief convertes x to angle where 0 <= x < 360
+         * @memberof Odin.Mathf
+         * convertes x to angle where 0 <= x < 360
          * @param Number x
          * @return Number
          */
@@ -150,8 +151,8 @@ define(
 
         /**
          * @method sign
-         * @memberof Mathf
-         * @brief gets sign of x
+         * @memberof Odin.Mathf
+         * gets sign of x
          * @param Number x
          * @return Number
          */
@@ -162,8 +163,8 @@ define(
 
         /**
          * @method clamp
-         * @memberof Mathf
-         * @brief clamp x between min and max
+         * @memberof Odin.Mathf
+         * clamp x between min and max
          * @param Number x
          * @param Number min
          * @param Number max
@@ -176,8 +177,8 @@ define(
 
         /**
          * @method clampBottom
-         * @memberof Mathf
-         * @brief clamp x between min and Infinity
+         * @memberof Odin.Mathf
+         * clamp x between min and Infinity
          * @param Number x
          * @param Number min
          * @return Number
@@ -189,8 +190,8 @@ define(
 
         /**
          * @method clampTop
-         * @memberof Mathf
-         * @brief clamp x between -Infinity and max
+         * @memberof Odin.Mathf
+         * clamp x between -Infinity and max
          * @param Number x
          * @param Number max
          * @return Number
@@ -202,8 +203,8 @@ define(
 
         /**
          * @method clamp01
-         * @memberof Mathf
-         * @brief clamp x between 0 and 1
+         * @memberof Odin.Mathf
+         * clamp x between 0 and 1
          * @param Number x
          * @return Number
          */
@@ -214,8 +215,8 @@ define(
 
         /**
          * @method truncate
-         * @memberof Mathf
-         * @brief truncate x to have n number of decial places
+         * @memberof Odin.Mathf
+         * truncate x to have n number of decial places
          * @param Number x
          * @param Number n
          * @return Number
@@ -229,8 +230,8 @@ define(
 
         /**
          * @method lerp
-         * @memberof Mathf
-         * @brief linear interpolation between a and b by x
+         * @memberof Odin.Mathf
+         * linear interpolation between a and b by x
          * @param Number a
          * @param Number b
          * @param Number x
@@ -243,8 +244,8 @@ define(
 
         /**
          * @method lerpAngle
-         * @memberof Mathf
-         * @brief linear interpolation between a and b by x insures 0 <= x < 2PI
+         * @memberof Odin.Mathf
+         * linear interpolation between a and b by x insures 0 <= x < 2PI
          * @param Number a
          * @param Number b
          * @param Number x
@@ -256,9 +257,51 @@ define(
         };
 
         /**
+         * @method cosLerp
+         * @memberof Odin.Mathf
+         * cosine interpolation between a and b by x
+         * @param Number a
+         * @param Number b
+         * @param Number x
+         * @return Number
+         */
+        Mathf.prototype.lerpCos = function(a, b, x) {
+            var ft = x * PI,
+                f = (1 - cos(ft)) * 0.5;
+
+            return a * (1 - f) + b * f;
+        };
+
+        /**
+         * @method cosLerp
+         * @memberof Odin.Mathf
+         * cubic interpolation between v1 and v2 by x
+         * @param Number v0
+         * @param Number v1
+         * @param Number v2
+         * @param Number v3
+         * @param Number x
+         * @return Number
+         */
+        Mathf.prototype.lerpCubic = function(v0, v1, v2, v3, x) {
+            v0 || (v0 = v1);
+            v3 || (v3 = v2);
+            var P = (v3 - v2) - (v0 - v1),
+                Q = (v0 - v1) - P,
+                R = v2 - v0,
+                S = v1,
+
+                Px = P * x,
+                Qx = Q * x,
+                Rx = R * x;
+
+            return (Px * Px * Px) + (Qx * Qx) + Rx + S
+        };
+
+        /**
+         * smooth step, if input is between min and max this returns a value proportionately between 0 and 1
          * @method smoothStep
-         * @memberof Mathf
-         * @brief smooth step, if input is between min and max this returns a value proportionately between 0 and 1
+         * @memberof Odin.Mathf
          * @param Number x
          * @param Number min
          * @param Number max
@@ -275,8 +318,8 @@ define(
 
         /**
          * @method smootherStep
-         * @memberof Mathf
-         * @brief smoother step, if input is between min and max this returns a value proportionately between 0 and 1
+         * @memberof Odin.Mathf
+         * smoother step, if input is between min and max this returns a value proportionately between 0 and 1
          * @param Number x
          * @param Number min
          * @param Number max
@@ -293,8 +336,8 @@ define(
 
         /**
          * @method pingPong
-         * @memberof Mathf
-         * @brief PingPongs the value x, so that it is never larger than length and never smaller than 0.
+         * @memberof Odin.Mathf
+         * PingPongs the value x, so that it is never larger than length and never smaller than 0.
          * @param Number x
          * @param Number length
          * @return Number
@@ -307,8 +350,8 @@ define(
 
         /**
          * @method degsToRads
-         * @memberof Mathf
-         * @brief convertes degrees to radians
+         * @memberof Odin.Mathf
+         * convertes degrees to radians
          * @param Number x
          * @return Number
          */
@@ -319,8 +362,8 @@ define(
 
         /**
          * @method radsToDegs
-         * @memberof Mathf
-         * @brief convertes radians to degrees
+         * @memberof Odin.Mathf
+         * convertes radians to degrees
          * @param Number x
          * @return Number
          */
@@ -331,8 +374,8 @@ define(
 
         /**
          * @method randInt
-         * @memberof Mathf
-         * @brief returns random number between min and max
+         * @memberof Odin.Mathf
+         * returns random number between min and max
          * @param Number min
          * @param Number max
          * @return Number
@@ -344,8 +387,8 @@ define(
 
         /**
          * @method randFloat
-         * @memberof Mathf
-         * @brief returns random number between min and max
+         * @memberof Odin.Mathf
+         * returns random number between min and max
          * @param Number min
          * @param Number max
          * @return Number
@@ -357,8 +400,8 @@ define(
 
         /**
          * @method randSign
-         * @memberof Mathf
-         * @brief returns either -1 or 1
+         * @memberof Odin.Mathf
+         * returns either -1 or 1
          * @param Number min
          * @param Number max
          * @return Number
@@ -370,8 +413,8 @@ define(
 
         /**
          * @method randChoice
-         * @memberof Mathf
-         * @brief returns random item from array
+         * @memberof Odin.Mathf
+         * returns random item from array
          * @param Array array
          * @return Number
          */
@@ -382,8 +425,8 @@ define(
 
         /**
          * @method shuffle
-         * @memberof Mathf
-         * @brief shuffles array
+         * @memberof Odin.Mathf
+         * shuffles array
          * @param Array array
          * @return Array
          */
@@ -395,8 +438,8 @@ define(
 
         /**
          * @method randArg
-         * @memberof Mathf
-         * @brief returns random argument from arguments
+         * @memberof Odin.Mathf
+         * returns random argument from arguments
          * @return Number
          */
         Mathf.prototype.randArg = function() {
@@ -406,8 +449,8 @@ define(
 
         /**
          * @method randChoiceObject
-         * @memberof Mathf
-         * @brief returns random key from object
+         * @memberof Odin.Mathf
+         * returns random key from object
          * @param Array array
          * @return Number
          */
@@ -419,8 +462,8 @@ define(
 
         /**
          * @method isPowerOfTwo
-         * @memberof Mathf
-         * @brief checks if x is a power of 2
+         * @memberof Odin.Mathf
+         * checks if x is a power of 2
          * @param Number x
          * @return Number
          */
@@ -431,8 +474,8 @@ define(
 
         /**
          * @method toPowerOfTwo
-         * @memberof Mathf
-         * @brief returns number's next power of 2
+         * @memberof Odin.Mathf
+         * returns number's next power of 2
          * @param Number x
          * @return Number
          */
@@ -448,8 +491,8 @@ define(
 
         /**
          * @method fromJSON
-         * @memberof Mathf
-         * @brief returns Math class based on json _className
+         * @memberof Odin.Mathf
+         * returns Math class based on json _className
          * @param Object json
          * @return MATH_CLASS
          */
@@ -469,8 +512,8 @@ define(
             DOWN_RIGHT = "down_right";
         /**
          * @method directionAngle
-         * @memberof Mathf
-         * @brief returns direction string of an angle in radians
+         * @memberof Odin.Mathf
+         * returns direction string of an angle in radians
          * @param Number x
          * @param Number y
          * @return String
@@ -492,8 +535,8 @@ define(
 
         /**
          * @method direction
-         * @memberof Mathf
-         * @brief returns direction string from an x and a y coordinate
+         * @memberof Odin.Mathf
+         * returns direction string from an x and a y coordinate
          * @param Number x
          * @param Number y
          * @return String

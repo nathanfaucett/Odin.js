@@ -4,15 +4,18 @@ if (typeof(define) !== "function") {
 define([
         "odin/core/assets/shaders/unlit",
         "odin/core/assets/shaders/vertex_lit",
+        "odin/core/assets/shaders/reflective_vertex_lit",
 
     ],
-    function(Unlit, VertexLit) {
+    function(Unlit, VertexLit, ReflectiveVertexLit) {
         "use strict";
 
 
         return {
-			Unlit: Unlit,
-			VertexLit: VertexLit
-		};
+            Unlit: Unlit,
+            VertexLit: VertexLit,
+
+            ReflectiveVertexLit: ReflectiveVertexLit
+        };
     }
 );

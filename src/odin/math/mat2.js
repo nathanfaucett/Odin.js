@@ -14,7 +14,7 @@ define([
 
         /**
          * @class Mat2
-         * @brief 2x2 matrix
+         * 2x2 matrix
          * @param Number m11
          * @param Number m12
          * @param Number m21
@@ -25,7 +25,7 @@ define([
 
             /**
              * @property Float32Array elements
-             * @memberof Mat2
+             * @memberof Odin.Mat2
              */
             this.elements = te;
 
@@ -39,8 +39,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Mat2
-         * @brief returns new instance of this
+         * @memberof Odin.Mat2
+         * returns new instance of this
          * @return Mat2
          */
         Mat2.prototype.clone = function() {
@@ -54,8 +54,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Mat2
-         * @brief copies other
+         * @memberof Odin.Mat2
+         * copies other
          * @param Mat2 other
          * @return this
          */
@@ -73,8 +73,8 @@ define([
 
         /**
          * @method set
-         * @memberof Mat2
-         * @brief sets values of this
+         * @memberof Odin.Mat2
+         * sets values of this
          * @param Number m11
          * @param Number m12
          * @param Number m21
@@ -94,8 +94,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Mat2
-         * @brief muliples this's values by other's
+         * @memberof Odin.Mat2
+         * muliples this's values by other's
          * @param Mat2 other
          * @return this
          */
@@ -124,8 +124,8 @@ define([
 
         /**
          * @method mmul
-         * @memberof Mat2
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Mat2
+         * muliples a and b saves it in this
          * @param Mat2 a
          * @param Mat2 b
          * @return this
@@ -156,8 +156,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Mat2
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Mat2
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -174,8 +174,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Mat2
-         * @brief divides this by scalar value
+         * @memberof Odin.Mat2
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -194,8 +194,8 @@ define([
 
         /**
          * @method identity
-         * @memberof Mat2
-         * @brief identity matrix
+         * @memberof Odin.Mat2
+         * identity matrix
          * @return this
          */
         Mat2.prototype.identity = function() {
@@ -211,8 +211,8 @@ define([
 
         /**
          * @method zero
-         * @memberof Mat2
-         * @brief zero matrix
+         * @memberof Odin.Mat2
+         * zero matrix
          * @return this
          */
         Mat2.prototype.zero = function() {
@@ -228,8 +228,8 @@ define([
 
         /**
          * @method determinant
-         * @memberof Mat2
-         * @brief returns the determinant of this
+         * @memberof Odin.Mat2
+         * returns the determinant of this
          * @return this
          */
         Mat2.prototype.determinant = function() {
@@ -240,8 +240,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Mat2
-         * @brief returns the inverse of this
+         * @memberof Odin.Mat2
+         * returns the inverse of this
          * @return this
          */
         Mat2.prototype.inverse = function() {
@@ -266,8 +266,8 @@ define([
 
         /**
          * @method inverseMat
-         * @memberof Mat2
-         * @brief returns the inverse of other
+         * @memberof Odin.Mat2
+         * returns the inverse of other
          * @param Mat2 other
          * @return this
          */
@@ -294,8 +294,8 @@ define([
 
         /**
          * @method transpose
-         * @memberof Mat2
-         * @brief transposes this matrix
+         * @memberof Odin.Mat2
+         * transposes this matrix
          * @return this
          */
         Mat2.prototype.transpose = function() {
@@ -311,8 +311,8 @@ define([
 
         /**
          * @method setTrace
-         * @memberof Mat2
-         * @brief sets the diagonal of matrix
+         * @memberof Odin.Mat2
+         * sets the diagonal of matrix
          * @param Number x
          * @param Number y
          * @return this
@@ -328,8 +328,8 @@ define([
 
         /**
          * @method setRotation
-         * @memberof Mat2
-         * @brief sets the rotation in radians this
+         * @memberof Odin.Mat2
+         * sets the rotation in radians this
          * @param Number angle
          * @return this
          */
@@ -348,8 +348,8 @@ define([
 
         /**
          * @method getRotation
-         * @memberof Mat2
-         * @brief returns the rotation in radians of this
+         * @memberof Odin.Mat2
+         * returns the rotation in radians of this
          * @return Number
          */
         Mat2.prototype.getRotation = function() {
@@ -360,8 +360,8 @@ define([
 
         /**
          * @method rotate
-         * @memberof Mat2
-         * @brief rotates this by angle in radians
+         * @memberof Odin.Mat2
+         * rotates this by angle in radians
          * @param Number angle
          * @return this
          */
@@ -386,8 +386,8 @@ define([
 
         /**
          * @method fromMat3
-         * @memberof Mat2
-         * @brief sets this from Mat3
+         * @memberof Odin.Mat2
+         * sets this from Mat3
          * @param Mat3 m
          * @return this
          */
@@ -405,8 +405,8 @@ define([
 
         /**
          * @method fromMat4
-         * @memberof Mat2
-         * @brief sets this from Mat4
+         * @memberof Odin.Mat2
+         * sets this from Mat4
          * @param Mat4 m
          * @return this
          */
@@ -423,9 +423,26 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat2
+         * @param Odin.Mat2 other
+         * @return this
+         */
+        Mat2.prototype.equals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return !(
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3]
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Mat2
-         * @brief sets values from JSON object
+         * @memberof Odin.Mat2
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -443,8 +460,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Mat2
-         * @brief returns json object of this
+         * @memberof Odin.Mat2
+         * returns json object of this
          * @return Object
          */
         Mat2.prototype.toJSON = function(json) {
@@ -463,8 +480,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Mat2
-         * @brief returns string of this
+         * @memberof Odin.Mat2
+         * returns string of this
          * @return String
          */
         Mat2.prototype.toString = function() {

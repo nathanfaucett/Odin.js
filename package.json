@@ -26,6 +26,7 @@
     "grunt": "",
     "grunt-contrib-requirejs": "",
     "grunt-contrib-watch": "",
-    "grunt-jsbeautifier": ""
+    "grunt-jsbeautifier": "",
+    "grunt-jsdoc": "~0.5.1"
   }
 }

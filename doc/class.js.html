@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: base/class.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: base/class.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>if (typeof(define) !== "function") {
+    var define = require("amdefine")(module);
+}
+define([
+        "odin/base/event_emitter"
+    ],
+    function(EventEmitter) {
+        "use strict";
+
+
+        var CLASS_ID = 0;
+
+        /**
+         * @class Odin.Class
+         * @extends Odin.EventEmitter
+         */
+        function Class() {
+
+            EventEmitter.call(this);
+
+            this._id = ++CLASS_ID;
+            this._jsonId = -1;
+            this._name = "";
+        }
+
+        EventEmitter.extend(Class);
+
+
+        /**
+         * returns new copy of this
+         * @memberof Odin.Class
+         * @return Class
+         */
+        Class.prototype.clone = function() {
+
+            return new this.constructor().copy(this);
+        };
+
+        /**
+         * copies other of same class
+         * @memberof Odin.Class
+         * @param {Odin.Class} other
+         * @return this
+         */
+        Class.prototype.copy = function() {
+
+            return this;
+        };
+
+        /**
+         * clears data for GC
+         * @memberof Odin.Class
+         * @return this
+         */
+        Class.prototype.clear = function() {
+
+            return this;
+        };
+
+        /**
+         * converts this to a JSON object
+         * @memberof Odin.Class
+         * @return json
+         */
+        Class.prototype.toJSON = function(json) {
+            json || (json = {});
+
+            json._id = this._id;
+            json._jsonId = this._id;
+            json._className = this._className;
+
+            return json;
+        };
+
+        /**
+         * sets this from JSON object
+         * @memberof Odin.Class
+         * @return this
+         */
+        Class.prototype.fromJSON = function(json) {
+
+            this._jsonId = json._jsonId;
+
+            return this;
+        };
+
+        /**
+         * returns class name
+         * @memberof Odin.Class
+         * @return string
+         */
+        Class.prototype.toString = function() {
+
+            return this._name;
+        };
+
+        /**
+         * @memberof Odin.Class
+         * @param {constructor} child
+         * @param {constructor} parent
+         * @return child
+         */
+        Class.extend = function(child, parent) {
+            if (!parent) parent = this;
+
+            child.prototype = Object.create(parent.prototype);
+            child.prototype.constructor = child;
+
+            child.extend = parent.extend;
+            child.prototype._className = child._className = child.name;
+
+            Class._classes[child.name] = child;
+
+            if (parent.onExtend) {
+                if (!child.onExtend) child.onExtend = parent.onExtend;
+                parent.onExtend(child);
+            }
+
+            return child;
+        };
+
+        /**
+         * creates new Odin.Class from json object
+         * @memberof Odin.Class
+         * @param {object} json
+         * @return Odin.Class
+         */
+        Class.fromJSON = function(json) {
+
+            return new Class._classes[json._className]().fromJSON(json);
+        };
+
+        /**
+         * creates new Odin.Class from string type
+         * @memberof Odin.Class
+         * @param {string} type
+         * @return Odin.Class
+         */
+        Class.create = function(type) {
+
+            return new Class._classes[type];
+        };
+
+
+        Class._classes = {};
+
+
+        return Class;
+    }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 22:33:35 GMT-0600 (CST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

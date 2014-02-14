@@ -58,7 +58,7 @@ define([
 
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
 
-            if (!asset.load || asset.raw && !reload) {
+            if (!asset.load || !src || asset.raw && !reload) {
                 callback && callback()
                 return;
             };
@@ -86,6 +86,7 @@ define([
                         if (loaded <= 0) {
                             asset.parse(raw);
                             self.emit("loadAsset", asset);
+                            asset.emit("load", raw);
                             callback && callback();
                         }
                     });
@@ -108,6 +109,7 @@ define([
 
                     asset.parse(raw);
                     self.emit("loadAsset", asset);
+                    asset.emit("load", raw);
                     callback && callback();
                 });
             }

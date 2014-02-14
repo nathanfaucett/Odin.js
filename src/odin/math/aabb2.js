@@ -11,7 +11,7 @@ define([
 
         /**
          * @class AABB2
-         * @brief 2d axis aligned bounding box
+         * 2d axis aligned bounding box
          * @param Vec2 min
          * @param Vec2 max
          */
@@ -19,21 +19,21 @@ define([
 
             /**
              * @property Vec2 min
-             * @memberof AABB2
+             * @memberof Odin.AABB2
              */
             this.min = min || new Vec2(Infinity, Infinity);
 
             /**
              * @property Vec2 max
-             * @memberof AABB2
+             * @memberof Odin.AABB2
              */
             this.max = max || new Vec2(-Infinity, -Infinity);
         }
 
         /**
          * @method clone
-         * @memberof AABB2
-         * @brief returns new copy of this
+         * @memberof Odin.AABB2
+         * returns new copy of this
          * @return AABB2
          */
         AABB2.prototype.clone = function() {
@@ -43,8 +43,8 @@ define([
 
         /**
          * @method copy
-         * @memberof AABB2
-         * @brief copies other AABB
+         * @memberof Odin.AABB2
+         * copies other AABB
          * @param AABB2 other
          * @return this
          */
@@ -58,8 +58,8 @@ define([
 
         /**
          * @method set
-         * @memberof AABB2
-         * @brief set min and max vectors
+         * @memberof Odin.AABB2
+         * set min and max vectors
          * @param Vec2 min
          * @param Vec2 max
          * @return this
@@ -74,7 +74,7 @@ define([
 
         /**
          * @method expandPoint
-         * @memberof AABB2
+         * @memberof Odin.AABB2
          * @param Vec2 v
          * @return this
          */
@@ -88,7 +88,7 @@ define([
 
         /**
          * @method expandVec
-         * @memberof AABB2
+         * @memberof Odin.AABB2
          * @param Vec2 v
          * @return this
          */
@@ -102,7 +102,7 @@ define([
 
         /**
          * @method expandScalar
-         * @memberof AABB2
+         * @memberof Odin.AABB2
          * @param Number s
          * @return this
          */
@@ -116,8 +116,8 @@ define([
 
         /**
          * @method union
-         * @memberof AABB2
-         * @brief joins this and another aabb
+         * @memberof Odin.AABB2
+         * joins this and another aabb
          * @param AABB2 aabb
          * @return this
          */
@@ -131,8 +131,8 @@ define([
 
         /**
          * @method clear
-         * @memberof AABB2
-         * @brief clears aabb
+         * @memberof Odin.AABB2
+         * clears aabb
          * @return this
          */
         AABB2.prototype.clear = function() {
@@ -145,8 +145,8 @@ define([
 
         /**
          * @method contains
-         * @memberof AABB2
-         * @brief checks if AABB contains point
+         * @memberof Odin.AABB2
+         * checks if AABB contains point
          * @param Vec2 point
          * @return Boolean
          */
@@ -164,8 +164,8 @@ define([
 
         /**
          * @method intersects
-         * @memberof AABB2
-         * @brief checks if AABB intersects AABB
+         * @memberof Odin.AABB2
+         * checks if AABB intersects AABB
          * @param AABB2 other
          * @return Boolean
          */
@@ -183,8 +183,8 @@ define([
 
         /**
          * @method fromPoints
-         * @memberof AABB2
-         * @brief set min and max from array of vectors
+         * @memberof Odin.AABB2
+         * set min and max from array of vectors
          * @param Array points
          * @return this
          */
@@ -220,8 +220,8 @@ define([
 
         /**
          * @method fromCenterSize
-         * @memberof AABB2
-         * @brief sets this from a center point and a size vector
+         * @memberof Odin.AABB2
+         * sets this from a center point and a size vector
          * @param Vec2 center
          * @param Vec2 size
          * @return this
@@ -244,9 +244,19 @@ define([
         };
 
         /**
+         * @memberof Odin.AABB2
+         * @param Odin.AABB2 other
+         * @return this
+         */
+        AABB2.prototype.equals = function(other) {
+
+            return !(!this.min.equals(other.min) || !this.max.equals(other.max));
+        };
+
+        /**
          * @method fromJSON
-         * @memberof AABB2
-         * @brief sets values from json object
+         * @memberof Odin.AABB2
+         * sets values from json object
          * @param Object json
          * @return this
          */
@@ -260,8 +270,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof AABB2
-         * @brief returns json object
+         * @memberof Odin.AABB2
+         * returns json object
          * @return Object
          */
         AABB2.prototype.toJSON = function(json) {
@@ -275,8 +285,8 @@ define([
 
         /**
          * @method toString
-         * @memberof AABB2
-         * @brief converts AABB to string "AABB2( min: Vec2( -1, -1 ), max: Vec2( 1, 1 ) )"
+         * @memberof Odin.AABB2
+         * converts AABB to string "AABB2( min: Vec2( -1, -1 ), max: Vec2( 1, 1 ) )"
          * @return String
          */
         AABB2.prototype.toString = function() {

@@ -13,7 +13,7 @@ define([
 
         /**
          * @class Mat3
-         * @brief 3x3 matrix
+         * 3x3 matrix
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -29,7 +29,7 @@ define([
 
             /**
              * @property Float32Array elements
-             * @memberof Mat3
+             * @memberof Odin.Mat3
              */
             this.elements = te;
 
@@ -48,8 +48,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Mat3
-         * @brief returns new instance of this
+         * @memberof Odin.Mat3
+         * returns new instance of this
          * @return Mat3
          */
         Mat3.prototype.clone = function() {
@@ -64,8 +64,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Mat3
-         * @brief copies other
+         * @memberof Odin.Mat3
+         * copies other
          * @param Mat3 other
          * @return this
          */
@@ -88,8 +88,8 @@ define([
 
         /**
          * @method set
-         * @memberof Mat3
-         * @brief sets values of this
+         * @memberof Odin.Mat3
+         * sets values of this
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -119,8 +119,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Mat3
-         * @brief muliples this's values by other's
+         * @memberof Odin.Mat3
+         * muliples this's values by other's
          * @param Mat3 other
          * @return this
          */
@@ -165,8 +165,8 @@ define([
 
         /**
          * @method mmul
-         * @memberof Mat3
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Mat3
+         * muliples a and b saves it in this
          * @param Mat3 a
          * @param Mat3 b
          * @return this
@@ -213,8 +213,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Mat3
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Mat3
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -236,8 +236,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Mat3
-         * @brief divides this by scalar value
+         * @memberof Odin.Mat3
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -261,8 +261,8 @@ define([
 
         /**
          * @method identity
-         * @memberof Mat3
-         * @brief identity matrix
+         * @memberof Odin.Mat3
+         * identity matrix
          * @return this
          */
         Mat3.prototype.identity = function() {
@@ -283,8 +283,8 @@ define([
 
         /**
          * @method zero
-         * @memberof Mat3
-         * @brief zero matrix
+         * @memberof Odin.Mat3
+         * zero matrix
          * @return this
          */
         Mat3.prototype.zero = function() {
@@ -305,8 +305,8 @@ define([
 
         /**
          * @method determinant
-         * @memberof Mat3
-         * @brief returns the determinant of this
+         * @memberof Odin.Mat3
+         * returns the determinant of this
          * @return this
          */
         Mat3.prototype.determinant = function() {
@@ -327,8 +327,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Mat3
-         * @brief returns the inverse of this
+         * @memberof Odin.Mat3
+         * returns the inverse of this
          * @return this
          */
         Mat3.prototype.inverse = function() {
@@ -368,8 +368,8 @@ define([
 
         /**
          * @method inverseMat
-         * @memberof Mat3
-         * @brief returns the inverse of other
+         * @memberof Odin.Mat3
+         * returns the inverse of other
          * @param Mat3 other
          * @return this
          */
@@ -411,8 +411,8 @@ define([
 
         /**
          * @method inverseMat4
-         * @memberof Mat3
-         * @brief returns the inverse of a Mat4
+         * @memberof Odin.Mat3
+         * returns the inverse of a Mat4
          * @param Mat4 other
          * @return this
          */
@@ -452,8 +452,8 @@ define([
 
         /**
          * @method transpose
-         * @memberof Mat3
-         * @brief transposes this matrix
+         * @memberof Odin.Mat3
+         * transposes this matrix
          * @return this
          */
         Mat3.prototype.transpose = function() {
@@ -475,8 +475,8 @@ define([
 
         /**
          * @method setTrace
-         * @memberof Mat3
-         * @brief sets the diagonal of matrix
+         * @memberof Odin.Mat3
+         * sets the diagonal of matrix
          * @param Vec3 v
          * @return this
          */
@@ -492,8 +492,8 @@ define([
 
         /**
          * @method scale
-         * @memberof Mat3
-         * @brief scales this by vector
+         * @memberof Odin.Mat3
+         * scales this by vector
          * @param Vec3 v
          * @return this
          */
@@ -518,8 +518,8 @@ define([
 
         /**
          * @method makeScale
-         * @memberof Mat3
-         * @brief makes this a scale matrix
+         * @memberof Odin.Mat3
+         * makes this a scale matrix
          * @param Number x
          * @param Number y
          * @param Number z
@@ -536,8 +536,8 @@ define([
 
         /**
          * @method makeRotationX
-         * @memberof Mat3
-         * @brief makes this a rotation matrix along x axis
+         * @memberof Odin.Mat3
+         * makes this a rotation matrix along x axis
          * @param Number angle
          * @return this
          */
@@ -554,8 +554,8 @@ define([
 
         /**
          * @method makeRotationY
-         * @memberof Mat3
-         * @brief makes this a rotation matrix along y axis
+         * @memberof Odin.Mat3
+         * makes this a rotation matrix along y axis
          * @param Number angle
          * @return this
          */
@@ -571,8 +571,8 @@ define([
 
         /**
          * @method makeRotationZ
-         * @memberof Mat3
-         * @brief makes this a rotation matrix along z axis
+         * @memberof Odin.Mat3
+         * makes this a rotation matrix along z axis
          * @param Number angle
          * @return this
          */
@@ -589,8 +589,8 @@ define([
 
         /**
          * @method fromMat2
-         * @memberof Mat3
-         * @brief sets this from Mat2
+         * @memberof Odin.Mat3
+         * sets this from Mat2
          * @param Mat2 m
          * @return this
          */
@@ -613,8 +613,8 @@ define([
 
         /**
          * @method fromMat4
-         * @memberof Mat3
-         * @brief sets this from Mat4
+         * @memberof Odin.Mat3
+         * sets this from Mat4
          * @param Mat2 m
          * @return this
          */
@@ -637,8 +637,8 @@ define([
 
         /**
          * @method fromQuat
-         * @memberof Mat3
-         * @brief sets rotation of this from quaterian
+         * @memberof Odin.Mat3
+         * sets rotation of this from quaterian
          * @param Quat q
          * @return this
          */
@@ -677,9 +677,31 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat3
+         * @param Odin.Mat3 other
+         * @return this
+         */
+        Mat3.prototype.equals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return !(
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5] ||
+                ae[6] !== be[6] ||
+                ae[7] !== be[7] ||
+                ae[8] !== be[8]
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Mat3
-         * @brief sets values from JSON object
+         * @memberof Odin.Mat3
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -702,8 +724,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Mat3
-         * @brief returns json object of this
+         * @memberof Odin.Mat3
+         * returns json object of this
          * @param Array array
          * @return Object
          */
@@ -728,8 +750,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Mat3
-         * @brief returns string of this
+         * @memberof Odin.Mat3
+         * returns string of this
          * @return String
          */
         Mat3.prototype.toString = function() {

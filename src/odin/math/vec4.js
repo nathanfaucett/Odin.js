@@ -12,7 +12,7 @@ define([
 
         /**
          * @class Vec4
-         * @brief 3d vector
+         * 3d vector
          * @param Number x
          * @param Number y
          * @param Number z
@@ -22,25 +22,25 @@ define([
 
             /**
              * @property Number x
-             * @memberof Vec4
+             * @memberof Odin.Vec4
              */
             this.x = x || 0;
 
             /**
              * @property Number y
-             * @memberof Vec4
+             * @memberof Odin.Vec4
              */
             this.y = y || 0;
 
             /**
              * @property Number z
-             * @memberof Vec4
+             * @memberof Odin.Vec4
              */
             this.z = z || 0;
 
             /**
              * @property Number w
-             * @memberof Vec4
+             * @memberof Odin.Vec4
              */
             this.w = w !== undefined ? w : 1;
         }
@@ -49,8 +49,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Vec4
-         * @brief returns new instance of this
+         * @memberof Odin.Vec4
+         * returns new instance of this
          * @return Vec4
          */
         Vec4.prototype.clone = function() {
@@ -60,8 +60,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Vec4
-         * @brief copies other
+         * @memberof Odin.Vec4
+         * copies other
          * @param Vec4 other
          * @return this
          */
@@ -77,8 +77,8 @@ define([
 
         /**
          * @method set
-         * @memberof Vec4
-         * @brief sets values of this
+         * @memberof Odin.Vec4
+         * sets values of this
          * @param Number x
          * @param Number y
          * @param Number z
@@ -97,8 +97,8 @@ define([
 
         /**
          * @method add
-         * @memberof Vec4
-         * @brief adds other's values to this
+         * @memberof Odin.Vec4
+         * adds other's values to this
          * @param Vec4 other
          * @return this
          */
@@ -114,8 +114,8 @@ define([
 
         /**
          * @method vadd
-         * @memberof Vec4
-         * @brief adds a and b together saves it in this
+         * @memberof Odin.Vec4
+         * adds a and b together saves it in this
          * @param Vec4 a
          * @param Vec4 b
          * @return this
@@ -132,8 +132,8 @@ define([
 
         /**
          * @method sadd
-         * @memberof Vec4
-         * @brief adds scalar value to this
+         * @memberof Odin.Vec4
+         * adds scalar value to this
          * @param Number s
          * @return this
          */
@@ -149,8 +149,8 @@ define([
 
         /**
          * @method sub
-         * @memberof Vec4
-         * @brief subtracts other's values from this
+         * @memberof Odin.Vec4
+         * subtracts other's values from this
          * @param Vec4 other
          * @return this
          */
@@ -166,8 +166,8 @@ define([
 
         /**
          * @method vsub
-         * @memberof Vec4
-         * @brief subtracts b from a saves it in this
+         * @memberof Odin.Vec4
+         * subtracts b from a saves it in this
          * @param Vec4 a
          * @param Vec4 b
          * @return this
@@ -184,8 +184,8 @@ define([
 
         /**
          * @method ssub
-         * @memberof Vec4
-         * @brief subtracts this by a scalar value
+         * @memberof Odin.Vec4
+         * subtracts this by a scalar value
          * @param Number s
          * @return this
          */
@@ -201,8 +201,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Vec4
-         * @brief muliples this's values by other's
+         * @memberof Odin.Vec4
+         * muliples this's values by other's
          * @param Vec4 other
          * @return this
          */
@@ -218,8 +218,8 @@ define([
 
         /**
          * @method vmul
-         * @memberof Vec4
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Vec4
+         * muliples a and b saves it in this
          * @param Vec4 a
          * @param Vec4 b
          * @return this
@@ -236,8 +236,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Vec4
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Vec4
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -253,8 +253,8 @@ define([
 
         /**
          * @method div
-         * @memberof Vec4
-         * @brief divides this's values by other's
+         * @memberof Odin.Vec4
+         * divides this's values by other's
          * @param Vec4 other
          * @return this
          */
@@ -274,8 +274,8 @@ define([
 
         /**
          * @method vdiv
-         * @memberof Vec4
-         * @brief divides b from a saves it in this
+         * @memberof Odin.Vec4
+         * divides b from a saves it in this
          * @param Vec4 a
          * @param Vec4 b
          * @return this
@@ -296,8 +296,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Vec4
-         * @brief divides this by scalar value
+         * @memberof Odin.Vec4
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -314,8 +314,8 @@ define([
 
         /**
          * @method length
-         * @memberof Vec4
-         * @brief returns the length of this
+         * @memberof Odin.Vec4
+         * returns the length of this
          * @return Number
          */
         Vec4.prototype.length = function() {
@@ -332,8 +332,8 @@ define([
 
         /**
          * @method lengthSq
-         * @memberof Vec4
-         * @brief returns the squared length of this
+         * @memberof Odin.Vec4
+         * returns the squared length of this
          * @return Number
          */
         Vec4.prototype.lengthSq = function() {
@@ -347,8 +347,8 @@ define([
 
         /**
          * @method setLength
-         * @memberof Vec4
-         * @brief sets this so its magnitude is equal to length
+         * @memberof Odin.Vec4
+         * sets this so its magnitude is equal to length
          * @param Number length
          * @return Vec4
          */
@@ -380,8 +380,8 @@ define([
 
         /**
          * @method normalize
-         * @memberof Vec4
-         * @brief returns this with a length of 1
+         * @memberof Odin.Vec4
+         * returns this with a length of 1
          * @return this
          */
         Vec4.prototype.normalize = function() {
@@ -405,8 +405,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Vec4
-         * @brief returns the inverse of this
+         * @memberof Odin.Vec4
+         * returns the inverse of this
          * @return this
          */
         Vec4.prototype.inverse = function() {
@@ -421,8 +421,8 @@ define([
 
         /**
          * @method inverseVec
-         * @memberof Vec4
-         * @brief returns the inverse of other
+         * @memberof Odin.Vec4
+         * returns the inverse of other
          * @param Vec4 other
          * @return this
          */
@@ -438,8 +438,8 @@ define([
 
         /**
          * @method lerp
-         * @memberof Vec4
-         * @brief linear interpolation between this and other by x
+         * @memberof Odin.Vec4
+         * linear interpolation between this and other by x
          * @param Vec4 other
          * @param Number x
          * @return Vec4
@@ -456,8 +456,8 @@ define([
 
         /**
          * @method vlerp
-         * @memberof Vec4
-         * @brief linear interpolation between a and b by x
+         * @memberof Odin.Vec4
+         * linear interpolation between a and b by x
          * @param Vec4 a
          * @param Vec4 b
          * @param Number x
@@ -479,8 +479,8 @@ define([
 
         /**
          * @method vdot
-         * @memberof Vec4
-         * @brief dot product of two vectors, can be called as a static function Vec4.vdot( a, b )
+         * @memberof Odin.Vec4
+         * dot product of two vectors, can be called as a static function Vec4.vdot( a, b )
          * @param Vec4 a
          * @param Vec4 b
          * @return Number
@@ -492,8 +492,8 @@ define([
 
         /**
          * @method dot
-         * @memberof Vec4
-         * @brief dot product of this and other vector
+         * @memberof Odin.Vec4
+         * dot product of this and other vector
          * @param Vec4 other
          * @return Number
          */
@@ -504,8 +504,8 @@ define([
 
         /**
          * @method min
-         * @memberof Vec4
-         * @brief returns min values from this and other vector
+         * @memberof Odin.Vec4
+         * returns min values from this and other vector
          * @param Vec4 other
          * @return this
          */
@@ -529,8 +529,8 @@ define([
 
         /**
          * @method max
-         * @memberof Vec4
-         * @brief returns max values from this and other vector
+         * @memberof Odin.Vec4
+         * returns max values from this and other vector
          * @param Vec4 other
          * @return this
          */
@@ -554,8 +554,8 @@ define([
 
         /**
          * @method clamp
-         * @memberof Vec4
-         * @brief clamp values between min and max's values
+         * @memberof Odin.Vec4
+         * clamp values between min and max's values
          * @param Vec4 min
          * @param Vec4 max
          * @return this
@@ -584,8 +584,8 @@ define([
 
         /**
          * @method transformMat4
-         * @memberof Vec4
-         * @brief transforms this with Mat4
+         * @memberof Odin.Vec4
+         * transforms this with Mat4
          * @param Mat4 m
          * @return this
          */
@@ -606,8 +606,8 @@ define([
 
         /**
          * @method fromVec2
-         * @memberof Vec4
-         * @brief sets values from Vec2
+         * @memberof Odin.Vec4
+         * sets values from Vec2
          * @param Vec2 v
          * @return this
          */
@@ -623,8 +623,8 @@ define([
 
         /**
          * @method fromVec3
-         * @memberof Vec4
-         * @brief sets values from Vec3
+         * @memberof Odin.Vec4
+         * sets values from Vec3
          * @param Vec3 v
          * @return this
          */
@@ -640,8 +640,8 @@ define([
 
         /**
          * @method positionFromMat4
-         * @memberof Vec4
-         * @brief sets position from Mat4
+         * @memberof Odin.Vec4
+         * sets position from Mat4
          * @param Mat4 m
          * @return this
          */
@@ -657,9 +657,24 @@ define([
         };
 
         /**
+         * @memberof Odin.Vec4
+         * @param Odin.Vec4 other
+         * @return this
+         */
+        Vec4.prototype.equals = function(other) {
+
+            return !(
+                this.x !== other.x ||
+                this.y !== other.y ||
+                this.z !== other.z ||
+                this.w !== other.w
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Vec4
-         * @brief sets values from JSON object
+         * @memberof Odin.Vec4
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -675,8 +690,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Vec4
-         * @brief returns json object of this
+         * @memberof Odin.Vec4
+         * returns json object of this
          * @return Object
          */
         Vec4.prototype.toJSON = function(json) {
@@ -693,8 +708,8 @@ define([
 
         /**
          * @method fromArray
-         * @memberof Vec4
-         * @brief sets values from Array object
+         * @memberof Odin.Vec4
+         * sets values from Array object
          * @param Array array
          * @return this
          */
@@ -710,8 +725,8 @@ define([
 
         /**
          * @method toArray
-         * @memberof Vec4
-         * @brief returns array object of this
+         * @memberof Odin.Vec4
+         * returns array object of this
          * @return Array
          */
         Vec4.prototype.toArray = function(array) {
@@ -727,8 +742,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Vec4
-         * @brief returns string of this
+         * @memberof Odin.Vec4
+         * returns string of this
          * @return String
          */
         Vec4.prototype.toString = function() {

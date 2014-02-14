@@ -16,7 +16,7 @@ define([
 
         /**
          * @class Mat4
-         * @brief 4x4 matrix
+         * 4x4 matrix
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -39,7 +39,7 @@ define([
 
             /**
              * @property Float32Array elements
-             * @memberof Mat4
+             * @memberof Odin.Mat4
              */
             this.elements = te;
 
@@ -65,8 +65,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Mat4
-         * @brief returns new instance of this
+         * @memberof Odin.Mat4
+         * returns new instance of this
          * @return Mat4
          */
         Mat4.prototype.clone = function() {
@@ -82,8 +82,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Mat4
-         * @brief copies other
+         * @memberof Odin.Mat4
+         * copies other
          * @param Mat4 other
          * @return this
          */
@@ -113,8 +113,8 @@ define([
 
         /**
          * @method set
-         * @memberof Mat4
-         * @brief sets values of this
+         * @memberof Odin.Mat4
+         * sets values of this
          * @param Number m11
          * @param Number m12
          * @param Number m13
@@ -158,8 +158,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Mat4
-         * @brief muliples this's values by other's
+         * @memberof Odin.Mat4
+         * muliples this's values by other's
          * @param Mat4 other
          * @return this
          */
@@ -226,8 +226,8 @@ define([
 
         /**
          * @method mmul
-         * @memberof Mat4
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Mat4
+         * muliples a and b saves it in this
          * @param Mat4 a
          * @param Mat4 b
          * @return this
@@ -296,8 +296,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Mat4
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Mat4
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -326,8 +326,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Mat4
-         * @brief divides this by scalar value
+         * @memberof Odin.Mat4
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -358,8 +358,8 @@ define([
 
         /**
          * @method identity
-         * @memberof Mat4
-         * @brief identity matrix
+         * @memberof Odin.Mat4
+         * identity matrix
          * @return this
          */
         Mat4.prototype.identity = function() {
@@ -387,8 +387,8 @@ define([
 
         /**
          * @method zero
-         * @memberof Mat4
-         * @brief zero matrix
+         * @memberof Odin.Mat4
+         * zero matrix
          * @return this
          */
         Mat4.prototype.zero = function() {
@@ -416,8 +416,8 @@ define([
 
         /**
          * @method determinant
-         * @memberof Mat4
-         * @brief returns the determinant of this
+         * @memberof Odin.Mat4
+         * returns the determinant of this
          * @return this
          */
         Mat4.prototype.determinant = function() {
@@ -448,8 +448,8 @@ define([
 
         /**
          * @method inverse
-         * @memberof Mat4
-         * @brief returns the inverse of this
+         * @memberof Odin.Mat4
+         * returns the inverse of this
          * @return this
          */
         Mat4.prototype.inverse = function() {
@@ -503,8 +503,8 @@ define([
 
         /**
          * @method inverseMat
-         * @memberof Mat4
-         * @brief returns the inverse of other
+         * @memberof Odin.Mat4
+         * returns the inverse of other
          * @param Mat4 other
          * @return this
          */
@@ -560,8 +560,8 @@ define([
 
         /**
          * @method transpose
-         * @memberof Mat4
-         * @brief transposes this matrix
+         * @memberof Odin.Mat4
+         * transposes this matrix
          * @return this
          */
         Mat4.prototype.transpose = function() {
@@ -593,8 +593,8 @@ define([
 
         /**
          * @method setTrace
-         * @memberof Mat4
-         * @brief sets the diagonal of matrix
+         * @memberof Odin.Mat4
+         * sets the diagonal of matrix
          * @param Vec4 v
          * @return this
          */
@@ -612,8 +612,8 @@ define([
 
         /**
          * @method lookAt
-         * @memberof Mat4
-         * @brief makes matrix look from eye at target along up vector
+         * @memberof Odin.Mat4
+         * makes matrix look from eye at target along up vector
          * @param Vec3 eye
          * @param Vec3 target
          * @param Vec3 up
@@ -657,8 +657,8 @@ define([
 
         /**
          * @method compose
-         * @memberof Mat4
-         * @brief sets matrix from position, scale, and quaternion
+         * @memberof Odin.Mat4
+         * sets matrix from position, scale, and quaternion
          * @param Vec3 position
          * @param Vec3 scale
          * @param Quat rotation
@@ -713,8 +713,8 @@ define([
 
         /**
          * @method decompose
-         * @memberof Mat4
-         * @brief gets matrix position, scale, quaternion
+         * @memberof Odin.Mat4
+         * gets matrix position, scale, quaternion
          * @param Vec3 position
          * @param Vec3 scale
          * @param Quat quaternion
@@ -806,8 +806,8 @@ define([
 
         /**
          * @method setPosition
-         * @memberof Mat4
-         * @brief sets position of matrix
+         * @memberof Odin.Mat4
+         * sets position of matrix
          * @param Vec3 v
          * @return this
          */
@@ -824,8 +824,8 @@ define([
 
         /**
          * @method extractPosition
-         * @memberof Mat4
-         * @brief gets position from other saves it in this
+         * @memberof Odin.Mat4
+         * gets position from other saves it in this
          * @param Mat4 other
          * @return this
          */
@@ -842,8 +842,8 @@ define([
 
         /**
          * @method extractRotation
-         * @memberof Mat4
-         * @brief gets rotation from other saves it in this
+         * @memberof Odin.Mat4
+         * gets rotation from other saves it in this
          * @param Mat4 other
          * @return this
          */
@@ -880,8 +880,8 @@ define([
 
         /**
          * @method extractRotationScale
-         * @memberof Mat4
-         * @brief gets rotation with scale from other saves it in this
+         * @memberof Odin.Mat4
+         * gets rotation with scale from other saves it in this
          * @param Mat4 other
          * @return this
          */
@@ -906,8 +906,8 @@ define([
 
         /**
          * @method translate
-         * @memberof Mat4
-         * @brief translates matrix by vector
+         * @memberof Odin.Mat4
+         * translates matrix by vector
          * @param Vec3 v
          * @return this
          */
@@ -927,8 +927,8 @@ define([
 
         /**
          * @method scale
-         * @memberof Mat4
-         * @brief scales matrix by vector
+         * @memberof Odin.Mat4
+         * scales matrix by vector
          * @param Vec3 v
          * @return this
          */
@@ -956,8 +956,8 @@ define([
 
         /**
          * @method rotateX
-         * @memberof Mat4
-         * @brief rotates matrix along x axis by angle
+         * @memberof Odin.Mat4
+         * rotates matrix along x axis by angle
          * @param Number angle
          * @return this
          */
@@ -989,8 +989,8 @@ define([
 
         /**
          * @method rotateY
-         * @memberof Mat4
-         * @brief rotates matrix along y axis by angle
+         * @memberof Odin.Mat4
+         * rotates matrix along y axis by angle
          * @param Number angle
          * @return this
          */
@@ -1022,8 +1022,8 @@ define([
 
         /**
          * @method rotateZ
-         * @memberof Mat4
-         * @brief rotates matrix along z axis by angle
+         * @memberof Odin.Mat4
+         * rotates matrix along z axis by angle
          * @param Number angle
          * @return this
          */
@@ -1055,8 +1055,8 @@ define([
 
         /**
          * @method makeTranslation
-         * @memberof Mat4
-         * @brief makes this a translation matrix
+         * @memberof Odin.Mat4
+         * makes this a translation matrix
          * @param Number x
          * @param Number y
          * @param Number z
@@ -1074,8 +1074,8 @@ define([
 
         /**
          * @method makeScale
-         * @memberof Mat4
-         * @brief makes this a scale matrix
+         * @memberof Odin.Mat4
+         * makes this a scale matrix
          * @param Number x
          * @param Number y
          * @param Number z
@@ -1093,8 +1093,8 @@ define([
 
         /**
          * @method makeRotationX
-         * @memberof Mat4
-         * @brief makes this a rotation matrix along x axis
+         * @memberof Odin.Mat4
+         * makes this a rotation matrix along x axis
          * @param Number angle
          * @return this
          */
@@ -1112,8 +1112,8 @@ define([
 
         /**
          * @method makeRotationY
-         * @memberof Mat4
-         * @brief makes this a rotation matrix along y axis
+         * @memberof Odin.Mat4
+         * makes this a rotation matrix along y axis
          * @param Number angle
          * @return this
          */
@@ -1130,8 +1130,8 @@ define([
 
         /**
          * @method makeRotationZ
-         * @memberof Mat4
-         * @brief makes this a rotation matrix along z axis
+         * @memberof Odin.Mat4
+         * makes this a rotation matrix along z axis
          * @param Number angle
          * @return this
          */
@@ -1149,8 +1149,8 @@ define([
 
         /**
          * @method frustum
-         * @memberof Mat4
-         * @brief makes frustum matrix
+         * @memberof Odin.Mat4
+         * makes frustum matrix
          * @param Number left
          * @param Number right
          * @param Number bottom
@@ -1191,8 +1191,8 @@ define([
 
         /**
          * @method perspective
-         * @memberof Mat4
-         * @brief makes perspective matrix
+         * @memberof Odin.Mat4
+         * makes perspective matrix
          * @param Number fov
          * @param Number aspect
          * @param Number near
@@ -1210,8 +1210,8 @@ define([
 
         /**
          * @method orthographic
-         * @memberof Mat4
-         * @brief makes orthographic matrix
+         * @memberof Odin.Mat4
+         * makes orthographic matrix
          * @param Number left
          * @param Number right
          * @param Number bottom
@@ -1252,8 +1252,8 @@ define([
 
         /**
          * @method fromMat2
-         * @memberof Mat4
-         * @brief sets this from Mat2
+         * @memberof Odin.Mat4
+         * sets this from Mat2
          * @param Mat2 m
          * @return this
          */
@@ -1283,8 +1283,8 @@ define([
 
         /**
          * @method fromMat32
-         * @memberof Mat4
-         * @brief sets this from Mat32
+         * @memberof Odin.Mat4
+         * sets this from Mat32
          * @param Mat32 m
          * @return this
          */
@@ -1314,8 +1314,8 @@ define([
 
         /**
          * @method fromMat3
-         * @memberof Mat4
-         * @brief sets this from Mat3
+         * @memberof Odin.Mat4
+         * sets this from Mat3
          * @param Mat3 m
          * @return this
          */
@@ -1345,8 +1345,8 @@ define([
 
         /**
          * @method fromQuat
-         * @memberof Mat4
-         * @brief sets rotation of this from quaterian
+         * @memberof Odin.Mat4
+         * sets rotation of this from quaterian
          * @param Quat q
          * @return this
          */
@@ -1394,9 +1394,38 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat4
+         * @param Odin.Mat4 other
+         * @return this
+         */
+        Mat4.prototype.equals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return !(
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5] ||
+                ae[6] !== be[6] ||
+                ae[7] !== be[7] ||
+                ae[8] !== be[8] ||
+                ae[9] !== be[9] ||
+                ae[10] !== be[10] ||
+                ae[11] !== be[11] ||
+                ae[12] !== be[12] ||
+                ae[13] !== be[13] ||
+                ae[14] !== be[14] ||
+                ae[15] !== be[15]
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Mat4
-         * @brief sets values from JSON object
+         * @memberof Odin.Mat4
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -1426,8 +1455,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Mat4
-         * @brief returns json object of this
+         * @memberof Odin.Mat4
+         * returns json object of this
          * @return Object
          */
         Mat4.prototype.toJSON = function(json) {
@@ -1451,8 +1480,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Mat4
-         * @brief returns string of this
+         * @memberof Odin.Mat4
+         * returns string of this
          * @return String
          */
         Mat4.prototype.toString = function() {

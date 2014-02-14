@@ -9,12 +9,22 @@ define(
         var shift = Array.prototype.shift;
 
 
+        /**
+         * @class Odin.EventEmitter
+         */
         function EventEmitter() {
 
             this._events = {};
         }
 
-
+        /**
+         * attaches function to an event
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
         EventEmitter.prototype.on = function(type, listener, ctx) {
             var events = this._events;
 
@@ -26,7 +36,14 @@ define(
             return this;
         };
 
-
+        /**
+         * attaches function to an event, on the first call its removed
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
         EventEmitter.prototype.once = function(type, listener, ctx) {
             var self = this;
             ctx = ctx || this;
@@ -39,7 +56,15 @@ define(
             return this.on(type, once, ctx);
         };
 
-
+        /**
+         * attaches function to an event on another object
+         * @memberof Odin.EventEmitter
+         * @param {object} obj
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
         EventEmitter.prototype.listenTo = function(obj, type, listener, ctx) {
             if (!obj.on || !obj.addEventListenerTo) throw "Can't listen to Object, it's not a instance of EventEmitter";
 
@@ -48,7 +73,14 @@ define(
             return this;
         };
 
-
+        /**
+         * removes function from an event
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @param {function} listener
+         * @param {object} ctx
+         * @return this
+         */
         EventEmitter.prototype.off = function(type, listener, ctx) {
             var thisEvents = this._events,
                 events, event,
@@ -80,7 +112,12 @@ define(
             return this;
         };
 
-
+        /**
+         * emits event type
+         * @memberof Odin.EventEmitter
+         * @param {string} type
+         * @return this
+         */
         EventEmitter.prototype.emit = function(type) {
             var events = this._events[type],
                 a1, a2, a3, a4,
@@ -130,7 +167,12 @@ define(
             return this;
         };
 
-
+        /**
+         * @memberof Odin.EventEmitter
+         * @param {constructor} child
+         * @param {constructor} parent
+         * @return child
+         */
         EventEmitter.extend = function(child, parent) {
             if (!parent) parent = this;
 

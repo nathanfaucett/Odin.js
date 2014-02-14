@@ -15,7 +15,7 @@ define([
 
         /**
          * @class Color
-         * @brief rgb color, values 0 - 1
+         * rgb color, values 0 - 1
          * @param Number r
          * @param Number g
          * @param Number b
@@ -24,19 +24,19 @@ define([
 
             /**
              * @property Number r
-             * @memberof Color
+             * @memberof Odin.Color
              */
             this.r = 0;
 
             /**
              * @property Number g
-             * @memberof Color
+             * @memberof Odin.Color
              */
             this.g = 0;
 
             /**
              * @property Number b
-             * @memberof Color
+             * @memberof Odin.Color
              */
             this.b = 0;
 
@@ -78,8 +78,8 @@ define([
 
         /**
          * @method clone
-         * @memberof Color
-         * @brief returns new instance of this
+         * @memberof Odin.Color
+         * returns new instance of this
          * @return Color
          */
         Color.prototype.clone = function() {
@@ -89,8 +89,8 @@ define([
 
         /**
          * @method copy
-         * @memberof Color
-         * @brief copies other
+         * @memberof Odin.Color
+         * copies other
          * @param Color other
          * @return this
          */
@@ -105,8 +105,8 @@ define([
 
         /**
          * @method set
-         * @memberof Color
-         * @brief sets values of this
+         * @memberof Odin.Color
+         * sets values of this
          * @param Number r
          * @param Number g
          * @param Number b
@@ -132,8 +132,8 @@ define([
 
         /**
          * @method setRGB
-         * @memberof Color
-         * @brief sets rgb values of this
+         * @memberof Odin.Color
+         * sets rgb values of this
          * @param Number r
          * @param Number g
          * @param Number b
@@ -150,8 +150,8 @@ define([
 
         /**
          * @method setStyle
-         * @memberof Color
-         * @brief sets values of this from string
+         * @memberof Odin.Color
+         * sets values of this from string
          * @param String style
          * @return this
          */
@@ -223,8 +223,8 @@ define([
 
         /**
          * @method toHEX
-         * @memberof Color
-         * @brief returns this color in HEX format
+         * @memberof Odin.Color
+         * returns this color in HEX format
          * @return Color
          */
         Color.prototype.toHEX = function() {
@@ -246,8 +246,8 @@ define([
 
         /**
          * @method toRGB
-         * @memberof Color
-         * @brief returns this color in RGB format
+         * @memberof Odin.Color
+         * returns this color in RGB format
          * @return Color
          */
         Color.prototype.toRGB = function() {
@@ -269,8 +269,8 @@ define([
 
         /**
          * @method add
-         * @memberof Color
-         * @brief adds other's values to this
+         * @memberof Odin.Color
+         * adds other's values to this
          * @param Color other
          * @return this
          */
@@ -285,8 +285,8 @@ define([
 
         /**
          * @method cadd
-         * @memberof Color
-         * @brief adds a and b together saves it in this
+         * @memberof Odin.Color
+         * adds a and b together saves it in this
          * @param Color a
          * @param Color b
          * @return this
@@ -302,8 +302,8 @@ define([
 
         /**
          * @method sadd
-         * @memberof Color
-         * @brief adds scalar value to this
+         * @memberof Odin.Color
+         * adds scalar value to this
          * @param Number s
          * @return this
          */
@@ -318,8 +318,8 @@ define([
 
         /**
          * @method sub
-         * @memberof Color
-         * @brief subtracts other's values from this
+         * @memberof Odin.Color
+         * subtracts other's values from this
          * @param Color other
          * @return this
          */
@@ -334,8 +334,8 @@ define([
 
         /**
          * @method csub
-         * @memberof Color
-         * @brief subtracts b from a saves it in this
+         * @memberof Odin.Color
+         * subtracts b from a saves it in this
          * @param Color a
          * @param Color b
          * @return this
@@ -351,8 +351,8 @@ define([
 
         /**
          * @method ssub
-         * @memberof Color
-         * @brief subtracts this by a scalar value
+         * @memberof Odin.Color
+         * subtracts this by a scalar value
          * @param Number s
          * @return this
          */
@@ -367,8 +367,8 @@ define([
 
         /**
          * @method mul
-         * @memberof Color
-         * @brief muliples this's values by other's
+         * @memberof Odin.Color
+         * muliples this's values by other's
          * @param Color other
          * @return this
          */
@@ -383,8 +383,8 @@ define([
 
         /**
          * @method cmul
-         * @memberof Color
-         * @brief muliples a and b saves it in this
+         * @memberof Odin.Color
+         * muliples a and b saves it in this
          * @param Color a
          * @param Color b
          * @return this
@@ -400,8 +400,8 @@ define([
 
         /**
          * @method smul
-         * @memberof Color
-         * @brief muliples this by a scalar value
+         * @memberof Odin.Color
+         * muliples this by a scalar value
          * @param Number s
          * @return this
          */
@@ -416,8 +416,8 @@ define([
 
         /**
          * @method div
-         * @memberof Color
-         * @brief divides this's values by other's
+         * @memberof Odin.Color
+         * divides this's values by other's
          * @param Color other
          * @return this
          */
@@ -435,8 +435,8 @@ define([
 
         /**
          * @method cdiv
-         * @memberof Color
-         * @brief divides b from a saves it in this
+         * @memberof Odin.Color
+         * divides b from a saves it in this
          * @param Color a
          * @param Color b
          * @return this
@@ -455,8 +455,8 @@ define([
 
         /**
          * @method sdiv
-         * @memberof Color
-         * @brief divides this by scalar value
+         * @memberof Odin.Color
+         * divides this by scalar value
          * @param Number s
          * @return this
          */
@@ -472,8 +472,8 @@ define([
 
         /**
          * @method length
-         * @memberof Color
-         * @brief returns length of this
+         * @memberof Odin.Color
+         * returns length of this
          * @return this
          */
         Color.prototype.length = function() {
@@ -487,8 +487,8 @@ define([
 
         /**
          * @method lengthSq
-         * @memberof Color
-         * @brief returns length squared of this
+         * @memberof Odin.Color
+         * returns length squared of this
          * @return this
          */
         Color.prototype.lengthSq = function() {
@@ -501,8 +501,8 @@ define([
 
         /**
          * @method normalize
-         * @memberof Color
-         * @brief returns this with a length of 1
+         * @memberof Odin.Color
+         * returns this with a length of 1
          * @return this
          */
         Color.prototype.normalize = function() {
@@ -522,8 +522,8 @@ define([
 
         /**
          * @method check
-         * @memberof Color
-         * @brief ensures that each value is no larger than 1
+         * @memberof Odin.Color
+         * ensures that each value is no larger than 1
          * @return this
          */
         Color.prototype.check = function() {
@@ -540,8 +540,8 @@ define([
 
         /**
          * @method lerp
-         * @memberof Color
-         * @brief linear interpolation between this and other by x
+         * @memberof Odin.Color
+         * linear interpolation between this and other by x
          * @param Color other
          * @param Number x
          * @return Color
@@ -557,8 +557,8 @@ define([
 
         /**
          * @method clerp
-         * @memberof Color
-         * @brief linear interpolation between a and b by x
+         * @memberof Odin.Color
+         * linear interpolation between a and b by x
          * @param Color a
          * @param Color b
          * @param Number x
@@ -578,8 +578,8 @@ define([
 
         /**
          * @method min
-         * @memberof Color
-         * @brief returns min values from this and other vector
+         * @memberof Odin.Color
+         * returns min values from this and other vector
          * @param Color other
          * @return Color
          */
@@ -600,8 +600,8 @@ define([
 
         /**
          * @method max
-         * @memberof Color
-         * @brief returns max values from this and other vector
+         * @memberof Odin.Color
+         * returns max values from this and other vector
          * @param Color other
          * @return Color
          */
@@ -622,8 +622,8 @@ define([
 
         /**
          * @method fromVec2
-         * @memberof Color
-         * @brief sets values from Vec2
+         * @memberof Odin.Color
+         * sets values from Vec2
          * @param Vec2 v
          * @return this
          */
@@ -638,8 +638,8 @@ define([
 
         /**
          * @method fromVec3
-         * @memberof Color
-         * @brief sets values from Vec3
+         * @memberof Odin.Color
+         * sets values from Vec3
          * @param Vec3 v
          * @return this
          */
@@ -654,17 +654,31 @@ define([
 
         /**
          * @method fromVec4
-         * @memberof Color
-         * @brief sets values from Vec4
+         * @memberof Odin.Color
+         * sets values from Vec4
          * @param Vec4 v
          * @return this
          */
         Color.prototype.fromVec4 = Color.prototype.fromVec3;
 
         /**
+         * @memberof Odin.Color
+         * @param Odin.Color other
+         * @return this
+         */
+        Color.prototype.equals = function(other) {
+
+            return !(
+                this.r !== other.r ||
+                this.g !== other.g ||
+                this.b !== other.b
+            );
+        };
+
+        /**
          * @method fromJSON
-         * @memberof Color
-         * @brief sets values from JSON object
+         * @memberof Odin.Color
+         * sets values from JSON object
          * @param Object json
          * @return this
          */
@@ -679,8 +693,8 @@ define([
 
         /**
          * @method toJSON
-         * @memberof Color
-         * @brief returns json object of this
+         * @memberof Odin.Color
+         * returns json object of this
          * @return Object
          */
         Color.prototype.toJSON = function(json) {
@@ -696,8 +710,8 @@ define([
 
         /**
          * @method fromArray
-         * @memberof Color
-         * @brief sets values from Array object
+         * @memberof Odin.Color
+         * sets values from Array object
          * @param Array array
          * @return this
          */
@@ -712,8 +726,8 @@ define([
 
         /**
          * @method toArray
-         * @memberof Color
-         * @brief returns array object of this
+         * @memberof Odin.Color
+         * returns array object of this
          * @return Array
          */
         Color.prototype.toArray = function(array) {
@@ -728,8 +742,8 @@ define([
 
         /**
          * @method toString
-         * @memberof Color
-         * @brief returns string of this
+         * @memberof Odin.Color
+         * returns string of this
          * @return String
          */
         Color.prototype.toString = function() {

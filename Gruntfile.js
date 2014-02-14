@@ -35,6 +35,16 @@ module.exports = function(grunt) {
                 "!node_modules/**/*"
             ]
         },
+        jsdoc: {
+            dist: {
+                src: [
+                    "src/odin/**/*.js",
+                ],
+                options: {
+                    destination: "doc"
+                }
+            }
+        },
         watch: {
             scripts: {
                 files: [
@@ -53,9 +63,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-requirejs");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-jsbeautifier");
+    grunt.loadNpmTasks("grunt-jsdoc");
 
     grunt.registerTask("dev", ["watch"]);
     grunt.registerTask("build", ["requirejs"]);
     grunt.registerTask("jsb", ["jsbeautifier"]);
-    grunt.registerTask("default", ["jsbeautifier", "requirejs"]);
+    grunt.registerTask("doc", ["jsbeautifier", "jsdoc"]);
+    grunt.registerTask("default", ["jsbeautifier", "requirejs", "jsdoc"]);
 };

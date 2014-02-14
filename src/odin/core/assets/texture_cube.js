@@ -14,7 +14,7 @@ define([
 
             Asset.call(this, opts);
 
-            this.flipY = opts.flipY != undefined ? !! opts.flipY : false;
+            this.flipY = opts.flipY != undefined ? !! opts.flipY : true;
             this.premultiplyAlpha = opts.premultiplyAlpha != undefined ? !! opts.premultiplyAlpha : false;
 
             this.anisotropy = opts.anisotropy != undefined ? opts.anisotropy : 1;
