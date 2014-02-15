@@ -312,9 +312,9 @@ define(
                     before = opts.before,
                     success = opts.success,
                     error = opts.error,
-                    asyn = opts.asyn != undefined ? !! opts.asyn : true;
+                    async = opts.async != undefined ? !! opts.async : true;
 
-                request.onload = function() {
+                request.addEventListener("load", function() {
                     var status = this.status;
 
                     if ((status > 199 && status < 301) || status == 304) {
@@ -326,16 +326,16 @@ define(
                             throw new Error(method + " " + src + " " + status);
                         }
                     }
-                };
-                request.onerror = function() {
+                }, false);
+                request.addEventListener("error", function() {
                     if (typeof(error) === "function") {
                         error(new Error(method + " " + src));
                     } else {
                         throw new Error(method + " " + src);
                     }
-                };
+                }, false);
 
-                request.open(method, src, asyn);
+                request.open(method, src, async);
                 if (typeof(before) === "function") before.call(request);
                 request.send();
             };

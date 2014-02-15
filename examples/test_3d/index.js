@@ -15,15 +15,20 @@ require({
 
 
         Assets.addAssets(
+            new ShaderLib.Unlit,
             new ShaderLib.VertexLit,
+            new ShaderLib.Diffuse,
+            new ShaderLib.Specular,
+            new ShaderLib.NormalDiffuse,
+            new ShaderLib.NormalSpecular,
             new ShaderLib.ReflectiveVertexLit,
             new Texture({
                 name: "img_marine_dif",
                 src: "../content/images/marine_dif.jpg"
             }),
             new Texture({
-                name: "img_marine_dif",
-                src: "../content/images/marine_dif.jpg"
+                name: "img_marine_nor",
+                src: "../content/images/marine_nor.jpg"
             }),
             new TextureCube({
                 name: "cm_sky",
@@ -59,11 +64,13 @@ require({
                 wireframeLineWidth: 1,
 
                 uniforms: {
-                    diffuseColor: new Color("white"),
-                    diffuseMap: Assets.get("img_marine_dif")
+                    diffuseMap: Assets.get("img_marine_dif"),
+                    normalMap: Assets.get("img_marine_nor"),
+                    normalScale: 1,
+                    shininess: 8
                 },
 
-                shader: Assets.get("shader_vertex_lit")
+                shader: Assets.get("shader_normal_specular")
             }),
             new Material({
                 name: "mat_env",
@@ -84,12 +91,6 @@ require({
 
         game = new Game({
             debug: true
-        });
-
-
-        Assets.get("mesh_odin").on("load", function() {
-
-            this.calculateNormals();
         });
 
         var scene = new Scene({
@@ -130,7 +131,7 @@ require({
                 }),
                 new MeshFilter({
                     mesh: Assets.get("mesh_odin"),
-                    material: Assets.get("mat_default")
+                    material: Assets.get("mat_env")
                 })
             ],
             tag: "Mesh"
@@ -266,7 +267,7 @@ require({
             s.addGameObject(instance);
         }
 
-        start = function() {
+        function start() {
             game.setScene("PlayGround");
             game.setCamera(game.scene.findByTagFirst("Camera"));
 
@@ -294,18 +295,17 @@ require({
             });
         }
 
-        restart = function() {
+        function restart() {
             start();
         }
 
-        game.on("init", function() {
-            start();
-        });
+        AssetLoader.on("load", function() {
+            Assets.get("mesh_odin").calculateTangents();
+            Assets.get("mesh_sphere").calculateTangents();
+            Assets.get("mesh_plane").calculateTangents();
+            Assets.get("mesh_cube").calculateTangents();
 
-
-        AssetLoader.load(function() {
-
-            game.init();
-        });
+            game.on("init", start).init();
+        }).load();
     }
 );

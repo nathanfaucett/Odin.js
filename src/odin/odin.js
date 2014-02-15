@@ -138,6 +138,18 @@ define(
         };
 
 
+        /**
+         * test function n number of times returns time it took
+         */
+        Odin.prototype.test = function(name, fn, times) {
+            times || (times = 1000);
+
+            console.time(name);
+            while (times--) fn();
+            console.timeEnd(name);
+        };
+
+
         return new Odin;
     }
 );

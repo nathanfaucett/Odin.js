@@ -33,13 +33,12 @@ define([
 
             this.shader = opts.shader != undefined ? opts.shader : undefined;
 
-            this._webgl = undefined;
-
             this.uniforms = merge(opts.uniforms || {}, {
-                diffuseMap: undefined,
-                diffuseColor: new Color(1, 1, 1)
+                diffuseColor: new Color(1, 1, 1),
+                shininess: 8
             });
 
+            this._webgl = undefined;
             this.needsUpdate = true;
         }
 

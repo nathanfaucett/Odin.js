@@ -120,11 +120,6 @@ define([
             this._lastFramebuffer = undefined;
 
             this._lastUniforms = {};
-
-            this._lastTexture = undefined;
-            this._lastTextureCube = undefined;
-
-            this._whiteTexture = undefined;
             this._textureIndex = 0;
 
             this._lastBuffer = undefined;
@@ -207,11 +202,6 @@ define([
             this._lastFramebuffer = undefined;
 
             this._lastUniforms = {};
-
-            this._lastTexture = undefined;
-            this._lastTextureCube = undefined;
-
-            this._whiteTexture = undefined;
             this._textureIndex = 0;
 
             this._lastBuffer = undefined;
@@ -451,9 +441,9 @@ define([
                     (state || (lastUniforms[key] = state = value.clone())).copy(value);
                 }
             } else if (type === "sampler2D") {
-                this.setTexture(location, value);
+                this.setTexture(location, value, key);
             } else if (type === "samplerCube") {
-                this.setTextureCube(location, value);
+                this.setTextureCube(location, value, key);
             }
         };
 
@@ -603,31 +593,23 @@ define([
         };
 
 
-        Renderer.prototype.setTexture = function(location, texture) {
+        Renderer.prototype.setTexture = function(location, texture, key) {
+            if (!texture || !texture.raw) return;
             var gl = this.context,
-                index = this._textureIndex++,
-                glTexture;
+                index, glTexture;
 
-            if (!texture || !texture.raw) {
-                if (this._lastTexture !== this._whiteTexture) {
-                    gl.activeTexture(gl.TEXTURE0 + index);
-                    gl.bindTexture(gl.TEXTURE_2D, this._whiteTexture);
-                    gl.uniform1i(location, index);
-                    this._lastTexture = this._whiteTexture;
-                }
-                return;
-            }
             if (!texture.needsUpdate && (glTexture = texture._webgl)) {
-                if (this._lastTexture !== glTexture) {
-                    gl.activeTexture(gl.TEXTURE0 + index);
-                    gl.bindTexture(gl.TEXTURE_2D, glTexture);
-                    gl.uniform1i(location, index);
-                    this._lastTexture = glTexture;
-                }
+                index = this._textureIndex++;
+
+                gl.activeTexture(gl.TEXTURE0 + index);
+                gl.bindTexture(gl.TEXTURE_2D, glTexture);
+                this.setUniform1i(location, index, key);
+
                 return;
             }
 
             glTexture = texture._webgl || (texture._webgl = gl.createTexture());
+            index = this._textureIndex++;
 
             var raw = texture.raw,
                 gpu = this.gpu,
@@ -683,7 +665,7 @@ define([
 
             gl.activeTexture(gl.TEXTURE0 + index);
             gl.bindTexture(TEXTURE_2D, glTexture);
-            gl.uniform1i(location, index);
+            this.setUniform1i(location, index, key);
 
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY ? 1 : 0);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha ? 1 : 0);
@@ -700,27 +682,26 @@ define([
             if (isPOT) gl.generateMipmap(TEXTURE_2D);
 
             texture.needsUpdate = false;
-            this._lastTexture = glTexture;
         };
 
 
-        Renderer.prototype.setTextureCube = function(location, cubeTexture) {
+        Renderer.prototype.setTextureCube = function(location, cubeTexture, key) {
             if (!cubeTexture || !cubeTexture.raw) return;
             var gl = this.context,
-                index = this._textureIndex++,
-                glTexture = cubeTexture._webgl;
+                glTexture = cubeTexture._webgl,
+                index;
 
             if (!cubeTexture.needsUpdate && glTexture) {
-                if (this._lastTextureCube !== glTexture) {
-                    gl.activeTexture(gl.TEXTURE0 + index);
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, glTexture);
-                    gl.uniform1i(location, index);
-                    this._lastTextureCube = glTexture;
-                }
+                index = this._textureIndex++;
+
+                gl.activeTexture(gl.TEXTURE0 + index);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, glTexture);
+                this.setUniform1i(location, index, key);
+
                 return;
             }
-
-            glTexture = cubeTexture._webgl || (cubeTexture._webgl = gl.createTexture())
+            glTexture = cubeTexture._webgl || (cubeTexture._webgl = gl.createTexture());
+            index = this._textureIndex++;
 
             var raw = cubeTexture.raw,
                 gpu = this.gpu,
@@ -779,7 +760,7 @@ define([
 
             gl.activeTexture(gl.TEXTURE0 + index);
             gl.bindTexture(TEXTURE_CUBE_MAP, glTexture);
-            gl.uniform1i(location, index);
+            this.setUniform1i(location, index, key);
 
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, cubeTexture.flipY ? 1 : 0);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, cubeTexture.premultiplyAlpha ? 1 : 0);
@@ -801,7 +782,6 @@ define([
             if (isPOT) gl.generateMipmap(TEXTURE_CUBE_MAP);
 
             cubeTexture.needsUpdate = false;
-            this._lastTextureCube = glTexture;
         };
 
 
@@ -1080,40 +1060,27 @@ define([
                 standardDerivatives = !! this.extensions.standardDerivatives,
                 parameters = {};
 
-            parameters.shading = material.shading;
-            parameters.doubleSided = material.side === Side.Both;
-            parameters.flipSided = material.side === Side.Back;
-
+            parameters.mobile = Device.mobile;
             parameters.useLights = shader.lights;
-            parameters.vertexLit = shader.vertexLit;
             parameters.useShadows = shader.shadows;
             parameters.useFog = shader.fog;
+            parameters.useBones = mesh.useBones && mesh.bones.length > 0;
+            parameters.useVertexLit = shader.vertexLit;
+            parameters.useSpecular = shader.specular;
 
-            parameters.useDiffuseMap = !! uniforms.diffuseMap;
-            parameters.useSpecularMap = !! uniforms.specularMap;
-            parameters.useEmissiveMap = !! uniforms.emissiveMap;
-            parameters.useBumpMap = standardDerivatives && !! uniforms.bumpMap;
-            parameters.useNormalMap = standardDerivatives && !! uniforms.normalMap;
-            parameters.useEnvMap = !! uniforms.envMap;
-            parameters.useMap = (
-                parameters.useDiffuseMap ||
-                parameters.useSpecularMap ||
-                parameters.useEmissiveMap ||
-                parameters.useBumpMap ||
-                parameters.useNormalMap ||
-                parameters.useEnvMap
-            );
+            parameters.useNormal = uniforms.normalMap;
+            parameters.useBump = uniforms.bumpMap;
 
             parameters.positions = mesh.vertices.length > 0;
             parameters.normals = mesh.normals.length > 0;
-            parameters.tangents = (parameters.useNormalMap) && mesh.tangents.length > 0;
+            parameters.tangents = mesh.tangents.length > 0;
             parameters.uvs = mesh.uvs.length > 0;
             parameters.colors = mesh.colors.length > 0;
 
             parameters.standardDerivatives = standardDerivatives && shader.standardDerivatives;
-            parameters.useBones = mesh.useBones && mesh.bones.length > 0;
 
             allocateLights(lights, parameters);
+            allocateShadows(lights, parameters);
 
             material._webgl = this._initProgram(shader.vertex, shader.fragment, parameters);
             material.needsUpdate = false;
@@ -1133,7 +1100,7 @@ define([
 
             for (; i &lt; il; i++) {
                 light = lights[i];
-                if (!light.visible) continue;
+                if (!light.visible || light.onlyShadow) continue;
                 type = light.type;
 
                 if (type === LightType.Point) {
@@ -1154,12 +1121,34 @@ define([
         }
 
 
+        function allocateShadows(lights, parameters) {
+            var maxShadows = 0,
+                light, type,
+                i = 0,
+                il = lights.length;
+
+            for (; i &lt; il; i++) {
+                light = lights[i];
+                if (!light.visible || !light.castShadow) continue;
+                type = light.type;
+
+                if (type === LightType.Directional) {
+                    maxShadows++;
+                } else if (type === LightType.Spot) {
+                    maxShadows++;
+                }
+            }
+
+            parameters.maxShadows = maxShadows;
+        }
+
+
         var MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
         Renderer.prototype._initProgram = function(vertexShader, fragmentShader, parameters) {
             var gl = this.context,
                 chunks = [],
                 programs = this._programs,
-                key, program, programInfo, code, i;
+                key, program, webglProgram, programInfo, code, i;
 
             chunks.push(fragmentShader, vertexShader);
             for (key in parameters) chunks.push(key, parameters[key]);
@@ -1177,26 +1166,34 @@ define([
 
             var precision = this.gpu.precision,
 
-                standardDerivatives = parameters.standardDerivatives,
-                useBones = parameters.useBones,
+                mobile = parameters.mobile,
                 useLights = parameters.useLights,
-                vertexLit = parameters.vertexLit,
                 useShadows = parameters.useShadows,
                 useFog = parameters.useFog,
+                useBones = parameters.useBones,
+                useVertexLit = parameters.useVertexLit,
+                useSpecular = parameters.useSpecular,
+                standardDerivatives = parameters.standardDerivatives,
 
-                prefixVertex = [
+                definesPrefix = [
                     "precision " + precision + " float;",
                     "precision " + precision + " int;",
 
                     useLights ? "#define USE_LIGHTS" : "",
+                    useShadows ? "#define USE_SHADOWS" : "",
+                    useBones ? "#define USE_SKINNING" : "",
 
                     useLights ? "#define MAX_DIR_LIGHTS " + parameters.maxDirectionalLights : "",
                     useLights ? "#define MAX_POINT_LIGHTS " + parameters.maxPointLights : "",
                     useLights ? "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights : "",
                     useLights ? "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights : "",
 
-                    parameters.doubleSided ? "#define DOUBLE_SIDED" : "",
-                    parameters.flipSided ? "#define FLIP_SIDED" : "",
+                    useShadows ? "#define MAX_SHADOWS " + parameters.maxShadows : "",
+                    ""
+                ].join("\n"),
+
+                vertexPrefix = [
+                    definesPrefix,
 
                     "uniform mat4 modelMatrix;",
                     "uniform mat4 modelViewMatrix;",
@@ -1212,59 +1209,77 @@ define([
                     parameters.colors ? "attribute vec3 color;" : "",
 
                     useBones ? "attribute int boneIndex;" : "",
-                    useBones ? "attribute vec3 boneWeights;" : "",
-                    useBones ? "uniform mat4 bones[" + parameters.bones + "];" : ""
+                    useBones ? "attribute vec3 boneWeight;" : "",
+                    useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
                 ].join("\n"),
 
-                prefixFragment = [
-                    "precision " + precision + " float;",
-                    "precision " + precision + " int;",
-
+                fragmentPrefix = [
                     standardDerivatives ? "#extension GL_OES_standard_derivatives : enable" : "",
+                    definesPrefix,
 
                     "uniform mat4 viewMatrix;",
                     "uniform vec3 cameraPosition;"
                 ].join("\n"),
 
-                glVertexShader = prefixVertex + "\n" + vertexShader,
-                glFragmentShader = prefixFragment + "\n" + fragmentShader,
+                glVertexShader = vertexPrefix + "\n" + vertexShader,
+                glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
 
                 vertexSplit = glVertexShader.split(MAIN_SPLITER),
                 fragmentSplit = glFragmentShader.split(MAIN_SPLITER),
                 main = "void main(void) {\n",
-                parsVertex = vertexSplit[0],
-                mainVertex = vertexSplit[5],
-                parsFragment = fragmentSplit[0],
-                mainFragment = fragmentSplit[5];
+                vertexHeader = vertexSplit[0],
+                vertexMain = vertexSplit[5],
+                fragmentHeader = fragmentSplit[0],
+                fragmentMain = fragmentSplit[5];
 
             if (standardDerivatives) {
-                if (parameters.useNormalMap) parsFragment += ShaderChunks.perturbNormal2Arb;
-                if (parameters.useBumpMap) parsFragment += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
+                if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
+                if (parameters.useBump) fragmentHeader += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
             }
+
             if (useLights) {
-                if (vertexLit) {
-                    parsVertex += ShaderChunks.lights_pars_vertexlit;
-                    mainVertex = ShaderChunks.lights_vertexlit + mainVertex;
+                if (useVertexLit) {
+                    vertexHeader += ShaderChunks.lights + ShaderChunks.VertexLight;
+                } else {
+                    vertexHeader += ShaderChunks.perPixelVaryingHeader;
+                    vertexMain = ShaderChunks.perPixelVaryingMain + vertexMain;
 
-                    parsFragment += ShaderChunks.lights_pars_vertexlit_fragment;
+                    fragmentHeader += ShaderChunks.lights + ShaderChunks.perPixelVaryingHeader;
+                    if (useSpecular) {
+                        fragmentHeader += ShaderChunks.PixelLight;
+                    } else {
+                        fragmentHeader += ShaderChunks.PixelLightNoSpec;
+                    }
                 }
-                mainVertex = ShaderChunks.worldpos_vertex + mainVertex;
+
+                vertexMain = ShaderChunks.mvPosition + vertexMain;
+                if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
+                vertexMain = ShaderChunks.worldPosition + vertexMain;
+            } else {
+                vertexMain = ShaderChunks.mvPosition + vertexMain;
             }
-            if (parameters.normals) mainVertex = ShaderChunks.defaultnormal_vertex + mainVertex;
-            mainVertex = ShaderChunks.default_vertex + mainVertex;
 
-            glVertexShader = parsVertex + main + mainVertex;
-            glFragmentShader = parsFragment + main + mainFragment;
+            if (useBones) {
+                vertexHeader += ShaderChunks.getBoneMatrix;
+                if (parameters.normals) vertexMain = ShaderChunks.boneNormal + vertexMain;
+                vertexMain = ShaderChunks.bone + vertexMain;
+            }
 
-            program = createProgram(gl, glVertexShader, glFragmentShader);
-            program.uniforms = {};
-            program.attributes = {};
-            program.customUniforms = [];
-            program.customAttributes = [];
-            program.parameters = parameters;
+            glVertexShader = vertexHeader + main + vertexMain;
+            glFragmentShader = fragmentHeader + main + fragmentMain;
+
+            webglProgram = createProgram(gl, glVertexShader, glFragmentShader);
+            program = {
+                program: webglProgram,
+                uniforms: {},
+                attributes: {},
+                customUniforms: [],
+                customAttributes: [],
+                parameters: parameters
+            }
 
             getUniformsAttributes(vertexShader, fragmentShader, program.customAttributes, program.customUniforms);
-            parseUniformsAttributes(gl, program, glVertexShader, glFragmentShader, program.attributes, program.uniforms);
+            parseUniformsAttributes(gl, webglProgram, glVertexShader, glFragmentShader, program.attributes, program.uniforms);
 
             programs.push({
                 used: 1,
@@ -1340,13 +1355,14 @@ define([
             var gl = this.context,
                 uniformsState = this._uniformsState,
                 program = material._webgl,
+                webglProgram = material._webgl.program,
                 parameters = program.parameters,
                 uniforms = program.uniforms,
                 state, i, length;
 
-            if (this._lastProgram !== program) {
-                gl.useProgram(program);
-                this._lastProgram = program;
+            if (this._lastProgram !== webglProgram) {
+                gl.useProgram(webglProgram);
+                this._lastProgram = webglProgram;
             }
 
             if (uniforms.modelMatrix) this.setUniformMatrix4fv(uniforms.modelMatrix.location, transform.matrixWorld, "matrixWorld");
@@ -1461,7 +1477,7 @@ define([
                 value = materialUniforms[name];
 
                 if (!uniformValue) continue;
-                if (!value && customUniform.type !== "sampler2D") throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
+                if (!value) throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
 
                 if (uniformValue.isArray) {
                     location = uniformValue.location;
@@ -1730,7 +1746,7 @@ define([
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 22:33:35 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Fri Feb 14 2014 20:06:18 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

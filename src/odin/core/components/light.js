@@ -20,8 +20,11 @@ define([
 
             Component.call(this, "Light", opts);
 
-            this.visible = opts.visible != undefined ? !! opts.visible : true;
             this.type = opts.type != undefined ? opts.type : Enums.LightType.Point;
+
+            this.visible = opts.visible != undefined ? !! opts.visible : true;
+            this.onlyShadow = opts.onlyShadow != undefined ? !! opts.onlyShadow : false;
+            this.castShadow = opts.castShadow != undefined ? !! opts.castShadow : true;
 
             this.color = opts.color != undefined ? opts.color : new Color(1, 1, 1);
             this.energy = opts.energy != undefined ? opts.energy : 1;
@@ -55,8 +58,11 @@ define([
 
         Light.prototype.copy = function(other) {
 
-            this.visible = other.visible;
             this.type = other.type;
+
+            this.visible = other.visible;
+            this.onlyShadow = other.onlyShadow;
+            this.castShadow = other.castShadow;
 
             this.color.copy(other.color);
             this.energy = other.energy;
@@ -74,8 +80,11 @@ define([
         Light.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 
-            json.visible = this.visible;
             json.type = this.type;
+
+            json.visible = this.visible;
+            json.onlyShadow = this.onlyShadow;
+            json.castShadow = this.castShadow;
 
             json.color = this.color.toJSON(json.color);
             json.energy = this.energy;
@@ -93,8 +102,11 @@ define([
         Light.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
 
-            this.visible = json.visible;
             this.type = json.type;
+
+            this.visible = json.visible;
+            this.onlyShadow = json.onlyShadow;
+            this.castShadow = json.castShadow;
 
             this.color.fromJSON(json.color);
             this.energy = json.energy;

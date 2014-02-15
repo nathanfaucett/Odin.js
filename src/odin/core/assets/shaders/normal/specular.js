@@ -8,14 +8,13 @@ define([
         "use strict";
 
 
-        function VertexLit() {
+        function Specular() {
 
             Shader.call(this, {
-                name: "shader_vertex_lit",
+                name: "shader_specular",
                 load: false,
 
                 lights: true,
-                vertexLit: true,
 
                 vertex: [
                     "varying vec2 vUv;",
@@ -30,21 +29,26 @@ define([
                     "uniform vec3 diffuseColor;",
                     "uniform sampler2D diffuseMap;",
 
+                    "uniform float shininess;",
+
                     "varying vec2 vUv;",
 
                     "void main() {",
                     "	vec4 finalColor = texture2D(diffuseMap, vUv);",
                     "	finalColor.xyz *= diffuseColor;",
 
-                    "	gl_FragColor = vec4(vLightFront * finalColor.xyz, finalColor.w);",
+                    "	vec3 diffuseLight, specularLight;",
+                    "	PixelLight(normalize(vNormal), vec3(1.0), 1.0, shininess, diffuseLight, specularLight);",
+
+                    "	gl_FragColor = vec4(diffuseLight * finalColor.xyz + specularLight * finalColor.xyz, finalColor.w);",
                     "}"
                 ].join("\n")
             });
         }
 
-        Shader.extend(VertexLit);
+        Shader.extend(Specular);
 
 
-        return VertexLit;
+        return Specular;
     }
 );

@@ -18,6 +18,7 @@ define([
             Class.call(this);
 
             this._name = opts.name != undefined ? opts.name : "Asset_" + this._id;
+            this._loaded = false;
 
             this.json = opts.json != undefined ? !! opts.json : true;
 

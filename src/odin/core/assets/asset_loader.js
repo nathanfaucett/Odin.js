@@ -32,22 +32,18 @@ define([
         EventEmitter.extend(AssetLoader);
 
 
-        AssetLoader.prototype.load = function(callback, reload) {
+        AssetLoader.prototype.load = function(reload) {
             var self = this,
                 count = Assets.length,
                 i = count,
                 fn = function(err) {
-                    if (err) Log.error(err.message);
+                    if (err) Log.error(err);
 
                     count--;
-                    if (count === 0) {
-                        self.emit("load");
-                        callback && callback();
-                    }
+                    if (count <= 0) self.emit("load");
                 };
 
-            if (!count) callback && callback();
-
+            if (!count) self.emit("load");
             for (; i--;) this.loadAsset(Assets[i], fn, reload, true);
         };
 
@@ -59,6 +55,7 @@ define([
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
 
             if (!asset.load || !src || asset.raw && !reload) {
+                asset._loaded = true;
                 callback && callback()
                 return;
             };
@@ -84,9 +81,10 @@ define([
                         raw[i] = data;
 
                         if (loaded <= 0) {
+                            asset._loaded = true;
                             asset.parse(raw);
-                            self.emit("loadAsset", asset);
                             asset.emit("load", raw);
+                            self.emit("loadAsset", asset);
                             callback && callback();
                         }
                     });
@@ -107,9 +105,10 @@ define([
                         return;
                     }
 
+                    asset._loaded = true;
                     asset.parse(raw);
-                    self.emit("loadAsset", asset);
                     asset.emit("load", raw);
+                    self.emit("loadAsset", asset);
                     callback && callback();
                 });
             }

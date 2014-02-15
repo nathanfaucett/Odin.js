@@ -8,18 +8,21 @@ define([
         "use strict";
 
 
-        function Unlit() {
+        function Diffuse() {
 
             Shader.call(this, {
-                name: "shader_unlit",
+                name: "shader_diffuse",
                 load: false,
+
+                lights: true,
+                specular: false,
 
                 vertex: [
                     "varying vec2 vUv;",
 
                     "void main() {",
                     "	vUv = uv;",
-                    "	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+                    "	gl_Position = projectionMatrix * mvPosition;",
                     "}"
                 ].join("\n"),
 
@@ -30,18 +33,20 @@ define([
                     "varying vec2 vUv;",
 
                     "void main() {",
+                    "	vec3 diffuseLight = PixelLightNoSpec(normalize(vNormal));",
+
                     "	vec4 finalColor = texture2D(diffuseMap, vUv);",
                     "	finalColor.xyz *= diffuseColor;",
 
-                    "	gl_FragColor = finalColor;",
+                    "	gl_FragColor = vec4(diffuseLight * finalColor.xyz, finalColor.w);",
                     "}"
                 ].join("\n")
             });
         }
 
-        Shader.extend(Unlit);
+        Shader.extend(Diffuse);
 
 
-        return Unlit;
+        return Diffuse;
     }
 );

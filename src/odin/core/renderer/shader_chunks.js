@@ -18,7 +18,8 @@ define(
                 "	float dBy = scale * texture2D(map, uv + dSTdy).x - Hll;",
 
                 "	return vec2(dBx, dBy);",
-                "}\n",
+                "}",
+                ""
             ].join("\n"),
 
             perturbNormalArb: [
@@ -35,11 +36,12 @@ define(
                 "	vec3 vGrad = sign(fDet) * (dHdxy.x * R1 + dHdxy.y * R2);",
 
                 "	return normalize(abs(fDet) * surf_norm - vGrad);",
-                "}\n",
+                "}",
+                ""
             ].join("\n"),
 
             perturbNormal2Arb: [
-                "vec3 perturbNormal2Arb(sampler2D map, vec3 uv, vec3 eye_pos, vec3 surf_norm, float scale) {",
+                "vec3 perturbNormal2Arb(sampler2D map, vec2 uv, vec3 eye_pos, vec3 surf_norm, float scale) {",
 
                 "	vec3 q0 = dFdx(eye_pos.xyz);",
                 "	vec3 q1 = dFdy(eye_pos.xyz);",
@@ -55,69 +57,100 @@ define(
                 "	mat3 tsn = mat3(S, T, N);",
 
                 "	return normalize(tsn * mapN);",
-                "}\n",
+                "}",
+                ""
             ].join("\n"),
 
-            default_vertex: [
-                "vec4 mvPosition;",
-
+            getBoneMatrix: [
                 "#ifdef USE_SKINNING",
-                "mvPosition = modelViewMatrix * skinned;",
-                "#endif",
-
-                "#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS )",
-                "mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
-                "#endif",
-
-                "#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )",
-                "mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "mat4 getBoneMatrix(){",
+                "	mat4 result = boneWeight.x * bones[ int( boneIndex.x ) ];",
+                "	result = result + boneWeight.y * bones[ int( boneIndex.y ) ];",
+                "	result = result + boneWeight.z * bones[ int( boneIndex.z ) ];",
+                "	return result;",
+                "}",
                 "#endif",
                 ""
             ].join("\n"),
 
-            defaultnormal_vertex: [
-                "vec3 objectNormal;",
+            bone: [
+                "	#ifdef USE_SKINNING",
+                "		mat4 boneMatrix = getBoneMatrix();",
 
-                "#ifdef USE_SKINNING",
-                "objectNormal = skinnedNormal.xyz;",
-                "#endif",
+                "		#ifdef USE_MORPHTARGETS",
+                "			vec4 boneVertex = vec4( morphed, 1.0 );",
+                "		#else",
+                "			vec4 boneVertex = vec4( position, 1.0 );",
+                "		#endif",
 
-                "#if !defined( USE_SKINNING ) && defined( USE_MORPHNORMALS )",
-                "objectNormal = morphedNormal;",
-                "#endif",
-
-                "#if !defined( USE_SKINNING ) && ! defined( USE_MORPHNORMALS )",
-                "objectNormal = normal;",
-                "#endif",
-
-                "#ifdef FLIP_SIDED",
-                "objectNormal = -objectNormal;",
-                "#endif",
-
-                "vec3 transformedNormal = normalMatrix * objectNormal;",
+                "		vec4 bone = boneMatrix * boneVertex;",
+                "	#endif",
                 ""
             ].join("\n"),
 
-            worldpos_vertex: [
-                "#if defined( USE_ENVMAP ) || defined( USE_LIGHTS ) || defined ( USE_SHADOWMAP )",
-
-                "#ifdef USE_SKINNING",
-                "vec4 worldPosition = modelMatrix * skinned;",
-                "#endif",
-
-                "#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
-                "vec4 worldPosition = modelMatrix * vec4( morphed, 1.0 );",
-                "#endif",
-
-                "#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
-                "vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
-                "#endif",
-
-                "#endif",
+            boneNormal: [
+                "	#ifdef USE_SKINNING",
+                "		#ifdef USE_MORPHNORMALS",
+                "			vec4 boneNormal = boneMatrix * vec4( morphedNormal, 0.0 );",
+                "		#else",
+                "			vec4 boneNormal = boneMatrix * vec4( normal, 0.0 );",
+                "		#endif",
+                "	#endif",
                 ""
             ].join("\n"),
 
-            lights_pars_vertexlit: [
+            transformedNormal: [
+                "	vec3 objectNormal;",
+
+                "	#ifdef USE_SKINNING",
+                "	objectNormal = boneNormal.xyz;",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHNORMALS )",
+                "	objectNormal = morphedNormal;",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHNORMALS )",
+                "	objectNormal = normal;",
+                "	#endif",
+
+                "	vec3 transformedNormal = normalMatrix * objectNormal;",
+                ""
+            ].join("\n"),
+
+            worldPosition: [
+                "	#ifdef USE_SKINNING",
+                "	vec4 worldPosition = modelMatrix * bone;",
+                "	#endif",
+
+                "	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
+                "	vec4 worldPosition = modelMatrix * vec4( morphed, 1.0 );",
+                "	#endif",
+
+                "	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
+                "	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+                "	#endif",
+                ""
+            ].join("\n"),
+
+            mvPosition: [
+                "	vec4 mvPosition;",
+
+                "	#ifdef USE_SKINNING",
+                "	mvPosition = modelViewMatrix * bone;",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS )",
+                "	mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )",
+                "	mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "	#endif",
+                ""
+            ].join("\n"),
+
+            lights: [
                 "uniform vec3 ambient;",
 
                 "#if MAX_DIR_LIGHTS > 0",
@@ -152,138 +185,306 @@ define(
                 "uniform float spotLightExponent[ MAX_SPOT_LIGHTS ];",
 
                 "#endif",
-
-                "varying vec3 vLightFront;",
-
-                "#ifdef DOUBLE_SIDED",
-                "	varying vec3 vLightBack;",
-                "#endif",
                 ""
             ].join("\n"),
 
-            lights_pars_vertexlit_fragment: [
-                "varying vec3 vLightFront;",
+            VertexLight: [
+                "void VertexLight(vec3 normal, vec3 worldPosition, vec3 viewPosition, inout vec3 diffuseLight) {",
 
-                "#ifdef DOUBLE_SIDED",
-                "	varying vec3 vLightBack;",
-                "#endif",
-                ""
-            ].join("\n"),
+                "	#if MAX_DIR_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
-            lights_vertexlit: [
-                "transformedNormal = normalize( transformedNormal );",
+                "			vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
+                "			vec3 dirVector = normalize( lDirection.xyz );",
 
-                "#if MAX_DIR_LIGHTS > 0",
-                "	for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
+                "			float dotProduct = dot( normal, dirVector );",
+                "			vec3 directionalLightWeighting = vec3( max( dotProduct, 0.0 ) );",
 
-                "		vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
-                "		vec3 dirVector = normalize( lDirection.xyz );",
-
-                "		float dotProduct = dot( transformedNormal, dirVector );",
-                "		vec3 directionalLightWeighting = vec3( max( dotProduct, 0.0 ) );",
-
-                "		#ifdef DOUBLE_SIDED",
-                "			vec3 directionalLightWeightingBack = vec3( max( -dotProduct, 0.0 ) );",
-                "		#endif",
-
-                "		vLightFront += directionalLightColor[ i ] * directionalLightWeighting;",
-
-                "		#ifdef DOUBLE_SIDED",
-                "			vLightBack += directionalLightColor[ i ] * directionalLightWeightingBack;",
-                "		#endif",
-                "	}",
-                "#endif",
-
-                "#if MAX_POINT_LIGHTS > 0",
-                "	for( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
-
-                "		vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
-                "		vec3 lVector = lPosition.xyz - mvPosition.xyz;",
-
-                "		float lDistance = 1.0;",
-                "		if ( pointLightDistance[ i ] > 0.0 ) {",
-                "			lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
+                "			diffuseLight += directionalLightColor[ i ] * directionalLightWeighting;",
                 "		}",
+                "	#endif",
 
-                "		lVector = normalize( lVector );",
-                "		float dotProduct = dot( transformedNormal, lVector );",
+                "	#if MAX_POINT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
 
-                "		vec3 pointLightWeighting = vec3( max( dotProduct, 0.0 ) );",
-
-                "		#ifdef DOUBLE_SIDED",
-                "			vec3 pointLightWeightingBack = vec3( max( -dotProduct, 0.0 ) );",
-                "		#endif",
-
-                "		vLightFront += pointLightColor[ i ] * pointLightWeighting * lDistance;",
-
-                "		#ifdef DOUBLE_SIDED",
-                "			vLightBack += pointLightColor[ i ] * pointLightWeightingBack * lDistance;",
-                "		#endif",
-                "	}",
-                "#endif",
-
-                "#if MAX_SPOT_LIGHTS > 0",
-                "	for( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
-
-                "		vec4 lPosition = viewMatrix * vec4( spotLightPosition[ i ], 1.0 );",
-                "		vec3 lVector = lPosition.xyz - mvPosition.xyz;",
-
-                "		float spotEffect = dot( spotLightDirection[ i ], normalize( spotLightPosition[ i ] - worldPosition.xyz ) );",
-
-                "		if ( spotEffect > spotLightAngleCos[ i ] ) {",
-
-                "			spotEffect = max( pow( spotEffect, spotLightExponent[ i ] ), 0.0 );",
+                "			vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + viewPosition;",
 
                 "			float lDistance = 1.0;",
-                "			if ( spotLightDistance[ i ] > 0.0 ) {",
-                "				lDistance = 1.0 - min( ( length( lVector ) / spotLightDistance[ i ] ), 1.0 );",
+                "			if ( pointLightDistance[ i ] > 0.0 ) {",
+                "				lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
                 "			}",
 
                 "			lVector = normalize( lVector );",
+                "			float dotProduct = dot( normal, lVector );",
 
-                "			float dotProduct = dot( transformedNormal, lVector );",
-                "			vec3 spotLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+                "			vec3 pointLightWeighting = vec3( max( dotProduct, 0.0 ) );",
 
-                "			#ifdef DOUBLE_SIDED",
-                "				vec3 spotLightWeightingBack = vec3( max( -dotProduct, 0.0 ) );",
-                "			#endif",
+                "			diffuseLight += pointLightColor[ i ] * pointLightWeighting * lDistance;",
+                "		}",
+                "	#endif",
 
-                "			vLightFront += spotLightColor[ i ] * spotLightWeighting * lDistance * spotEffect;",
+                "	#if MAX_SPOT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
 
-                "			#ifdef DOUBLE_SIDED",
-                "				vLightBack += spotLightColor[ i ] * spotLightWeightingBack * lDistance * spotEffect;",
-                "			#endif",
+                "			vec4 lPosition = viewMatrix * vec4( spotLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + viewPosition;",
+
+                "			float spotEffect = dot( spotLightDirection[ i ], normalize( spotLightPosition[ i ] - worldPosition ) );",
+
+                "			if ( spotEffect > spotLightAngleCos[ i ] ) {",
+
+                "				spotEffect = max( pow( spotEffect, spotLightExponent[ i ] ), 0.0 );",
+
+                "				float lDistance = 1.0;",
+                "				if ( spotLightDistance[ i ] > 0.0 ) {",
+                "					lDistance = 1.0 - min( ( length( lVector ) / spotLightDistance[ i ] ), 1.0 );",
+                "				}",
+
+                "				lVector = normalize( lVector );",
+
+                "				float dotProduct = dot( normal, lVector );",
+                "				vec3 spotLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "				diffuseLight += spotLightColor[ i ] * spotLightWeighting * lDistance * spotEffect;",
+                "			}",
 
                 "		}",
+                "	#endif",
 
-                "	}",
-                "#endif",
+                "	#if MAX_HEMI_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
 
-                "#if MAX_HEMI_LIGHTS > 0",
-                "	for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
+                "			vec4 lDirection = viewMatrix * vec4( hemiLightDirection[ i ], 0.0 );",
+                "			vec3 lVector = normalize( lDirection.xyz );",
 
-                "		vec4 lDirection = viewMatrix * vec4( hemiLightDirection[ i ], 0.0 );",
-                "		vec3 lVector = normalize( lDirection.xyz );",
+                "			float dotProduct = dot( normal, lVector );",
+                "			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
 
-                "		float dotProduct = dot( transformedNormal, lVector );",
+                "			diffuseLight += hemiLightColor[ i ] * hemiDiffuseWeight;",
+                "		}",
+                "	#endif",
 
-                "		float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
-                "		float hemiDiffuseWeightBack = -0.5 * dotProduct + 0.5;",
+                "	diffuseLight += ambient;",
+                "}",
+                ""
+            ].join("\n"),
 
-                "		vLightFront += hemiLightColor[ i ] * hemiDiffuseWeight;",
+            perPixelVaryingHeader: [
+                "varying vec3 vWorldPosition;",
+                "varying vec3 vViewPosition;",
+                "varying vec3 vNormal;",
+                ""
+            ].join("\n"),
 
-                "		#ifdef DOUBLE_SIDED",
-                "			vLightBack += hemiLightColor[ i ] * hemiDiffuseWeightBack;",
-                "		#endif",
+            perPixelVaryingMain: [
+                "	vWorldPosition = worldPosition.xyz;",
+                "	vViewPosition = -mvPosition.xyz;",
+                "	vNormal = transformedNormal;",
+            ].join("\n"),
 
-                "	}",
-                "#endif",
+            PixelLight: [
+                "void PixelLight(vec3 normal, vec3 specularColor, float specularStrength, float shininess, inout vec3 diffuseLight, inout vec3 specularLight) {",
+                "	#if MAX_DIR_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
-                "vLightFront = vLightFront + ambient;",
+                "			vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
+                "			vec3 dirVector = normalize( lDirection.xyz );",
 
-                "#ifdef DOUBLE_SIDED",
-                "	vLightBack = vLightBack + ambient;",
-                "#endif",
+                "			float dotProduct = dot( normal, dirVector );",
+                "			vec3 directionalLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "			diffuseLight += directionalLightColor[ i ] * directionalLightWeighting;",
+
+                "			vec3 dirHalfVector = normalize( dirVector + vViewPosition );",
+                "			float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );",
+                "			float dirSpecularWeight = specularStrength * max( pow( dirDotNormalHalf, shininess ), 0.0 );",
+                "			float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+                "			vec3 schlick = specularColor + vec3( 1.0 - specularColor ) * pow( 1.0 - dot( dirVector, dirHalfVector ), 5.0 );",
+                "			specularLight += schlick * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight * specularNormalization;",
+                "		}",
+                "	#endif",
+
+                "	#if MAX_POINT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
+
+                "			vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + vViewPosition;",
+
+                "			float lDistance = 1.0;",
+                "			if ( pointLightDistance[ i ] > 0.0 ) {",
+                "				lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
+                "			}",
+
+                "			lVector = normalize( lVector );",
+                "			float dotProduct = dot( normal, lVector );",
+
+                "			vec3 pointLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "			diffuseLight += pointLightColor[ i ] * pointLightWeighting * lDistance;",
+
+                "			vec3 pointHalfVector = normalize( lVector + vViewPosition );",
+                "			float pointDiffuseWeight = max( dotProduct, 0.0 );",
+                "			float pointDotNormalHalf = max( dot( normal, pointHalfVector ), 0.0 );",
+                "			float pointSpecularWeight = specularStrength * max( pow( pointDotNormalHalf, shininess ), 0.0 );",
+
+                "			float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+                "			vec3 schlick = specularColor + vec3( 1.0 - specularColor ) * pow( 1.0 - dot( lVector, pointHalfVector ), 5.0 );",
+                "			specularLight += schlick * pointLightColor[ i ] * pointSpecularWeight * pointDiffuseWeight * lDistance * specularNormalization;",
+                "		}",
+                "	#endif",
+
+                "	#if MAX_SPOT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
+
+                "			vec4 lPosition = viewMatrix * vec4( spotLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + vViewPosition;",
+
+                "			float spotEffect = dot( spotLightDirection[ i ], normalize( spotLightPosition[ i ] - vWorldPosition ) );",
+
+                "			if ( spotEffect > spotLightAngleCos[ i ] ) {",
+
+                "				spotEffect = max( pow( spotEffect, spotLightExponent[ i ] ), 0.0 );",
+
+                "				float lDistance = 1.0;",
+                "				if ( spotLightDistance[ i ] > 0.0 ) {",
+                "					lDistance = 1.0 - min( ( length( lVector ) / spotLightDistance[ i ] ), 1.0 );",
+                "				}",
+
+                "				lVector = normalize( lVector );",
+
+                "				float dotProduct = dot( normal, lVector );",
+                "				vec3 spotLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "				diffuseLight += spotLightColor[ i ] * spotLightWeighting * lDistance * spotEffect;",
+
+                "				vec3 spotHalfVector = normalize( lVector + vViewPosition );",
+                "				float spotDiffuseWeight = max( dotProduct, 0.0 );",
+                "				float spotDotNormalHalf = max( dot( normal, spotHalfVector ), 0.0 );",
+                "				float spotSpecularWeight = specularStrength * max( pow( spotDotNormalHalf, shininess ), 0.0 );",
+
+                "				float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+                "				vec3 schlick = specularColor + vec3( 1.0 - specularColor ) * pow( 1.0 - dot( lVector, spotHalfVector ), 5.0 );",
+                "				specularLight += schlick * spotLightColor[ i ] * spotSpecularWeight * spotDiffuseWeight * lDistance * specularNormalization * spotEffect;",
+                "			}",
+
+                "		}",
+                "	#endif",
+
+                "	#if MAX_HEMI_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
+
+                "			vec4 lDirection = viewMatrix * vec4( hemiLightDirection[ i ], 0.0 );",
+                "			vec3 lVector = normalize( lDirection.xyz );",
+
+                "			float dotProduct = dot( normal, lVector );",
+
+                "			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
+                "			float hemiDiffuseWeightBack = -0.5 * dotProduct + 0.5;",
+
+                "			diffuseLight += hemiLightColor[ i ] * hemiDiffuseWeight;",
+
+                "			vec3 hemiHalfVector = normalize( lVector + vViewPosition );",
+                "			float hemiDotNormalHalf = max( dot( normal, hemiHalfVector ), 0.0 );",
+                "			float hemiSpecularWeight = specularStrength * max( pow( hemiDotNormalHalf, shininess ), 0.0 );",
+
+                "			float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+                "			vec3 schlick = specularColor + vec3( 1.0 - specularColor ) * pow( 1.0 - dot( lVector, hemiHalfVector ), 5.0 );",
+                "			specularLight += schlick * hemiLightColor[ i ] * hemiSpecularWeight * hemiDiffuseWeight * specularNormalization;",
+                "		}",
+                "	#endif",
+
+                "	diffuseLight += ambient;",
+                "}",
+                ""
+            ].join("\n"),
+
+            PixelLightNoSpec: [
+                "vec3 PixelLightNoSpec(vec3 normal) {",
+                "	vec3 diffuseLight;",
+
+                "	#if MAX_DIR_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
+
+                "			vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
+                "			vec3 dirVector = normalize( lDirection.xyz );",
+
+                "			float dotProduct = dot( normal, dirVector );",
+                "			vec3 directionalLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "			diffuseLight += directionalLightColor[ i ] * directionalLightWeighting;",
+                "		}",
+                "	#endif",
+
+                "	#if MAX_POINT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
+
+                "			vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + vViewPosition;",
+
+                "			float lDistance = 1.0;",
+                "			if ( pointLightDistance[ i ] > 0.0 ) {",
+                "				lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
+                "			}",
+
+                "			lVector = normalize( lVector );",
+                "			float dotProduct = dot( normal, lVector );",
+
+                "			vec3 pointLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "			diffuseLight += pointLightColor[ i ] * pointLightWeighting * lDistance;",
+                "		}",
+                "	#endif",
+
+                "	#if MAX_SPOT_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
+
+                "			vec4 lPosition = viewMatrix * vec4( spotLightPosition[ i ], 1.0 );",
+                "			vec3 lVector = lPosition.xyz + vViewPosition;",
+
+                "			float spotEffect = dot( spotLightDirection[ i ], normalize( spotLightPosition[ i ] - vWorldPosition ) );",
+
+                "			if ( spotEffect > spotLightAngleCos[ i ] ) {",
+
+                "				spotEffect = max( pow( spotEffect, spotLightExponent[ i ] ), 0.0 );",
+
+                "				float lDistance = 1.0;",
+                "				if ( spotLightDistance[ i ] > 0.0 ) {",
+                "					lDistance = 1.0 - min( ( length( lVector ) / spotLightDistance[ i ] ), 1.0 );",
+                "				}",
+
+                "				lVector = normalize( lVector );",
+
+                "				float dotProduct = dot( normal, lVector );",
+                "				vec3 spotLightWeighting = vec3( max( dotProduct, 0.0 ) );",
+
+                "				diffuseLight += spotLightColor[ i ] * spotLightWeighting * lDistance * spotEffect;",
+                "			}",
+
+                "		}",
+                "	#endif",
+
+                "	#if MAX_HEMI_LIGHTS > 0",
+                "		for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
+
+                "			vec4 lDirection = viewMatrix * vec4( hemiLightDirection[ i ], 0.0 );",
+                "			vec3 lVector = normalize( lDirection.xyz );",
+
+                "			float dotProduct = dot( normal, lVector );",
+
+                "			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
+                "			float hemiDiffuseWeightBack = -0.5 * dotProduct + 0.5;",
+
+                "			diffuseLight += hemiLightColor[ i ] * hemiDiffuseWeight;",
+                "		}",
+                "	#endif",
+
+                "	diffuseLight += ambient;",
+
+                "	return diffuseLight;",
+                "}",
                 ""
             ].join("\n")
         };

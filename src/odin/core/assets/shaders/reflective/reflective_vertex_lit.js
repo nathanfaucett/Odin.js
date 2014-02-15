@@ -20,14 +20,15 @@ define([
                 vertex: [
                     "varying vec2 vUv;",
                     "varying vec3 vReflect;",
+                    "varying vec3 vDiffuseLight;",
 
                     "void main() {",
                     "	vec3 worldNormal = normalize(mat3(modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz) * objectNormal);",
-
                     "	vec3 cameraToVertex = normalize(worldPosition.xyz - cameraPosition);",
 
                     "	vReflect = reflect(cameraToVertex, worldNormal);",
                     "	vUv = uv;",
+                    "	VertexLight(transformedNormal, worldPosition.xyz, -mvPosition.xyz, vDiffuseLight);",
 
                     "	gl_Position = projectionMatrix * mvPosition;",
                     "}"
@@ -43,25 +44,24 @@ define([
 
                     "varying vec2 vUv;",
                     "varying vec3 vReflect;",
+                    "varying vec3 vDiffuseLight;",
 
                     "void main() {",
-                    "	vec3 reflectVec = vReflect;",
 
                     "	vec4 finalColor = texture2D(diffuseMap, vUv);",
                     "	finalColor.xyz *= diffuseColor;",
 
-                    "	vec3 cubeColor = textureCube(envMap, reflectVec).xyz;",
-                    "	finalColor.xyz = mix(finalColor.xyz, finalColor.xyz * cubeColor, reflectivity);",
+                    "	vec3 cubeColor = textureCube(envMap, vReflect).xyz;",
 
                     "	if (combine == 1) {",
                     "		finalColor.xyz = mix(finalColor.xyz, cubeColor, reflectivity);",
                     "	} else if (combine == 2) {",
-                    "		finalColor.xyz += cubeColor.xyz * reflectivity;",
+                    "		finalColor.xyz += cubeColor * reflectivity;",
                     "	} else {",
                     "		finalColor.xyz = mix(finalColor.xyz, finalColor.xyz * cubeColor, reflectivity);",
                     "	}",
 
-                    "	gl_FragColor = vec4(vLightFront * finalColor.xyz, finalColor.w);",
+                    "	gl_FragColor = vec4(vDiffuseLight * finalColor.xyz, finalColor.w);",
                     "}"
                 ].join("\n")
             });
