@@ -131,7 +131,7 @@ require({
                 }),
                 new MeshFilter({
                     mesh: Assets.get("mesh_odin"),
-                    material: Assets.get("mat_env")
+                    material: Assets.get("mat_default")
                 })
             ],
             tag: "Mesh"
