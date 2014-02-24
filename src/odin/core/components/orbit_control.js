@@ -2,13 +2,14 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/device",
         "odin/math/mathf",
         "odin/math/vec2",
         "odin/math/vec3",
         "odin/core/input/input",
         "odin/core/components/component"
     ],
-    function(Mathf, Vec2, Vec3, Input, Component) {
+    function(Device, Mathf, Vec2, Vec3, Input, Component) {
         "use strict";
 
 
@@ -65,10 +66,16 @@ define([
 
         OrbitControl.prototype.init = function() {
 
-            Input.on("mouseup", this.onMouseUp, this);
-            Input.on("mousedown", this.onMouseDown, this);
-            Input.on("mousemove", this.onMouseMove, this);
-            Input.on("mousewheel", this.onMouseWheel, this);
+            if (Device.mobile) {
+                Input.on("touchstart", this.onTouchStart, this);
+                Input.on("touchend", this.onTouchEnd, this);
+                Input.on("touchmove", this.onTouchMove, this);
+            } else {
+                Input.on("mouseup", this.onMouseUp, this);
+                Input.on("mousedown", this.onMouseDown, this);
+                Input.on("mousemove", this.onMouseMove, this);
+                Input.on("mousewheel", this.onMouseWheel, this);
+            }
 
             this.updateOrbit();
 
@@ -79,18 +86,31 @@ define([
         OrbitControl.prototype.clear = function() {
             Component.prototype.clear.call(this);
 
-            Input.off("mouseup", this.onMouseUp, this);
-            Input.off("mousedown", this.onMouseDown, this);
-            Input.off("mousemove", this.onMouseMove, this);
-            Input.off("mousewheel", this.onMouseWheel, this);
+            if (Device.mobile) {
+                Input.on("touchstart", this.onTouchStart, this);
+                Input.on("touchend", this.onTouchEnd, this);
+                Input.on("touchmove", this.onTouchMove, this);
+            } else {
+                Input.off("mouseup", this.onMouseUp, this);
+                Input.off("mousedown", this.onMouseDown, this);
+                Input.off("mousemove", this.onMouseMove, this);
+                Input.off("mousewheel", this.onMouseWheel, this);
+            }
 
             return this;
         };
 
 
-        OrbitControl.prototype.onMouseUp = function(button) {
+        OrbitControl.prototype.onTouchStart = function() {
+            var length = Input.touches.length;
 
-            this._state = NONE;
+            if (length === 1) {
+                this._state = ROTATE;
+            } else if (length === 2 && this.allowPan) {
+                this._state = PAN;
+            } else {
+                this._state = NONE;
+            }
         };
 
 
@@ -102,7 +122,37 @@ define([
                 this._state = ROTATE;
             } else if (button === MIDDLE_MOUSE && this.allowPan) {
                 this._state = PAN;
+            } else {
+                this._state = NONE;
             }
+        };
+
+
+        OrbitControl.prototype.onTouchEnd = OrbitControl.prototype.onMouseUp = function(button) {
+
+            this._state = NONE;
+        };
+
+
+        OrbitControl.prototype.onTouchMove = function() {
+            var update = false,
+                touch = Input.touches[0],
+                delta = touch.delta,
+                camera;
+
+            if (this._state === ROTATE) {
+                update = true;
+                camera = this.camera;
+
+                this._thetaDelta += 2 * PI * delta.x * camera.invWidth * this.speed;
+                this._phiDelta -= 2 * PI * delta.y * camera.invHeight * this.speed;
+            } else if (this._state === PAN) {
+                update = true;
+
+                this.pan(delta);
+            }
+
+            update && this.updateOrbit();
         };
 
 

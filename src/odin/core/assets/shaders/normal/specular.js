@@ -38,9 +38,9 @@ define([
                     "	finalColor.xyz *= diffuseColor;",
 
                     "	vec3 diffuseLight, specularLight;",
-                    "	PixelLight(normalize(vNormal), vec3(1.0), 1.0, shininess, diffuseLight, specularLight);",
+                    "	PixelLight(normalize(vNormal), vec3(finalColor.w), finalColor.w, shininess, diffuseLight, specularLight);",
 
-                    "	gl_FragColor = vec4(diffuseLight * finalColor.xyz + specularLight * finalColor.xyz, finalColor.w);",
+                    "	gl_FragColor = vec4(diffuseLight * finalColor.xyz + specularLight * finalColor.xyz, 1.0);",
                     "}"
                 ].join("\n")
             });

@@ -23,12 +23,12 @@ define([
         Touches.prototype.constructor = Touches;
         Touches.TOUCH_POOL = TOUCH_POOL;
 
-        Touches.prototype.start = function(evtTouch) {
+        Touches.prototype.start = function(index, targetTouch) {
             var touch = TOUCH_POOL.create();
 
             touch.clear();
-            touch.id = evtTouch.identifier;
-            touch.fromEvent(evtTouch);
+            touch.id = targetTouch.identifier;
+            touch.fromEvent(targetTouch);
 
             this.push(touch);
 
@@ -36,11 +36,11 @@ define([
         };
 
 
-        Touches.prototype.end = function(i) {
-            var touch = this[i];
+        Touches.prototype.end = function(index, targetTouch) {
+            var touch = this[index];
 
             TOUCH_POOL.removeObject(touch);
-            this.splice(i, 1);
+            this.splice(index, 1);
 
             return touch;
         };
@@ -55,10 +55,10 @@ define([
         };
 
 
-        Touches.prototype.move = function(i, evtTouch) {
-            var touch = this[i];
+        Touches.prototype.move = function(index, targetTouch) {
+            var touch = this[index];
 
-            touch.fromEvent(evtTouch);
+            touch.fromEvent(targetTouch);
 
             return touch;
         };
@@ -72,7 +72,7 @@ define([
             jsonTouches.length = 0;
             OBJECT_POOL.clear();
 
-            for (; i--;) jsonTouches[i] = this[i].toSYNC(OBJECT_POOL.create());
+            while (i--) jsonTouches[i] = this[i].toSYNC(OBJECT_POOL.create());
 
             return json;
         };
@@ -85,7 +85,7 @@ define([
             this.length = 0;
             TOUCH_POOL.clear();
 
-            for (; i--;) this[i] = TOUCH_POOL.create().fromSYNC(jsonTouches[i]);
+            while (i--) this[i] = TOUCH_POOL.create().fromSYNC(jsonTouches[i]);
 
             return this;
         };

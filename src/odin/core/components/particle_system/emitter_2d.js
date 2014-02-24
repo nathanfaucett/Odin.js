@@ -22,7 +22,6 @@ define([
             TWO_PI = PI * 2,
 
             random = Math.random,
-            floor = Math.floor,
             randInt = Mathf.randInt,
             randFloat = Mathf.randFloat,
             clampTop = Mathf.clampTop,
@@ -42,7 +41,7 @@ define([
             this.velocityType = opts.velocityType != undefined ? opts.velocityType : EmitterType.Box;
 
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
-            this.texture = opts.texture != undefined ? opts.texture : undefined;
+            this.material = opts.material != undefined ? opts.material : undefined;
 
             this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec2(0.5, 0.5);
             this.positionRadius = opts.positionRadius != undefined ? opts.positionRadius : 0.5;
@@ -100,6 +99,8 @@ define([
             this.emitting = opts.emitting != undefined ? opts.emitting : true;
 
             this.particles = [];
+
+            this._webgl = {};
         }
 
         Class.extend(Emitter2D);
@@ -111,7 +112,7 @@ define([
             this.velocityType = other.velocityType;
 
             this.blending = other.blending;
-            this.texture = other.texture;
+            this.material = other.material;
 
             this.position.copy(other.position);
             this.positionSpread.copy(other.positionSpread);
@@ -187,8 +188,10 @@ define([
             this.playing = false;
             this.emitting = false;
 
-            for (; i--;) PARTICLE_POOL.removeObject(particles[i]);
+            while (i--) PARTICLE_POOL.removeObject(particles[i]);
             particles.length = 0;
+
+            this._webgl = {};
 
             return this;
         };
@@ -260,7 +263,7 @@ define([
                     col.r += colorSpread.r * random();
                     col.g += colorSpread.g * random();
                     col.b += colorSpread.b * random();
-                    col.check();
+                    col.cnormalize();
                 }
 
                 if (worldSpace) {
@@ -338,7 +341,7 @@ define([
 
             if (this.emitting && count >= 1) {
                 this._time = 0;
-                this.spawn(randInt(this.minEmission, this.maxEmission) * floor(count));
+                this.spawn(randInt(this.minEmission, this.maxEmission) * (count | 0));
 
                 if (!this.loop && this.time > this.duration) this.emitting = false;
             }
@@ -372,7 +375,7 @@ define([
             json.velocityType = this.velocityType;
 
             json.blending = this.blending;
-            json.texture = this.texture ? this.texture.name : undefined;
+            json.material = this.material ? this.material.name : undefined;
 
             json.position = this.position.toJSON(json.position);
             json.positionSpread = this.positionSpread.toJSON(json.positionSpread);
@@ -432,7 +435,7 @@ define([
             this.velocityType = json.velocityType;
 
             this.blending = json.blending;
-            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+            this.material = json.material ? Assets.hash[json.material] : undefined;
 
             this.position.fromJSON(json.position);
             this.positionSpread.fromJSON(json.positionSpread);

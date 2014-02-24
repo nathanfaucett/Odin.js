@@ -8,44 +8,37 @@ define([
             new Odin.Texture({
                 name: "img_smoke",
                 src: "content/smoke.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 src: "content/blood.png",
                 name: "img_blood",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 name: "img_objects",
                 src: "content/objects.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 name: "img_player",
                 src: "content/player.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 name: "img_zombie",
                 src: "content/zombie.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 name: "img_zombie_big",
                 src: "content/zombie_big.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
             new Odin.Texture({
                 name: "img_zombie_red",
                 src: "content/zombie_red.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                filter: Odin.Enums.FilterMode.None
             }),
 
             new Odin.AudioClip({

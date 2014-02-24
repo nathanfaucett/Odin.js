@@ -429,23 +429,25 @@ define([
                 m32 = me[6],
                 m33 = me[10],
 
-                m0 = m33 * m22 - m32 * m23,
-                m3 = -m33 * m12 + m32 * m13,
-                m6 = m23 * m12 - m22 * m13,
+                m0 = m22 * m33 - m23 * m32,
+                m3 = m13 * m32 - m12 * m33,
+                m6 = m12 * m23 - m13 * m22,
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
             det = det !== 0 ? 1 / det : 0;
 
             te[0] = m0 * det;
-            te[1] = (-m33 * m21 + m31 * m23) * det;
-            te[2] = (m32 * m21 - m31 * m22) * det;
+            te[1] = (m23 * m31 - m21 * m33) * det;
+            te[2] = (m21 * m32 - m22 * m31) * det;
+
             te[3] = m3 * det;
-            te[4] = (m33 * m11 - m31 * m13) * det;
-            te[5] = (-m32 * m11 + m31 * m12) * det;
+            te[4] = (m11 * m33 - m13 * m31) * det;
+            te[5] = (m12 * m31 - m11 * m32) * det;
+
             te[6] = m6 * det;
-            te[7] = (-m23 * m11 + m21 * m13) * det;
-            te[8] = (m22 * m11 - m21 * m12) * det;
+            te[7] = (m13 * m21 - m11 * m23) * det;
+            te[8] = (m11 * m22 - m12 * m21) * det;
 
             return this;
         };

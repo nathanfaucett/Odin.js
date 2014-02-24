@@ -284,9 +284,9 @@ require({
         });
 
 
-        AssetLoader.load(function() {
+        AssetLoader.on("load", function() {
 
             game.init();
-        });
+        }).load();
     }
 );

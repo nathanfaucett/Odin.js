@@ -11,6 +11,7 @@ define([
 
         function Particle() {
 
+            this.z = 1;
             this.alpha = 1;
 
             this.lifeTime = 0;

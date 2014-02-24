@@ -27,7 +27,7 @@ define([
             this.playerLevel = 1;
             this.playerLives = 3;
 
-            this.wave = 0;
+            this.wave = 1;
             this.out = 10 + (this.wave * this.wave);
             this.enemies = this.out;
 

@@ -52,9 +52,8 @@ define([
                     "void main() {",
                     "	vec3 normalTex = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;",
                     "	normalTex.xy *= normalScale;",
-                    "	normalTex = normalize( normalTex );",
 
-                    "	mat3 tsb = mat3( normalize( vTangent ), normalize( vBinormal ), normalize( vNormal ) );",
+                    "	mat3 tsb = mat3( vTangent, vBinormal, vNormal );",
                     "	vec3 normal = normalize(tsb * normalTex);",
 
                     "	vec3 diffuseLight = PixelLightNoSpec(normal);",

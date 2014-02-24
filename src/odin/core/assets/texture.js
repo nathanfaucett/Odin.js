@@ -20,7 +20,7 @@ define([
             this.invWidth = 0;
             this.invHeight = 0;
 
-            this.flipY = opts.flipY != undefined ? !! opts.flipY : true;
+            this.mipmap = opts.mipmap != undefined ? !! opts.mipmap : true;
             this.flipY = opts.flipY != undefined ? !! opts.flipY : true;
             this.premultiplyAlpha = opts.premultiplyAlpha != undefined ? !! opts.premultiplyAlpha : false;
 
@@ -41,15 +41,21 @@ define([
         Texture.prototype.copy = function(other) {
             Asset.prototype.copy.call(this, other);
 
+            this.width = other.width;
+            this.height = other.height;
+
+            this.invWidth = other.invWidth;
+            this.invHeight = other.invHeight;
+
+            this.mipmap = other.mipmap;
+            this.flipY = other.flipY;
+            this.premultiplyAlpha = other.premultiplyAlpha;
+
             this.anisotropy = other.anisotropy;
+
             this.filter = other.filter;
             this.format = other.format;
             this.wrap = other.wrap;
-
-            this.width = other.width;
-            this.height = other.height;
-            this.invWidth = other.invWidth;
-            this.invHeight = other.invHeight;
 
             return this;
         };
@@ -65,6 +71,13 @@ define([
             this.invHeight = 1 / this.height;
 
             return this;
+        };
+
+
+        Texture.prototype.setMipmap = function(value) {
+
+            this.mipmap = value != undefined ? !! value : !this.mipmap;
+            this.needsUpdate = true;
         };
 
 
@@ -115,15 +128,21 @@ define([
                 }
             }
 
+            json.width = this.width;
+            json.height = this.height;
+
+            json.invWidth = this.invWidth;
+            json.invHeight = this.invHeight;
+
+            json.mipmap = this.mipmap;
+            json.flipY = this.flipY;
+            json.premultiplyAlpha = this.premultiplyAlpha;
+
             json.anisotropy = this.anisotropy;
+
             json.filter = this.filter;
             json.format = this.format;
             json.wrap = this.wrap;
-
-            json.width = this.width;
-            json.height = this.height;
-            json.invWidth = this.invWidth;
-            json.invHeight = this.invHeight;
 
             return json;
         };
@@ -142,15 +161,21 @@ define([
                 }
             }
 
+            this.width = json.width;
+            this.height = json.height;
+
+            this.invWidth = json.invWidth;
+            this.invHeight = json.invHeight;
+
+            this.mipmap = json.mipmap;
+            this.flipY = json.flipY;
+            this.premultiplyAlpha = json.premultiplyAlpha;
+
             this.anisotropy = json.anisotropy;
+
             this.filter = json.filter;
             this.format = json.format;
             this.wrap = json.wrap;
-
-            this.width = json.width;
-            this.height = json.height;
-            this.invWidth = json.invWidth;
-            this.invHeight = json.invHeight;
 
             return this;
         };

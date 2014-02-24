@@ -76,17 +76,17 @@ define([
             e.preventDefault();
             var type = e.type,
                 touches = this.touches,
-                evtTouches = e.touches,
+                targetTouches = e.targetTouches,
                 changedTouches = e.changedTouches,
-                i;
+                i, il;
 
             if (type === "touchstart") {
 
-                for (i = evtTouches.length; i--;) this.emit("touchstart", touches.start(evtTouches[i]));
+                for (i = 0, il = targetTouches.length; i < il; i++) this.emit("touchstart", touches.start(i, targetTouches[i]));
 
             } else if (type === "touchend") {
 
-                for (i = changedTouches.length; i--;) this.emit("touchend", touches.end(i));
+                for (i = 0, il = changedTouches.length; i < il; i++) this.emit("touchend", touches.end(i, changedTouches[i]));
 
             } else if (type === "touchcancel") {
 
@@ -97,7 +97,7 @@ define([
 
                 if (this.touchesMoveNeedsUpdate) {
 
-                    for (i = changedTouches.length; i--;) this.emit("touchmove", touches.move(i, changedTouches[i]));
+                    for (i = 0, il = changedTouches.length; i < il; i++) this.emit("touchmove", touches.move(i, changedTouches[i]));
                     this.touchesMoveNeedsUpdate = false;
                 }
             }

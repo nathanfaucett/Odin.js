@@ -28,7 +28,7 @@ define([
              * @property Boolean playing
              * @memberof ParticleSystem
              */
-            this.playing = opts.playing != undefined ? opts.playing : false;
+            this.playing = opts.playing != undefined ? opts.playing : true;
 
             /**
              * @property Array emitters
@@ -70,7 +70,7 @@ define([
             var emitters = this.emitters,
                 i = emitters.length;;
 
-            for (; i--;) this.removeEmitter(emitters[i]);
+            while (i--) this.removeEmitter(emitters[i]);
             return this;
         };
 
@@ -156,7 +156,7 @@ define([
 
 
         ParticleSystem.prototype.update = function() {
-            if (this.isServer || !this.playing) return;
+            if (!this.playing) return;
 
             var dt = Time.delta,
                 emitters = this.emitters,

@@ -13,7 +13,6 @@ require({
             sin = Math.sin,
             cos = Math.cos;
 
-
         Assets.addAssets(
             new ShaderLib.Unlit,
             new ShaderLib.VertexLit,
@@ -21,14 +20,22 @@ require({
             new ShaderLib.Specular,
             new ShaderLib.NormalDiffuse,
             new ShaderLib.NormalSpecular,
+            new ShaderLib.ParallaxDiffuse,
+
+            new ShaderLib.ParticleUnlit,
+
             new ShaderLib.ReflectiveVertexLit,
             new Texture({
-                name: "img_marine_dif",
-                src: "../content/images/marine_dif.jpg"
+                name: "tex_marine_dif",
+                src: "../content/images/marine_dif_spec.png"
             }),
             new Texture({
-                name: "img_marine_nor",
+                name: "tex_marine_nor",
                 src: "../content/images/marine_nor.jpg"
+            }),
+            new Texture({
+                name: "tex_marine_spec",
+                src: "../content/images/marine_spec.jpg"
             }),
             new TextureCube({
                 name: "cm_sky",
@@ -57,17 +64,17 @@ require({
                 name: "mesh_sphere",
             }),
             new Material({
-                load: false,
                 name: "mat_default",
 
                 wireframe: false,
                 wireframeLineWidth: 1,
 
                 uniforms: {
-                    diffuseMap: Assets.get("img_marine_dif"),
-                    normalMap: Assets.get("img_marine_nor"),
+                    diffuseMap: Assets.get("tex_marine_dif"),
+                    normalMap: Assets.get("tex_marine_nor"),
+                    specularMap: Assets.get("tex_marine_spec"),
                     normalScale: 1,
-                    shininess: 8
+                    shininess: 30
                 },
 
                 shader: Assets.get("shader_normal_specular")
@@ -79,7 +86,7 @@ require({
                 wireframeLineWidth: 1,
 
                 uniforms: {
-                    diffuseMap: Assets.get("img_marine_dif"),
+                    diffuseMap: Assets.get("tex_marine_dif"),
                     envMap: Assets.get("cm_sky"),
                     reflectivity: 0.5,
                     combine: 3
@@ -191,7 +198,7 @@ require({
                     material: Assets.get("mat_default")
                 }),
                 new Light({
-                    type: Enums.LightType.Point,
+                    type: Enums.LightType.Directional,
                     color: new Color(1, 1, 0),
                     energy: 0.1
                 })

@@ -2,13 +2,14 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/util",
         "odin/core/game/config"
     ],
-    function(Config) {
+    function(util, Config) {
         "use strict";
 
 
-        var has = Object.prototype.hasOwnProperty;
+        var each = util.each;
 
 
         function Log() {}
@@ -54,29 +55,26 @@ define([
         };
 
 
-        Log.prototype.object = function(obj) {
+        Log.prototype.object = function(obj, values) {
             if (!Config.debug) return "";
-            var str = "",
-                key, value, type,
-                values = arguments[1] || (arguments[1] = []);
+            var str = "";
 
-            for (key in obj) {
-                if (!has.call(obj, key)) continue;
+            values || (values = []);
 
-                value = obj[key];
-                if (~values.indexOf(value)) continue;
+            each(obj, function(value, i) {
+                if (~values.indexOf(value)) return;
 
-                type = typeof(value);
+                var type = typeof(value);
 
                 if (type === "object") {
                     values.push(value);
-                    str += "\t" + key + " = " + this.object(value, values);
+                    str += "\t" + i + " = " + this.object(value, values);
                 } else if (type !== "function") {
-                    str += "\t" + key + " = " + value + "\n";
+                    str += "\t" + i + " = " + value + "\n";
                 } else {
                     values.push(value);
                 }
-            }
+            }, this);
 
             return str;
         };

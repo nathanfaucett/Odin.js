@@ -253,7 +253,7 @@ define([
             var guiObjects = this.guiObjects,
                 guiObject, i = guiObjects.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((guiObject = guiObjects[i]).hasTag(tag)) out.push(guiObject);
             }
 
@@ -265,7 +265,7 @@ define([
             var guiObjects = this.guiObjects,
                 guiObject, i = guiObjects.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((guiObject = guiObjects[i]).hasTag(tag)) return guiObject;
             }
 

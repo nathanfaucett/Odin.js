@@ -322,7 +322,7 @@ define([
                 component,
                 i = components.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
             }
             for (i = tags.length; i--;) jsonTags[i] = tags[i];
@@ -339,7 +339,7 @@ define([
                 jsonTags = json.tags || (json.tags = []),
                 i = jsonComponents.length;
 
-            for (; i--;) {
+            while (i--) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 
                 if ((component = this.findComponentById(jsonComponent._id)) || (component = this.getComponent(jsonComponent._type))) {

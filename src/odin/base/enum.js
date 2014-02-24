@@ -17,7 +17,7 @@ define([
             enums = isArray(enums) ? enums : enums.split(SPLITER);
             var i = enums.length;
 
-            for (; i--;) this[enums[i]] = ++COUNTER;
+            while (i--) this[enums[i]] = ++COUNTER;
         }
 
 
@@ -25,7 +25,7 @@ define([
             enums = isArray(enums) ? enums : enums.split(SPLITER);
             var i = enums.length;
 
-            for (; i--;) this[enums[i]] = ++COUNTER;
+            while (i--) this[enums[i]] = ++COUNTER;
 
             return this;
         };

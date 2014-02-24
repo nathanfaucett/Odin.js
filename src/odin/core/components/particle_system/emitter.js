@@ -10,9 +10,9 @@ define([
         "odin/core/enums",
         "odin/core/assets/assets",
         "odin/core/components/particle_system/tween",
-        "odin/core/components/particle_system/particle_2d"
+        "odin/core/components/particle_system/particle"
     ],
-    function(ObjectPool, Class, Mathf, Vec3, Color, Enums, Assets, Tween, Particle2D) {
+    function(ObjectPool, Class, Mathf, Vec3, Color, Enums, Assets, Tween, Particle) {
         "use strict";
 
 
@@ -22,13 +22,12 @@ define([
             TWO_PI = PI * 2,
 
             random = Math.random,
-            floor = Math.floor,
             randInt = Mathf.randInt,
             randFloat = Mathf.randFloat,
             clampTop = Mathf.clampTop,
             sqrt = Math.sqrt,
 
-            PARTICLE_POOL = Emitter.PARTICLE_POOL = new ObjectPool(Particle2D);
+            PARTICLE_POOL = Emitter.PARTICLE_POOL = new ObjectPool(Particle);
 
 
         function Emitter(opts) {
@@ -36,13 +35,14 @@ define([
 
             Class.call(this);
 
+            this.sort = opts.sort != undefined ? opts.sort : true;
+
             this.positionType = opts.positionType != undefined ? opts.positionType : EmitterType.Box;
             this.velocityType = opts.velocityType != undefined ? opts.velocityType : EmitterType.Box;
 
-            this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
-            this.texture = opts.texture != undefined ? opts.texture : undefined;
+            this.material = opts.material != undefined ? opts.material : undefined;
 
-            this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec3(0.5, 0.5);
+            this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec3(0.5, 0.5, 0.5);
             this.positionRadius = opts.positionRadius != undefined ? opts.positionRadius : 0.5;
 
             this.speed = opts.speed != undefined ? opts.speed : 0;
@@ -98,6 +98,8 @@ define([
             this.emitting = opts.emitting != undefined ? opts.emitting : true;
 
             this.particles = [];
+
+            this._webgl = {};
         }
 
         Class.extend(Emitter);
@@ -105,11 +107,12 @@ define([
 
         Emitter.prototype.copy = function(other) {
 
+            this.sort = other.sort;
+
             this.positionType = other.positionType;
             this.velocityType = other.velocityType;
 
-            this.blending = other.blending;
-            this.texture = other.texture;
+            this.material = other.material;
 
             this.position.copy(other.position);
             this.positionSpread.copy(other.positionSpread);
@@ -185,8 +188,10 @@ define([
             this.playing = false;
             this.emitting = false;
 
-            for (; i--;) PARTICLE_POOL.removeObject(particles[i]);
+            while (i--) PARTICLE_POOL.removeObject(particles[i]);
             particles.length = 0;
+
+            this._webgl = {};
 
             return this;
         };
@@ -238,7 +243,7 @@ define([
                 limit = clampTop(numParticle2Ds + count, Emitter.MAX_PARTICLES) - numParticle2Ds,
                 posx, posy, posz, vel, acc, pos, col, x, y, z, len, r, dx, dy, dz, spd, particle;
 
-            if (positionType === EmitterType.Circle) {
+            if (positionType !== EmitterType.Box) {
                 posx = randFloat(-positionSpread.x, positionSpread.x);
                 posy = randFloat(-positionSpread.y, positionSpread.y);
                 posz = randFloat(-positionSpread.z, positionSpread.z);
@@ -259,7 +264,7 @@ define([
                     col.r += colorSpread.r * random();
                     col.g += colorSpread.g * random();
                     col.b += colorSpread.b * random();
-                    col.check();
+                    col.cnormalize();
                 }
 
                 if (worldSpace) {
@@ -311,7 +316,6 @@ define([
                     vel.x = dx * r * spd;
                     vel.y = dy * r * spd;
                     vel.z = dz * r * spd;
-                    break;
                 }
 
                 acc.x = acceleration.x + randFloat(-accelerationSpread.x, accelerationSpread.x);
@@ -350,7 +354,7 @@ define([
 
             if (this.emitting && count >= 1) {
                 this._time = 0;
-                this.spawn(randInt(this.minEmission, this.maxEmission) * floor(count));
+                this.spawn(randInt(this.minEmission, this.maxEmission) * (count | 0));
 
                 if (!this.loop && this.time > this.duration) this.emitting = false;
             }
@@ -367,7 +371,6 @@ define([
                 if (life > 1) {
                     PARTICLE_POOL.removeObject(particle);
                     particles.splice(i, 1);
-                    continue;
                 }
             }
 
@@ -380,11 +383,12 @@ define([
 
             json.type = 1;
 
+            json.sort = this.sort;
+
             json.positionType = this.positionType;
             json.velocityType = this.velocityType;
 
-            json.blending = this.blending;
-            json.texture = this.texture ? this.texture.name : undefined;
+            json.material = this.material ? this.material.name : undefined;
 
             json.position = this.position.toJSON(json.position);
             json.positionSpread = this.positionSpread.toJSON(json.positionSpread);
@@ -440,11 +444,12 @@ define([
         Emitter.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
 
+            this.sort = json.sort;
+
             this.positionType = json.positionType;
             this.velocityType = json.velocityType;
 
-            this.blending = json.blending;
-            this.texture = json.texture ? Assets.hash[json.texture] : undefined;
+            this.material = json.material ? Assets.hash[json.material] : undefined;
 
             this.position.fromJSON(json.position);
             this.positionSpread.fromJSON(json.positionSpread);

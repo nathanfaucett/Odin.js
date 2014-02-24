@@ -251,7 +251,7 @@ define([
 
             if (!i) return;
 
-            for (; i--;) {
+            while (i--) {
                 emitter = emitters[i];
                 particles = emitter.particles;
                 if (!(j = particles.length)) continue;

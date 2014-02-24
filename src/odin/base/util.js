@@ -293,10 +293,10 @@ define(
                     if (iterator.call(ctx, obj[i], i, obj) === false) return;
                 }
             } else {
-                var keys = keys(obj);
+                var objKeys = keys(obj);
 
-                for (var i = 0, length = keys.length; i < length; i++) {
-                    if (iterator.call(ctx, obj[keys[i]], keys[i], obj) === false) return;
+                for (var i = 0, length = objKeys.length; i < length; i++) {
+                    if (iterator.call(ctx, obj[objKeys[i]], objKeys[i], obj) === false) return;
                 }
             }
         }
@@ -304,6 +304,17 @@ define(
 
 
         if (!isServer) {
+            util.createWorker = function(fn) {
+                var blobURL = URL.createObjectURL(new Blob(["(" + fn.toString() + ")()"], {
+                    type: "application/javascript"
+                })),
+                    worker = new Worker(blobURL);
+
+                URL.revokeObjectURL(blobURL);
+
+                return worker;
+            };
+
             util.ajax = function ajax(opts) {
                 opts || (opts = {});
                 var request = new XMLHttpRequest,

@@ -36,10 +36,6 @@ define([
             this.exponent = opts.exponent != undefined ? opts.exponent : 10;
 
             this.target = opts.target != undefined ? opts.target : new Vec3;
-
-            this.constant = opts.constant != undefined ? opts.constant : 10;
-            this.linear = opts.linear != undefined ? opts.linear : 1;
-            this.quadratic = opts.quadratic != undefined ? opts.quadratic : 0;
         }
 
         Component.extend(Light);
@@ -69,10 +65,6 @@ define([
             this.distance = other.distance;
             this.angle = other.angle;
 
-            this.constant = other.constant;
-            this.linear = other.linear;
-            this.quadratic = other.quadratic;
-
             return this;
         };
 
@@ -90,11 +82,6 @@ define([
             json.energy = this.energy;
             json.distance = this.distance;
             json.angle = this.angle;
-
-            json.constant = this.constant;
-            json.linear = this.linear;
-            json.quadratic = this.quadratic;
-
             return json;
         };
 
@@ -112,10 +99,6 @@ define([
             this.energy = json.energy;
             this.distance = json.distance;
             this.angle = json.angle;
-
-            this.constant = json.constant;
-            this.linear = json.linear;
-            this.quadratic = json.quadratic;
 
             return this;
         };

@@ -643,6 +643,25 @@ define([
         };
 
         /**
+         * @method transformProjection
+         * @memberof Odin.Vec3
+         * transforms this with Mat4 projection matrix
+         * @param Mat4 m
+         * @return this
+         */
+        Vec2.prototype.transformProjection = function(m) {
+            var me = m.elements,
+                x = this.x,
+                y = this.y,
+                d = 1 / (me[3] * x + me[7] * y + me[11] * z + me[15]);
+
+            this.x = (me[0] * x + me[4] * y + me[12]) * d;
+            this.y = (me[1] * x + me[5] * y + me[13]) * d;
+
+            return this;
+        };
+
+        /**
          * @method fromVec3
          * @memberof Odin.Vec2
          * sets values from Vec3

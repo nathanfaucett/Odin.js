@@ -44,7 +44,7 @@ define([
                 };
 
             if (!count) self.emit("load");
-            for (; i--;) this.loadAsset(Assets[i], fn, reload, true);
+            while (i--) this.loadAsset(Assets[i], fn, reload, true);
         };
 
 

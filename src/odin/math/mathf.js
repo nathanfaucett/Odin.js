@@ -273,7 +273,7 @@ define(
         };
 
         /**
-         * @method cosLerp
+         * @method lerpCubic
          * @memberof Odin.Mathf
          * cubic interpolation between v1 and v2 by x
          * @param Number v0
@@ -295,7 +295,7 @@ define(
                 Qx = Q * x,
                 Rx = R * x;
 
-            return (Px * Px * Px) + (Qx * Qx) + Rx + S
+            return (Px * Px * Px) + (Qx * Qx) + Rx + S;
         };
 
         /**
@@ -432,7 +432,7 @@ define(
          */
         Mathf.prototype.shuffle = function(array) {
 
-            for (var j, x, i = array.length; i; j = floor(random() * i), x = array[--i], array[i] = array[j], array[j] = x);
+            for (var j, x, i = array.length; i; j = (random() * i) | 0, x = array[--i], array[i] = array[j], array[j] = x);
             return array;
         };
 
@@ -451,7 +451,7 @@ define(
          * @method randChoiceObject
          * @memberof Odin.Mathf
          * returns random key from object
-         * @param Array array
+         * @param Object obj
          * @return Number
          */
         Mathf.prototype.randChoiceObject = function(obj) {
@@ -518,17 +518,27 @@ define(
          * @param Number y
          * @return String
          */
-        Mathf.prototype.directionAngle = function(a) {
-            a = radsToDegs(a);
 
-            if (a > 337.5 && a < 22.5) return RIGHT;
-            if (a > 22.5 && a < 67.5) return UP_RIGHT;
-            if (a > 67.5 && a < 112.5) return UP;
-            if (a > 112.5 && a < 157.5) return UP_LEFT;
-            if (a > 157.5 && a < 202.5) return LEFT;
-            if (a > 202.5 && a < 247.5) return DOWN_LEFT;
-            if (a > 247.5 && a < 292.5) return DOWN;
-            if (a > 292.5 && a < 337.5) return DOWN_RIGHT;
+        var n225 = 0.39269908169872414,
+            n675 = 1.1780972450961724,
+            n1125 = 1.9634954084936207,
+            n1575 = 2.748893571891069,
+            n2025 = 3.5342917352885173,
+            n2475 = 4.319689898685966,
+            n2925 = 5.105088062083414,
+            n3375 = 5.8904862254808625;
+
+        Mathf.prototype.directionAngle = function(a) {
+            a = standardRadian(a);
+
+            if (a >= n3375 && a < n225) return RIGHT;
+            if (a >= n225 && a < n675) return UP_RIGHT;
+            if (a >= n675 && a < n1125) return UP;
+            if (a >= n1125 && a < n1575) return UP_LEFT;
+            if (a >= n1575 && a < n2025) return LEFT;
+            if (a >= n2025 && a < n2475) return DOWN_LEFT;
+            if (a >= n2475 && a < n2925) return DOWN;
+            if (a >= n2925 && a < n3375) return DOWN_RIGHT;
 
             return RIGHT;
         };
@@ -542,16 +552,16 @@ define(
          * @return String
          */
         Mathf.prototype.direction = function(x, y) {
-            var a = radsToDegs(atan2(y, x));
+            var a = standardRadian(atan2(y, x));
 
-            if (a > 337.5 && a < 22.5) return RIGHT;
-            if (a > 22.5 && a < 67.5) return UP_RIGHT;
-            if (a > 67.5 && a < 112.5) return UP;
-            if (a > 112.5 && a < 157.5) return UP_LEFT;
-            if (a > 157.5 && a < 202.5) return LEFT;
-            if (a > 202.5 && a < 247.5) return DOWN_LEFT;
-            if (a > 247.5 && a < 292.5) return DOWN;
-            if (a > 292.5 && a < 337.5) return DOWN_RIGHT;
+            if (a >= n3375 && a < n225) return RIGHT;
+            if (a >= n225 && a < n675) return UP_RIGHT;
+            if (a >= n675 && a < n1125) return UP;
+            if (a >= n1125 && a < n1575) return UP_LEFT;
+            if (a >= n1575 && a < n2025) return LEFT;
+            if (a >= n2025 && a < n2475) return DOWN_LEFT;
+            if (a >= n2475 && a < n2925) return DOWN;
+            if (a >= n2925 && a < n3375) return DOWN_RIGHT;
 
             return RIGHT;
         };

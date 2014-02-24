@@ -12,11 +12,11 @@ define([
         "odin/math/mat4",
         "odin/core/enums",
         "odin/core/game/log",
-        "odin/core/assets/texture_cube",
+        "odin/core/components/particle_system/emitter",
         "odin/core/renderer/shader_chunks",
         "odin/core/renderer/canvas"
     ],
-    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec3, Mat4, Enums, Log, TextureCube, ShaderChunks, Canvas) {
+    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec3, Mat4, Enums, Log, Emitter, ShaderChunks, Canvas) {
         "use strict";
 
 
@@ -46,7 +46,9 @@ define([
             max = Math.max,
             floor = Math.floor,
             clamp = Mathf.clamp,
-            isPowerOfTwo = Mathf.isPowerOfTwo;
+            isPowerOfTwo = Mathf.isPowerOfTwo,
+
+            defineProperty = Object.defineProperty;
 
 
         function Renderer(opts) {
@@ -55,10 +57,11 @@ define([
             EventEmitter.call(this);
 
             var _this = this,
+                _projScreenMatrix = new Mat4,
+                _mat4 = new Mat4,
+                _vector3 = new Vec3,
                 _gl,
-                _gpu,
                 _extensions,
-                _supports,
                 _canvas,
                 _element,
                 _context = false,
@@ -69,7 +72,7 @@ define([
                 alpha: true,
                 antialias: true,
                 depth: true,
-                premulipliedAlpha: true,
+                premultipliedAlpha: true,
                 preserveDrawingBuffer: false,
                 stencil: true
             });
@@ -86,22 +89,14 @@ define([
                 _canvas = canvas;
                 _element = canvas.element;
 
+                _lastUniforms = {};
+
                 initGL();
                 _context = true;
                 setDefaultGLState();
 
                 addEvent(_element, "webglcontextlost", handleWebGLContextLost, this);
                 addEvent(_element, "webglcontextrestored", handleWebGLContextRestored, this);
-
-                if (_gl.getShaderPrecisionFormat === undefined) {
-                    _gl.getShaderPrecisionFormat = function() {
-                        return {
-                            rangeMin: 1,
-                            rangeMax: 1,
-                            precision: 1
-                        };
-                    }
-                }
 
                 return this;
             };
@@ -113,35 +108,116 @@ define([
                 removeEvent(element, "webglcontextlost", handleWebGLContextLost, this);
                 removeEvent(element, "webglcontextrestored", handleWebGLContextRestored, this);
 
+                _gl = undefined
                 _canvas = undefined;
                 _element = undefined;
                 _context = false;
                 _programs.length = 0;
 
                 _extensions = undefined;
-                _gpu = undefined;
-                _supports = undefined;
+
+                _precision = "highp";
+                _maxAnisotropy = 0;
+                _maxTextures = 0;
+                _maxVertexTextures = 0;
+                _maxTextureSize = 0;
+                _maxCubeTextureSize = 0;
+                _maxRenderBufferSize = 0;
+
+                _maxUniforms = 0;
+                _maxVaryings = 0;
+                _maxAttributes = 0;
+
+                _lastCamera = undefined;
+                _lastResizeFn = undefined;
+                _lastScene = undefined;
+
+                _viewportX = 0;
+                _viewportY = 0;
+                _viewportWidth = 1;
+                _viewportHeight = 1;
+
+                _lastBlending = -1;
+                _lastClearColor.set(0, 0, 0);
+                _lastCullFace = -1;
+                _lastDepthTest = -1;
+                _lastDepthWrite = -1;
+                _lastLineWidth = -1;
+
+                _lastUniforms = undefined;
+                _lastBuffer = undefined;
+                _lastProgram = undefined;
+                _enabledAttributes = undefined;
 
                 return this;
             };
 
 
-            this.getGPU = function() {
-
-                return _gpu;
-            };
-
-
-            this.getExtensions = function() {
-
-                return _extensions;
-            };
-
-
-            this.getSupports = function() {
-
-                return _supports;
-            };
+            defineProperty(this, "gl", {
+                get: function() {
+                    return _gl;
+                }
+            });
+            defineProperty(this, "canvas", {
+                get: function() {
+                    return _canvas;
+                }
+            });
+            defineProperty(this, "element", {
+                get: function() {
+                    return _element;
+                }
+            });
+            defineProperty(this, "precision", {
+                get: function() {
+                    return _precision;
+                }
+            });
+            defineProperty(this, "maxAnisotropy", {
+                get: function() {
+                    return _maxAnisotropy;
+                }
+            });
+            defineProperty(this, "maxTextures", {
+                get: function() {
+                    return _maxTextures;
+                }
+            });
+            defineProperty(this, "maxVertexTextures", {
+                get: function() {
+                    return _maxVertexTextures;
+                }
+            });
+            defineProperty(this, "maxTextureSize", {
+                get: function() {
+                    return _maxTextureSize;
+                }
+            });
+            defineProperty(this, "maxCubeTextureSize", {
+                get: function() {
+                    return _maxCubeTextureSize;
+                }
+            });
+            defineProperty(this, "maxRenderBufferSize", {
+                get: function() {
+                    return _maxRenderBufferSize;
+                }
+            });
+            defineProperty(this, "maxUniforms", {
+                get: function() {
+                    return _maxUniforms;
+                }
+            });
+            defineProperty(this, "maxVaryings", {
+                get: function() {
+                    return _maxVaryings;
+                }
+            });
+            defineProperty(this, "maxAttributes", {
+                get: function() {
+                    return _maxAttributes;
+                }
+            });
 
 
             var _viewportX = 0,
@@ -331,9 +407,9 @@ define([
             this.clearStencil = clearStencil;
 
 
-            var _lastUniforms = {};
+            var _lastUniforms;
 
-            function setUniform(location, value, key, type, isArray, index) {
+            function setUniform(force, location, value, key, type, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -344,24 +420,24 @@ define([
                 state = lastUniforms[key];
 
                 if (type === "int") {
-                    if (state !== value) {
+                    if (force || state !== value) {
                         _gl.uniform1i(location, value);
                         lastUniforms[key] = value;
                     }
                 } else if (type === "float") {
-                    if (state !== value) {
+                    if (force || state !== value) {
                         _gl.uniform1f(location, value);
                         lastUniforms[key] = value;
                     }
                 } else if (type === "vec2") {
-                    if (!state || (state.x !== value.x || state.y !== value.y)) {
+                    if (force || !state || (state.x !== value.x || state.y !== value.y)) {
                         _gl.uniform2f(location, value.x, value.y);
                         state || (lastUniforms[key] = state = value.clone());
                         state.x = value.x;
                         state.y = value.y;
                     }
                 } else if (type === "vec3") {
-                    if (!state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
+                    if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
                         _gl.uniform3f(location, value.x, value.y, value.z);
                         state || (lastUniforms[key] = state = value.clone());
                         state.x = value.x;
@@ -369,7 +445,7 @@ define([
                         state.z = value.z;
                     }
                 } else if (type === "vec4") {
-                    if (!state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
+                    if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
                         _gl.uniform3f(location, value.x, value.y, value.z, value.w);
                         state || (lastUniforms[key] = state = value.clone());
                         state.x = value.x;
@@ -378,29 +454,29 @@ define([
                         state.w = value.w;
                     }
                 } else if (type === "mat2") {
-                    if (!state || !state.equals(value)) {
-                        _gl.uniformMatrix2fv(location, false, value.elements);
+                    if (force || !state || !state.equals(value)) {
+                        _gl.uniformMatrix2fv(force, location, false, value.elements);
                         (state || (lastUniforms[key] = state = value.clone())).copy(value);
                     }
                 } else if (type === "mat3") {
-                    if (!state || !state.equals(value)) {
-                        _gl.uniformMatrix3fv(location, false, value.elements);
+                    if (force || !state || !state.equals(value)) {
+                        _gl.uniformMatrix3fv(force, location, false, value.elements);
                         (state || (lastUniforms[key] = state = value.clone())).copy(value);
                     }
                 } else if (type === "mat4") {
-                    if (!state || !state.equals(value)) {
-                        _gl.uniformMatrix4fv(location, false, value.elements);
+                    if (force || !state || !state.equals(value)) {
+                        _gl.uniformMatrix4fv(force, location, false, value.elements);
                         (state || (lastUniforms[key] = state = value.clone())).copy(value);
                     }
                 } else if (type === "sampler2D") {
-                    setTexture(location, value, key);
+                    setTexture(force, location, value, key);
                 } else if (type === "samplerCube") {
-                    setTextureCube(location, value, key);
+                    setTextureCube(force, location, value, key);
                 }
             }
 
 
-            function setUniform1i(location, value, key, isArray, index) {
+            function setUniform1i(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -410,14 +486,14 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (state !== value) {
+                if (force || state !== value) {
                     _gl.uniform1i(location, value);
                     lastUniforms[key] = value;
                 }
             }
 
 
-            function setUniform1f(location, value, key, isArray, index) {
+            function setUniform1f(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -427,14 +503,14 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (state !== value) {
+                if (force || state !== value) {
                     _gl.uniform1f(location, value);
                     lastUniforms[key] = value;
                 }
             }
 
 
-            function setUniform2f(location, value, key, isArray, index) {
+            function setUniform2f(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -444,7 +520,7 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || (state.x !== value.x || state.y !== value.y)) {
+                if (force || !state || (state.x !== value.x || state.y !== value.y)) {
                     _gl.uniform2f(location, value.x, value.y);
                     state || (lastUniforms[key] = state = value.clone());
                     state.x = value.x;
@@ -453,7 +529,7 @@ define([
             }
 
 
-            function setUniform3f(location, value, key, isArray, index) {
+            function setUniform3f(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -463,7 +539,7 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
+                if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
                     _gl.uniform3f(location, value.x, value.y, value.z);
                     state || (lastUniforms[key] = state = value.clone());
                     state.x = value.x;
@@ -473,7 +549,7 @@ define([
             }
 
 
-            function setUniform4f(location, value, key, isArray, index) {
+            function setUniform4f(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -483,7 +559,7 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
+                if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
                     _gl.uniform4f(location, value.x, value.y, value.z, value.w);
                     state || (lastUniforms[key] = state = value.clone());
                     state.x = value.x;
@@ -494,7 +570,7 @@ define([
             }
 
 
-            function setUniformMatrix2fv(location, value, key, isArray, index) {
+            function setUniformMatrix2fv(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -504,14 +580,14 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || !state.equals(value)) {
+                if (force || !state || !state.equals(value)) {
                     _gl.uniformMatrix2fv(location, false, value.elements);
                     (state || (lastUniforms[key] = state = value.clone())).copy(value);
                 }
             }
 
 
-            function setUniformMatrix3fv(location, value, key, isArray, index) {
+            function setUniformMatrix3fv(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -521,14 +597,14 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || !state.equals(value)) {
+                if (force || !state || !state.equals(value)) {
                     _gl.uniformMatrix3fv(location, false, value.elements);
                     (state || (lastUniforms[key] = state = value.clone())).copy(value);
                 }
             }
 
 
-            function setUniformMatrix4fv(location, value, key, isArray, index) {
+            function setUniformMatrix4fv(force, location, value, key, isArray, index) {
                 var lastUniforms = _lastUniforms,
                     state;
 
@@ -538,7 +614,7 @@ define([
                 }
                 state = lastUniforms[key];
 
-                if (!state || !state.equals(value)) {
+                if (force || !state || !state.equals(value)) {
                     _gl.uniformMatrix4fv(location, false, value.elements);
                     (state || (lastUniforms[key] = state = value.clone())).copy(value);
                 }
@@ -547,16 +623,18 @@ define([
 
             var _textureIndex = 0;
 
-            function setTexture(location, texture, key) {
+            function setTexture(force, location, texture, key) {
                 if (!texture || !texture.raw) return;
                 var index, glTexture;
+
+                if (_textureIndex >= _maxTextures) Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
 
                 if (!texture.needsUpdate && (glTexture = texture._webgl)) {
                     index = _textureIndex++;
 
                     _gl.activeTexture(_gl.TEXTURE0 + index);
                     _gl.bindTexture(_gl.TEXTURE_2D, glTexture);
-					setUniform1i(location, index, key);
+                    setUniform1i(force, location, index, key);
 
                     return;
                 }
@@ -565,14 +643,13 @@ define([
                 index = _textureIndex++;
 
                 var raw = texture.raw,
-                    maxAnisotropy = _gpu.maxAnisotropy,
-                    maxTextureSize = _gpu.maxTextureSize,
                     TFA = _extensions.EXT_texture_filter_anisotropic,
 
                     isPOT = isPowerOfTwo(raw.width) && isPowerOfTwo(raw.height),
-                    anisotropy = clamp(texture.anisotropy || 1, 1, maxAnisotropy),
+                    anisotropy = clamp(texture.anisotropy || 1, 1, _maxAnisotropy),
 
                     TEXTURE_2D = _gl.TEXTURE_2D,
+                    mipmap = texture.mipmap,
                     filter = texture.filter,
                     format = texture.format,
                     wrap = texture.wrap,
@@ -580,14 +657,14 @@ define([
 
                 if (filter === FilterMode.None) {
                     MAG_FILTER = _gl.NEAREST;
-                    if (isPOT) {
+                    if (mipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_NEAREST;
                     } else {
                         MIN_FILTER = _gl.NEAREST;
                     }
                 } else { //FilterMode.Linear
                     MAG_FILTER = _gl.LINEAR;
-                    if (isPOT) {
+                    if (mipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_LINEAR;
                     } else {
                         MIN_FILTER = _gl.LINEAR;
@@ -621,7 +698,7 @@ define([
                 _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY ? 1 : 0);
                 _gl.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha ? 1 : 0);
 
-                _gl.texImage2D(TEXTURE_2D, 0, FORMAT, FORMAT, _gl.UNSIGNED_BYTE, clampToMaxSize(raw, maxTextureSize));
+                _gl.texImage2D(TEXTURE_2D, 0, FORMAT, FORMAT, _gl.UNSIGNED_BYTE, clampToMaxSize(raw, _maxTextureSize));
 
                 _gl.texParameteri(TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, MAG_FILTER);
                 _gl.texParameteri(TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, MIN_FILTER);
@@ -630,43 +707,44 @@ define([
                 _gl.texParameteri(TEXTURE_2D, _gl.TEXTURE_WRAP_T, WRAP);
 
                 if (TFA) _gl.texParameterf(TEXTURE_2D, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                if (isPOT) _gl.generateMipmap(TEXTURE_2D);
+                if (mipmap && isPOT) _gl.generateMipmap(TEXTURE_2D);
 
                 texture.needsUpdate = false;
             }
 
 
-            function setTextureCube(location, cubeTexture, key) {
+            function setTextureCube(force, location, cubeTexture, key) {
                 if (!cubeTexture || !cubeTexture.raw) return;
                 var glTexture = cubeTexture._webgl,
                     index;
+
+                if (_textureIndex >= _maxTextures) Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
 
                 if (!cubeTexture.needsUpdate && glTexture) {
                     index = _textureIndex++;
 
                     _gl.activeTexture(_gl.TEXTURE0 + index);
                     _gl.bindTexture(_gl.TEXTURE_CUBE_MAP, glTexture);
-					setUniform1i(location, index, key);
+                    setUniform1i(force, location, index, key);
 
                     return;
                 }
-				
+
                 glTexture = cubeTexture._webgl || (cubeTexture._webgl = _gl.createTexture());
                 index = _textureIndex++;
 
                 var raw = cubeTexture.raw,
-                    maxAnisotropy = _gpu.maxAnisotropy,
-                    maxCubeTextureSize = _gpu.maxCubeTextureSize,
-                    TFA = _gpu.EXT_texture_filter_anisotropic,
+                    TFA = _extensions.EXT_texture_filter_anisotropic,
 
                     first = raw[0],
                     isPOT = isPowerOfTwo(first.width) && isPowerOfTwo(first.height),
-                    anisotropy = clamp(cubeTexture.anisotropy || 1, 1, maxAnisotropy),
+                    anisotropy = clamp(cubeTexture.anisotropy || 1, 1, _maxAnisotropy),
 
                     TEXTURE_CUBE_MAP = _gl.TEXTURE_CUBE_MAP,
                     TEXTURE_CUBE_MAP_POSITIVE_X = _gl.TEXTURE_CUBE_MAP_POSITIVE_X,
                     UNSIGNED_BYTE = _gl.UNSIGNED_BYTE,
 
+                    mipmap = cubeTexture.mipmap,
                     filter = cubeTexture.filter,
                     format = cubeTexture.format,
                     wrap = cubeTexture.wrap,
@@ -675,14 +753,14 @@ define([
 
                 if (filter === FilterMode.None) {
                     MAG_FILTER = _gl.NEAREST;
-                    if (isPOT) {
+                    if (mipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_NEAREST;
                     } else {
                         MIN_FILTER = _gl.NEAREST;
                     }
                 } else { //FilterMode.Linear
                     MAG_FILTER = _gl.LINEAR;
-                    if (isPOT) {
+                    if (mipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_LINEAR;
                     } else {
                         MIN_FILTER = _gl.LINEAR;
@@ -714,12 +792,12 @@ define([
                 _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, cubeTexture.flipY ? 1 : 0);
                 _gl.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, cubeTexture.premultiplyAlpha ? 1 : 0);
 
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[0], maxCubeTextureSize));
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[1], maxCubeTextureSize));
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[2], maxCubeTextureSize));
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[3], maxCubeTextureSize));
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[4], maxCubeTextureSize));
-                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[5], maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[0], _maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[1], _maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[2], _maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[3], _maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[4], _maxCubeTextureSize));
+                _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, FORMAT, FORMAT, UNSIGNED_BYTE, clampToMaxSize(raw[5], _maxCubeTextureSize));
 
                 _gl.texParameteri(TEXTURE_CUBE_MAP, _gl.TEXTURE_MAG_FILTER, MAG_FILTER);
                 _gl.texParameteri(TEXTURE_CUBE_MAP, _gl.TEXTURE_MIN_FILTER, MIN_FILTER);
@@ -728,7 +806,7 @@ define([
                 _gl.texParameteri(TEXTURE_CUBE_MAP, _gl.TEXTURE_WRAP_T, WRAP);
 
                 if (TFA) _gl.texParameterf(TEXTURE_CUBE_MAP, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                if (isPOT) _gl.generateMipmap(TEXTURE_CUBE_MAP);
+                if (mipmap && isPOT) _gl.generateMipmap(TEXTURE_CUBE_MAP);
 
                 cubeTexture.needsUpdate = false;
             }
@@ -953,6 +1031,99 @@ define([
             }
 
 
+            function initEmitterBuffers(emitter, transform, attributes) {
+                var MAX = Emitter.MAX_PARTICLES,
+
+                    webgl = emitter._webgl,
+                    DRAW = _gl.DYNAMIC_DRAW,
+                    FLOAT = _gl.FLOAT,
+                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+
+                    positionArray, dataArray,
+                    positionBuffer, dataBuffer,
+
+                    particles = emitter.particles,
+                    particle,
+                    i = 0,
+                    len = particles.length,
+                    offset, position,
+                    me, x, y, z,
+                    m13, m23, m33, m43,
+                    m14, m24, m34, m44
+
+                if (len) {
+                    if (emitter.sort) {
+                        _mat4.mmul(_projScreenMatrix, transform.matrixWorld);
+                        me = _mat4.elements;
+                        m13 = me[2];
+                        m23 = me[6];
+                        m33 = me[10];
+                        m43 = me[14];
+                        m14 = me[3];
+                        m24 = me[7];
+                        m34 = me[11];
+                        m44 = me[15];
+
+                        i = len;
+                        while (i--) {
+                            particle = particles[i];
+                            position = particle.position;
+                            x = position.x;
+                            y = position.y;
+                            z = position.z;
+
+                            particle.z = (m13 * x + m23 * y + m33 * z + m43) / (m14 * x + m24 * y + m34 * z + m44);
+                        }
+
+                        particles.sort(numericalSort);
+                    }
+
+                    positionArray = webgl.positionArray || (webgl.positionArray = new Float32Array(MAX * 3));
+                    dataArray = webgl.dataArray || (webgl.dataArray = new Float32Array(MAX * 3));
+
+                    i = len;
+                    while (i--) {
+                        particle = particles[i];
+                        position = particle.position;
+                        offset = i * 3;
+
+                        positionArray[offset] = position.x;
+                        positionArray[offset + 1] = position.y;
+                        positionArray[offset + 2] = position.z;
+
+                        dataArray[offset] = particle.angle;
+                        dataArray[offset + 1] = particle.size;
+                        dataArray[offset + 2] = particle.alpha;
+                    }
+
+                    disableAttributes();
+
+                    positionBuffer = webgl.positionBuffer || (webgl.positionBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, webgl.positionBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, positionArray, DRAW);
+                    enableAttribute(attributes.position);
+                    _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
+
+                    dataBuffer = webgl.dataBuffer || (webgl.dataBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, webgl.dataBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, dataArray, DRAW);
+                    enableAttribute(attributes.data);
+                    _gl.vertexAttribPointer(attributes.data, 3, FLOAT, false, 0, 0);
+                }
+
+                webgl.particleCount = len;
+                _lastBuffer = webgl;
+
+                return webgl;
+            }
+
+
+            function numericalSort(a, b) {
+
+                return b.z - a.z;
+            }
+
+
             function initMaterial(material, mesh, lights) {
                 if (!material.needsUpdate && material._webgl) return material._webgl;
 
@@ -977,6 +1148,45 @@ define([
                 parameters.tangents = mesh.tangents.length > 0;
                 parameters.uvs = mesh.uvs.length > 0;
                 parameters.colors = mesh.colors.length > 0;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material._webgl = initProgram(shader.vertex, shader.fragment, parameters);
+                material.needsUpdate = false;
+
+                return material._webgl;
+            }
+
+
+            function initEmitterMaterial(material, emitter, lights) {
+                if (!material.needsUpdate && material._webgl) return material._webgl;
+
+                var shader = material.shader,
+                    webgl = emitter._webgl,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.emitter = true;
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = false;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = uniforms.normalMap;
+                parameters.useBump = uniforms.bumpMap;
+
+                parameters.positions = true;
+                parameters.normals = false;
+                parameters.tangents = false;
+                parameters.uvs = false;
+                parameters.colors = false;
 
                 parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
 
@@ -1044,7 +1254,9 @@ define([
             }
 
 
-            var MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
+            var HEADER = /([\s\S]*)?(void[\s]+main)/,
+                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
+                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
 
             function initProgram(vertexShader, fragmentShader, parameters) {
                 var chunks = [],
@@ -1064,8 +1276,7 @@ define([
                     }
                 }
 
-                var precision = _gpu.precision,
-
+                var emitter = parameters.emitter,
                     mobile = parameters.mobile,
                     useLights = parameters.useLights,
                     useShadows = parameters.useShadows,
@@ -1076,8 +1287,8 @@ define([
                     OES_standard_derivatives = parameters.OES_standard_derivatives,
 
                     definesPrefix = [
-                        "precision " + precision + " float;",
-                        "precision " + precision + " int;",
+                        "precision " + _precision + " float;",
+                        "precision " + _precision + " int;",
 
                         useLights ? "#define USE_LIGHTS" : "",
                         useShadows ? "#define USE_SHADOWS" : "",
@@ -1107,6 +1318,7 @@ define([
                         parameters.tangents ? "attribute vec4 tangent;" : "",
                         parameters.uvs ? "attribute vec2 uv;" : "",
                         parameters.colors ? "attribute vec3 color;" : "",
+                        emitter ? "attribute vec3 data;" : "",
 
                         useBones ? "attribute int boneIndex;" : "",
                         useBones ? "attribute vec3 boneWeight;" : "",
@@ -1124,13 +1336,19 @@ define([
                     glVertexShader = vertexPrefix + "\n" + vertexShader,
                     glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
 
-                    vertexSplit = glVertexShader.split(MAIN_SPLITER),
-                    fragmentSplit = glFragmentShader.split(MAIN_SPLITER),
                     main = "void main(void) {\n",
-                    vertexHeader = vertexSplit[0],
-                    vertexMain = vertexSplit[5],
-                    fragmentHeader = fragmentSplit[0],
-                    fragmentMain = fragmentSplit[5];
+                    footer = "\n}",
+
+                    vertexHeader = glVertexShader.match(HEADER)[1],
+                    vertexMain = glVertexShader.match(MAIN_FUNCTION)[5],
+                    fragmentHeader = glFragmentShader.match(HEADER)[1],
+                    fragmentMain = glFragmentShader.match(MAIN_FUNCTION)[5];
+
+                if (emitter) {
+                    vertexHeader += ShaderChunks.particle_header;
+                    fragmentHeader += ShaderChunks.particle_header;
+                    vertexMain = ShaderChunks.particle_vertex + vertexMain;
+                }
 
                 if (OES_standard_derivatives) {
                     if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
@@ -1165,8 +1383,8 @@ define([
                     vertexMain = ShaderChunks.bone + vertexMain;
                 }
 
-                glVertexShader = vertexHeader + main + vertexMain;
-                glFragmentShader = fragmentHeader + main + fragmentMain;
+                glVertexShader = vertexHeader + main + vertexMain + footer;
+                glFragmentShader = fragmentHeader + main + fragmentMain + footer;
 
                 webglProgram = createProgram(_gl, glVertexShader, glFragmentShader);
                 program = {
@@ -1193,8 +1411,11 @@ define([
 
             var _lastBuffer = undefined;
 
+
             function bindMesh(mesh, material) {
                 if (_lastBuffer === mesh._webgl) return;
+                disableAttributes();
+
                 var webgl = mesh._webgl,
                     ARRAY_BUFFER = _gl.ARRAY_BUFFER,
                     FLOAT = _gl.FLOAT,
@@ -1202,37 +1423,37 @@ define([
 
                 if (webgl.vertexBuffer && attributes.position > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.vertexBuffer);
-                    _gl.enableVertexAttribArray(attributes.position);
+                    enableAttribute(attributes.position);
                     _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
                 }
                 if (webgl.normalBuffer && attributes.normal > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.normalBuffer);
-                    _gl.enableVertexAttribArray(attributes.normal);
+                    enableAttribute(attributes.normal);
                     _gl.vertexAttribPointer(attributes.normal, 3, FLOAT, false, 0, 0);
                 }
                 if (webgl.tangentBuffer && attributes.tangent > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.tangentBuffer);
-                    _gl.enableVertexAttribArray(attributes.tangent);
+                    enableAttribute(attributes.tangent);
                     _gl.vertexAttribPointer(attributes.tangent, 4, FLOAT, false, 0, 0);
                 }
                 if (webgl.colorBuffer && attributes.color > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.colorBuffer);
-                    _gl.enableVertexAttribArray(attributes.color);
+                    enableAttribute(attributes.color);
                     _gl.vertexAttribPointer(attributes.color, 3, FLOAT, false, 0, 0);
                 }
                 if (webgl.uvBuffer && attributes.uv > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.uvBuffer);
-                    _gl.enableVertexAttribArray(attributes.uv);
+                    enableAttribute(attributes.uv);
                     _gl.vertexAttribPointer(attributes.uv, 2, FLOAT, false, 0, 0);
                 }
                 if (webgl.boneIndexBuffer && attributes.boneIndex > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.boneIndexBuffer);
-                    _gl.enableVertexAttribArray(attributes.boneIndex);
+                    enableAttribute(attributes.boneIndex);
                     _gl.vertexAttribPointer(attributes.boneIndex, 1, FLOAT, false, 0, 0);
                 }
                 if (webgl.boneWeightBuffer && attributes.boneWeight > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.boneWeightBuffer);
-                    _gl.enableVertexAttribArray(attributes.boneWeight);
+                    enableAttribute(attributes.boneWeight);
                     _gl.vertexAttribPointer(attributes.boneWeight, 3, FLOAT, false, 0, 0);
                 }
 
@@ -1246,6 +1467,30 @@ define([
             }
 
 
+            var _enabledAttributes = undefined;
+
+            function enableAttribute(attribute) {
+
+                if (_enabledAttributes[attribute] === 0) {
+                    _gl.enableVertexAttribArray(attribute);
+                    _enabledAttributes[attribute] = 1;
+                }
+            };
+
+
+            function disableAttributes() {
+                var i = _maxAttributes;
+
+                while (i--) {
+
+                    if (_enabledAttributes[i] === 1) {
+                        _gl.disableVertexAttribArray(i);
+                        _enabledAttributes[i] = 0;
+                    }
+                }
+            };
+
+
             var _lastProgram = undefined,
                 VEC3 = new Vec3,
                 VEC3_2 = new Vec3,
@@ -1256,20 +1501,21 @@ define([
                     webglProgram = material._webgl.program,
                     parameters = program.parameters,
                     uniforms = program.uniforms,
-                    state, i, length;
+                    state, i, length, force = false;
 
                 if (_lastProgram !== webglProgram) {
                     _gl.useProgram(webglProgram);
+                    force = true;
                     _lastProgram = webglProgram;
                 }
 
-                if (uniforms.modelMatrix) setUniformMatrix4fv(uniforms.modelMatrix.location, transform.matrixWorld, "matrixWorld");
-                if (uniforms.modelViewMatrix) setUniformMatrix4fv(uniforms.modelViewMatrix.location, transform.modelView, "modelView");
-                if (uniforms.projectionMatrix) setUniformMatrix4fv(uniforms.projectionMatrix.location, camera.projection, "projectionMatrix");
-                if (uniforms.viewMatrix) setUniformMatrix4fv(uniforms.viewMatrix.location, camera.view, "viewMatrix");
-                if (uniforms.normalMatrix) setUniformMatrix3fv(uniforms.normalMatrix.location, transform.normalMatrix, "normalMatrix");
-                if (uniforms.cameraPosition) setUniform3f(uniforms.cameraPosition.location, VEC3.positionFromMat4(camera.transform.matrixWorld), "cameraPosition");
-                if (uniforms.ambient) setUniform3f(uniforms.ambient.location, ambient, "ambient");
+                if (uniforms.modelMatrix) setUniformMatrix4fv(force, uniforms.modelMatrix.location, transform.matrixWorld, "matrixWorld");
+                if (uniforms.modelViewMatrix) setUniformMatrix4fv(force, uniforms.modelViewMatrix.location, transform.modelView, "modelView");
+                if (uniforms.projectionMatrix) setUniformMatrix4fv(force, uniforms.projectionMatrix.location, camera.projection, "projectionMatrix");
+                if (uniforms.viewMatrix) setUniformMatrix4fv(force, uniforms.viewMatrix.location, camera.view, "viewMatrix");
+                if (uniforms.normalMatrix) setUniformMatrix3fv(force, uniforms.normalMatrix.location, transform.normalMatrix, "normalMatrix");
+                if (uniforms.cameraPosition) setUniform3f(force, uniforms.cameraPosition.location, VEC3.positionFromMat4(camera.transform.matrixWorld), "cameraPosition");
+                if (uniforms.ambient) setUniform3f(force, uniforms.ambient.location, ambient, "ambient");
 
                 if (parameters.useLights && (length = lights.length)) {
                     var maxPointLights = parameters.maxPointLights,
@@ -1312,9 +1558,9 @@ define([
 
                             VEC3.positionFromMat4(light.transform.matrixWorld);
 
-                            setUniform3f(pointLightColor[pointLights], COLOR, "pointLightColor", true, pointLights);
-                            setUniform3f(pointLightPosition[pointLights], VEC3, "pointLightPosition", true, pointLights);
-                            setUniform1f(pointLightDistance[pointLights], light.distance, "pointLightDistance", true, pointLights);
+                            setUniform3f(force, pointLightColor[pointLights], COLOR, "pointLightColor", true, pointLights);
+                            setUniform3f(force, pointLightPosition[pointLights], VEC3, "pointLightPosition", true, pointLights);
+                            setUniform1f(force, pointLightDistance[pointLights], light.distance, "pointLightDistance", true, pointLights);
                             pointLights++;
                         } else if (directionalLightColor.length && type === LightType.Directional) {
                             if (directionalLights >= maxDirectionalLights) continue;
@@ -1322,8 +1568,8 @@ define([
                             VEC3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
                             if (VEC3.lengthSq() === 0) continue;
 
-                            setUniform3f(directionalLightColor[directionalLights], COLOR, "directionalLightColor", true, directionalLights);
-                            setUniform3f(directionalLightDirection[directionalLights], VEC3, "directionalLightDirection", true, directionalLights);
+                            setUniform3f(force, directionalLightColor[directionalLights], COLOR, "directionalLightColor", true, directionalLights);
+                            setUniform3f(force, directionalLightDirection[directionalLights], VEC3, "directionalLightDirection", true, directionalLights);
                             directionalLights++;
 
                         } else if (spotLightColor.length && type === LightType.Spot) {
@@ -1335,12 +1581,12 @@ define([
                             VEC3_2.copy(VEC3).sub(light.target).normalize();
                             if (VEC3_2.lengthSq() === 0) continue;
 
-                            setUniform3f(spotLightColor[spotLights], COLOR, "spotLightColor", true, spotLights);
-                            setUniform3f(spotLightPosition[spotLights], VEC3, "spotLightPosition", true, spotLights);
-                            setUniform3f(spotLightDirection[spotLights], VEC3_2, "spotLightDirection", true, spotLights);
-                            setUniform1f(spotLightDistance[spotLights], light.distance, "spotLightDistance", true, spotLights);
-                            setUniform1f(spotLightAngleCos[spotLights], light._angleCos, "spotLightAngleCos", true, spotLights);
-                            setUniform1f(spotLightExponent[spotLights], light.exponent, "spotLightExponent", true, spotLights);
+                            setUniform3f(force, spotLightColor[spotLights], COLOR, "spotLightColor", true, spotLights);
+                            setUniform3f(force, spotLightPosition[spotLights], VEC3, "spotLightPosition", true, spotLights);
+                            setUniform3f(force, spotLightDirection[spotLights], VEC3_2, "spotLightDirection", true, spotLights);
+                            setUniform1f(force, spotLightDistance[spotLights], light.distance, "spotLightDistance", true, spotLights);
+                            setUniform1f(force, spotLightAngleCos[spotLights], light._angleCos, "spotLightAngleCos", true, spotLights);
+                            setUniform1f(force, spotLightExponent[spotLights], light.exponent, "spotLightExponent", true, spotLights);
                             spotLights++;
 
                         } else if (hemiLightColor.length && type === LightType.Hemi) {
@@ -1349,19 +1595,19 @@ define([
                             VEC3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
                             if (VEC3.lengthSq() === 0) continue;
 
-                            setUniform3f(hemiLightColor[hemiLights], COLOR, "hemiLightColor", true, hemiLights);
-                            setUniform3f(hemiLightDirection[hemiLights], VEC3, "hemiLightDirection", true, hemiLights);
+                            setUniform3f(force, hemiLightColor[hemiLights], COLOR, "hemiLightColor", true, hemiLights);
+                            setUniform3f(force, hemiLightDirection[hemiLights], VEC3, "hemiLightDirection", true, hemiLights);
                             hemiLights++;
                         }
                     }
                 }
 
-                bindCustomUniforms(program.customUniforms, uniforms, material.name, material.uniforms);
+                bindCustomUniforms(force, program.customUniforms, uniforms, material.name, material.uniforms);
                 _textureIndex = 0;
             };
 
 
-            function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms) {
+            function bindCustomUniforms(force, customUniforms, uniforms, materialName, materialUniforms) {
                 var i = customUniforms.length,
                     customUniform, uniformValue, location, name, type, value;
 
@@ -1379,9 +1625,9 @@ define([
                         location = uniformValue.location;
                         type = uniformValue.type;
 
-                        for (i = location.length; i--;) setUniform(location[i], value[i], name, type, true, i);
+                        for (i = location.length; i--;) setUniform(force, location[i], value[i], name, type, true, i);
                     } else {
-                        setUniform(uniformValue.location, value, name, uniformValue.type);
+                        setUniform(force, uniformValue.location, value, name, uniformValue.type);
                     }
                 }
             }
@@ -1397,7 +1643,7 @@ define([
                 if (_clearColor.r !== background.r || _clearColor.g !== background.g || _clearColor.b !== background.b) {
                     _clearColor.copy(background);
                     _gl.clearColor(background.r, background.g, background.b, 1);
-                    if (!this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
+                    if (!this.autoClear) clearCanvas(true, this.autoClearDepth, this.autoClearStencil);
                 }
                 if (_lastCamera !== camera) {
                     var w = _canvas.pixelWidth,
@@ -1424,6 +1670,7 @@ define([
                     _lastScene = scene;
                 }
 
+                _projScreenMatrix.mmul(camera.projection, camera.view);
                 if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
             };
 
@@ -1437,6 +1684,7 @@ define([
             };
 
 
+            var EMPTY_ARRAY = [];
             /**
              * @method render
              * @memberof Renderer
@@ -1454,7 +1702,8 @@ define([
                     ambient = scene.world.ambient,
                     lights = components.Light || EMPTY_ARRAY,
                     meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                    meshFilter, transform,
+                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                    meshFilter, particleSystem, transform,
                     i;
 
                 for (i = meshFilters.length; i--;) {
@@ -1467,10 +1716,43 @@ define([
                     renderMeshFilter(camera, lights, ambient, transform, meshFilter);
                 }
 
+                for (i = particleSystems.length; i--;) {
+                    particleSystem = particleSystems[i];
+                    transform = particleSystem.transform;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderParticleSystem(camera, lights, ambient, transform, particleSystem);
+                }
+
                 setCullFace(cullFace);
                 setBlending(blending);
                 setLineWidth(lineWidth);
             };
+
+
+            function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
+                var emitters = particleSystem.emitters,
+                    emitter, i = emitters.length,
+                    material, program, buffers;
+
+                while (i--) {
+                    emitter = emitters[i];
+                    material = emitter.material;
+
+                    program = initEmitterMaterial(material, emitter, lights);
+                    bindMaterial(material, transform, camera, lights, ambient);
+
+                    buffers = initEmitterBuffers(emitter, transform, program.attributes);
+                    if (!buffers.particleCount) continue;
+
+                    setBlending(material.blending);
+                    setCullFace(CullFace.Back);
+
+                    _gl.drawArrays(_gl.POINTS, 0, buffers.particleCount);
+                }
+            }
 
 
             function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
@@ -1478,8 +1760,9 @@ define([
                     material = meshFilter.material,
                     side = material.side,
 
-                    buffers = initMeshBuffers(mesh),
-                    program = initMaterial(material, mesh, lights);
+                    buffers = initMeshBuffers(mesh);
+
+                initMaterial(material, mesh, lights)
 
                 bindMaterial(material, transform, camera, lights, ambient);
                 bindMesh(mesh, material);
@@ -1500,7 +1783,7 @@ define([
                 } else {
                     _gl.drawElements(_gl.TRIANGLES, buffers.indexCount, _gl.UNSIGNED_SHORT, 0);
                 }
-            };
+            }
 
 
             function initGL() {
@@ -1508,12 +1791,23 @@ define([
                     _gl = getWebGLContext(_element, _this.attributes);
                     if (_gl === null) throw "Error creating WebGL context";
                 } catch (e) {
-                    console.error(e);
+                    Log.error(e);
+                }
+
+                if (_gl.getShaderPrecisionFormat == undefined) {
+                    _gl.getShaderPrecisionFormat = function() {
+                        return {
+                            rangeMin: 1,
+                            rangeMax: 1,
+                            precision: 1
+                        };
+                    }
                 }
 
                 getExtensions();
                 getGPUInfo();
-                getSupports();
+
+                _enabledAttributes = new Uint8Array(_maxAttributes);
             }
 
 
@@ -1555,6 +1849,18 @@ define([
             }
 
 
+            var _precision = "highp",
+                _maxAnisotropy = 0,
+                _maxTextures = 0,
+                _maxVertexTextures = 0,
+                _maxTextureSize = 0,
+                _maxCubeTextureSize = 0,
+                _maxRenderBufferSize = 0,
+
+                _maxUniforms = 0,
+                _maxVaryings = 0,
+                _maxAttributes = 0;
+
             function getGPUInfo() {
                 var VERTEX_SHADER = _gl.VERTEX_SHADER,
                     FRAGMENT_SHADER = _gl.FRAGMENT_SHADER,
@@ -1582,33 +1888,32 @@ define([
                     }
                 }
 
-                _gpu = {};
+                _precision = precision;
+                _maxAnisotropy = EXT_texture_filter_anisotropic ? _gl.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 1;
+                _maxTextures = _gl.getParameter(_gl.MAX_TEXTURE_IMAGE_UNITS);
+                _maxVertexTextures = _gl.getParameter(_gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+                _maxTextureSize = _gl.getParameter(_gl.MAX_TEXTURE_SIZE);
+                _maxCubeTextureSize = _gl.getParameter(_gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+                _maxRenderBufferSize = _gl.getParameter(_gl.MAX_RENDERBUFFER_SIZE);
 
-                _gpu.precision = precision;
-                _gpu.maxAnisotropy = EXT_texture_filter_anisotropic ? _gl.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 1;
-                _gpu.maxTextures = _gl.getParameter(_gl.MAX_TEXTURE_IMAGE_UNITS);
-                _gpu.maxVertexTextures = _gl.getParameter(_gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-                _gpu.maxTextureSize = _gl.getParameter(_gl.MAX_TEXTURE_SIZE);
-                _gpu.maxCubeTextureSize = _gl.getParameter(_gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-                _gpu.maxRenderBufferSize = _gl.getParameter(_gl.MAX_RENDERBUFFER_SIZE);
-
-                _gpu.maxUniforms = _gl.getParameter(_gl.MAX_VERTEX_UNIFORM_VECTORS) * 4;
-                _gpu.maxAttributes = _gl.getParameter(_gl.MAX_VERTEX_ATTRIBS);
+                _maxUniforms = max(_gl.getParameter(_gl.MAX_FRAGMENT_UNIFORM_VECTORS), _gl.getParameter(_gl.MAX_VERTEX_UNIFORM_VECTORS)) * 4;
+                _maxVaryings = _gl.getParameter(_gl.MAX_VARYING_VECTORS) * 4;
+                _maxAttributes = _gl.getParameter(_gl.MAX_VERTEX_ATTRIBS);
             }
 
 
             function getExtensions() {
                 _extensions = {};
 
-                _extensions.EXT_texture_filter_anisotropic = getExtension("EXT_texture_filter_anisotropic");
+                getExtension("EXT_texture_filter_anisotropic");
 
-                _extensions.WEBGL_compressed_texture_s3tc = getExtension("WEBGL_compressed_texture_s3tc");
+                getExtension("WEBGL_compressed_texture_s3tc");
                 _extensions.WEBGL_compressed_texture_s3tc_formats = _extensions.WEBGL_compressed_texture_s3tc ? _gl.getParameter(_gl.COMPRESSED_TEXTURE_FORMATS) : null;
 
-                _extensions.OES_standard_derivatives = getExtension("OES_standard_derivatives");
+                getExtension("OES_standard_derivatives");
 
-                _extensions.OES_texture_float = getExtension("OES_texture_float");
-                _extensions.OES_texture_float_linear = getExtension("OES_texture_float_linear");
+                getExtension("OES_texture_float");
+                getExtension("OES_texture_float_linear");
             }
 
 
@@ -1629,20 +1934,6 @@ define([
                 return extension;
             }
             this.getExtension = getExtension;
-
-
-            function getSupports() {
-                _supports = {};
-
-                _supports.vertexTextures = _gpu.maxVertexTextures > 0;
-                _supports.boneTextures = _supports.vertexTextures && !! _extensions.OES_texture_float;
-
-                _supports.EXT_texture_filter_anisotropic = !! _extensions.EXT_texture_filter_anisotropic;
-                _supports.WEBGL_compressed_texture_s3tc = !! _extensions.WEBGL_compressed_texture_s3tc;
-                _supports.OES_standard_derivatives = !! _extensions.OES_standard_derivatives;
-                _supports.OES_texture_float = !! _extensions.OES_texture_float;
-                _supports.OES_texture_float_linear = !! _extensions.OES_texture_float_linear;
-            }
         }
 
         EventEmitter.extend(Renderer);

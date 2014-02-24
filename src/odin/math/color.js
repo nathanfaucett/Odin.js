@@ -521,12 +521,12 @@ define([
         };
 
         /**
-         * @method check
+         * @method cnormalize
          * @memberof Odin.Color
          * ensures that each value is no larger than 1
          * @return this
          */
-        Color.prototype.check = function() {
+        Color.prototype.cnormalize = function() {
             var r = this.r,
                 g = this.g,
                 b = this.b;

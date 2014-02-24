@@ -38,8 +38,8 @@ define([
         "use strict";
 
 
-        var WrapMode = Enums.WrapMode,
-            floor = Math.floor;
+        var abs = Math.abs,
+            WrapMode = Enums.WrapMode;
 
 
         /**
@@ -58,7 +58,7 @@ define([
             this.current = opts.current != undefined ? opts.current : "idle";
             this.mode = opts.mode != undefined ? opts.mode : WrapMode.Loop;
 
-            this.rate = opts.rate !== undefined ? opts.rate : 1 / 24;
+            this.rate = opts.rate != undefined ? opts.rate : 1 / 24;
 
             this._time = 0;
             this._frame = 0;
@@ -103,7 +103,7 @@ define([
             if ((this.playing && this.current === name) || !this.sheet[name]) return this;
 
             this.current = name;
-            this.rate = rate !== undefined ? rate : (rate = this.rate);
+            this.rate = rate != undefined ? rate : (rate = this.rate);
             this.mode = mode || (mode = this.mode);
             this._frame = 0;
             this._order = 1;
@@ -133,72 +133,68 @@ define([
             var sprite = this.sprite,
                 sheet = this.sheet,
                 current = sheet[this.current],
-                w, h, dt, count, length, order, frame, mode, animation;
+                rate, dt, count, length, order, frame, mode, animation;
 
             if (!sprite || !sheet || !current) return;
 
+            rate = this.rate;
             dt = Time.delta;
             order = this._order;
             frame = this._frame;
             mode = this.mode;
 
-            if (!this.rate || this.rate === Infinity) {
-                animation = current[frame];
-                sprite.x = animation[0];
-                sprite.y = animation[1];
-                sprite.w = animation[2];
-                sprite.h = animation[3];
-                return;
-            }
+            if (!rate || rate === Infinity || rate &lt; 0) {
+                frame = abs(frame) % current.length;
+            } else {
+                this._time += dt;
+                count = this._time / rate;
 
-            this._time += dt;
-            count = this._time / this.rate;
+                if (count >= 1) {
+                    this._time = 0;
+                    length = current.length;
+                    frame += (order * (count | 0));
 
-            if (count >= 1) {
-                this._time = 0;
-                length = current.length;
-                frame += (order * floor(count));
-
-                if (mode === WrapMode.Loop) {
-                    frame = frame % length;
-                } else if (mode === WrapMode.Once) {
-                    if (order > 0) {
-                        if (frame >= length) {
-                            frame = length - 1;
-                            this.stop();
+                    if (mode === WrapMode.Loop) {
+                        frame = frame % length;
+                    } else if (mode === WrapMode.Once) {
+                        if (order > 0) {
+                            if (frame >= length) {
+                                frame = length - 1;
+                                this.stop();
+                            }
+                        } else {
+                            if (frame &lt; 0) {
+                                frame = 0;
+                                this.stop();
+                            }
                         }
-                    } else {
-                        if (frame &lt; 0) {
-                            frame = 0;
-                            this.stop();
+                    } else if (mode === WrapMode.PingPong) {
+                        if (order > 0) {
+                            if (frame >= length) {
+                                this._order = -1;
+                                frame = length - 1;
+                            }
+                        } else {
+                            if (frame &lt; 0) {
+                                this._order = 1;
+                                frame = 0;
+                            }
                         }
-                    }
-                } else if (mode === WrapMode.PingPong) {
-                    if (order > 0) {
-                        if (frame >= length) {
-                            this._order = -1;
-                            frame = length - 1;
+                    } else if (mode === WrapMode.Clamp) {
+                        if (order > 0) {
+                            if (frame >= length) frame = length - 1;
+                        } else {
+                            if (frame &lt; 0) frame = 0;
                         }
-                    } else {
-                        if (frame &lt; 0) {
-                            this._order = 1;
-                            frame = 0;
-                        }
-                    }
-                } else if (mode === WrapMode.Clamp) {
-                    if (order > 0) {
-                        if (frame >= length) frame = length - 1;
-                    } else {
-                        if (frame &lt; 0) frame = 0;
                     }
                 }
-
-                animation = current[frame];
-                sprite.x = animation[0];
-                sprite.y = animation[1];
-                sprite.w = animation[2];
-                sprite.h = animation[3];
             }
+
+            animation = current[frame];
+            sprite.x = animation[0];
+            sprite.y = animation[1];
+            sprite.w = animation[2];
+            sprite.h = animation[3];
 
             this._frame = frame;
         };
@@ -257,13 +253,13 @@ define([
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 17 2014 08:43:02 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 24 2014 16:15:46 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

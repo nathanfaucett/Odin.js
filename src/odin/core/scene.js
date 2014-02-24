@@ -277,7 +277,7 @@ define([
             var gameObjects = this.gameObjects,
                 gameObject, i = gameObjects.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((gameObject = gameObjects[i]).hasTag(tag)) out.push(gameObject);
             }
 
@@ -289,7 +289,7 @@ define([
             var gameObjects = this.gameObjects,
                 gameObject, i = gameObjects.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((gameObject = gameObjects[i]).hasTag(tag)) return gameObject;
             }
 

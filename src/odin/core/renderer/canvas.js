@@ -160,7 +160,7 @@ define([
         };
 
 
-        Canvas.prototype.destroy = function() {
+        Canvas.prototype.clear = function() {
             if (!this.element) return this;
 
             removeEvent(window, "resize orientationchange", this.handleResize, this);

@@ -28,7 +28,7 @@ define([
                 RigidBodies = scene.components.RigidBody2D,
                 i = RigidBodies.length;
 
-            for (; i--;) space.addBody(RigidBodies[i].body);
+            while (i--) space.addBody(RigidBodies[i].body);
 
             scene.on("addRigidBody2D", function(component) {
 

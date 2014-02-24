@@ -6,10 +6,9 @@ require({
         "scene_level"
     ],
     function(Odin, assets, sceneLevel) {
-        window.Odin = Odin;
 
 
-        var game = window.game = new Odin.Game({
+        var game = new Odin.Game({
             debug: true,
             forceCanvas: false,
             width: 960,
@@ -18,7 +17,7 @@ require({
                 imageSmoothingEnabled: false,
                 autoClear: false
             },
-            WebGLRenderer2DOptions: {
+            Renderer2DOptions: {
                 autoClear: false
             }
         });
@@ -46,10 +45,10 @@ require({
         }
 
 
-        Odin.AssetLoader.load(function() {
+        Odin.AssetLoader.on("load", function() {
 
             game.init();
             startLevel();
-        });
+        }).load();
     }
 );

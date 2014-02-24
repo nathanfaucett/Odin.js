@@ -638,7 +638,7 @@ define([
                 fy = forward.y,
                 fz = forward.z,
                 ux = up.x,
-                uy = u.y,
+                uy = up.y,
                 uz = up.z,
 
                 ax = uy * fz - uz * fy,
@@ -646,7 +646,7 @@ define([
                 az = ux * fy - uy * fx,
 
                 d = (1 + ux * fx + uy * fy + uz * fz) * 2,
-                dsq = d * d
+                dsq = d * d,
                 s = 1 / dsq;
 
             this.x = ax * s;

@@ -85,7 +85,7 @@ define([
                 jsonAsset,
                 i = this.length;
 
-            for (; i--;) {
+            while (i--) {
                 if ((jsonAsset = this[i]).json) jsonAssets[i] = jsonAsset.toJSON(jsonAssets[i], pack);
             }
 
@@ -99,7 +99,7 @@ define([
                 asset, jsonAsset,
                 i = jsonAssets.length;
 
-            for (; i--;) {
+            while (i--) {
                 if (!(jsonAsset = jsonAssets[i])) continue;
 
                 if ((asset = assetsHash[jsonAsset.name])) {

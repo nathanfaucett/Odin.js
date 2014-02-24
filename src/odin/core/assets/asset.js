@@ -23,7 +23,7 @@ define([
             this.json = opts.json != undefined ? !! opts.json : true;
 
             this.assets = undefined;
-            this.load = opts.load != undefined ? !! opts.load : true;
+            this.load = opts.load != undefined ? !! opts.load : !! opts.src;
             this.src = opts.src;
             this.raw = opts.raw;
         }

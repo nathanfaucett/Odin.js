@@ -150,6 +150,21 @@ define(
                 ""
             ].join("\n"),
 
+            particle_header: [
+                "varying float vAngle;",
+                "varying float vAlpha;",
+                "varying float vSize;",
+                ""
+            ].join("\n"),
+
+            particle_vertex: [
+                "	vAngle = data.x;",
+                "	vAlpha = data.z;",
+                "	vSize = data.y;",
+                "	gl_PointSize = vSize * (256.0 / length(mvPosition.xyz));\n",
+                ""
+            ].join("\n"),
+
             lights: [
                 "uniform vec3 ambient;",
 
@@ -302,7 +317,7 @@ define(
                 "			float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
 
                 "			vec3 schlick = specularColor + vec3( 1.0 - specularColor ) * pow( 1.0 - dot( dirVector, dirHalfVector ), 5.0 );",
-                "			specularLight += schlick * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight * specularNormalization;",
+                "			specularLight += schlick * directionalLightColor[ i ] * dirSpecularWeight * directionalLightWeighting * specularNormalization;",
                 "		}",
                 "	#endif",
 

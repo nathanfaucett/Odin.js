@@ -14,6 +14,8 @@ define([
 
             Asset.call(this, opts);
 
+            this.fallback = opts.fallback || "shader_unlit";
+
             this.vertex = opts.vertex || "void main(void) {}";
             this.fragment = opts.fragment || "void main(void) {}";
 
@@ -31,6 +33,8 @@ define([
 
         Shader.prototype.copy = function(other) {
             Asset.prototype.copy.call(this, other);
+
+            this.fallback = other.fallback;
 
             this.vertex = other.vertex;
             this.fragment = other.fragment;
@@ -69,6 +73,8 @@ define([
         Shader.prototype.toJSON = function(json, pack) {
             json = Asset.prototype.toJSON.call(this, json, pack);
 
+            json.fallback = this.fallback;
+
             json.vertex = this.vertex;
             json.fragment = this.fragment;
 
@@ -86,6 +92,8 @@ define([
 
         Shader.prototype.fromJSON = function(json) {
             Asset.prototype.fromJSON.call(this, json);
+
+            this.fallback = json.fallback;
 
             this.vertex = json.vertex;
             this.fragment = json.fragment;

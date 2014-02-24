@@ -8,12 +8,16 @@ define([
         "odin/core/assets/shaders/normal/specular",
         "odin/core/assets/shaders/normal/normal_diffuse",
         "odin/core/assets/shaders/normal/normal_specular",
+        "odin/core/assets/shaders/normal/parallax_diffuse",
+
+        "odin/core/assets/shaders/particle/unlit",
 
         "odin/core/assets/shaders/reflective/reflective_vertex_lit",
 
     ],
     function(
-        Unlit, VertexLit, Diffuse, Specular, NormalDiffuse, NormalSpecular,
+        Unlit, VertexLit, Diffuse, Specular, NormalDiffuse, NormalSpecular, ParallaxDiffuse,
+        ParticleUnlit,
         ReflectiveVertexLit
     ) {
         "use strict";
@@ -26,6 +30,9 @@ define([
             Specular: Specular,
             NormalDiffuse: NormalDiffuse,
             NormalSpecular: NormalSpecular,
+            ParallaxDiffuse: ParallaxDiffuse,
+
+            ParticleUnlit: ParticleUnlit,
 
             ReflectiveVertexLit: ReflectiveVertexLit
         };

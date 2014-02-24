@@ -2,15 +2,21 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/math/vec2"
+        "odin/math/vec2",
+        "odin/core/game/log"
     ],
-    function(Vec2) {
+    function(Vec2, Log) {
         "use strict";
 
 
         function Touch() {
 
             this.id = -1;
+
+            this.radiusX = 0;
+            this.radiusY = 0;
+            this.rotationAngle = 0;
+            this.force = 0;
 
             this.delta = new Vec2;
             this.position = new Vec2;
@@ -29,6 +35,11 @@ define([
             this.position.set(0, 0);
             this.delta.set(0, 0);
             this._last.set(0, 0);
+
+            this.radiusX = 0;
+            this.radiusY = 0;
+            this.rotationAngle = 0;
+            this.force = 0;
 
             this._first = false;
 
@@ -55,6 +66,11 @@ define([
 
             delta.x = position.x - last.x;
             delta.y = position.y - last.y;
+
+            this.radiusX = (e.radiusX || e.webkitRadiusX || e.mozRadiusX || e.oRadiusX || e.msRadiusX || 1);
+            this.radiusY = (e.radiusY || e.webkitRadiusY || e.mozRadiusY || e.oRadiusY || e.msRadiusY || 1);
+            this.rotationAngle = (e.rotationAngle || e.webkitRotationAngle || e.mozRotationAngle || e.oRotationAngle || e.msRotationAngle || 0);
+            this.force = (e.force || e.webkitForce || e.mozForce || e.oForce || e.msForce || 1);
 
             this._first = true;
 

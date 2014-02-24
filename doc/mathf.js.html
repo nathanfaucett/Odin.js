@@ -300,7 +300,7 @@ define(
         };
 
         /**
-         * @method cosLerp
+         * @method lerpCubic
          * @memberof Odin.Mathf
          * cubic interpolation between v1 and v2 by x
          * @param Number v0
@@ -322,7 +322,7 @@ define(
                 Qx = Q * x,
                 Rx = R * x;
 
-            return (Px * Px * Px) + (Qx * Qx) + Rx + S
+            return (Px * Px * Px) + (Qx * Qx) + Rx + S;
         };
 
         /**
@@ -459,7 +459,7 @@ define(
          */
         Mathf.prototype.shuffle = function(array) {
 
-            for (var j, x, i = array.length; i; j = floor(random() * i), x = array[--i], array[i] = array[j], array[j] = x);
+            for (var j, x, i = array.length; i; j = (random() * i) | 0, x = array[--i], array[i] = array[j], array[j] = x);
             return array;
         };
 
@@ -478,7 +478,7 @@ define(
          * @method randChoiceObject
          * @memberof Odin.Mathf
          * returns random key from object
-         * @param Array array
+         * @param Object obj
          * @return Number
          */
         Mathf.prototype.randChoiceObject = function(obj) {
@@ -545,17 +545,27 @@ define(
          * @param Number y
          * @return String
          */
-        Mathf.prototype.directionAngle = function(a) {
-            a = radsToDegs(a);
 
-            if (a > 337.5 && a &lt; 22.5) return RIGHT;
-            if (a > 22.5 && a &lt; 67.5) return UP_RIGHT;
-            if (a > 67.5 && a &lt; 112.5) return UP;
-            if (a > 112.5 && a &lt; 157.5) return UP_LEFT;
-            if (a > 157.5 && a &lt; 202.5) return LEFT;
-            if (a > 202.5 && a &lt; 247.5) return DOWN_LEFT;
-            if (a > 247.5 && a &lt; 292.5) return DOWN;
-            if (a > 292.5 && a &lt; 337.5) return DOWN_RIGHT;
+        var n225 = 0.39269908169872414,
+            n675 = 1.1780972450961724,
+            n1125 = 1.9634954084936207,
+            n1575 = 2.748893571891069,
+            n2025 = 3.5342917352885173,
+            n2475 = 4.319689898685966,
+            n2925 = 5.105088062083414,
+            n3375 = 5.8904862254808625;
+
+        Mathf.prototype.directionAngle = function(a) {
+            a = standardRadian(a);
+
+            if (a >= n3375 && a &lt; n225) return RIGHT;
+            if (a >= n225 && a &lt; n675) return UP_RIGHT;
+            if (a >= n675 && a &lt; n1125) return UP;
+            if (a >= n1125 && a &lt; n1575) return UP_LEFT;
+            if (a >= n1575 && a &lt; n2025) return LEFT;
+            if (a >= n2025 && a &lt; n2475) return DOWN_LEFT;
+            if (a >= n2475 && a &lt; n2925) return DOWN;
+            if (a >= n2925 && a &lt; n3375) return DOWN_RIGHT;
 
             return RIGHT;
         };
@@ -569,16 +579,16 @@ define(
          * @return String
          */
         Mathf.prototype.direction = function(x, y) {
-            var a = radsToDegs(atan2(y, x));
+            var a = standardRadian(atan2(y, x));
 
-            if (a > 337.5 && a &lt; 22.5) return RIGHT;
-            if (a > 22.5 && a &lt; 67.5) return UP_RIGHT;
-            if (a > 67.5 && a &lt; 112.5) return UP;
-            if (a > 112.5 && a &lt; 157.5) return UP_LEFT;
-            if (a > 157.5 && a &lt; 202.5) return LEFT;
-            if (a > 202.5 && a &lt; 247.5) return DOWN_LEFT;
-            if (a > 247.5 && a &lt; 292.5) return DOWN;
-            if (a > 292.5 && a &lt; 337.5) return DOWN_RIGHT;
+            if (a >= n3375 && a &lt; n225) return RIGHT;
+            if (a >= n225 && a &lt; n675) return UP_RIGHT;
+            if (a >= n675 && a &lt; n1125) return UP;
+            if (a >= n1125 && a &lt; n1575) return UP_LEFT;
+            if (a >= n1575 && a &lt; n2025) return LEFT;
+            if (a >= n2025 && a &lt; n2475) return DOWN_LEFT;
+            if (a >= n2475 && a &lt; n2925) return DOWN;
+            if (a >= n2925 && a &lt; n3375) return DOWN_RIGHT;
 
             return RIGHT;
         };
@@ -597,13 +607,13 @@ define(
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Renderer.html">Renderer</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Canvas.html">Canvas</a></li><li><a href="GUIObject.html">GUIObject</a></li><li><a href="MeshFilter.html">MeshFilter</a></li><li><a href="Odin.html">Odin</a></li><li><a href="Odin.Class.html">Class</a></li><li><a href="Odin.EventEmitter.html">EventEmitter</a></li><li><a href="Odin.GameObject.html">GameObject</a></li><li><a href="Odin.Scene.html">Scene</a></li><li><a href="P2Contact.html">P2Contact</a></li><li><a href="P2Equation.html">P2Equation</a></li><li><a href="P2Friction.html">P2Friction</a></li><li><a href="P2Solver.html">P2Solver</a></li><li><a href="ParticleSystem.html">ParticleSystem</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SpriteAnimation.html">SpriteAnimation</a></li><li><a href="WebGLRenderer.html">WebGLRenderer</a></li><li><a href="WebGLRenderer2D.html">WebGLRenderer2D</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 17 2014 08:43:02 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 24 2014 16:15:46 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>
