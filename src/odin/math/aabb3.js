@@ -268,6 +268,16 @@ define([
         };
 
         /**
+         * @memberof Odin.AABB3
+         * @param Odin.AABB3 other
+         * @return this
+         */
+        AABB3.prototype.notEquals = function(other) {
+
+            return (this.min.notEquals(other.min) || this.max.notEquals(other.max));
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.AABB3
          * sets values from json object

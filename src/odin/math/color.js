@@ -676,6 +676,20 @@ define([
         };
 
         /**
+         * @memberof Odin.Color
+         * @param Odin.Color other
+         * @return this
+         */
+        Color.prototype.notEquals = function(other) {
+
+            return (
+                this.r !== other.r ||
+                this.g !== other.g ||
+                this.b !== other.b
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Color
          * sets values from JSON object

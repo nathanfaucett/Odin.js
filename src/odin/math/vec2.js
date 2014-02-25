@@ -764,6 +764,19 @@ define([
         };
 
         /**
+         * @memberof Odin.Vec2
+         * @param Odin.Vec2 other
+         * @return this
+         */
+        Vec2.prototype.notEquals = function(other) {
+
+            return (
+                this.x !== other.x ||
+                this.y !== other.y
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Vec2
          * sets values from JSON object

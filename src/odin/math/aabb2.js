@@ -254,6 +254,16 @@ define([
         };
 
         /**
+         * @memberof Odin.AABB2
+         * @param Odin.AABB2 other
+         * @return this
+         */
+        AABB2.prototype.equals = function(other) {
+
+            return (this.min.notEquals(other.min) || this.max.notEquals(other.max));
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.AABB2
          * sets values from json object

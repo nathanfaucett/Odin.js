@@ -713,6 +713,25 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat32
+         * @param Odin.Mat32 other
+         * @return this
+         */
+        Mat32.prototype.notEquals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return (
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5]
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Mat32
          * sets values from JSON object

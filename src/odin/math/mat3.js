@@ -701,6 +701,28 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat3
+         * @param Odin.Mat3 other
+         * @return this
+         */
+        Mat3.prototype.notEquals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return (
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5] ||
+                ae[6] !== be[6] ||
+                ae[7] !== be[7] ||
+                ae[8] !== be[8]
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Mat3
          * sets values from JSON object

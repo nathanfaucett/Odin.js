@@ -1423,6 +1423,35 @@ define([
         };
 
         /**
+         * @memberof Odin.Mat4
+         * @param Odin.Mat4 other
+         * @return this
+         */
+        Mat4.prototype.notEquals = function(other) {
+            var ae = this.elements,
+                be = other.elements;
+
+            return (
+                ae[0] !== be[0] ||
+                ae[1] !== be[1] ||
+                ae[2] !== be[2] ||
+                ae[3] !== be[3] ||
+                ae[4] !== be[4] ||
+                ae[5] !== be[5] ||
+                ae[6] !== be[6] ||
+                ae[7] !== be[7] ||
+                ae[8] !== be[8] ||
+                ae[9] !== be[9] ||
+                ae[10] !== be[10] ||
+                ae[11] !== be[11] ||
+                ae[12] !== be[12] ||
+                ae[13] !== be[13] ||
+                ae[14] !== be[14] ||
+                ae[15] !== be[15]
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Mat4
          * sets values from JSON object

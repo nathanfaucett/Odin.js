@@ -774,6 +774,20 @@ define([
         };
 
         /**
+         * @memberof Odin.Vec3
+         * @param Odin.Vec3 other
+         * @return this
+         */
+        Vec3.prototype.notEquals = function(other) {
+
+            return (
+                this.x !== other.x ||
+                this.y !== other.y ||
+                this.z !== other.z
+            );
+        };
+
+        /**
          * @method fromJSON
          * @memberof Odin.Vec3
          * sets values from JSON object
