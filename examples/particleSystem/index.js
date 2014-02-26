@@ -13,16 +13,16 @@ require({
             sin = Math.sin,
             cos = Math.cos;
 
-        function Move(opts) {
+        function Rotator(opts) {
 
             Component.call(this, opts);
         }
-        Component.extend(Move);
+        Component.extend(Rotator);
 
-        Move.prototype.update = function() {
-            var time = Time.time;
+        Rotator.prototype.update = function() {
+            var dt = Time.delta;
 
-            this.transform.position.set(sin(time), cos(time), 0);
+            this.transform.rotation.rotate(dt, dt, dt);
         };
 
         Assets.addAssets(
@@ -88,8 +88,7 @@ require({
         particles = new GameObject({
             components: [
                 new Transform({
-                    position: new Vec3(0, 0, 0),
-                    scale: new Vec3(0.5, 0.5, 0.5)
+                    position: new Vec3(0, 0, 0)
                 }),
                 new ParticleSystem({
                     emitters: [
@@ -97,12 +96,14 @@ require({
                             material: Assets.get("mat_particle"),
                             loop: true,
 
-                            positionType: Enums.EmitterType.Sphere,
+                            positionType: Enums.EmitterType.Box,
                             velocityType: Enums.EmitterType.Box,
                             emissionRate: 1 / 60,
 
                             minEmission: 0,
                             maxEmission: 8,
+
+                            positionSpread: new Vec3(0.5, 0.5, 0),
 
                             angularVelocity: 0,
                             angularVelocitySpread: Mathf.PI,
@@ -124,7 +125,6 @@ require({
                         })
                     ]
                 })
-                //new Move
             ],
             tag: "particles"
         });
@@ -134,9 +134,11 @@ require({
                 new MeshFilter({
                     mesh: Assets.get("mesh_cube"),
                     material: Assets.get("mat_default")
-                })
+                }),
+                new Rotator()
             ]
         });
+        mesh.transform.addChild(particles.transform);
 
         scene.addGameObjects(camera, mesh, particles);
         game.addScene(scene);

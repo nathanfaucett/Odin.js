@@ -84,13 +84,18 @@ define([
             var _this = this,
                 _projScreenMatrix = new Mat4,
                 _mat4 = new Mat4,
+                _color = new Color,
                 _vector3 = new Vec3,
+                _vector3_2 = new Vec3,
                 _gl,
                 _extensions,
                 _canvas,
                 _element,
                 _context = false,
-                _programs = [];
+                _programs = [],
+
+                _spriteBuffers = undefined,
+                _spriteShader = undefined;
 
 
             this.attributes = merge(opts.attributes || {}, {
@@ -170,6 +175,9 @@ define([
                 _lastBuffer = undefined;
                 _lastProgram = undefined;
                 _enabledAttributes = undefined;
+
+                _spriteBuffers = undefined;
+                _spriteShader = undefined;
 
                 return this;
             };
@@ -435,7 +443,9 @@ define([
                 if (!texture || !texture.raw) return;
                 var index, glTexture;
 
-                if (_textureIndex >= _maxTextures) Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
+                if (_textureIndex >= _maxTextures) {
+                    Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
+                }
 
                 if (!texture.needsUpdate && (glTexture = texture._webgl)) {
                     index = _textureIndex++;
@@ -526,7 +536,10 @@ define([
                 var glTexture = cubeTexture._webgl,
                     index;
 
-                if (_textureIndex >= _maxTextures) Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
+                if (_textureIndex >= _maxTextures) {
+                    Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
+                    return;
+                }
 
                 if (!cubeTexture.needsUpdate && glTexture) {
                     index = _textureIndex++;
@@ -883,7 +896,7 @@ define([
                             particle.z = (m13 * x + m23 * y + m33 * z + m43) / (m14 * x + m24 * y + m34 * z + m44);
                         }
 
-                        particles.sort(numericalSort);
+                        particles.sort(zSort);
                     }
 
                     positionArray = webgl.positionArray || (webgl.positionArray = new Float32Array(MAX * 3));
@@ -926,13 +939,13 @@ define([
             }
 
 
-            function numericalSort(a, b) {
+            function zSort(a, b) {
 
                 return b.z - a.z;
             }
 
 
-            function initMaterial(material, mesh, lights) {
+            function initShader(material, mesh, lights) {
                 if (!material.needsUpdate && material._webgl) return material._webgl;
 
                 var shader = material.shader,
@@ -948,8 +961,8 @@ define([
                 parameters.useVertexLit = shader.vertexLit;
                 parameters.useSpecular = shader.specular;
 
-                parameters.useNormal = uniforms.normalMap;
-                parameters.useBump = uniforms.bumpMap;
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
 
                 parameters.positions = mesh.vertices.length > 0;
                 parameters.normals = mesh.normals.length > 0;
@@ -962,14 +975,51 @@ define([
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
 
-                material._webgl = initProgram(shader.vertex, shader.fragment, parameters);
+                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
                 material.needsUpdate = false;
 
                 return material._webgl;
             }
 
 
-            function initEmitterMaterial(material, emitter, lights) {
+            function initSpriteShader(material, sprite, lights) {
+                if (!material.needsUpdate && material._webgl) return material._webgl;
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = mesh.useBones && mesh.bones.length > 0;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = mesh.vertices.length > 0;
+                parameters.normals = mesh.normals.length > 0;
+                parameters.tangents = mesh.tangents.length > 0;
+                parameters.uvs = mesh.uvs.length > 0;
+                parameters.colors = mesh.colors.length > 0;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
+                material.needsUpdate = false;
+
+                return material._webgl;
+            }
+
+
+            function initEmitterShader(material, emitter, lights) {
                 if (!material.needsUpdate && material._webgl) return material._webgl;
 
                 var shader = material.shader,
@@ -987,8 +1037,8 @@ define([
                 parameters.useVertexLit = shader.vertexLit;
                 parameters.useSpecular = shader.specular;
 
-                parameters.useNormal = uniforms.normalMap;
-                parameters.useBump = uniforms.bumpMap;
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
 
                 parameters.positions = true;
                 parameters.normals = false;
@@ -1001,7 +1051,7 @@ define([
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
 
-                material._webgl = initProgram(shader.vertex, shader.fragment, parameters);
+                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
                 material.needsUpdate = false;
 
                 return material._webgl;
@@ -1066,9 +1116,9 @@ define([
                 MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
                 MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
 
-            function initProgram(vertexShader, fragmentShader, parameters) {
+            function createShaderProgram(vertexShader, fragmentShader, parameters) {
                 var chunks = [],
-                    key, program, webglProgram, programInfo, code, i;
+                    key, program, code, i;
 
                 chunks.push(fragmentShader, vertexShader);
                 for (key in parameters) chunks.push(key, parameters[key]);
@@ -1076,158 +1126,49 @@ define([
                 code = chunks.join();
 
                 for (i = _programs.length; i--;) {
-                    programInfo = _programs[i];
+                    program = _programs[i];
 
-                    if (programInfo.code === code) {
-                        programInfo.used++;
-                        return programInfo.program;
+                    if (program.code === code) {
+                        program.used++;
+                        return program;
                     }
                 }
 
-                var emitter = parameters.emitter,
-                    mobile = parameters.mobile,
-                    useLights = parameters.useLights,
-                    useShadows = parameters.useShadows,
-                    useFog = parameters.useFog,
-                    useBones = parameters.useBones,
-                    useVertexLit = parameters.useVertexLit,
-                    useSpecular = parameters.useSpecular,
-                    OES_standard_derivatives = parameters.OES_standard_derivatives,
-
-                    definesPrefix = [
-                        "precision " + _precision + " float;",
-                        "precision " + _precision + " int;",
-
-                        useLights ? "#define USE_LIGHTS" : "",
-                        useShadows ? "#define USE_SHADOWS" : "",
-                        useBones ? "#define USE_SKINNING" : "",
-
-                        useLights ? "#define MAX_DIR_LIGHTS " + parameters.maxDirectionalLights : "",
-                        useLights ? "#define MAX_POINT_LIGHTS " + parameters.maxPointLights : "",
-                        useLights ? "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights : "",
-                        useLights ? "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights : "",
-
-                        useShadows ? "#define MAX_SHADOWS " + parameters.maxShadows : "",
-                        ""
-                    ].join("\n"),
-
-                    vertexPrefix = [
-                        definesPrefix,
-
-                        "uniform mat4 modelMatrix;",
-                        "uniform mat4 modelViewMatrix;",
-                        "uniform mat4 projectionMatrix;",
-                        "uniform mat4 viewMatrix;",
-                        "uniform mat3 normalMatrix;",
-                        "uniform vec3 cameraPosition;",
-
-                        parameters.positions ? "attribute vec3 position;" : "",
-                        parameters.normals ? "attribute vec3 normal;" : "",
-                        parameters.tangents ? "attribute vec4 tangent;" : "",
-                        parameters.uvs ? "attribute vec2 uv;" : "",
-                        parameters.colors ? "attribute vec3 color;" : "",
-                        emitter ? "attribute vec3 data;" : "",
-
-                        useBones ? "attribute int boneIndex;" : "",
-                        useBones ? "attribute vec3 boneWeight;" : "",
-                        useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
-                    ].join("\n"),
-
-                    fragmentPrefix = [
-                        OES_standard_derivatives ? "#extension GL_OES_standard_derivatives : enable" : "",
-                        definesPrefix,
-
-                        "uniform mat4 viewMatrix;",
-                        "uniform vec3 cameraPosition;"
-                    ].join("\n"),
-
-                    glVertexShader = vertexPrefix + "\n" + vertexShader,
-                    glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
-
-                    main = "void main(void) {\n",
-                    footer = "\n}",
-
-                    vertexHeader = glVertexShader.match(HEADER)[1],
-                    vertexMain = glVertexShader.match(MAIN_FUNCTION)[5],
-                    fragmentHeader = glFragmentShader.match(HEADER)[1],
-                    fragmentMain = glFragmentShader.match(MAIN_FUNCTION)[5];
-
-                if (emitter) {
-                    vertexHeader += ShaderChunks.particle_header;
-                    fragmentHeader += ShaderChunks.particle_header;
-                    vertexMain = ShaderChunks.particle_vertex + vertexMain;
-                }
-
-                if (OES_standard_derivatives) {
-                    if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
-                    if (parameters.useBump) fragmentHeader += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
-                }
-
-                if (useLights) {
-                    if (useVertexLit) {
-                        vertexHeader += ShaderChunks.lights + ShaderChunks.VertexLight;
-                    } else {
-                        vertexHeader += ShaderChunks.perPixelVaryingHeader;
-                        vertexMain = ShaderChunks.perPixelVaryingMain + vertexMain;
-
-                        fragmentHeader += ShaderChunks.lights + ShaderChunks.perPixelVaryingHeader;
-                        if (useSpecular) {
-                            fragmentHeader += ShaderChunks.PixelLight;
-                        } else {
-                            fragmentHeader += ShaderChunks.PixelLightNoSpec;
-                        }
-                    }
-
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
-                    if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
-                    vertexMain = ShaderChunks.worldPosition + vertexMain;
-                } else {
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
-                }
-
-                if (useBones) {
-                    vertexHeader += ShaderChunks.getBoneMatrix;
-                    if (parameters.normals) vertexMain = ShaderChunks.boneNormal + vertexMain;
-                    vertexMain = ShaderChunks.bone + vertexMain;
-                }
-
-                glVertexShader = vertexHeader + main + vertexMain + footer;
-                glFragmentShader = fragmentHeader + main + fragmentMain + footer;
-
-                webglProgram = createProgram(_gl, glVertexShader, glFragmentShader);
-                program = {
-                    program: webglProgram,
-                    uniforms: {},
-                    attributes: {},
-                    customUniforms: [],
-                    customAttributes: [],
-                    parameters: parameters
-                }
-
-                getUniformsAttributes(vertexShader, fragmentShader, program.customAttributes, program.customUniforms);
-                parseUniformsAttributes(webglProgram, glVertexShader, glFragmentShader, program.attributes, program.uniforms);
-
-                _programs.push({
-                    used: 1,
-                    code: code,
-                    program: program
-                });
-
+                program = new Shader(vertexShader, fragmentShader, parameters, code);
                 return program;
             }
 
 
             var _lastBuffer = undefined;
 
+            function bindSprite(attributes, wireframe) {
+                if (_lastBuffer === _spriteBuffers) return;
 
-            function bindMesh(mesh, material) {
+                var ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+                    FLOAT = _gl.FLOAT;
+
+
+                if (attributes.position > -1) {
+                    _gl.bindBuffer(ARRAY_BUFFER, _spriteBuffers.vertexBuffer);
+                    enableAttribute(attributes.position);
+                    _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
+                }
+                if (attributes.uv > -1) {
+                    _gl.bindBuffer(ARRAY_BUFFER, _spriteBuffers.uvBuffer);
+                    enableAttribute(attributes.uv);
+                    _gl.vertexAttribPointer(attributes.uv, 2, FLOAT, false, 0, 0);
+                }
+
+                _lastBuffer = _spriteBuffers;
+            }
+
+            function bindMesh(mesh, attributes, wireframe) {
                 if (_lastBuffer === mesh._webgl) return;
                 disableAttributes();
 
                 var webgl = mesh._webgl,
                     ARRAY_BUFFER = _gl.ARRAY_BUFFER,
-                    FLOAT = _gl.FLOAT,
-                    attributes = material._webgl.attributes;
+                    FLOAT = _gl.FLOAT;
 
                 if (webgl.vertexBuffer && attributes.position > -1) {
                     _gl.bindBuffer(ARRAY_BUFFER, webgl.vertexBuffer);
@@ -1265,7 +1206,7 @@ define([
                     _gl.vertexAttribPointer(attributes.boneWeight, 3, FLOAT, false, 0, 0);
                 }
 
-                if (material.wireframe) {
+                if (wireframe) {
                     if (webgl.lineBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, webgl.lineBuffer);
                 } else {
                     if (webgl.indexBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, webgl.indexBuffer);
@@ -1299,144 +1240,11 @@ define([
             };
 
 
-            var _lastProgram = undefined,
-                VEC3 = new Vec3,
-                VEC3_2 = new Vec3,
-                COLOR = new Color;
-
             function bindMaterial(material, transform, camera, lights, ambient) {
-                var program = material._webgl,
-                    webglProgram = material._webgl.program,
-                    parameters = program.parameters,
-                    uniforms = program.uniforms,
-                    state, i, length, force = false;
+                var shader = material._webgl;
 
-                if (_lastProgram !== webglProgram) {
-                    _gl.useProgram(webglProgram);
-                    force = true;
-                    _lastProgram = webglProgram;
-                }
-
-                if (uniforms.modelMatrix) uniforms.modelMatrix.bind(transform.matrixWorld);
-                if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.bind(transform.modelView);
-                if (uniforms.projectionMatrix) uniforms.projectionMatrix.bind(camera.projection);
-                if (uniforms.viewMatrix) uniforms.viewMatrix.bind(camera.view);
-                if (uniforms.normalMatrix) uniforms.normalMatrix.bind(transform.normalMatrix);
-                if (uniforms.cameraPosition) uniforms.cameraPosition.bind(VEC3.positionFromMat4(camera.transform.matrixWorld));
-                if (uniforms.ambient) uniforms.ambient.bind(ambient);
-
-                if (parameters.useLights && (length = lights.length)) {
-                    var maxPointLights = parameters.maxPointLights,
-                        maxDirectionalLights = parameters.maxDirectionalLights,
-                        maxSpotLights = parameters.maxSpotLights,
-                        maxHemiLights = parameters.maxHemiLights,
-
-                        pointLights = 0,
-                        pointLightColor = uniforms.pointLightColor,
-                        pointLightPosition = uniforms.pointLightPosition,
-                        pointLightDistance = uniforms.pointLightDistance,
-
-                        directionalLights = 0,
-                        directionalLightColor = uniforms.directionalLightColor,
-                        directionalLightDirection = uniforms.directionalLightDirection,
-
-                        spotLights = 0,
-                        spotLightColor = uniforms.spotLightColor,
-                        spotLightPosition = uniforms.spotLightPosition,
-                        spotLightDirection = uniforms.spotLightDirection,
-                        spotLightDistance = uniforms.spotLightDistance,
-                        spotLightAngleCos = uniforms.spotLightAngleCos,
-                        spotLightExponent = uniforms.spotLightExponent,
-
-                        hemiLights = 0,
-                        hemiLightColor = uniforms.hemiLightColor,
-                        hemiLightDirection = uniforms.hemiLightDirection,
-
-                        light, type;
-
-                    for (i = 0; i &lt; length; i++) {
-                        light = lights[i];
-                        if (!light.visible) continue;
-
-                        type = light.type;
-                        COLOR.copy(light.color).smul(light.energy);
-
-                        if (pointLightColor.length && type === LightType.Point) {
-                            if (pointLights >= maxPointLights) continue;
-
-                            VEC3.positionFromMat4(light.transform.matrixWorld);
-
-                            pointLightColor[pointLights].bind(COLOR);
-                            pointLightPosition[pointLights].bind(VEC3);
-                            pointLightDistance[pointLights].bind(light.distance);
-                            pointLights++;
-                        } else if (directionalLightColor.length && type === LightType.Directional) {
-                            if (directionalLights >= maxDirectionalLights) continue;
-
-                            VEC3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
-                            if (VEC3.lengthSq() === 0) continue;
-
-                            directionalLightColor[directionalLights].bind(COLOR);
-                            directionalLightDirection[directionalLights].bind(VEC3);
-                            directionalLights++;
-
-                        } else if (spotLightColor.length && type === LightType.Spot) {
-                            if (spotLights >= maxSpotLights) continue;
-
-                            VEC3.positionFromMat4(light.transform.matrixWorld);
-                            if (VEC3.lengthSq() === 0) continue;
-
-                            VEC3_2.copy(VEC3).sub(light.target).normalize();
-                            if (VEC3_2.lengthSq() === 0) continue;
-
-                            spotLightColor[spotLights].bind(COLOR);
-                            spotLightPosition[spotLights].bind(VEC3);
-                            spotLightDirection[spotLights].bind(VEC3_2);
-                            spotLightDistance[spotLights].bind(light.distance);
-                            spotLightAngleCos[spotLights].bind(light._angleCos);
-                            spotLightExponent[spotLights].bind(light.exponent);
-                            spotLights++;
-
-                        } else if (hemiLightColor.length && type === LightType.Hemi) {
-                            if (hemiLights >= maxHemiLights) continue;
-
-                            VEC3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
-                            if (VEC3.lengthSq() === 0) continue;
-
-                            hemiLightColor[hemiLights].bind(COLOR);
-                            hemiLightDirection[hemiLights].bind(VEC3);
-                            hemiLights++;
-                        }
-                    }
-                }
-
-                bindCustomUniforms(program.customUniforms, uniforms, material.name, material.uniforms);
-                _textureIndex = 0;
+                material._webgl.bind(material, transform, camera, lights, ambient);
             };
-
-
-            function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms) {
-                var i = customUniforms.length,
-                    customUniform, uniformValue, length, name, type, value, j;
-
-                while (i--) {
-                    customUniform = customUniforms[i];
-                    name = customUniform.name;
-
-                    uniformValue = uniforms[name];
-                    value = materialUniforms[name];
-
-                    if (!uniformValue) continue;
-                    if (!value) throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
-
-                    if ((length = uniformValue.length)) {
-                        j = length;
-                        while (j--) uniformValue.bind(value[j]);
-                    } else {
-                        uniformValue.bind(value);
-                    }
-                }
-            }
 
 
             var _lastCamera = undefined,
@@ -1508,8 +1316,9 @@ define([
                     ambient = scene.world.ambient,
                     lights = components.Light || EMPTY_ARRAY,
                     meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                    sprites = components.Sprite || EMPTY_ARRAY,
                     particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                    meshFilter, particleSystem, transform,
+                    meshFilter, particleSystem, sprite, transform, transform2d,
                     i;
 
                 for (i = meshFilters.length; i--;) {
@@ -1520,6 +1329,16 @@ define([
 
                     transform.updateMatrices(camera.view);
                     renderMeshFilter(camera, lights, ambient, transform, meshFilter);
+                }
+
+                for (i = sprites.length; i--;) {
+                    sprite = sprites[i];
+                    transform = sprite.transform;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderSprite(camera, lights, ambient, transform, sprite);
                 }
 
                 for (i = particleSystems.length; i--;) {
@@ -1538,40 +1357,16 @@ define([
             };
 
 
-            function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
-                var emitters = particleSystem.emitters,
-                    emitter, i = emitters.length,
-                    material, program, buffers;
-
-                while (i--) {
-                    emitter = emitters[i];
-                    material = emitter.material;
-
-                    program = initEmitterMaterial(material, emitter, lights);
-                    bindMaterial(material, transform, camera, lights, ambient);
-
-                    buffers = initEmitterBuffers(emitter, transform, program.attributes);
-                    if (!buffers.particleCount) continue;
-
-                    setBlending(material.blending);
-                    setCullFace(CullFace.Back);
-
-                    _gl.drawArrays(_gl.POINTS, 0, buffers.particleCount);
-                }
-            }
-
-
             function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
                 var mesh = meshFilter.mesh,
                     material = meshFilter.material,
                     side = material.side,
 
-                    buffers = initMeshBuffers(mesh);
+                    buffers = initMeshBuffers(mesh),
+                    shader = initShader(material, mesh, lights);
 
-                initMaterial(material, mesh, lights)
-
-                bindMaterial(material, transform, camera, lights, ambient);
-                bindMesh(mesh, material);
+                shader.bind(material, transform, camera, lights, ambient);
+                bindMesh(mesh, shader.attributes, material.wireframe);
 
                 setBlending(material.blending);
 
@@ -1588,6 +1383,88 @@ define([
                     _gl.drawElements(_gl.LINES, buffers.lineCount, _gl.UNSIGNED_SHORT, 0);
                 } else {
                     _gl.drawElements(_gl.TRIANGLES, buffers.indexCount, _gl.UNSIGNED_SHORT, 0);
+                }
+            }
+
+
+            function renderSprite(camera, lights, ambient, transform, sprite) {
+                var material = sprite.material,
+                    texture = sprite.texture,
+                    side, buffers, shader;
+
+                if (material) {
+                    side = material.side;
+                    shader = initSpriteShader(material, sprite, lights);
+
+                    shader.bind(material, transform, camera, lights, ambient);
+                    bindSprite(_spriteShader.attributes, material.wireframe);
+
+                    setBlending(material.blending);
+
+                    if (side === Side.Front) {
+                        setCullFace(CullFace.Back);
+                    } else if (side === Side.Back) {
+                        setCullFace(CullFace.Front);
+                    } else if (side === Side.Both) {
+                        setCullFace();
+                    }
+
+                    if (material.wireframe) {
+                        setLineWidth(material.wireframeLineWidth);
+                        _gl.drawArrays(_gl.LINE_LOOP, 0, _spriteBuffers.vertexCount);
+                    } else {
+                        _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers.vertexCount);
+                    }
+                } else if (texture) {
+                    var uniforms = _spriteShader.uniforms,
+                        w, h;
+
+                    if (texture.raw) {
+                        w = texture.invWidth;
+                        h = texture.invHeight;
+                    } else {
+                        return;
+                    }
+
+                    _mat4.mmul(camera.projection, transform.modelView);
+
+                    if (_lastShader !== _spriteShader) {
+                        _gl.useProgram(_spriteShader.program);
+                        _lastShader = _spriteShader;
+                    }
+                    bindSprite(_spriteBuffers, _spriteShader.attributes);
+
+                    uniforms.matrix.bind(_mat4);
+                    uniforms.crop.bind(VEC4.set(sprite.x * w, sprite.y * h, sprite.w * w, sprite.h * h));
+                    uniforms.size.bind(VEC2.set(sprite.width, sprite.height));
+                    uniforms.alpha.bind(sprite.alpha);
+                    uniforms.texture.bind(texture);
+
+                    _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers.vertexCount);
+                    _textureIndex = 0;
+                }
+            }
+
+
+            function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
+                var emitters = particleSystem.emitters,
+                    emitter, i = emitters.length,
+                    material, shader, buffers;
+
+                while (i--) {
+                    emitter = emitters[i];
+                    material = emitter.material;
+
+                    shader = initEmitterShader(material, emitter, lights);
+                    shader.bind(material, transform, camera, lights, ambient);
+
+                    buffers = initEmitterBuffers(emitter, transform, shader.attributes);
+                    if (!buffers.particleCount) continue;
+
+                    setBlending(material.blending);
+                    setCullFace(CullFace.Back);
+
+                    _gl.drawArrays(_gl.POINTS, 0, buffers.particleCount);
                 }
             }
 
@@ -1632,6 +1509,28 @@ define([
                 setBlending(Blending.Default);
 
                 setViewport();
+
+                _spriteBuffers = {};
+                createBuffer(_spriteBuffers, "vertexBuffer", new Float32Array([-0.5, 0.5, 0, -0.5, -0.5, 0,
+                    0.5, 0.5, 0,
+                    0.5, -0.5, 0
+                ]));
+                createBuffer(_spriteBuffers, "uvBuffer", new Float32Array([
+                    0, 0,
+                    0, 1,
+                    1, 0,
+                    1, 1
+                ]));
+                _spriteBuffers.vertexCount = 4;
+                _spriteShader = new SimpleShader(sprite_vertex, sprite_fragment);
+            }
+
+
+            function createBuffer(obj, name, array) {
+
+                obj[name] = obj[name] || _gl.createBuffer();
+                _gl.bindBuffer(_gl.ARRAY_BUFFER, obj[name]);
+                _gl.bufferData(_gl.ARRAY_BUFFER, array, _gl.STATIC_DRAW);
             }
 
 
@@ -1742,12 +1641,306 @@ define([
             this.getExtension = getExtension;
 
 
-            var SHADER_SPLITER = /[\n;]+/,
-                regAttribute = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
-                regUniform = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
-                regDefine = /#define\s+([a-zA-Z_0-9]+)?\s+([0-9]+)?/;
+            function SimpleShader(vertex, fragment) {
+                var precision = "precision " + _precision + " float;\nprecision " + _precision + " int;\n",
 
-            function getUniformsAttributes(vertexShader, fragmentShader, attributes, uniforms) {
+                    glVertexShader = precision + vertex,
+                    glFragmentShader = precision + fragment;
+
+                this.vertex = vertex;
+                this.fragment = fragment;
+
+                this.attributes = {};
+                this.uniforms = {};
+
+                this.program = createProgram(_gl, glVertexShader, glFragmentShader);
+                parseUniformsAttributes(this.program, glVertexShader, glFragmentShader, this.attributes, this.uniforms);
+            }
+
+
+            var HEADER = /([\s\S]*)?(void[\s]+main)/,
+                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
+                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
+
+            function Shader(vertex, fragment, parameters, code, simple) {
+
+                this.vertex = vertex;
+                this.fragment = fragment;
+                this.parameters = parameters;
+                this.code = code;
+
+                this.program = undefined;
+                this.used = 1;
+                this.attributes = undefined;
+                this.uniforms = undefined;
+                this._customAttributes = undefined;
+                this._customUniforms = undefined;
+
+                buildShader(this);
+            }
+
+
+            var _lastProgram = undefined;
+
+            Shader.prototype.bind = function(material, transform, camera, lights, ambient) {
+                var program = this.program,
+                    parameters = this.parameters,
+                    uniforms = this.uniforms,
+                    i, length;
+
+                if (_lastProgram !== program) {
+                    _gl.useProgram(program);
+                    _lastProgram = program;
+                }
+
+                if (uniforms.modelMatrix) uniforms.modelMatrix.bind(transform.matrixWorld);
+                if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.bind(transform.modelView);
+                if (uniforms.projectionMatrix) uniforms.projectionMatrix.bind(camera.projection);
+                if (uniforms.viewMatrix) uniforms.viewMatrix.bind(camera.view);
+                if (uniforms.normalMatrix) uniforms.normalMatrix.bind(transform.normalMatrix);
+                if (uniforms.cameraPosition) uniforms.cameraPosition.bind(_vector3.positionFromMat4(camera.transform.matrixWorld));
+                if (uniforms.ambient) uniforms.ambient.bind(ambient);
+
+                if (parameters.useLights && (length = lights.length)) {
+                    var maxPointLights = parameters.maxPointLights,
+                        maxDirectionalLights = parameters.maxDirectionalLights,
+                        maxSpotLights = parameters.maxSpotLights,
+                        maxHemiLights = parameters.maxHemiLights,
+
+                        pointLights = 0,
+                        pointLightColor = uniforms.pointLightColor,
+                        pointLightPosition = uniforms.pointLightPosition,
+                        pointLightDistance = uniforms.pointLightDistance,
+
+                        directionalLights = 0,
+                        directionalLightColor = uniforms.directionalLightColor,
+                        directionalLightDirection = uniforms.directionalLightDirection,
+
+                        spotLights = 0,
+                        spotLightColor = uniforms.spotLightColor,
+                        spotLightPosition = uniforms.spotLightPosition,
+                        spotLightDirection = uniforms.spotLightDirection,
+                        spotLightDistance = uniforms.spotLightDistance,
+                        spotLightAngleCos = uniforms.spotLightAngleCos,
+                        spotLightExponent = uniforms.spotLightExponent,
+
+                        hemiLights = 0,
+                        hemiLightColor = uniforms.hemiLightColor,
+                        hemiLightDirection = uniforms.hemiLightDirection,
+
+                        light, type;
+
+                    for (i = 0; i &lt; length; i++) {
+                        light = lights[i];
+                        if (!light.visible) continue;
+
+                        type = light.type;
+                        _color.copy(light.color).smul(light.energy);
+
+                        if (pointLightColor.length && type === LightType.Point) {
+                            if (pointLights >= maxPointLights) continue;
+
+                            _vector3.positionFromMat4(light.transform.matrixWorld);
+
+                            pointLightColor[pointLights].bind(_color);
+                            pointLightPosition[pointLights].bind(_vector3);
+                            pointLightDistance[pointLights].bind(light.distance);
+                            pointLights++;
+                        } else if (directionalLightColor.length && type === LightType.Directional) {
+                            if (directionalLights >= maxDirectionalLights) continue;
+
+                            _vector3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            directionalLightColor[directionalLights].bind(_color);
+                            directionalLightDirection[directionalLights].bind(_vector3);
+                            directionalLights++;
+
+                        } else if (spotLightColor.length && type === LightType.Spot) {
+                            if (spotLights >= maxSpotLights) continue;
+
+                            _vector3.positionFromMat4(light.transform.matrixWorld);
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            _vector3_2.copy(_vector3).sub(light.target).normalize();
+                            if (_vector3_2.lengthSq() === 0) continue;
+
+                            spotLightColor[spotLights].bind(_color);
+                            spotLightPosition[spotLights].bind(_vector3);
+                            spotLightDirection[spotLights].bind(_vector3_2);
+                            spotLightDistance[spotLights].bind(light.distance);
+                            spotLightAngleCos[spotLights].bind(light._angleCos);
+                            spotLightExponent[spotLights].bind(light.exponent);
+                            spotLights++;
+
+                        } else if (hemiLightColor.length && type === LightType.Hemi) {
+                            if (hemiLights >= maxHemiLights) continue;
+
+                            _vector3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            hemiLightColor[hemiLights].bind(_color);
+                            hemiLightDirection[hemiLights].bind(_vector3);
+                            hemiLights++;
+                        }
+                    }
+                }
+
+                bindCustomUniforms(this._customUniforms, uniforms, material.name, material.uniforms);
+                _textureIndex = 0;
+            };
+
+            function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms) {
+                var i = customUniforms.length,
+                    customUniform, uniformValue, length, name, type, value, j;
+
+                while (i--) {
+                    customUniform = customUniforms[i];
+                    name = customUniform.name;
+
+                    uniformValue = uniforms[name];
+                    value = materialUniforms[name];
+
+                    if (!uniformValue) continue;
+                    if (!value) throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
+
+                    if ((length = uniformValue.length)) {
+                        j = length;
+                        while (j--) uniformValue.bind(value[j]);
+                    } else {
+                        uniformValue.bind(value);
+                    }
+                }
+            }
+
+            function buildShader(shader) {
+                var parameters = shader.parameters,
+                    vertexShader = shader.vertex,
+                    fragmentShader = shader.fragment,
+                    emitter = parameters.emitter,
+                    useLights = parameters.useLights,
+                    useShadows = parameters.useShadows,
+                    useFog = parameters.useFog,
+                    useBones = parameters.useBones,
+                    useVertexLit = parameters.useVertexLit,
+                    useSpecular = parameters.useSpecular,
+                    OES_standard_derivatives = parameters.OES_standard_derivatives,
+
+                    definesPrefix = [
+                        "precision " + _precision + " float;",
+                        "precision " + _precision + " int;",
+
+                        useLights ? "#define USE_LIGHTS" : "",
+                        useShadows ? "#define USE_SHADOWS" : "",
+                        useBones ? "#define USE_SKINNING" : "",
+
+                        useLights ? "#define MAX_DIR_LIGHTS " + parameters.maxDirectionalLights : "",
+                        useLights ? "#define MAX_POINT_LIGHTS " + parameters.maxPointLights : "",
+                        useLights ? "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights : "",
+                        useLights ? "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights : "",
+
+                        useShadows ? "#define MAX_SHADOWS " + parameters.maxShadows : "",
+                        ""
+                    ].join("\n"),
+
+                    vertexPrefix = [
+                        definesPrefix,
+
+                        "uniform mat4 modelMatrix;",
+                        "uniform mat4 modelViewMatrix;",
+                        "uniform mat4 projectionMatrix;",
+                        "uniform mat4 viewMatrix;",
+                        "uniform mat3 normalMatrix;",
+                        "uniform vec3 cameraPosition;",
+
+                        parameters.positions ? "attribute vec3 position;" : "",
+                        parameters.normals ? "attribute vec3 normal;" : "",
+                        parameters.tangents ? "attribute vec4 tangent;" : "",
+                        parameters.uvs ? "attribute vec2 uv;" : "",
+                        parameters.colors ? "attribute vec3 color;" : "",
+                        emitter ? "attribute vec3 data;" : "",
+
+                        useBones ? "attribute int boneIndex;" : "",
+                        useBones ? "attribute vec3 boneWeight;" : "",
+                        useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
+                    ].join("\n"),
+
+                    fragmentPrefix = [
+                        OES_standard_derivatives ? "#extension GL_OES_standard_derivatives : enable" : "",
+                        definesPrefix,
+
+                        "uniform mat4 viewMatrix;",
+                        "uniform vec3 cameraPosition;"
+                    ].join("\n"),
+
+                    glVertexShader = vertexPrefix + "\n" + vertexShader,
+                    glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
+
+                    main = "void main(void) {\n",
+                    footer = "\n}",
+
+                    vertexHeader = glVertexShader.match(HEADER)[1],
+                    vertexMain = glVertexShader.match(MAIN_FUNCTION)[5],
+                    fragmentHeader = glFragmentShader.match(HEADER)[1],
+                    fragmentMain = glFragmentShader.match(MAIN_FUNCTION)[5];
+
+                if (emitter) {
+                    vertexHeader += ShaderChunks.particle_header;
+                    fragmentHeader += ShaderChunks.particle_header;
+                    vertexMain = ShaderChunks.particle_vertex + vertexMain;
+                }
+
+                if (OES_standard_derivatives) {
+                    if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
+                    if (parameters.useBump) fragmentHeader += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
+                }
+
+                if (useLights) {
+                    if (useVertexLit) {
+                        vertexHeader += ShaderChunks.lights + ShaderChunks.VertexLight;
+                    } else {
+                        vertexHeader += ShaderChunks.perPixelVaryingHeader;
+                        vertexMain = ShaderChunks.perPixelVaryingMain + vertexMain;
+
+                        fragmentHeader += ShaderChunks.lights + ShaderChunks.perPixelVaryingHeader;
+                        if (useSpecular) {
+                            fragmentHeader += ShaderChunks.PixelLight;
+                        } else {
+                            fragmentHeader += ShaderChunks.PixelLightNoSpec;
+                        }
+                    }
+
+                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                    if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
+                    vertexMain = ShaderChunks.worldPosition + vertexMain;
+                } else {
+                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                }
+
+                if (useBones) {
+                    vertexHeader += ShaderChunks.getBoneMatrix;
+                    if (parameters.normals) vertexMain = ShaderChunks.boneNormal + vertexMain;
+                    vertexMain = ShaderChunks.bone + vertexMain;
+                }
+
+                glVertexShader = vertexHeader + main + vertexMain + footer;
+                glFragmentShader = fragmentHeader + main + fragmentMain + footer;
+
+                shader.program = createProgram(_gl, glVertexShader, glFragmentShader);
+
+                parseUniformsAttributesCustom(vertexShader, fragmentShader, (shader._customAttributes = []), (shader._customUniforms = []));
+                parseUniformsAttributes(shader.program, glVertexShader, glFragmentShader, (shader.attributes = {}), (shader.uniforms = {}));
+
+                _programs.push(shader);
+            };
+
+
+            var SHADER_SPLITER = /[\n;]+/,
+                ATTRIBURE = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
+                UNIFORM = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
+                DEFINE = /#define\s+([a-zA-Z_0-9]+)?\s+([0-9]+)?/;
+
+            function parseUniformsAttributesCustom(vertexShader, fragmentShader, attributes, uniforms) {
                 var src = vertexShader + fragmentShader,
                     lines = src.split(SHADER_SPLITER),
                     matchAttributes, matchUniforms,
@@ -1756,8 +1949,8 @@ define([
 
                 for (i = lines.length; i--;) {
                     line = lines[i];
-                    matchAttributes = line.match(regAttribute);
-                    matchUniforms = line.match(regUniform);
+                    matchAttributes = line.match(ATTRIBURE);
+                    matchUniforms = line.match(UNIFORM);
 
                     if (matchAttributes) {
                         attributes.push({
@@ -1781,14 +1974,14 @@ define([
                     i, j;
 
                 for (i = lines.length; i--;) {
-                    matchDefines = lines[i].match(regDefine);
+                    matchDefines = lines[i].match(DEFINE);
                     if (matchDefines) defines[matchDefines[1]] = Number(matchDefines[2]);
                 }
 
                 for (i = lines.length; i--;) {
                     line = lines[i];
-                    matchAttributes = line.match(regAttribute);
-                    matchUniforms = line.match(regUniform);
+                    matchAttributes = line.match(ATTRIBURE);
+                    matchUniforms = line.match(UNIFORM);
 
                     if (matchAttributes) {
                         name = matchAttributes[3];
@@ -1808,6 +2001,7 @@ define([
                     }
                 }
             }
+
 
             function createUniform(type, location) {
 
@@ -1886,7 +2080,7 @@ define([
             }
             Uniform4f.prototype.bind = function(value) {
                 if (this.value.notEquals(value)) {
-                    _gl.uniform4f(this.location, value.x, value.y, value.z);
+                    _gl.uniform4f(this.location, value.x, value.y, value.z, value.w);
                     this.value.copy(value);
                 }
             };
@@ -1954,6 +2148,38 @@ define([
         EventEmitter.extend(Renderer);
 
 
+        var sprite_vertex = [
+            "uniform mat4 matrix;",
+            "uniform vec4 crop;",
+            "uniform vec2 size;",
+
+            "attribute vec2 position;",
+            "attribute vec2 uv;",
+
+            "varying vec2 vUv;",
+
+            "void main() {",
+
+            "	vUv = vec2(uv.x * crop.z, uv.y * crop.w) + crop.xy;",
+            "	gl_Position = matrix * vec4(position * size, 0.0, 1.0);",
+            "}"
+        ].join("\n");
+
+        var sprite_fragment = [
+            "uniform float alpha;",
+            "uniform sampler2D texture;",
+
+            "varying vec2 vUv;",
+
+            "void main() {",
+            "	vec4 finalColor = texture2D(texture, vUv);",
+            "	finalColor.w *= alpha;",
+
+            "	gl_FragColor = finalColor;",
+            "}"
+        ].join("\n");
+
+
         return Renderer;
     }
 );
@@ -1973,7 +2199,7 @@ define([
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 24 2014 20:31:59 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Feb 25 2014 19:17:01 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

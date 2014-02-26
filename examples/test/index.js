@@ -4,8 +4,8 @@ require({
         "odin/odin"
     ],
     function(Odin) {
-        Odin.globalize();
 
+        Odin.globalize();
 
         var random = Math.random,
             PI = Math.PI,

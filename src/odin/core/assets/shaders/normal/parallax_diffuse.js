@@ -16,7 +16,7 @@ define([
 
                 lights: true,
                 specular: false,
-                standardDerivatives: true,
+                OES_standard_derivatives: true,
 
                 vertex: [
                     "varying vec2 vUv;",

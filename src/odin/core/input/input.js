@@ -89,6 +89,7 @@ define([
 
                 } else if (type === AxisType.Mouse) {
                     axis.value = this.mouseDelta[axis.axis];
+                    continue;
 
                 } else if (type === AxisType.Touch) {
                     touch = this.touches[axis.index];

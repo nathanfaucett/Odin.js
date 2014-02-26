@@ -12,7 +12,7 @@ define([
         "odin/math/vec3",
         "odin/math/mat4",
         "odin/math/color",
-        "odin/core/rendering/shader_chunks",
+        "odin/core/renderer/shader_chunks",
         "odin/core/game/log",
         "odin/core/enums"
     ],

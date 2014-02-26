@@ -115,8 +115,6 @@ define([
                 _canvas = canvas;
                 _element = canvas.element;
 
-                _lastUniforms = {};
-
                 initGL();
                 _context = true;
                 setDefaultGLState();
@@ -136,7 +134,7 @@ define([
                     1, 1
                 ]));
                 _spriteBuffers.vertexCount = 4;
-                _spriteShader = createShader(sprite_vertex, sprite_fragment);
+                _spriteShader = new Shader(sprite_vertex, sprite_fragment);
 
                 return this;
             };
@@ -186,7 +184,6 @@ define([
                 _lastDepthWrite = -1;
                 _lastLineWidth = -1;
 
-                _lastUniforms = undefined;
                 _lastBuffer = undefined,
                 _lastShader = undefined;
 
@@ -448,223 +445,9 @@ define([
             this.clearStencil = clearStencil;
 
 
-            var _lastUniforms;
-
-
-
-            function setUniform(force, location, value, key, type, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (type === "int") {
-                    if (force || state !== value) {
-                        _gl.uniform1i(location, value);
-                        lastUniforms[key] = value;
-                    }
-                } else if (type === "float") {
-                    if (force || state !== value) {
-                        _gl.uniform1f(location, value);
-                        lastUniforms[key] = value;
-                    }
-                } else if (type === "vec2") {
-                    if (force || !state || (state.x !== value.x || state.y !== value.y)) {
-                        _gl.uniform2f(location, value.x, value.y);
-                        state || (lastUniforms[key] = state = value.clone());
-                        state.x = value.x;
-                        state.y = value.y;
-                    }
-                } else if (type === "vec3") {
-                    if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
-                        _gl.uniform3f(location, value.x, value.y, value.z);
-                        state || (lastUniforms[key] = state = value.clone());
-                        state.x = value.x;
-                        state.y = value.y;
-                        state.z = value.z;
-                    }
-                } else if (type === "vec4") {
-                    if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
-                        _gl.uniform3f(location, value.x, value.y, value.z, value.w);
-                        state || (lastUniforms[key] = state = value.clone());
-                        state.x = value.x;
-                        state.y = value.y;
-                        state.z = value.z;
-                        state.w = value.w;
-                    }
-                } else if (type === "mat2") {
-                    if (force || !state || !state.equals(value)) {
-                        _gl.uniformMatrix2fv(force, location, false, value.elements);
-                        (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                    }
-                } else if (type === "mat3") {
-                    if (force || !state || !state.equals(value)) {
-                        _gl.uniformMatrix3fv(force, location, false, value.elements);
-                        (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                    }
-                } else if (type === "mat4") {
-                    if (force || !state || !state.equals(value)) {
-                        _gl.uniformMatrix4fv(force, location, false, value.elements);
-                        (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                    }
-                } else if (type === "sampler2D") {
-                    setTexture(force, location, value, key);
-                }
-            }
-
-
-            function setUniform1i(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || state !== value) {
-                    _gl.uniform1i(location, value);
-                    lastUniforms[key] = value;
-                }
-            }
-
-
-            function setUniform1f(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || state !== value) {
-                    _gl.uniform1f(location, value);
-                    lastUniforms[key] = value;
-                }
-            }
-
-
-            function setUniform2f(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || (state.x !== value.x || state.y !== value.y)) {
-                    _gl.uniform2f(location, value.x, value.y);
-                    state || (lastUniforms[key] = state = value.clone());
-                    state.x = value.x;
-                    state.y = value.y;
-                }
-            }
-
-
-            function setUniform3f(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z)) {
-                    _gl.uniform3f(location, value.x, value.y, value.z);
-                    state || (lastUniforms[key] = state = value.clone());
-                    state.x = value.x;
-                    state.y = value.y;
-                    state.z = value.z;
-                }
-            }
-
-
-            function setUniform4f(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || (state.x !== value.x || state.y !== value.y || state.z !== value.z || state.w !== value.w)) {
-                    _gl.uniform4f(location, value.x, value.y, value.z, value.w);
-                    state || (lastUniforms[key] = state = value.clone());
-                    state.x = value.x;
-                    state.y = value.y;
-                    state.z = value.z;
-                    state.w = value.w;
-                }
-            }
-
-
-            function setUniformMatrix2fv(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || !state.equals(value)) {
-                    _gl.uniformMatrix2fv(location, false, value.elements);
-                    (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                }
-            }
-
-
-            function setUniformMatrix3fv(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || !state.equals(value)) {
-                    _gl.uniformMatrix3fv(location, false, value.elements);
-                    (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                }
-            }
-
-
-            function setUniformMatrix4fv(force, location, value, key, isArray, index) {
-                var lastUniforms = _lastUniforms,
-                    state;
-
-                if (isArray) {
-                    lastUniforms = lastUniforms[key] || (lastUniforms[key] = []);
-                    key = index;
-                }
-                state = lastUniforms[key];
-
-                if (force || !state || !state.equals(value)) {
-                    _gl.uniformMatrix4fv(location, false, value.elements);
-                    (state || (lastUniforms[key] = state = value.clone())).copy(value);
-                }
-            }
-
-
             var _textureIndex = 0;
 
-            function setTexture(force, location, texture, key) {
+            function setTexture(location, texture, key) {
                 if (!texture || !texture.raw) return;
                 var index, glTexture;
 
@@ -675,7 +458,7 @@ define([
 
                     _gl.activeTexture(_gl.TEXTURE0 + index);
                     _gl.bindTexture(_gl.TEXTURE_2D, glTexture);
-                    setUniform1i(force, location, index, key);
+                    _gl.uniform1i(location, index);
 
                     return;
                 }
@@ -780,33 +563,10 @@ define([
             }
 
 
-            function createShader(vertex, fragment) {
-                var precision = [
-                    "precision " + _precision + " float;",
-                    "precision " + _precision + " int;",
-                    "",
-                ].join("\n"),
-
-                    glVertexShader = precision + vertex,
-                    glFragmentShader = precision + fragment,
-
-                    webglProgram = createProgram(_gl, glVertexShader, glFragmentShader),
-                    shader = {
-                        program: webglProgram,
-                        uniforms: {},
-                        attributes: {}
-                    };
-
-                parseUniformsAttributes(_gl, webglProgram, glVertexShader, glFragmentShader, shader.attributes, shader.uniforms);
-
-                return shader;
-            }
-
-
             var _lastBuffer = undefined,
                 _lastShader = undefined;
 
-            function bindBuffer(buffers, attributes) {
+            function bindBuffers(buffers, attributes) {
                 if (_lastBuffer === buffers) return;
                 var ARRAY_BUFFER = _gl.ARRAY_BUFFER,
                     FLOAT = _gl.FLOAT;
@@ -934,14 +694,13 @@ define([
                     force = true;
                     _lastShader = _spriteShader;
                 }
-                bindBuffer(_spriteBuffers, _spriteShader.attributes);
+                bindBuffers(_spriteBuffers, _spriteShader.attributes);
 
-                setUniformMatrix4fv(force, uniforms.matrix.location, MAT4, "matrix");
-                setUniform4f(force, uniforms.crop.location, VEC4.set(sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h), "crop");
-                setUniform2f(force, uniforms.size.location, VEC2.set(sprite2d.width, sprite2d.height), "size");
-                setUniform1f(force, uniforms.alpha.location, sprite2d.alpha, "alpha");
-
-                setTexture(force, uniforms.texture.location, texture, "texture");
+                uniforms.matrix.bind(MAT4);
+                uniforms.crop.bind(VEC4.set(sprite2d.x * w, sprite2d.y * h, sprite2d.w * w, sprite2d.h * h));
+                uniforms.size.bind(VEC2.set(sprite2d.width, sprite2d.height));
+                uniforms.alpha.bind(sprite2d.alpha);
+                uniforms.texture.bind(texture);
 
                 _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers.vertexCount);
                 _textureIndex = 0;
@@ -1094,6 +853,243 @@ define([
                 return extension;
             }
             this.getExtension = getExtension;
+
+
+            var HEADER = /([\s\S]*)?(void[\s]+main)/,
+                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
+                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
+
+            function Shader(vertex, fragment) {
+
+                this.vertex = vertex;
+                this.fragment = fragment;
+
+                this.program = undefined;
+                this.attributes = undefined;
+                this.uniforms = undefined;
+
+                buildShader(this);
+            }
+
+            function buildShader(shader) {
+                var precision = "precision " + _precision + " float;\nprecision " + _precision + " int;\n",
+
+                    glVertexShader = precision + shader.vertex,
+                    glFragmentShader = precision + shader.fragment;
+
+                shader.program = createProgram(_gl, glVertexShader, glFragmentShader);
+                parseUniformsAttributes(shader.program, glVertexShader, glFragmentShader, (shader.attributes = {}), (shader.uniforms = {}));
+            };
+
+
+            var SHADER_SPLITER = /[\n;]+/,
+                ATTRIBURE = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
+                UNIFORM = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
+                DEFINE = /#define\s+([a-zA-Z_0-9]+)?\s+([0-9]+)?/;
+
+            function parseUniformsAttributesCustom(vertexShader, fragmentShader, attributes, uniforms) {
+                var src = vertexShader + fragmentShader,
+                    lines = src.split(SHADER_SPLITER),
+                    matchAttributes, matchUniforms,
+                    name, length, line,
+                    i, j;
+
+                for (i = lines.length; i--;) {
+                    line = lines[i];
+                    matchAttributes = line.match(ATTRIBURE);
+                    matchUniforms = line.match(UNIFORM);
+
+                    if (matchAttributes) {
+                        attributes.push({
+                            type: matchAttributes[2],
+                            name: matchAttributes[3]
+                        });
+                    } else if (matchUniforms) {
+                        uniforms.push({
+                            type: matchUniforms[2],
+                            name: matchUniforms[3]
+                        });
+                    }
+                }
+            }
+
+            function parseUniformsAttributes(program, vertexShader, fragmentShader, attributes, uniforms) {
+                var src = vertexShader + fragmentShader,
+                    lines = src.split(SHADER_SPLITER),
+                    defines = {}, matchAttributes, matchUniforms, matchDefines,
+                    uniformArray, name, location, type, length, line,
+                    i, j;
+
+                for (i = lines.length; i--;) {
+                    matchDefines = lines[i].match(DEFINE);
+                    if (matchDefines) defines[matchDefines[1]] = Number(matchDefines[2]);
+                }
+
+                for (i = lines.length; i--;) {
+                    line = lines[i];
+                    matchAttributes = line.match(ATTRIBURE);
+                    matchUniforms = line.match(UNIFORM);
+
+                    if (matchAttributes) {
+                        name = matchAttributes[3];
+                        attributes[name] = _gl.getAttribLocation(program, name);
+                    } else if (matchUniforms) {
+                        type = matchUniforms[2];
+                        name = matchUniforms[3];
+                        length = matchUniforms[5];
+
+                        if (length) {
+                            length = defines[length.trim()] || length;
+                            uniformArray = uniforms[name] = [];
+                            for (j = length; j--;) uniformArray[j] = createUniform(type, _gl.getUniformLocation(program, name + "[" + j + "]"));
+                        } else {
+                            uniforms[name] = createUniform(type, _gl.getUniformLocation(program, name));
+                        }
+                    }
+                }
+            }
+
+
+            function createUniform(type, location) {
+
+                if (type === "int") {
+                    return new Uniform1i(location);
+                } else if (type === "float") {
+                    return new Uniform1f(location);
+                } else if (type === "vec2") {
+                    return new Uniform2f(location);
+                } else if (type === "vec3") {
+                    return new Uniform3f(location);
+                } else if (type === "vec4") {
+                    return new Uniform4f(location);
+                } else if (type === "mat2") {
+                    return new UniformMatrix2fv(location);
+                } else if (type === "mat3") {
+                    return new UniformMatrix3fv(location);
+                } else if (type === "mat4") {
+                    return new UniformMatrix4fv(location);
+                } else if (type === "sampler2D") {
+                    return new UniformTexture(location);
+                } else if (type === "samplerCube") {
+                    return new UniformTextureCube(location);
+                }
+
+                return null;
+            }
+
+            function Uniform1f(location) {
+                this.location = location;
+                this.value = undefined;
+            }
+            Uniform1f.prototype.bind = function(value) {
+                if (this.value !== value) {
+                    _gl.uniform1f(this.location, value);
+                    this.value = value;
+                }
+            };
+
+            function Uniform1i(location) {
+                this.location = location;
+                this.value = undefined;
+            }
+            Uniform1i.prototype.bind = function(value) {
+                if (this.value !== value) {
+                    _gl.uniform1i(this.location, value);
+                    this.value = value;
+                }
+            };
+
+            function Uniform2f(location) {
+                this.location = location;
+                this.value = new Vec2(NaN, NaN);
+            }
+            Uniform2f.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniform2f(this.location, value.x, value.y);
+                    this.value.copy(value);
+                }
+            };
+
+            function Uniform3f(location) {
+                this.location = location;
+                this.value = new Vec3(NaN, NaN, NaN);
+            }
+            Uniform3f.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniform3f(this.location, value.x, value.y, value.z);
+                    this.value.copy(value);
+                }
+            };
+
+            function Uniform4f(location) {
+                this.location = location;
+                this.value = new Vec4(NaN, NaN, NaN, NaN);
+            }
+            Uniform4f.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniform4f(this.location, value.x, value.y, value.z, value.w);
+                    this.value.copy(value);
+                }
+            };
+
+            function UniformMatrix2fv(location) {
+                this.location = location;
+                this.value = new Mat2(
+                    NaN, NaN,
+                    NaN, NaN
+                );
+            }
+            UniformMatrix2fv.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniformMatrix2fv(this.location, false, value.elements);
+                    this.value.copy(value);
+                }
+            };
+
+            function UniformMatrix3fv(location) {
+                this.location = location;
+                this.value = new Mat3(
+                    NaN, NaN, NaN,
+                    NaN, NaN, NaN,
+                    NaN, NaN, NaN
+                );
+            }
+            UniformMatrix3fv.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniformMatrix3fv(this.location, false, value.elements);
+                    this.value.copy(value);
+                }
+            };
+
+            function UniformMatrix4fv(location) {
+                this.location = location;
+                this.value = new Mat4(
+                    NaN, NaN, NaN, NaN,
+                    NaN, NaN, NaN, NaN,
+                    NaN, NaN, NaN, NaN,
+                    NaN, NaN, NaN, NaN
+                );
+            }
+            UniformMatrix4fv.prototype.bind = function(value) {
+                if (this.value.notEquals(value)) {
+                    _gl.uniformMatrix4fv(this.location, false, value.elements);
+                    this.value.copy(value);
+                }
+            };
+
+            function UniformTexture(location) {
+                this.location = location;
+            }
+            UniformTexture.prototype.bind = function(value) {
+                setTexture(this.location, value);
+            };
+
+            function UniformTextureCube(location) {
+                this.location = location;
+            }
+            UniformTextureCube.prototype.bind = function(value) {
+                setTextureCube(this.location, value);
+            };
         }
 
         EventEmitter.extend(Renderer);
@@ -1150,7 +1146,7 @@ define([
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Mon Feb 24 2014 20:31:59 GMT-0600 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Feb 25 2014 19:17:01 GMT-0600 (CST)
 </footer>
 
 <script> prettyPrint(); </script>

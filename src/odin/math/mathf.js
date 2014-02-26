@@ -70,11 +70,9 @@ define(
              * @memberof Odin.Mathf
              */
             this.TO_DEGS = TO_DEGS;
-
-
-            this._classes = {};
         }
 
+        Mathf.prototype._classes = {};
 
         Mathf.prototype.acos = Math.acos;
         Mathf.prototype.asin = Math.asin;
@@ -473,13 +471,32 @@ define(
         };
 
         /**
-         * @method toPowerOfTwo
+         * @method floorPowerOfTwo
          * @memberof Odin.Mathf
-         * returns number's next power of 2
+         * returns number's floor power of 2
          * @param Number x
          * @return Number
          */
-        Mathf.prototype.toPowerOfTwo = function(x) {
+        Mathf.prototype.floorPowerOfTwo = function(x) {
+            var i = 2,
+                prev;
+
+            while (i < x) {
+                prev = i;
+                i *= 2;
+            }
+
+            return prev;
+        };
+
+        /**
+         * @method ceilPowerOfTwo
+         * @memberof Odin.Mathf
+         * returns number's ceil power of 2
+         * @param Number x
+         * @return Number
+         */
+        Mathf.prototype.ceilPowerOfTwo = function(x) {
             var i = 2;
 
             while (i < x) {
@@ -502,14 +519,6 @@ define(
         };
 
 
-        var RIGHT = "right",
-            UP_RIGHT = "up_right",
-            UP = "up",
-            UP_LEFT = "up_left",
-            LEFT = "left",
-            DOWN_LEFT = "down_left",
-            DOWN = "down",
-            DOWN_RIGHT = "down_right";
         /**
          * @method directionAngle
          * @memberof Odin.Mathf
@@ -526,7 +535,16 @@ define(
             n2025 = 3.5342917352885173,
             n2475 = 4.319689898685966,
             n2925 = 5.105088062083414,
-            n3375 = 5.8904862254808625;
+            n3375 = 5.8904862254808625,
+
+            RIGHT = "right",
+            UP_RIGHT = "up_right",
+            UP = "up",
+            UP_LEFT = "up_left",
+            LEFT = "left",
+            DOWN_LEFT = "down_left",
+            DOWN = "down",
+            DOWN_RIGHT = "down_right";
 
         Mathf.prototype.directionAngle = function(a) {
             a = standardRadian(a);

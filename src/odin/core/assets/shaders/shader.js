@@ -14,7 +14,7 @@ define([
 
             Asset.call(this, opts);
 
-            this.fallback = opts.fallback || "shader_unlit";
+            this.fallback = opts.fallback || "";
 
             this.vertex = opts.vertex || "void main(void) {}";
             this.fragment = opts.fragment || "void main(void) {}";
@@ -25,7 +25,7 @@ define([
             this.shadows = opts.shadows != undefined ? opts.shadows : false;
             this.fog = opts.fog != undefined ? opts.fog : false;
 
-            this.standardDerivatives = opts.standardDerivatives != undefined ? opts.standardDerivatives : false;
+            this.OES_standard_derivatives = opts.OES_standard_derivatives != undefined ? opts.OES_standard_derivatives : false;
         }
 
         Asset.extend(Shader);
@@ -45,7 +45,7 @@ define([
             this.shadows = other.shadows;
             this.fog = other.fog;
 
-            this.standardDerivatives = other.standardDerivatives;
+            this.OES_standard_derivatives = other.OES_standard_derivatives;
 
             return this;
         };
@@ -84,7 +84,7 @@ define([
             json.shadows = this.shadows;
             json.fog = this.fog;
 
-            json.standardDerivatives = this.standardDerivatives;
+            json.OES_standard_derivatives = this.OES_standard_derivatives;
 
             return json;
         };
@@ -104,7 +104,7 @@ define([
             this.shadows = json.shadows;
             this.fog = json.fog;
 
-            this.standardDerivatives = json.standardDerivatives;
+            this.OES_standard_derivatives = json.OES_standard_derivatives;
 
             return this;
         };

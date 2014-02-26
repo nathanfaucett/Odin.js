@@ -240,6 +240,12 @@ define([
         };
 
 
+        Transform.prototype.hasChild = function(child) {
+
+            return !!~this.children.indexOf(child);
+        };
+
+
         Transform.prototype.toWorld = function(v) {
 
             return v.transformMat4(this.matrixWorld);
@@ -289,6 +295,11 @@ define([
 
         Transform.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
+            var children = this.children,
+                jsonChildren = json.children || (json.children = []),
+                i = children.length;
+
+            while (i--) jsonChildren[i] = children[i]._id;
 
             json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);
@@ -300,6 +311,29 @@ define([
 
         Transform.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
+            var children = json.children,
+                i = children.length,
+                child;
+
+            if (this.gameObject && this.gameObject.scene) {
+                while (i--) {
+                    child = this.gameObject.scene.findComponentByJSONId(children[i]);
+
+                    if (!this.hasChild(child)) {
+                        this.addChild(child);
+                    }
+                }
+            } else {
+                this.once("init", function() {
+                    while (i--) {
+                        child = this.gameObject.scene.findComponentByJSONId(children[i]);
+
+                        if (!this.hasChild(child)) {
+                            this.addChild(child);
+                        }
+                    }
+                });
+            }
 
             this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);

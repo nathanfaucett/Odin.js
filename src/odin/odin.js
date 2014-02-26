@@ -82,10 +82,6 @@ define(
             this.World = require("odin/core/world/world");
             this.World2D = require("odin/core/world/world_2d");
 
-            this.CanvasRenderer2D = require("odin/core/rendering/canvas_renderer_2d");
-            this.WebGLRenderer = require("odin/core/rendering/webgl_renderer");
-            this.WebGLRenderer2D = require("odin/core/rendering/webgl_renderer_2d");
-
             this.Enums = require("odin/core/enums");
             this.GameObject = require("odin/core/game_object");
             this.Prefab = require("odin/core/prefab");

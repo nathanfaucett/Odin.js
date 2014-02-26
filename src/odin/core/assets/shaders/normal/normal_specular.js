@@ -17,7 +17,7 @@ define([
                 fallback: "specular",
 
                 lights: true,
-                standardDerivatives: true,
+                OES_standard_derivatives: true,
 
                 vertex: [
                     "varying vec2 vUv;",
