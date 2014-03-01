@@ -22,13 +22,13 @@ define([
              * @property Number x
              * @memberof Odin.Vec2
              */
-            this.x = x || 0;
+            this.x = x || 0.0;
 
             /**
              * @property Number y
              * @memberof Odin.Vec2
              */
-            this.y = y || 0;
+            this.y = y || 0.0;
         }
 
         Mathf._classes["Vec2"] = Vec2;
@@ -224,8 +224,8 @@ define([
             var x = other.x,
                 y = other.y;
 
-            this.x *= x !== 0 ? 1 / x : 0;
-            this.y *= y !== 0 ? 1 / y : 0;
+            this.x *= x !== 0.0 ? 1.0 / x : 0.0;
+            this.y *= y !== 0.0 ? 1.0 / y : 0.0;
 
             return this;
         };
@@ -242,8 +242,8 @@ define([
             var x = b.x,
                 y = b.y;
 
-            this.x = x !== 0 ? a.x / x : 0;
-            this.y = y !== 0 ? a.y / y : 0;
+            this.x = x !== 0.0 ? a.x / x : 0.0;
+            this.y = y !== 0.0 ? a.y / y : 0.0;
 
             return this;
         };
@@ -256,7 +256,7 @@ define([
          * @return this
          */
         Vec2.prototype.sdiv = function(s) {
-            s = s === 0 ? 0 : 1 / s;
+            s = s === 0.0 ? 0.0 : 1.0 / s;
 
             this.x *= s;
             this.y *= s;
@@ -277,7 +277,7 @@ define([
 
             if (lsq === 1) return 1;
 
-            return lsq > 0 ? sqrt(lsq) : 0;
+            return lsq > 0.0 ? sqrt(lsq) : 0.0;
         };
 
         /**
@@ -312,7 +312,7 @@ define([
                 return this;
             }
 
-            l = l > 0 ? 1 / sqrt(l) : 0;
+            l = l > 0.0 ? 1.0 / sqrt(l) : 0.0;
 
             this.x *= l * length;
             this.y *= l * length;
@@ -333,7 +333,7 @@ define([
 
             if (l === 1) return this;
 
-            l = l > 0 ? 1 / sqrt(l) : 0;
+            l = l > 0.0 ? 1.0 / sqrt(l) : 0.0;
 
             this.x *= l;
             this.y *= l;

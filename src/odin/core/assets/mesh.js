@@ -29,13 +29,14 @@ define([
             this.colors = opts.colors != undefined ? opts.colors : [];
 
             this.uvs = opts.uvs != undefined ? opts.uvs : [];
+            this.uvs2 = opts.uvs2 != undefined ? opts.uvs2 : [];
 
             this.bones = opts.bones != undefined ? opts.bones : [];
             this.boneIndices = opts.boneIndices != undefined ? opts.boneIndices : [];
             this.boneWeights = opts.boneWeights != undefined ? opts.boneWeights : [];
 
             this.dynamic = opts.dynamic != undefined ? !! opts.dynamic : false;
-            this.useBones = opts.useBones != undefined ? !! opts.useBones : false;
+            this.useBones = opts.useBones != undefined ? !! opts.useBones : this.bones.length > 0 ? true : false;
 
             this.aabb = new AABB3;
             if (opts.vertices) this.aabb.fromPoints(this.vertices);
@@ -48,9 +49,42 @@ define([
             this.indicesNeedUpdate = true;
             this.colorsNeedUpdate = true;
             this.uvsNeedUpdate = true;
+            this.uvs2NeedUpdate = true;
 
             this.boneIndicesNeedUpdate = true;
             this.boneWeightsNeedUpdate = true;
+
+            this._webglBuffersInitted = undefined;
+            this._webglUsed = 0;
+
+            this._webglVertexBuffer = undefined;
+            this._webglNormalBuffer = undefined;
+            this._webglTangentBuffer = undefined;
+            this._webglColorBuffer = undefined;
+            this._webglUvBuffer = undefined;
+            this._webglUv2Buffer = undefined;
+
+            this._webglBoneIndicesBuffer = undefined;
+            this._webglBoneWeightsBuffer = undefined;
+
+            this._webglIndexBuffer = undefined;
+            this._webglLineBuffer = undefined;
+
+            this._webglVertexArray = undefined;
+            this._webglNormalArray = undefined;
+            this._webglTangentArray = undefined;
+            this._webglColorArray = undefined;
+            this._webglUvArray = undefined;
+            this._webglUv2Array = undefined;
+
+            this._webglBoneIndicesArray = undefined;
+            this._webglBoneWeightsArray = undefined;
+
+            this._webglIndexArray = undefined;
+            this._webglLineArray = undefined;
+
+            this._webglVertexCount = undefined;
+            this._webglLineCount = undefined;
 
             if (opts.json) this.fromJSON(opts.json);
         }
@@ -72,6 +106,8 @@ define([
                 otherColors = other.colors,
                 uvs = this.uvs,
                 otherUvs = other.uvs,
+                uvs2 = this.uvs2,
+                otherUv2s = other.uvs2,
                 bones = this.bones,
                 otherBones = other.bones,
                 boneIndices = this.boneIndices,
@@ -86,6 +122,7 @@ define([
             indices.length = otherIndices.length;
             colors.length = otherColors.length;
             uvs.length = otherUvs.length;
+            uvs2.length = otherUv2s.length;
 
             bones.length = otherBones.length;
             boneIndices.length = otherBoneIndices.length;
@@ -97,6 +134,7 @@ define([
             for (i = otherIndices.length; i--;) indices[i] = otherIndices[i];
             for (i = otherColors.length; i--;) colors[i] = (colors[i] || new Color).copy(otherColors[i]);
             for (i = otherUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).copy(otherUvs[i]);
+            for (i = otherUv2s.length; i--;) uvs2[i] = (uvs2[i] || new Vec2).copy(otherUv2s[i]);
             for (i = otherBones.length; i--;) bones[i] = (bones[i] || new Bone).copy(otherBones[i]);
             for (i = otherBoneIndices.length; i--;) boneIndices[i] = otherBoneIndices[i];
             for (i = otherBoneWeights.length; i--;) boneWeights[i] = otherBoneWeights[i];
@@ -112,6 +150,7 @@ define([
             this.indicesNeedUpdate = true;
             this.colorsNeedUpdate = true;
             this.uvsNeedUpdate = true;
+            this.uvs2NeedUpdate = true;
             this.boneIndicesNeedUpdate = true;
             this.boneWeightsNeedUpdate = true;
 
@@ -128,6 +167,7 @@ define([
             this.indices.length = 0;
             this.colors.length = 0;
             this.uvs.length = 0;
+            this.uvs2.length = 0;
 
             this.bones.length = 0;
             this.boneIndices.length = 0;
@@ -141,6 +181,7 @@ define([
             this.indicesNeedUpdate = true;
             this.colorsNeedUpdate = true;
             this.uvsNeedUpdate = true;
+            this.uvs2NeedUpdate = true;
             this.boneIndicesNeedUpdate = true;
             this.boneWeightsNeedUpdate = true;
 
@@ -158,13 +199,14 @@ define([
                 indices = this.indices,
                 colors = this.colors,
                 uvs = this.uvs,
+                uvs2 = this.uvs2,
                 bones = this.bones,
                 boneWeights = this.boneWeights,
                 boneIndices = this.boneIndices,
                 bone, items, item,
                 i, il;
 
-            vertices.length = normals.length = tangents.length = indices.length = colors.length = uvs.length = 0;
+            vertices.length = normals.length = tangents.length = indices.length = colors.length = uvs.length = uvs2.length = 0;
             bones.length = boneWeights.length = boneIndices.length = 0;
 
             items = raw.vertices || EMPTY_ARRAY;
@@ -184,6 +226,9 @@ define([
 
             items = raw.uvs || EMPTY_ARRAY;
             for (i = 0, il = items.length; i < il; i += 2) uvs.push(new Vec2(items[i], items[i + 1]));
+
+            items = raw.uvs2 || EMPTY_ARRAY;
+            for (i = 0, il = items.length; i < il; i += 2) uvs2.push(new Vec2(items[i], items[i + 1]));
 
             items = raw.bones || EMPTY_ARRAY;
             for (i = 0, il = items.length; i < il; i++) {
@@ -221,6 +266,7 @@ define([
             this.indicesNeedUpdate = true;
             this.colorsNeedUpdate = true;
             this.uvsNeedUpdate = true;
+            this.uvs2NeedUpdate = true;
             this.boneIndicesNeedUpdate = true;
             this.boneWeightsNeedUpdate = true;
 
@@ -397,6 +443,8 @@ define([
                 jsonColors = json.colors || (json.colors = []),
                 uvs = this.uvs,
                 jsonUvs = json.uvs || (json.uvs = []),
+                uvs2 = this.uvs2,
+                jsonUv2s = json.uvs2 || (json.uvs2 = []),
                 bones = this.bones,
                 jsonBones = json.bones || (json.bones = []),
                 boneIndices = this.boneIndices,
@@ -411,6 +459,7 @@ define([
             jsonIndices.length = indices.length;
             jsonColors.length = colors.length;
             jsonUvs.length = uvs.length;
+            jsonUv2s.length = uvs2.length;
 
             jsonBones.length = bones.length;
             jsonBoneIndices.length = boneIndices.length;
@@ -422,6 +471,7 @@ define([
             for (i = indices.length; i--;) indices[i] = jsonIndices[i];
             for (i = colors.length; i--;) jsonColors[i] = colors[i].toJSON(jsonColors[i]);
             for (i = uvs.length; i--;) jsonUvs[i] = uvs[i].toJSON(jsonUvs[i]);
+            for (i = uvs2.length; i--;) jsonUv2s[i] = uvs2[i].toJSON(jsonUv2s[i]);
             for (i = bones.length; i--;) jsonBones[i] = bones[i].toJSON(jsonBones[i]);
             for (i = boneIndices.length; i--;) boneIndices[i] = jsonBoneIndices[i];
             for (i = boneWeights.length; i--;) boneWeights[i] = jsonBoneWeights[i];
@@ -447,6 +497,8 @@ define([
                 jsonColors = json.colors,
                 uvs = this.uvs,
                 jsonUvs = json.uvs,
+                uvs2 = this.uvs2,
+                jsonUv2s = json.uvs2,
                 bones = this.bones,
                 jsonBones = json.bones,
                 boneIndices = this.boneIndices,
@@ -461,6 +513,7 @@ define([
             indices.length = jsonIndices.length;
             colors.length = jsonColors.length;
             uvs.length = jsonUvs.length;
+            uvs2.length = jsonUv2s.length;
 
             bones.length = jsonBones.length;
             boneIndices.length = jsonBoneIndices.length;
@@ -472,6 +525,7 @@ define([
             for (i = jsonIndices.length; i--;) indices[i] = jsonIndices[i];
             for (i = jsonColors.length; i--;) colors[i] = (colors[i] || new Color).fromJSON(jsonColors[i]);
             for (i = jsonUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).fromJSON(jsonUvs[i]);
+            for (i = jsonUv2s.length; i--;) uvs2[i] = (uvs2[i] || new Vec2).fromJSON(jsonUv2s[i]);
             for (i = jsonBones.length; i--;) bones[i] = (bones[i] || new Bone).fromJSON(jsonBones[i]);
             for (i = jsonBoneIndices.length; i--;) boneIndices[i] = jsonBoneIndices[i];
             for (i = jsonBoneWeights.length; i--;) boneWeights[i] = jsonBoneWeights[i];
@@ -487,6 +541,7 @@ define([
             this.indicesNeedUpdate = true;
             this.colorsNeedUpdate = true;
             this.uvsNeedUpdate = true;
+            this.uvs2NeedUpdate = true;
             this.boneIndicesNeedUpdate = true;
             this.boneWeightsNeedUpdate = true;
 

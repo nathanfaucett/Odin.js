@@ -1,8 +1,10 @@
 if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
-define(
-    function() {
+define([
+        "odin/core/game/config"
+    ],
+    function(Config) {
         "use strict";
 
 
@@ -12,10 +14,10 @@ define(
             defineProperty = Object.defineProperty,
             START_MS = Date.now(),
             START = START_MS * 0.001,
-            delta = 1 / 60,
-            fixedDelta = delta,
-            globalFixed = delta,
-            scale = 1,
+            DELTA = 1 / 60,
+            FIXED_DELTA = DELTA,
+            GLOBAL_FIXED = DELTA,
+            SCALE = 1,
             DateNow;
 
 
@@ -56,26 +58,26 @@ define(
             this.sinceStart = 0;
             this.time = 0;
             this.fps = 60;
-            this.delta = delta;
+            this.delta = DELTA;
             this.frameCount = 0;
 
             defineProperty(this, "scale", {
                 get: function() {
-                    return scale;
+                    return SCALE;
                 },
                 set: function(value) {
-                    scale = value;
-                    fixedDelta = globalFixed * value
+                    SCALE = value;
+                    FIXED_DELTA = GLOBAL_FIXED * value
                 }
             });
 
             defineProperty(this, "fixedDelta", {
                 get: function() {
-                    return fixedDelta;
+                    return FIXED_DELTA;
                 },
                 set: function(value) {
-                    globalFixed = value;
-                    fixedDelta = globalFixed * scale;
+                    GLOBAL_FIXED = value;
+                    FIXED_DELTA = GLOBAL_FIXED * SCALE;
                 }
             });
         }
@@ -93,6 +95,41 @@ define(
         Time.prototype.stampMS = function() {
 
             return Date.now();
+        };
+
+
+        var frameCount = 0,
+            last = -1 / 60,
+            time = 0,
+            delta = 1 / 60,
+            fpsFrame = 0,
+            fpsLast = 0,
+            fpsTime = 0;
+
+        Time.prototype.update = function() {
+            var MIN_DELTA = Config.MIN_DELTA,
+                MAX_DELTA = Config.MAX_DELTA;
+
+            this.frameCount = frameCount++;
+
+            last = time;
+            time = now();
+            this.sinceStart = time;
+
+            fpsTime = time;
+            fpsFrame++;
+
+            if (fpsLast + 1 < fpsTime) {
+                this.fps = fpsFrame / (fpsTime - fpsLast);
+
+                fpsLast = fpsTime;
+                fpsFrame = 0;
+            }
+
+            delta = (time - last) * SCALE;
+            this.delta = delta < MIN_DELTA ? MIN_DELTA : delta > MAX_DELTA ? MAX_DELTA : delta;
+
+            this.time = time * SCALE;
         };
 
 

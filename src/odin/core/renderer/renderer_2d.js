@@ -418,7 +418,8 @@ define([
             this.clearStencil = clearStencil;
 
 
-            var _textureIndex = 0;
+            var _textureIndex = 0,
+                _lastTexture = undefined;
 
             function setTexture(location, texture, key) {
                 if (!texture || !texture.raw) return;

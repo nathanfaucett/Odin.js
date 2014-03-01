@@ -266,7 +266,7 @@ require({
             ]
         });
 
-        scene.addGameObjects(camera, sprite, pointLight, directionalLight, spotLight, hemiLight);
+        scene.addGameObjects(camera, sprite, pointLight, spotLight);
         game.addScene(scene);
 
         function addObject(s) {

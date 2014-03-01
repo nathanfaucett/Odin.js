@@ -20,7 +20,7 @@ define([
             this.invWidth = 0;
             this.invHeight = 0;
 
-            this.mipmap = opts.mipmap != undefined ? !! opts.mipmap : true;
+            this.generateMipmap = opts.generateMipmap != undefined ? !! opts.generateMipmap : true;
             this.flipY = opts.flipY != undefined ? !! opts.flipY : true;
             this.premultiplyAlpha = opts.premultiplyAlpha != undefined ? !! opts.premultiplyAlpha : false;
 
@@ -47,7 +47,7 @@ define([
             this.invWidth = other.invWidth;
             this.invHeight = other.invHeight;
 
-            this.mipmap = other.mipmap;
+            this.generateMipmap = other.generateMipmap;
             this.flipY = other.flipY;
             this.premultiplyAlpha = other.premultiplyAlpha;
 
@@ -76,7 +76,7 @@ define([
 
         Texture.prototype.setMipmap = function(value) {
 
-            this.mipmap = value != undefined ? !! value : !this.mipmap;
+            this.generateMipmap = value != undefined ? !! value : !this.generateMipmap;
             this.needsUpdate = true;
         };
 
@@ -134,7 +134,7 @@ define([
             json.invWidth = this.invWidth;
             json.invHeight = this.invHeight;
 
-            json.mipmap = this.mipmap;
+            json.generateMipmap = this.generateMipmap;
             json.flipY = this.flipY;
             json.premultiplyAlpha = this.premultiplyAlpha;
 
@@ -167,7 +167,7 @@ define([
             this.invWidth = json.invWidth;
             this.invHeight = json.invHeight;
 
-            this.mipmap = json.mipmap;
+            this.generateMipmap = json.generateMipmap;
             this.flipY = json.flipY;
             this.premultiplyAlpha = json.premultiplyAlpha;
 

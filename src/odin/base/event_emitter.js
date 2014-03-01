@@ -49,7 +49,7 @@ define(
             ctx = ctx || this;
 
             function once() {
-                self.off(type, once);
+                self.off(type, once, ctx);
                 listener.apply(ctx, arguments);
             }
 
@@ -66,7 +66,7 @@ define(
          * @return this
          */
         EventEmitter.prototype.listenTo = function(obj, type, listener, ctx) {
-            if (!obj.on || !obj.addEventListenerTo) throw "Can't listen to Object, it's not a instance of EventEmitter";
+            if (!(obj instanceof EventEmitter)) throw "Can't listen to Object, it's not a instance of EventEmitter";
 
             obj.on(type, listener, ctx || this);
 

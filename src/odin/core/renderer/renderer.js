@@ -440,7 +440,7 @@ define([
                     anisotropy = clamp(texture.anisotropy || 1, 1, _maxAnisotropy),
 
                     TEXTURE_2D = _gl.TEXTURE_2D,
-                    mipmap = texture.mipmap,
+                    generateMipmap = texture.generateMipmap,
                     filter = texture.filter,
                     format = texture.format,
                     wrap = texture.wrap,
@@ -448,14 +448,14 @@ define([
 
                 if (filter === FilterMode.None) {
                     MAG_FILTER = _gl.NEAREST;
-                    if (mipmap && isPOT) {
+                    if (generateMipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_NEAREST;
                     } else {
                         MIN_FILTER = _gl.NEAREST;
                     }
                 } else { //FilterMode.Linear
                     MAG_FILTER = _gl.LINEAR;
-                    if (mipmap && isPOT) {
+                    if (generateMipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_LINEAR;
                     } else {
                         MIN_FILTER = _gl.LINEAR;
@@ -498,7 +498,7 @@ define([
                 _gl.texParameteri(TEXTURE_2D, _gl.TEXTURE_WRAP_T, WRAP);
 
                 if (TFA) _gl.texParameterf(TEXTURE_2D, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                if (mipmap && isPOT) _gl.generateMipmap(TEXTURE_2D);
+                if (generateMipmap && isPOT) _gl.generateMipmap(TEXTURE_2D);
 
                 texture.needsUpdate = false;
             }
@@ -538,7 +538,7 @@ define([
                     TEXTURE_CUBE_MAP_POSITIVE_X = _gl.TEXTURE_CUBE_MAP_POSITIVE_X,
                     UNSIGNED_BYTE = _gl.UNSIGNED_BYTE,
 
-                    mipmap = cubeTexture.mipmap,
+                    generateMipmap = cubeTexture.generateMipmap,
                     filter = cubeTexture.filter,
                     format = cubeTexture.format,
                     wrap = cubeTexture.wrap,
@@ -547,14 +547,14 @@ define([
 
                 if (filter === FilterMode.None) {
                     MAG_FILTER = _gl.NEAREST;
-                    if (mipmap && isPOT) {
+                    if (generateMipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_NEAREST;
                     } else {
                         MIN_FILTER = _gl.NEAREST;
                     }
                 } else { //FilterMode.Linear
                     MAG_FILTER = _gl.LINEAR;
-                    if (mipmap && isPOT) {
+                    if (generateMipmap && isPOT) {
                         MIN_FILTER = _gl.LINEAR_MIPMAP_LINEAR;
                     } else {
                         MIN_FILTER = _gl.LINEAR;
@@ -600,7 +600,7 @@ define([
                 _gl.texParameteri(TEXTURE_CUBE_MAP, _gl.TEXTURE_WRAP_T, WRAP);
 
                 if (TFA) _gl.texParameterf(TEXTURE_CUBE_MAP, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-                if (mipmap && isPOT) _gl.generateMipmap(TEXTURE_CUBE_MAP);
+                if (generateMipmap && isPOT) _gl.generateMipmap(TEXTURE_CUBE_MAP);
 
                 cubeTexture.needsUpdate = false;
             }

@@ -29,10 +29,10 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1;
-            te[2] = m12 || 0;
-            te[1] = m21 || 0;
-            te[3] = m22 !== undefined ? m22 : 1;
+            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[2] = m12 || 0.0;
+            te[1] = m21 || 0.0;
+            te[3] = m22 !== undefined ? m22 : 1.0;
         }
 
         Mathf._classes["Mat2"] = Mat2;
@@ -182,7 +182,7 @@ define([
         Mat2.prototype.sdiv = function(s) {
             var te = this.elements;
 
-            s = s !== 0 ? 1 / s : 1;
+            s = s !== 0.0 ? 1.0 / s : 1.0;
 
             te[0] *= s;
             te[1] *= s;
@@ -202,8 +202,8 @@ define([
             var te = this.elements;
 
             te[0] = 1;
-            te[1] = 0;
-            te[2] = 0;
+            te[1] = 0.0;
+            te[2] = 0.0;
             te[3] = 1;
 
             return this;
@@ -218,10 +218,10 @@ define([
         Mat2.prototype.zero = function() {
             var te = this.elements;
 
-            te[0] = 0;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
+            te[0] = 0.0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
 
             return this;
         };
@@ -254,7 +254,7 @@ define([
 
                 det = m11 * m22 - m12 * m21;
 
-            det = det !== 0 ? 1 / det : 0;
+            det = det === 0.0 ? 0.0 : 1.0 / det;
 
             te[0] = m22 * det;
             te[1] = -m12 * det;
@@ -282,7 +282,7 @@ define([
 
                 det = m11 * m22 - m12 * m21;
 
-            det = det !== 0 ? 1 / det : 0;
+            det = det === 0.0 ? 0.0 : 1.0 / det;
 
             te[0] = m22 * det;
             te[1] = -m12 * det;

@@ -201,6 +201,7 @@ define([
         Emitter.prototype.spawn = function(count) {
             var transform = this.transform || (this.transform = this.particleSystem.gameObject.transform || this.particleSystem.gameObject.transform2d),
                 transformPosition = transform.toWorld(VEC.set(0, 0, 0)),
+                matrixWorld = transform.matrixWorld,
 
                 position = this.position,
                 positionSpread = this.positionSpread,
@@ -317,6 +318,7 @@ define([
                     vel.y = dy * r * spd;
                     vel.z = dz * r * spd;
                 }
+                vel.transformMat4Rotation(matrixWorld);
 
                 acc.x = acceleration.x + randFloat(-accelerationSpread.x, accelerationSpread.x);
                 acc.y = acceleration.y + randFloat(-accelerationSpread.y, accelerationSpread.y);

@@ -13,6 +13,7 @@ define([
 
 
         var degsToRads = Mathf.degsToRads,
+            clamp = Mathf.clamp,
             EPSILON = Mathf.EPSILON;
 
 

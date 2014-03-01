@@ -26,7 +26,7 @@ define([
             object.clear();
 
             object.fromJSON(this.object);
-            object.on("remove", onRemove, this);
+            object.once("remove", onRemove, this);
 
             return object;
         };

@@ -43,22 +43,22 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1;
-            te[4] = m12 || 0;
-            te[8] = m13 || 0;
-            te[12] = m14 || 0;
-            te[1] = m21 || 0;
-            te[5] = m22 !== undefined ? m22 : 1;
-            te[9] = m23 || 0;
-            te[13] = m24 || 0;
-            te[2] = m31 || 0;
-            te[6] = m32 || 0;
-            te[10] = m33 !== undefined ? m33 : 1;
-            te[14] = m34 || 0;
-            te[3] = m41 || 0;
-            te[7] = m42 || 0;
-            te[11] = m43 || 0;
-            te[15] = m44 !== undefined ? m44 : 1;
+            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[4] = m12 || 0.0;
+            te[8] = m13 || 0.0;
+            te[12] = m14 || 0.0;
+            te[1] = m21 || 0.0;
+            te[5] = m22 !== undefined ? m22 : 1.0;
+            te[9] = m23 || 0.0;
+            te[13] = m24 || 0.0;
+            te[2] = m31 || 0.0;
+            te[6] = m32 || 0.0;
+            te[10] = m33 !== undefined ? m33 : 1.0;
+            te[14] = m34 || 0.0;
+            te[3] = m41 || 0.0;
+            te[7] = m42 || 0.0;
+            te[11] = m43 || 0.0;
+            te[15] = m44 !== undefined ? m44 : 1.0;
         }
 
         Mathf._classes["Mat4"] = Mat4;
@@ -334,7 +334,7 @@ define([
         Mat4.prototype.sdiv = function(s) {
             var te = this.elements;
 
-            s = s !== 0 ? 1 / s : 1;
+            s = s !== 0.0 ? 1.0 / s : 1.0;
 
             te[0] *= s;
             te[1] *= s;
@@ -366,20 +366,20 @@ define([
             var te = this.elements;
 
             te[0] = 1;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
-            te[4] = 0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
+            te[4] = 0.0;
             te[5] = 1;
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
-            te[9] = 0;
+            te[6] = 0.0;
+            te[7] = 0.0;
+            te[8] = 0.0;
+            te[9] = 0.0;
             te[10] = 1;
-            te[11] = 0;
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
+            te[11] = 0.0;
+            te[12] = 0.0;
+            te[13] = 0.0;
+            te[14] = 0.0;
             te[15] = 1;
 
             return this;
@@ -394,22 +394,22 @@ define([
         Mat4.prototype.zero = function() {
             var te = this.elements;
 
-            te[0] = 0;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
-            te[4] = 0;
-            te[5] = 0;
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
-            te[9] = 0;
-            te[10] = 0;
-            te[11] = 0;
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
-            te[15] = 0;
+            te[0] = 0.0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
+            te[4] = 0.0;
+            te[5] = 0.0;
+            te[6] = 0.0;
+            te[7] = 0.0;
+            te[8] = 0.0;
+            te[9] = 0.0;
+            te[10] = 0.0;
+            te[11] = 0.0;
+            te[12] = 0.0;
+            te[13] = 0.0;
+            te[14] = 0.0;
+            te[15] = 0.0;
 
             return this;
         };
@@ -479,7 +479,7 @@ define([
 
                 det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            if (det === 0) return this.identity();
+            if (det === 0.0) return this.identity();
 
             te[0] = me0 * det;
             te[4] = me4 * det;
@@ -536,7 +536,7 @@ define([
 
                 det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            if (det === 0) return this.identity();
+            if (det === 0.0) return this.identity();
 
             te[0] = me0 * det;
             te[4] = me4 * det;
@@ -605,7 +605,7 @@ define([
             te[0] = v.x;
             te[5] = v.y;
             te[10] = v.z;
-            te[15] = w !== undefined ? w : 1;
+            te[15] = w !== undefined ? w : 1.0;
 
             return this;
         };
@@ -620,7 +620,7 @@ define([
          * @return this
          */
         Mat4.prototype.lookAt = function() {
-            var dup = new Vec3(0, 0, 1),
+            var dup = new Vec3(0.0, 0.0, 1),
                 x = new Vec3,
                 y = new Vec3,
                 z = new Vec3;
@@ -629,12 +629,12 @@ define([
                 var te = this.elements;
 
                 z.vsub(eye, target).normalize();
-                if (z.length() === 0) z.z = 1;
+                if (z.length() === 0.0) z.z = 1;
 
                 x.vcross(up, z).normalize();
 
-                if (x.length() === 0) {
-                    z.x += 0.0001;
+                if (x.length() === 0.0) {
+                    z.x += 0.000001;
                     x.vcross(up, z).normalize();
                 }
 
@@ -699,9 +699,9 @@ define([
             te[6] = (yz + wx) * sy;
             te[10] = (1 - (xx + yy)) * sz;
 
-            te[3] = 0;
-            te[7] = 0;
-            te[11] = 0;
+            te[3] = 0.0;
+            te[7] = 0.0;
+            te[11] = 0.0;
 
             te[12] = position.x;
             te[13] = position.y;
@@ -732,9 +732,9 @@ define([
                 m31 = te[2],
                 m32 = te[6],
                 m33 = te[10],
-                trace, x = 0,
-                y = 0,
-                z = 0,
+                trace, x = 0.0,
+                y = 0.0,
+                z = 0.0,
                 w = 1,
                 s,
 
@@ -766,7 +766,7 @@ define([
 
             trace = m11 + m22 + m33;
 
-            if (trace > 0) {
+            if (trace > 0.0) {
                 s = 0.5 / sqrt(trace + 1.0);
 
                 w = 0.25 / s;
@@ -817,7 +817,7 @@ define([
 
             te[12] = v.x;
             te[13] = v.y;
-            te[14] = z !== undefined ? z : 0;
+            te[14] = z !== undefined ? z : 0.0;
 
             return this;
         };
@@ -858,9 +858,9 @@ define([
                     ly = vec.set(me[4], me[5], me[6]).lengthSq(),
                     lz = vec.set(me[8], me[9], me[10]).lengthSq(),
 
-                    scaleX = lx > 0 ? 1 / sqrt(lx) : 0,
-                    scaleY = ly > 0 ? 1 / sqrt(ly) : 0,
-                    scaleZ = lz > 0 ? 1 / sqrt(lz) : 0;
+                    scaleX = lx > 0.0 ? 1.0 / sqrt(lx) : 0.0,
+                    scaleY = ly > 0.0 ? 1.0 / sqrt(ly) : 0.0,
+                    scaleZ = lz > 0.0 ? 1.0 / sqrt(lz) : 0.0;
 
                 te[0] = me[0] * scaleX;
                 te[1] = me[1] * scaleX;
@@ -915,7 +915,7 @@ define([
             var te = this.elements,
                 x = v.x,
                 y = v.y,
-                z = v.z || 0;
+                z = v.z || 0.0;
 
             te[12] = te[0] * x + te[4] * y + te[8] * z + te[12];
             te[13] = te[1] * x + te[5] * y + te[9] * z + te[13];
@@ -1065,10 +1065,10 @@ define([
         Mat4.prototype.makeTranslation = function(x, y, z) {
 
             return this.set(
-                1, 0, 0, x,
-                0, 1, 0, y,
-                0, 0, 1, z,
-                0, 0, 0, 1
+                1, 0.0, 0.0, x,
+                0.0, 1, 0.0, y,
+                0.0, 0.0, 1, z,
+                0.0, 0.0, 0.0, 1
             );
         };
 
@@ -1084,10 +1084,10 @@ define([
         Mat4.prototype.makeScale = function(x, y, z) {
 
             return this.set(
-                x, 0, 0, 0,
-                0, y, 0, 0,
-                0, 0, z, 0,
-                0, 0, 0, 1
+                x, 0.0, 0.0, 0.0,
+                0.0, y, 0.0, 0.0,
+                0.0, 0.0, z, 0.0,
+                0.0, 0.0, 0.0, 1
             );
         };
 
@@ -1103,10 +1103,10 @@ define([
                 s = sin(angle);
 
             return this.set(
-                1, 0, 0, 0,
-                0, c, -s, 0,
-                0, s, c, 0,
-                0, 0, 0, 1
+                1, 0.0, 0.0, 0.0,
+                0.0, c, -s, 0.0,
+                0.0, s, c, 0.0,
+                0.0, 0.0, 0.0, 1
             );
         };
 
@@ -1122,9 +1122,9 @@ define([
                 s = sin(angle);
 
             return this.set(
-                c, 0, s, 0,
-                0, 1, 0, 0, -s, 0, c, 0,
-                0, 0, 0, 1
+                c, 0.0, s, 0.0,
+                0.0, 1, 0.0, 0.0, -s, 0.0, c, 0.0,
+                0.0, 0.0, 0.0, 1
             );
         };
 
@@ -1140,10 +1140,10 @@ define([
                 s = sin(angle);
 
             return this.set(
-                c, -s, 0, 0,
-                s, c, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
+                c, -s, 0.0, 0.0,
+                s, c, 0.0, 0.0,
+                0.0, 0.0, 1, 0.0,
+                0.0, 0.0, 0.0, 1
             );
         };
 
@@ -1170,21 +1170,21 @@ define([
                 d = -2 * far * near / (far - near);
 
             te[0] = x;
-            te[4] = 0;
+            te[4] = 0.0;
             te[8] = a;
-            te[12] = 0;
-            te[1] = 0;
+            te[12] = 0.0;
+            te[1] = 0.0;
             te[5] = y;
             te[9] = b;
-            te[13] = 0;
-            te[2] = 0;
-            te[6] = 0;
+            te[13] = 0.0;
+            te[2] = 0.0;
+            te[6] = 0.0;
             te[10] = c;
             te[14] = d;
-            te[3] = 0;
-            te[7] = 0;
+            te[3] = 0.0;
+            te[7] = 0.0;
             te[11] = -1;
-            te[15] = 0;
+            te[15] = 0.0;
 
             return this;
         };
@@ -1231,17 +1231,17 @@ define([
                 z = (far + near) / p;
 
             te[0] = 2 / w;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
-            te[4] = 0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
+            te[4] = 0.0;
             te[5] = 2 / h;
-            te[6] = 0;
-            te[7] = 0
-            te[8] = 0;
-            te[9] = 0;
+            te[6] = 0.0;
+            te[7] = 0.0
+            te[8] = 0.0;
+            te[9] = 0.0;
             te[10] = -2 / p;
-            te[11] = 0;
+            te[11] = 0.0;
             te[12] = -x;
             te[13] = -y;
             te[14] = -z;
@@ -1263,19 +1263,19 @@ define([
 
             te[0] = me[0];
             te[1] = me[1];
-            te[2] = 0;
-            te[3] = 0;
+            te[2] = 0.0;
+            te[3] = 0.0;
             te[4] = me[2];
             te[5] = me[3];
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
-            te[9] = 0;
+            te[6] = 0.0;
+            te[7] = 0.0;
+            te[8] = 0.0;
+            te[9] = 0.0;
             te[10] = 1;
-            te[11] = 0;
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
+            te[11] = 0.0;
+            te[12] = 0.0;
+            te[13] = 0.0;
+            te[14] = 0.0;
             te[15] = 1;
 
             return this;
@@ -1294,19 +1294,19 @@ define([
 
             te[0] = me[0];
             te[1] = me[1];
-            te[2] = 0;
-            te[3] = 0;
+            te[2] = 0.0;
+            te[3] = 0.0;
             te[4] = me[2];
             te[5] = me[3];
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
-            te[9] = 0;
+            te[6] = 0.0;
+            te[7] = 0.0;
+            te[8] = 0.0;
+            te[9] = 0.0;
             te[10] = 1;
-            te[11] = 0;
+            te[11] = 0.0;
             te[12] = me[4];
             te[13] = me[5];
-            te[14] = 0;
+            te[14] = 0.0;
             te[15] = 1;
 
             return this;
@@ -1326,18 +1326,18 @@ define([
             te[0] = me[0];
             te[1] = me[1];
             te[2] = me[2];
-            te[3] = 0;
+            te[3] = 0.0;
             te[4] = me[3];
             te[5] = me[4];
             te[6] = me[5];
-            te[7] = 0;
+            te[7] = 0.0;
             te[8] = me[6];
             te[9] = me[7];
             te[10] = me[8];
-            te[11] = 0;
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
+            te[11] = 0.0;
+            te[12] = 0.0;
+            te[13] = 0.0;
+            te[14] = 0.0;
             te[15] = 1;
 
             return this;
@@ -1381,13 +1381,13 @@ define([
             te[6] = yz + wx;
             te[10] = 1 - (xx + yy);
 
-            te[3] = 0;
-            te[7] = 0;
-            te[11] = 0;
+            te[3] = 0.0;
+            te[7] = 0.0;
+            te[11] = 0.0;
 
-            te[12] = 0;
-            te[13] = 0;
-            te[14] = 0;
+            te[12] = 0.0;
+            te[13] = 0.0;
+            te[14] = 0.0;
             te[15] = 1;
 
             return this;

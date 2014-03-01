@@ -6,7 +6,10 @@ define(
         "use strict";
 
 
-        var IS_SERVER = !(typeof(window) !== "undefined" && window.document),
+        var Time = require("odin/base/time"),
+            now = Time.now,
+
+            IS_SERVER = !(typeof(window) !== "undefined" && window.document),
             IS_CLIENT = !IS_SERVER,
 
             defineProperty = Object.defineProperty;
@@ -133,17 +136,38 @@ define(
             window.Odin = this;
         };
 
-
         /**
-         * test function n number of times returns time it took
+         * benchmarks function n number of times returns average time it took
          */
-        Odin.prototype.test = function(name, fn, times) {
-            times || (times = 1000);
+        Odin.prototype.benchmark = function() {
+            var sec = 1000,
+                min = 60 * sec,
+                hour = 60 * min;
 
-            console.time(name);
-            while (times--) fn();
-            console.timeEnd(name);
-        };
+            function humanize(ms) {
+                return (
+                    ms >= hour ? (ms / hour).toFixed(1) + "h" :
+                    ms >= min ? (ms / min).toFixed(1) + "m" :
+                    ms >= sec ? (ms / sec | 0) + "s" :
+                    ms + "ms"
+                );
+            }
+
+            return function(name, fn, times) {
+                times || (times = 1000.0);
+                var start = 0.0,
+                    avg = 0.0,
+                    i = times | 0;
+
+                while (i--) {
+                    start = now();
+                    fn();
+                    avg += now() - start;
+                }
+
+                console.log(name + ": " + humanize(avg / times));
+            };
+        }();
 
 
         return new Odin;

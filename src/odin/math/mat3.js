@@ -33,15 +33,15 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1;
-            te[3] = m12 || 0;
-            te[6] = m13 || 0;
-            te[1] = m21 || 0;
-            te[4] = m22 !== undefined ? m22 : 1;
-            te[7] = m23 || 0;
-            te[2] = m31 || 0;
-            te[5] = m32 || 0;
-            te[8] = m33 !== undefined ? m33 : 1;
+            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[3] = m12 || 0.0;
+            te[6] = m13 || 0.0;
+            te[1] = m21 || 0.0;
+            te[4] = m22 !== undefined ? m22 : 1.0;
+            te[7] = m23 || 0.0;
+            te[2] = m31 || 0.0;
+            te[5] = m32 || 0.0;
+            te[8] = m33 !== undefined ? m33 : 1.0;
         }
 
         Mathf._classes["Mat3"] = Mat3;
@@ -244,7 +244,7 @@ define([
         Mat3.prototype.sdiv = function(s) {
             var te = this.elements;
 
-            s = s === 0 ? 0 : 1 / s;
+            s = s === 0.0 ? 0.0 : 1.0 / s;
 
             te[0] *= s;
             te[1] *= s;
@@ -269,13 +269,13 @@ define([
             var te = this.elements;
 
             te[0] = 1;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
             te[4] = 1;
-            te[5] = 0;
-            te[6] = 0;
-            te[7] = 0;
+            te[5] = 0.0;
+            te[6] = 0.0;
+            te[7] = 0.0;
             te[8] = 1;
 
             return this;
@@ -290,15 +290,15 @@ define([
         Mat3.prototype.zero = function() {
             var te = this.elements;
 
-            te[0] = 0;
-            te[1] = 0;
-            te[2] = 0;
-            te[3] = 0;
-            te[4] = 0;
-            te[5] = 0;
-            te[6] = 0;
-            te[7] = 0;
-            te[8] = 0;
+            te[0] = 0.0;
+            te[1] = 0.0;
+            te[2] = 0.0;
+            te[3] = 0.0;
+            te[4] = 0.0;
+            te[5] = 0.0;
+            te[6] = 0.0;
+            te[7] = 0.0;
+            te[8] = 0.0;
 
             return this;
         };
@@ -349,7 +349,7 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det !== 0 ? 1 / det : 1;
+            det = det !== 0.0 ? 1.0 / det : 1.0;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;
@@ -392,7 +392,7 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det !== 0 ? 1 / det : 0;
+            det = det === 0.0 ? 0.0 : 1.0 / det;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;
@@ -435,7 +435,7 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det !== 0 ? 1 / det : 0;
+            det = det === 0.0 ? 0.0 : 1.0 / det;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;
@@ -530,9 +530,9 @@ define([
         Mat3.prototype.makeScale = function(x, y, z) {
 
             return this.set(
-                x, 0, 0,
-                0, y, 0,
-                0, 0, z
+                x, 0.0, 0.0,
+                0.0, y, 0.0,
+                0.0, 0.0, z
             );
         };
 
@@ -548,9 +548,9 @@ define([
                 s = sin(angle);
 
             return this.set(
-                1, 0, 0,
-                0, c, -s,
-                0, s, c
+                1, 0.0, 0.0,
+                0.0, c, -s,
+                0.0, s, c
             );
         };
 
@@ -566,8 +566,8 @@ define([
                 s = sin(angle);
 
             return this.set(
-                c, 0, s,
-                0, 1, 0, -s, 0, c
+                c, 0.0, s,
+                0.0, 1, 0.0, -s, 0.0, c
             );
         };
 
@@ -583,9 +583,9 @@ define([
                 s = sin(angle);
 
             return this.set(
-                c, -s, 0,
-                s, c, 0,
-                0, 0, 1
+                c, -s, 0.0,
+                s, c, 0.0,
+                0.0, 0.0, 1
             );
         };
 
@@ -602,12 +602,12 @@ define([
 
             te[0] = me[0];
             te[1] = me[1];
-            te[2] = 0;
+            te[2] = 0.0;
             te[3] = me[2];
             te[4] = me[3];
-            te[5] = 0;
-            te[6] = 0;
-            te[7] = 0;
+            te[5] = 0.0;
+            te[6] = 0.0;
+            te[7] = 0.0;
             te[8] = 1;
 
             return this;

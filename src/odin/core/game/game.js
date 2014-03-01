@@ -9,8 +9,8 @@ define([
         "odin/core/game/config",
         "odin/core/game/base_game",
         "odin/core/game/log",
-        "odin/core/renderer/canvas",
-        "odin/core/renderer/renderer",
+        "odin/core/rendering/canvas",
+        "odin/core/rendering/renderer",
         "odin/core/renderer/renderer_2d",
         "odin/core/game_object",
         "odin/core/components/component",
@@ -20,9 +20,6 @@ define([
     ],
     function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, Renderer, Renderer2D, GameObject, Component, Scene, Input, Handler) {
         "use strict";
-
-
-        var now = Time.now;
 
 
         function Game(opts) {
@@ -42,10 +39,10 @@ define([
             this.canvas = new Canvas(opts.canvas);
             this.renderer = undefined;
 
-            this.Renderer = undefined;
+            this._Renderer = undefined;
             this._RendererOptions = opts.renderer;
 
-            this.Renderer2D = undefined;
+            this._Renderer2D = undefined;
             this._Renderer2DOptions = opts.renderer2d;
         }
 
@@ -153,11 +150,11 @@ define([
                 canvas = this.canvas;
 
             if (camera.camera2d) {
-                this.Renderer2D = this.Renderer2D || new Renderer2D(this._Renderer2DOptions);
-                this.renderer = this.Renderer2D;
+                this._Renderer2D = this._Renderer2D || new Renderer2D(this._Renderer2DOptions);
+                this.renderer = this._Renderer2D;
             } else {
-                this.Renderer = this.Renderer || new Renderer(this._RendererOptions);
-                this.renderer = this.Renderer;
+                this._Renderer = this._Renderer || new Renderer(this._RendererOptions);
+                this.renderer = this._Renderer;
             }
 
             if (lastRenderer !== this.renderer) {
@@ -171,44 +168,16 @@ define([
         };
 
 
-        var frameCount = 0,
-            last = -1 / 60,
-            time = 0,
-            delta = 1 / 60,
-            fpsFrame = 0,
-            fpsLast = 0,
-            fpsTime = 0;
-
         Game.prototype.loop = function() {
             var camera = this.camera,
                 scene = this.scene,
                 gui = this.gui,
-                renderer = this.renderer,
-                MIN_DELTA = Config.MIN_DELTA,
-                MAX_DELTA = Config.MAX_DELTA;
+                renderer = this.renderer;
 
-            Time.frameCount = frameCount++;
-
-            last = time;
-            time = now();
-            Time.sinceStart = time;
-
-            fpsTime = time;
-            fpsFrame++;
-
-            if (fpsLast + 1 < fpsTime) {
-                Time.fps = fpsFrame / (fpsTime - fpsLast);
-
-                fpsLast = fpsTime;
-                fpsFrame = 0;
-            }
-
-            delta = (time - last) * Time.scale;
-            Time.delta = delta < MIN_DELTA ? MIN_DELTA : delta > MAX_DELTA ? MAX_DELTA : delta;
-
-            Time.time = time * Time.scale;
-
+            Time.update();
             Input.update();
+
+            this.emit("update", Time.sinceStart);
 
             if (renderer && camera) {
                 renderer.preRender(scene, gui, camera);
@@ -232,8 +201,6 @@ define([
                     renderer.renderGUI(gui, camera);
                 }
             }
-
-            this.emit("update", time);
         }
 
 

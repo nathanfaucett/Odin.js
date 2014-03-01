@@ -11,10 +11,10 @@ define(
 
         function Rect(x, y, width, height) {
 
-            this._x = x || 0;
-            this._y = y || 0;
-            this._width = width || 0;
-            this._height = height || 0;
+            this._x = x || 0.0;
+            this._y = y || 0.0;
+            this._width = width || 0.0;
+            this._height = height || 0.0;
 
             this._xMin = this._x;
             this._xMax = this._x + this._width;

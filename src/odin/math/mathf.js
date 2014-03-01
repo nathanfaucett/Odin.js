@@ -17,8 +17,8 @@ define(
             PI = 3.1415926535897932384626433832795028841968,
             TWO_PI = PI * 2,
             HALF_PI = PI * 0.5,
-            TO_RADS = PI / 180,
-            TO_DEGS = 180 / PI,
+            TO_RADS = PI / 180.0,
+            TO_DEGS = 180.0 / PI,
             keys = Object.keys,
             modulo, clamp01, standardRadian, standardAngle, radsToDegs;
 
@@ -31,7 +31,7 @@ define(
 
             /**
              * @property Number PI
-             * The infamous 3.1415926535897932384626433832795028841968
+             * The infamous 3.14159265358979323846264338327950.028841968
              * @memberof Odin.Mathf
              */
             this.PI = PI;
@@ -120,13 +120,13 @@ define(
         Mathf.prototype.modulo = modulo = function(a, b) {
             var r = a % b;
 
-            return (r * b < 0) ? r + b : r;
+            return (r * b < 0.0) ? r + b : r;
         };
 
         /**
          * @method standardRadian
          * @memberof Odin.Mathf
-         * convertes x to radian where 0 <= x < 2PI
+         * convertes x to radian where 0.0 <= x < 2PI
          * @param Number x
          * @return Number
          */
@@ -138,13 +138,13 @@ define(
         /**
          * @method standardAngle
          * @memberof Odin.Mathf
-         * convertes x to angle where 0 <= x < 360
+         * convertes x to angle where 0.0 <= x < 360.0
          * @param Number x
          * @return Number
          */
         Mathf.prototype.standardAngle = standardAngle = function(x) {
 
-            return modulo(x, 360);
+            return modulo(x, 360.0);
         };
 
         /**
@@ -156,7 +156,7 @@ define(
          */
         Mathf.prototype.sign = function(x) {
 
-            return x < 0 ? -1 : 1;
+            return x < 0.0 ? -1 : 1.0;
         };
 
         /**
@@ -202,13 +202,13 @@ define(
         /**
          * @method clamp01
          * @memberof Odin.Mathf
-         * clamp x between 0 and 1
+         * clamp x between 0.0 and 1
          * @param Number x
          * @return Number
          */
         Mathf.prototype.clamp01 = clamp01 = function(x) {
 
-            return x < 0 ? 0 : x > 1 ? 1 : x;
+            return x < 0.0 ? 0.0 : x > 1 ? 1 : x;
         };
 
         /**
@@ -220,10 +220,10 @@ define(
          * @return Number
          */
         Mathf.prototype.truncate = function(x, n) {
-            var p = pow(10, n),
+            var p = pow(10.0, n),
                 num = x * p;
 
-            return (num < 0 ? ceil(num) : floor(num)) / p;
+            return (num < 0.0 ? ceil(num) : floor(num)) / p;
         };
 
         /**
@@ -243,7 +243,7 @@ define(
         /**
          * @method lerpAngle
          * @memberof Odin.Mathf
-         * linear interpolation between a and b by x insures 0 <= x < 2PI
+         * linear interpolation between a and b by x insures 0.0 <= x < 2PI
          * @param Number a
          * @param Number b
          * @param Number x
@@ -265,9 +265,9 @@ define(
          */
         Mathf.prototype.lerpCos = function(a, b, x) {
             var ft = x * PI,
-                f = (1 - cos(ft)) * 0.5;
+                f = (1.0 - cos(ft)) * 0.5;
 
-            return a * (1 - f) + b * f;
+            return a * (1.0 - f) + b * f;
         };
 
         /**
@@ -297,7 +297,7 @@ define(
         };
 
         /**
-         * smooth step, if input is between min and max this returns a value proportionately between 0 and 1
+         * smooth step, if input is between min and max this returns a value proportionately between 0.0 and 1
          * @method smoothStep
          * @memberof Odin.Mathf
          * @param Number x
@@ -306,7 +306,7 @@ define(
          * @return Number
          */
         Mathf.prototype.smoothStep = function(x, min, max) {
-            if (x <= min) return 0;
+            if (x <= min) return 0.0;
             if (x >= max) return 1;
 
             x = (x - min) / (max - min);
@@ -317,25 +317,25 @@ define(
         /**
          * @method smootherStep
          * @memberof Odin.Mathf
-         * smoother step, if input is between min and max this returns a value proportionately between 0 and 1
+         * smoother step, if input is between min and max this returns a value proportionately between 0.0 and 1
          * @param Number x
          * @param Number min
          * @param Number max
          * @return Number
          */
         Mathf.prototype.smootherStep = function(x, min, max) {
-            if (x <= min) return 0;
+            if (x <= min) return 0.0;
             if (x >= max) return 1;
 
             x = (x - min) / (max - min);
 
-            return x * x * x * (x * (x * 6 - 15) + 10);
+            return x * x * x * (x * (x * 6 - 15) + 10.0);
         };
 
         /**
          * @method pingPong
          * @memberof Odin.Mathf
-         * PingPongs the value x, so that it is never larger than length and never smaller than 0.
+         * PingPongs the value x, so that it is never larger than length and never smaller than 0.0.
          * @param Number x
          * @param Number length
          * @return Number
@@ -418,7 +418,7 @@ define(
          */
         Mathf.prototype.randChoice = function(array) {
 
-            return array[(random() * array.length) | 0];
+            return array[(random() * array.length) | 0.0];
         };
 
         /**
@@ -430,7 +430,7 @@ define(
          */
         Mathf.prototype.shuffle = function(array) {
 
-            for (var j, x, i = array.length; i; j = (random() * i) | 0, x = array[--i], array[i] = array[j], array[j] = x);
+            for (var j, x, i = array.length; i; j = (random() * i) | 0.0, x = array[--i], array[i] = array[j], array[j] = x);
             return array;
         };
 
@@ -442,7 +442,7 @@ define(
          */
         Mathf.prototype.randArg = function() {
 
-            return arguments[(random() * arguments.length) | 0];
+            return arguments[(random() * arguments.length) | 0.0];
         };
 
         /**
@@ -455,7 +455,7 @@ define(
         Mathf.prototype.randChoiceObject = function(obj) {
             var array = keys(obj);
 
-            return array[(random() * array.length) | 0];
+            return array[(random() * array.length) | 0.0];
         };
 
         /**

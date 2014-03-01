@@ -30,25 +30,25 @@ define([
              * @property Number x
              * @memberof Odin.Quat
              */
-            this.x = x || 0;
+            this.x = x || 0.0;
 
             /**
              * @property Number y
              * @memberof Odin.Quat
              */
-            this.y = y || 0;
+            this.y = y || 0.0;
 
             /**
              * @property Number z
              * @memberof Odin.Quat
              */
-            this.z = z || 0;
+            this.z = z || 0.0;
 
             /**
              * @property Number w
              * @memberof Odin.Quat
              */
-            this.w = w !== undefined ? w : 1;
+            this.w = w !== undefined ? w : 1.0;
         }
 
         Mathf._classes["Quat"] = Quat;
@@ -216,7 +216,7 @@ define([
                 w = this.w,
                 lsq = x * x + y * y + z * z + w * w;
 
-            return lsq > 0 ? sqrt(lsq) : 0;
+            return lsq > 0.0 ? sqrt(lsq) : 0.0;
         };
 
         /**
@@ -247,7 +247,7 @@ define([
                 w = this.w,
                 l = x * x + y * y + z * z + w * w;
 
-            l = l > 0 ? 1 / sqrt(l) : 0;
+            l = l > 0.0 ? 1.0 / sqrt(l) : 0.0;
 
             this.x *= l;
             this.y *= l;
@@ -269,7 +269,7 @@ define([
                 z = this.z,
                 w = this.w,
                 d = x * x + y * y + z * z + w * w,
-                invD = d > 0 ? 1 / d : 0;
+                invD = d > 0.0 ? 1.0 / d : 0.0;
 
             this.x *= -invD;
             this.y *= -invD;
@@ -292,7 +292,7 @@ define([
                 z = other.z,
                 w = other.w,
                 d = x * x + y * y + z * z + w * w,
-                invD = d > 0 ? 1 / d : 0;
+                invD = d > 0.0 ? 1.0 / d : 0.0;
 
             this.x = -x * invD;
             this.y = -y * invD;
@@ -436,7 +436,7 @@ define([
                 omega, sinom, scale0, scale1,
                 cosom = ax * bx + ay * by + az * bz + aw * bw;
 
-            if (cosom < 0) {
+            if (cosom < 0.0) {
                 cosom *= -1;
                 bx *= -1;
                 by *= -1;
@@ -484,7 +484,7 @@ define([
                 omega, sinom, scale0, scale1,
                 cosom = ax * bx + ay * by + az * bz + aw * bw;
 
-            if (cosom < 0) {
+            if (cosom < 0.0) {
                 cosom *= -1;
                 bx *= -1;
                 by *= -1;
@@ -721,7 +721,7 @@ define([
                 trace = m11 + m22 + m33,
                 s, invS;
 
-            if (trace > 0) {
+            if (trace > 0.0) {
                 s = 0.5 / sqrt(trace + 1);
 
                 this.w = 0.25 / s;
@@ -778,7 +778,7 @@ define([
                 trace = m11 + m22 + m33,
                 s, invS;
 
-            if (trace > 0) {
+            if (trace > 0.0) {
                 s = 0.5 / sqrt(trace + 1);
 
                 this.w = 0.25 / s;

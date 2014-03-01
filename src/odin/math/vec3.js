@@ -23,19 +23,19 @@ define([
              * @property Number x
              * @memberof Odin.Vec3
              */
-            this.x = x || 0;
+            this.x = x || 0.0;
 
             /**
              * @property Number y
              * @memberof Odin.Vec3
              */
-            this.y = y || 0;
+            this.y = y || 0.0;
 
             /**
              * @property Number z
              * @memberof Odin.Vec3
              */
-            this.z = z || 0;
+            this.z = z || 0.0;
         }
 
         Mathf._classes["Vec3"] = Vec3;
@@ -244,9 +244,9 @@ define([
                 y = other.y,
                 z = other.z;
 
-            this.x *= x !== 0 ? 1 / x : 0;
-            this.y *= y !== 0 ? 1 / y : 0;
-            this.z *= z !== 0 ? 1 / z : 0;
+            this.x *= x !== 0.0 ? 1.0 / x : 0.0;
+            this.y *= y !== 0.0 ? 1.0 / y : 0.0;
+            this.z *= z !== 0.0 ? 1.0 / z : 0.0;
 
             return this;
         };
@@ -264,9 +264,9 @@ define([
                 y = b.y,
                 z = b.z;
 
-            this.x = x !== 0 ? a.x / x : 0;
-            this.y = y !== 0 ? a.y / y : 0;
-            this.z = z !== 0 ? a.z / z : 0;
+            this.x = x !== 0.0 ? a.x / x : 0.0;
+            this.y = y !== 0.0 ? a.y / y : 0.0;
+            this.z = z !== 0.0 ? a.z / z : 0.0;
 
             return this;
         };
@@ -279,7 +279,7 @@ define([
          * @return this
          */
         Vec3.prototype.sdiv = function(s) {
-            s = s === 0 ? 0 : 1 / s;
+            s = s === 0.0 ? 0.0 : 1.0 / s;
 
             this.x *= s;
             this.y *= s;
@@ -302,7 +302,7 @@ define([
 
             if (lsq === 1) return 1;
 
-            return lsq === 0 ? 0 : sqrt(lsq);
+            return lsq === 0.0 ? 0.0 : sqrt(lsq);
         };
 
         /**
@@ -340,7 +340,7 @@ define([
                 return this;
             }
 
-            l = l > 0 ? 1 / sqrt(l) : 0;
+            l = l > 0.0 ? 1.0 / sqrt(l) : 0.0;
 
             this.x *= l * length;
             this.y *= l * length;
@@ -363,7 +363,7 @@ define([
 
             if (l === 1) return this;
 
-            l = l > 0 ? 1 / sqrt(l) : 0;
+            l = l > 0.0 ? 1.0 / sqrt(l) : 0.0;
 
             this.x *= l;
             this.y *= l;
@@ -622,6 +622,26 @@ define([
         };
 
         /**
+         * @method transformMat4
+         * @memberof Odin.Vec3
+         * transforms this with Mat4
+         * @param Mat4 m
+         * @return this
+         */
+        Vec3.prototype.transformMat4Rotation = function(m) {
+            var me = m.elements,
+                x = this.x,
+                y = this.y,
+                z = this.z;
+
+            this.x = x * me[0] + y * me[4] + z * me[8];
+            this.y = x * me[1] + y * me[5] + z * me[9];
+            this.z = x * me[2] + y * me[6] + z * me[10];
+
+            return this;
+        };
+
+        /**
          * @method transformProjection
          * @memberof Odin.Vec3
          * transforms this with Mat4 projection matrix
@@ -681,7 +701,7 @@ define([
 
             this.x = v.x;
             this.y = v.y;
-            this.z = 0;
+            this.z = 0.0;
 
             return this;
         };

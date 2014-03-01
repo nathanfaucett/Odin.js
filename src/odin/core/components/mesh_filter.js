@@ -31,6 +31,9 @@ define([
              * @memberof MeshFilter
              */
             this.material = opts.material != undefined ? opts.material : undefined;
+
+
+            this._webglMeshInitted = false;
         }
 
         Component.extend(MeshFilter);
@@ -41,6 +44,8 @@ define([
             this.mesh = other.mesh;
             this.material = other.material;
 
+            this._webglMeshInitted = false;
+
             return this;
         };
 
@@ -50,6 +55,8 @@ define([
 
             this.mesh = undefined;
             this.material = undefined;
+
+            this._webglMeshInitted = false;
 
             return this;
         };
@@ -76,6 +83,8 @@ define([
 
             this.mesh = json.mesh ? Assets.get(json.mesh) : undefined;
             this.material = json.material ? Assets.get(json.material) : undefined;
+
+            this._webglMeshInitted = false;
 
             return this;
         };

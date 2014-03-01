@@ -20,8 +20,10 @@ require({
         Component.extend(Rotator);
 
         Rotator.prototype.update = function() {
-            var dt = Time.delta;
+            var dt = Time.delta,
+                time = Time.time;
 
+            this.transform.position.set(sin(time), cos(time), 0);
             this.transform.rotation.rotate(dt, dt, dt);
         };
 
@@ -98,10 +100,10 @@ require({
 
                             positionType: Enums.EmitterType.Box,
                             velocityType: Enums.EmitterType.Box,
-                            emissionRate: 1 / 60,
+                            emissionRate: 0.25,
 
-                            minEmission: 0,
-                            maxEmission: 8,
+                            minEmission: 16,
+                            maxEmission: 32,
 
                             positionSpread: new Vec3(0.5, 0.5, 0),
 
@@ -118,7 +120,7 @@ require({
                             }),
                             sizeTween: new ParticleSystem.Tween({
                                 times: [0, 0.25, 1],
-                                values: [0.25, 0.5, 1]
+                                values: [0.25, 0.5, 1.0]
                             }),
 
                             worldSpace: true
