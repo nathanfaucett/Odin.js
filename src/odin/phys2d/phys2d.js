@@ -16,6 +16,7 @@ define(
             this.P2Particle = require("odin/phys2d/objects/p2particle");
             this.P2Rect = require("odin/phys2d/objects/p2rect");
             this.P2Rigidbody = require("odin/phys2d/objects/p2rigidbody");
+            this.P2Segment = require("odin/phys2d/objects/p2segment");
             this.P2Shape = require("odin/phys2d/objects/p2shape");
 
             this.P2Enums = require("odin/phys2d/p2enums");

@@ -33,8 +33,8 @@ define([
 
             this.linearDamping = opts.linearDamping != undefined ? opts.linearDamping : 0.01;
 
-            this.mass = 0;
-            this.invMass = 0;
+            this.mass = opts.mass != undefined ? opts.mass : 0.0;
+            this.invMass = this.mass > 0.0 ? 1.0 / this.mass : 0.0;
 
             this.motionState = opts.motionState != undefined ? opts.motionState : MotionState.Static;
 
@@ -42,12 +42,12 @@ define([
             this.sleepState = SleepState.Awake;
 
             this.sleepVelocityLimit = opts.sleepVelocityLimit != undefined ? !! opts.sleepVelocityLimit : 0.01;
-            this.sleepTimeLimit = opts.sleepTimeLimit != undefined ? !! opts.sleepTimeLimit : 1;
+            this.sleepTimeLimit = opts.sleepTimeLimit != undefined ? !! opts.sleepTimeLimit : 1.0;
 
             this.userData = undefined;
 
-            this._sleepTime = 0;
-            this._lastSleepyTime = 0;
+            this._sleepTime = 0.0;
+            this._lastSleepyTime = 0.0;
 
             this.vlambda = new Vec2;
         }
@@ -76,7 +76,7 @@ define([
 
 
         P2Particle.prototype.init = function() {
-
+            if (this.mass > 0.0 && this.isStatic()) this.motionState = MotionState.Dynamic;
         };
 
 
@@ -86,11 +86,11 @@ define([
                 invMass = this.invMass,
                 pos = this.position,
                 vel = this.velocity,
-                linearDamping = pow(1 - this.linearDamping, dt);
+                linearDamping = pow(1.0 - this.linearDamping, dt);
 
             vel.x += force.x * invMass * dt;
             vel.y += force.y * invMass * dt;
-            force.x = force.y = 0;
+            force.x = force.y = 0.0;
 
             vel.x *= linearDamping;
             vel.y *= linearDamping;
@@ -107,8 +107,8 @@ define([
 
             this.motionState = motionState;
 
-            this.velocity.set(0, 0);
-            this.force.set(0, 0);
+            this.velocity.set(0.0, 0.0);
+            this.force.set(0.0, 0.0);
 
             this.wake();
         };
@@ -117,7 +117,7 @@ define([
         P2Particle.prototype.setMass = function(mass) {
 
             this.mass = mass;
-            this.invMass = mass > 0 ? 1 / mass : 0;
+            this.invMass = mass > 0.0 ? 1.0 / mass : 0.0;
         };
 
 

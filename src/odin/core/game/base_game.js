@@ -5,10 +5,10 @@ define([
         "odin/base/class",
         "odin/core/game/loop",
         "odin/core/scene",
-        //"odin/core/gui/gui",
+        "odin/core/gui/gui",
         "odin/core/game/log"
     ],
-    function(Class, Loop, Scene, Log) {
+    function(Class, Loop, Scene, GUI, Log) {
         "use strict";
 
 
@@ -126,7 +126,7 @@ define([
 
 
         BaseGame.prototype.removeScenes = function() {
-			var i = arguments.length;
+            var i = arguments.length;
 
             while (i--) this.removeScene(arguments[i]);
             return this;
@@ -162,8 +162,8 @@ define([
 
 
         BaseGame.prototype.addGUIs = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.addGUI(arguments[i]);
             return this;
         };
@@ -200,7 +200,7 @@ define([
 
 
         BaseGame.prototype.removeGUIs = function() {
-			var i = arguments.length;
+            var i = arguments.length;
 
             while (i--) this.removeGUI(arguments[i]);
             return this;
@@ -260,16 +260,16 @@ define([
         BaseGame.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
-				scenes = this.scenes,
+                scenes = this.scenes,
                 scene, jsonScene,
-				i = jsonScenes.length,
-				index;
+                i = jsonScenes.length,
+                index;
 
             while (i--) {
                 jsonScene = jsonScenes[i];
 
                 if ((scene = this.findSceneByJSONId(jsonScene._id))) {
-					this.removeScene(scene).addScene(jsonScene);
+                    this.removeScene(scene).addScene(jsonScene);
                 } else {
                     this.addScene(jsonScene);
                 }

@@ -69,9 +69,9 @@ define([
             this.world && this.world.init();
 
             i = types.length;
-			while (i--) {
+            while (i--) {
                 components = types[i];
-				j = components.length;
+                j = components.length;
                 while (j--) {
                     component = components[j];
 
@@ -80,7 +80,7 @@ define([
                 }
             }
 
-			i = gameObjects.length;
+            i = gameObjects.length;
             while (i--) gameObjects[i].emit("init");
         };
 
@@ -93,13 +93,13 @@ define([
             this.world && this.world.update();
 
             i = types.length;
-			while (i--) {
+            while (i--) {
                 components = types[i];
-				j = components.length;
+                j = components.length;
                 while (j--) components[j].update();
             }
 
-			i = gameObjects.length;
+            i = gameObjects.length;
             while (i--) gameObjects[i].emit("update");
         };
 
@@ -169,7 +169,7 @@ define([
                 gameObject.scene = this;
 
                 components = gameObject.components;
-				i = components.length;
+                i = components.length;
                 while (i--) this._addComponent(components[i]);
 
                 if (this.game) gameObject.emit("init");
@@ -183,8 +183,8 @@ define([
 
 
         Scene.prototype.addGameObjects = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.addGameObject(arguments[i]);
             return this;
         };
@@ -240,7 +240,7 @@ define([
                 gameObject.scene = undefined;
 
                 components = gameObject.components;
-				i = components.length;
+                i = components.length;
                 while (i--) this._removeComponent(components[i]);
 
                 this.emit("removeGameObject", gameObject);
@@ -255,8 +255,8 @@ define([
 
 
         Scene.prototype.removeGameObjects = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.removeGameObject(arguments[i]);
             return this;
         };

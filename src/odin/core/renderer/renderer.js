@@ -8,15 +8,20 @@ define([
         "odin/base/util",
         "odin/math/mathf",
         "odin/math/color",
+        "odin/math/vec2",
         "odin/math/vec3",
+        "odin/math/vec4",
+        "odin/math/mat2",
+        "odin/math/mat3",
         "odin/math/mat4",
         "odin/core/enums",
         "odin/core/game/log",
+        "odin/core/game/config",
         "odin/core/components/particle_system/emitter",
-        "odin/core/renderer/shader_chunks",
-        "odin/core/renderer/canvas"
+        "odin/core/components/particle_system/emitter_2d",
+        "odin/core/renderer/shader_chunks"
     ],
-    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec3, Mat4, Enums, Log, Emitter, ShaderChunks, Canvas) {
+    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec2, Vec3, Vec4, Mat2, Mat3, Mat4, Enums, Log, Config, Emitter, Emitter2D, ShaderChunks) {
         "use strict";
 
 
@@ -46,45 +51,1376 @@ define([
             clamp = Mathf.clamp,
             isPowerOfTwo = Mathf.isPowerOfTwo,
 
-            defineProperty = Object.defineProperty;
+            defineProperty = Object.defineProperty,
+            EMPTY_ARRAY = [];
 
+        /**
+         * @class Renderer
+         * @extends EventEmitter
+         * @param {object} options
+         */
 
         function Renderer(opts) {
             opts || (opts = {});
 
             EventEmitter.call(this);
 
-            var _this = this,
-                _projScreenMatrix = new Mat4,
-                _mat4 = new Mat4,
-                _color = new Color,
-                _vector3 = new Vec3,
-                _vector3_2 = new Vec3,
-                _gl,
-                _extensions,
-                _canvas,
-                _element,
-                _context = false,
-                _programs = [],
-
-                _spriteBuffers = undefined,
-                _spriteShader = undefined;
-
-
-            this.attributes = merge(opts.attributes || {}, {
-                alpha: true,
-                antialias: true,
-                depth: true,
-                premultipliedAlpha: true,
-                preserveDrawingBuffer: false,
-                stencil: true
-            });
-
             this.autoClear = opts.autoClear != undefined ? opts.autoClear : true;
             this.autoClearColor = opts.autoClearColor != undefined ? opts.autoClearColor : true;
             this.autoClearDepth = opts.autoClearDepth != undefined ? opts.autoClearDepth : true;
             this.autoClearStencil = opts.autoClearStencil != undefined ? opts.autoClearStencil : true;
 
+
+            var _lastCamera = undefined,
+                _lastResizeFn = undefined,
+                _lastScene = undefined,
+                _mat4 = new Mat4,
+                _projScreenMatrix = new Mat4,
+                _vector2 = new Vec2,
+                _vector3 = new Vec3,
+                _vector3_2 = new Vec3,
+                _vector4 = new Vec4,
+                _color = new Color,
+                _shaders = {},
+                _lastBuffers = undefined,
+                _spriteBuffers = {};
+
+            this.preRender = function(gui, scene, camera) {
+                if (!_context) return;
+                var background = camera.background;
+
+                if (_lastClearColor.r !== background.r || _lastClearColor.g !== background.g || _lastClearColor.b !== background.b) {
+                    _lastClearColor.copy(background);
+                    _gl.clearColor(background.r, background.g, background.b, 1);
+                    if (!this.autoClear) clearCanvas(true, this.autoClearDepth, this.autoClearStencil);
+                }
+                if (_lastCamera !== camera) {
+                    var w = _canvas.pixelWidth,
+                        h = _canvas.pixelHeight;
+
+                    camera.set(w, h);
+                    setViewport(0, 0, w, h);
+
+                    if (_lastResizeFn) _canvas.off("resize", _lastResizeFn);
+
+                    _lastResizeFn = function() {
+                        var w = this.pixelWidth,
+                            h = this.pixelHeight;
+
+                        camera.set(w, h);
+                        setViewport(0, 0, w, h);
+                    };
+
+                    _canvas.on("resize", _lastResizeFn);
+                    _lastCamera = camera;
+                }
+                if (scene && _lastScene !== scene) {
+                    if (_lastScene) removeSceneEvents(_lastScene);
+                    addSceneEvents(scene);
+
+                    _lastScene = scene;
+                }
+
+                _projScreenMatrix.mmul(camera.projection, camera.view);
+                if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
+            };
+
+            /**
+             * @method renderGUI
+             * @memberof Renderer
+             * @brief renderers gui within camera's viewport
+             * @param GUI gui
+             * @param Camera camera
+             */
+            function renderGUI(gui, camera) {
+
+            }
+            this.renderGUI = renderGUI;
+
+            /**
+             * @method render
+             * @memberof Renderer
+             * @brief renderers scene from camera's perspective
+             * @param Scene scene
+             * @param Camera camera
+             */
+            function render(scene, camera) {
+                if (!_context) return;
+                var lineWidth = _lastLineWidth,
+                    blending = _lastBlending,
+                    cullFace = _lastCullFace,
+
+                    components = scene.components,
+                    ambient = scene.world.ambient,
+                    lights = components.Light || EMPTY_ARRAY,
+                    meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                    sprites = components.Sprite || EMPTY_ARRAY,
+                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                    meshFilter, particleSystem, sprite, transform, transform2d,
+                    i;
+
+                i = meshFilters.length;
+                while (i--) {
+                    meshFilter = meshFilters[i];
+                    transform = meshFilter.transform || sprite.transform2d;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderMeshFilter(camera, lights, ambient, transform, meshFilter);
+                }
+
+                i = sprites.length;
+                while (i--) {
+                    sprite = sprites[i];
+                    transform = sprite.transform || sprite.transform2d;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderSprite(camera, lights, ambient, transform, sprite);
+                }
+
+                i = particleSystems.length;
+                while (i--) {
+                    particleSystem = particleSystems[i];
+                    transform = particleSystem.transform || sprite.transform2d;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderParticleSystem(camera, lights, ambient, transform, particleSystem);
+                }
+
+                setCullFace(cullFace);
+                setBlending(blending);
+                setLineWidth(lineWidth);
+            };
+            this.render = render;
+
+
+            function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
+                var mesh = meshFilter.mesh,
+                    material = meshFilter.material,
+                    side, shader;
+
+                if (!mesh || !material) return;
+
+                setBlending(material.blending);
+
+                side = material.side;
+                if (side === Side.Front) {
+                    setCullFace(CullFace.Back);
+                } else if (side === Side.Back) {
+                    setCullFace(CullFace.Front);
+                } else if (side === Side.Both) {
+                    setCullFace();
+                }
+
+                createMeshBuffers(mesh);
+                shader = createMeshShader(mesh, material, lights);
+                shader.bind(mesh, material, transform, camera, lights, ambient);
+
+                if (!meshFilter._webglMeshInitted) {
+                    mesh._webglUsed++;
+                    shader.used++;
+                    meshFilter._webglMeshInitted = true;
+                }
+
+                if (material.wireframe) {
+                    setLineWidth(material.wireframeLineWidth);
+                    _gl.drawElements(_gl.LINES, mesh._webglLineCount, _gl.UNSIGNED_SHORT, 0);
+                } else {
+                    _gl.drawElements(_gl.TRIANGLES, mesh._webglIndexCount, _gl.UNSIGNED_SHORT, 0);
+                }
+            }
+
+
+            function renderSprite(camera, lights, ambient, transform, sprite) {
+                var material = sprite.material,
+                    side, shader;
+
+                if (!material) return;
+
+                setBlending(material.blending);
+
+                side = material.side;
+                if (side === Side.Front) {
+                    setCullFace(CullFace.Back);
+                } else if (side === Side.Back) {
+                    setCullFace(CullFace.Front);
+                } else if (side === Side.Both) {
+                    setCullFace();
+                }
+
+                shader = createSpriteShader(sprite, material, lights);
+
+                if (!sprite._webglMeshInitted) {
+                    shader.used++;
+                    sprite._webglMeshInitted = true;
+                }
+
+                shader.bind(sprite, material, transform, camera, lights, ambient);
+
+                if (material.wireframe) {
+                    setLineWidth(material.wireframeLineWidth);
+                    _gl.drawArrays(_gl.LINE_STRIP, 0, _spriteBuffers._webglVertexCount);
+                } else {
+                    _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers._webglVertexCount);
+                }
+            }
+
+
+            function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
+                var emitters = particleSystem.emitters,
+                    material = particleSystem.material,
+                    side, shader, emitter,
+                    i = emitters.length;
+
+                while (i--) {
+                    emitter = emitters[i];
+
+                    if (emitter instanceof Emitter) {
+                        material = emitter.material;
+                        if (!material) return;
+
+                        setBlending(material.blending);
+                        setCullFace(CullFace.Back);
+
+                        createEmitterBuffers(emitter, transform);
+                        shader = createEmitterShader(emitter, material, lights);
+                        shader.bind(emitter, material, transform, camera, lights, ambient);
+
+                        if (!emitter._webglInitted) {
+                            shader.used++;
+                            emitter._webglInitted = true;
+                        }
+
+                        _gl.drawArrays(_gl.POINTS, 0, emitter._webglParticleCount);
+                    } else if (emitter instanceof Emitter2D) {
+                        material = emitter.material;
+                        if (!material) return;
+
+                        setBlending(material.blending);
+                        setCullFace(CullFace.Back);
+
+                        createEmitter2DBuffers(emitter, transform);
+                        shader = createEmitter2DShader(emitter, material, lights);
+                        shader.bind(emitter, material, transform, camera, lights, ambient);
+
+                        if (!emitter._webglInitted) {
+                            shader.used++;
+                            emitter._webglInitted = true;
+                        }
+
+                        _gl.drawArrays(_gl.POINTS, 0, emitter._webglParticleCount);
+                    }
+                }
+            }
+
+            function addSceneEvents(scene) {
+                var components = scene.components,
+                    meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                    meshFilter, particleSystem, sprite, transform, transform2d,
+                    i;
+
+                i = meshFilters.length;
+                while (i--) {
+                    meshFilter = meshFilters[i];
+                    meshFilter.on("remove", onMeshFilterRemove);
+                }
+
+                i = particleSystems.length;
+                while (i--) {
+                    particleSystem = particleSystems[i];
+                    particleSystem.on("remove", onParticleSystemRemove);
+                }
+
+                scene.on("addMeshFilter", onMeshFilterAdd);
+                scene.on("addParticleSystem", onMeshFilterAdd);
+            }
+
+            function removeSceneEvents(scene) {
+
+                scene.off("addMeshFilter", onMeshFilterAdd);
+                scene.off("addParticleSystem", onMeshFilterAdd);
+            }
+
+            function onMeshFilterAdd(meshFilter) {
+
+                meshFilter.on("remove", onMeshFilterRemove);
+            }
+
+            function onParticleSystemAdd(particleSystem) {
+
+                particleSystem.on("remove", onParticleSystemRemove);
+            }
+
+            function onMeshFilterRemove() {
+                var mesh = this.mesh;
+
+                deleteMeshBuffers(mesh);
+                deleteShader(mesh);
+
+                this.off("remove", onMeshFilterRemove);
+            }
+
+            function onParticleSystemRemove() {
+                var emitters = this.emitters,
+                    emitter, i = emitters.length;
+
+                while (i--) {
+                    emitter = emitters[i];
+
+                    deleteEmitterBuffers(emitter);
+                    deleteShader(emitter);
+                }
+
+                this.off("remove", onParticleSystemRemove);
+            }
+
+            function deleteMeshBuffers(mesh) {
+                if (mesh._webglUsed > 0) {
+                    mesh._webglUsed--;
+                    return;
+                }
+
+                if (mesh._webglVertexBuffer != undefined) _gl.deleteBuffer(mesh._webglVertexBuffer);
+                if (mesh._webglNormalBuffer != undefined) _gl.deleteBuffer(mesh._webglNormalBuffer);
+                if (mesh._webglTangentBuffer != undefined) _gl.deleteBuffer(mesh._webglTangentBuffer);
+                if (mesh._webglColorBuffer != undefined) _gl.deleteBuffer(mesh._webglColorBuffer);
+                if (mesh._webglUvBuffer != undefined) _gl.deleteBuffer(mesh._webglUvBuffer);
+                if (mesh._webglUv2Buffer != undefined) _gl.deleteBuffer(mesh._webglUv2Buffer);
+
+                if (mesh._webglBoneIndicesBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneIndicesBuffer);
+                if (mesh._webglBoneWeightsBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneWeightsBuffer);
+
+                if (mesh._webglIndexBuffer != undefined) _gl.deleteBuffer(mesh._webglIndexBuffer);
+                if (mesh._webglLineBuffer != undefined) _gl.deleteBuffer(mesh._webglLineBuffer);
+            }
+
+            function deleteEmitterBuffers(emitter) {
+
+                if (emitter._webglVertexBuffer != undefined) _gl.deleteBuffer(emitter._webglVertexBuffer);
+                if (emitter._webglParticleBuffer != undefined) _gl.deleteBuffer(emitter._webglParticleBuffer);
+            }
+
+            function deleteShader(obj) {
+                var shader = _shaders[obj._id];
+                if (!shader) return;
+
+                if (shader.used > 0) {
+                    shader.used--;
+                    return;
+                }
+
+                if (shader.program) _gl.deleteProgram(shader.program);
+            }
+
+            function createMeshBuffers(mesh) {
+                if (!mesh.dynamic && mesh._webglBuffersInitted) return;
+                var DRAW = mesh.dynamic ? _gl.DYNAMIC_DRAW : _gl.STATIC_DRAW,
+                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+                    ELEMENT_ARRAY_BUFFER = _gl.ELEMENT_ARRAY_BUFFER,
+                    bufferArray, items, item, i, len, offset, vertexIndex;
+
+                items = mesh.vertices || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.verticesNeedUpdate) {
+                    bufferArray = mesh._webglVertexArray;
+                    if (!bufferArray || bufferArray.length !== len * 3) {
+                        bufferArray = mesh._webglVertexArray = new Float32Array(len * 3);
+                        mesh._webglVertexCount = len;
+                    }
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 3;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                        bufferArray[offset + 2] = item.z;
+                    }
+
+                    mesh._webglVertexBuffer = mesh._webglVertexBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglVertexBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.verticesNeedUpdate = false;
+                }
+
+                items = mesh.normals || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.normalsNeedUpdate) {
+                    bufferArray = mesh._webglNormalArray;
+                    if (!bufferArray || bufferArray.length !== len * 3) bufferArray = mesh._webglNormalArray = new Float32Array(len * 3);
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 3;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                        bufferArray[offset + 2] = item.z;
+                    }
+
+                    mesh._webglNormalBuffer = mesh._webglNormalBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglNormalBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.normalsNeedUpdate = false;
+                }
+
+                items = mesh.tangents || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.tangentsNeedUpdate) {
+                    bufferArray = mesh._webglTangentArray;
+                    if (!bufferArray || bufferArray.length !== len * 4) bufferArray = mesh._webglTangentArray = new Float32Array(len * 4);
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 4;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                        bufferArray[offset + 2] = item.z;
+                        bufferArray[offset + 3] = item.w;
+                    }
+
+                    mesh._webglTangentBuffer = mesh._webglTangentBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglTangentBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.tangentsNeedUpdate = false;
+                }
+
+                items = mesh.indices || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.indicesNeedUpdate) {
+                    bufferArray = mesh._webglIndexArray;
+                    if (!bufferArray || bufferArray.length !== len) {
+                        bufferArray = mesh._webglIndexArray = new Uint16Array(len);
+                        mesh._webglIndexCount = len;
+                    }
+
+                    i = len;
+                    while (i--) bufferArray[i] = items[i];
+
+                    mesh._webglIndexBuffer = mesh._webglIndexBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ELEMENT_ARRAY_BUFFER, mesh._webglIndexBuffer);
+                    _gl.bufferData(ELEMENT_ARRAY_BUFFER, bufferArray, DRAW);
+
+                    bufferArray = mesh._webglLineArray;
+                    if (!bufferArray || bufferArray.length !== len * 3) {
+                        bufferArray = mesh._webglLineArray = new Uint16Array(len * 3);
+                        mesh._webglLineCount = len * 3;
+                    }
+
+                    i = len;
+                    vertexIndex = offset = 0;
+                    while (i--) {
+
+                        bufferArray[offset] = items[vertexIndex];
+                        bufferArray[offset + 1] = items[vertexIndex + 1];
+
+                        bufferArray[offset + 2] = items[vertexIndex];
+                        bufferArray[offset + 3] = items[vertexIndex + 2];
+
+                        bufferArray[offset + 4] = items[vertexIndex + 1];
+                        bufferArray[offset + 5] = items[vertexIndex + 2];
+
+                        offset += 6;
+                        vertexIndex += 3;
+                    }
+
+                    mesh._webglLineBuffer = mesh._webglLineBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ELEMENT_ARRAY_BUFFER, mesh._webglLineBuffer);
+                    _gl.bufferData(ELEMENT_ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.indicesNeedUpdate = false;
+                }
+
+                items = mesh.colors || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.colorsNeedUpdate) {
+                    bufferArray = mesh._webglColorArray;
+                    if (!bufferArray || bufferArray.length !== len * 3) bufferArray = mesh._webglColorArray = new Float32Array(len * 3);
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 3;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                        bufferArray[offset + 2] = item.z;
+                    }
+
+                    mesh._webglColorBuffer = mesh._webglColorBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglColorBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.colorsNeedUpdate = false;
+                }
+
+                items = mesh.uvs || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.uvsNeedUpdate) {
+                    bufferArray = mesh._webglUvArray;
+                    if (!bufferArray || bufferArray.length !== len * 2) bufferArray = mesh._webglUvArray = new Float32Array(len * 2);
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 2;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                    }
+
+                    mesh._webglUvBuffer = mesh._webglUvBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglUvBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.uvsNeedUpdate = false;
+                }
+
+                items = mesh.uv2s || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.uv2sNeedUpdate) {
+                    bufferArray = mesh._webglUv2Array;
+                    if (!bufferArray || bufferArray.length !== len * 2) bufferArray = mesh._webglUv2Array = new Float32Array(len * 2);
+
+                    i = len;
+                    while (i--) {
+                        item = items[i];
+                        offset = i * 2;
+
+                        bufferArray[offset] = item.x;
+                        bufferArray[offset + 1] = item.y;
+                    }
+
+                    mesh._webglUv2Buffer = mesh._webglUv2Buffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglUv2Buffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.uvsNeedUpdate = false;
+                }
+
+                items = mesh.boneIndices || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.boneIndicesNeedUpdate) {
+                    bufferArray = mesh._webglBoneIndexArray;
+                    if (!bufferArray || bufferArray.length !== len) bufferArray = mesh._webglBoneIndexArray = new Uint16Array(len);
+
+                    i = len;
+                    while (i--) bufferArray[i] = items[i];
+
+                    mesh._webglBoneIndexBuffer = mesh._webglBoneIndexBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglBoneIndexBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.boneIndicesNeedUpdate = false;
+                }
+
+                items = mesh.boneWeights || EMPTY_ARRAY;
+                len = items.length;
+                if (len && mesh.boneWeightsNeedUpdate) {
+                    bufferArray = mesh._webglBoneWeightArray;
+                    if (!bufferArray || bufferArray.length !== len) bufferArray = mesh._webglBoneWeightArray = new Float32Array(len);
+
+                    i = len;
+                    while (i--) bufferArray[i] = items[i];
+
+                    mesh._webglBoneWeightBuffer = mesh._webglBoneWeightBuffer || _gl.createBuffer();
+                    _gl.bindBuffer(ARRAY_BUFFER, mesh._webglBoneWeightBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
+
+                    mesh.boneWeightsNeedUpdate = false;
+                }
+
+                mesh._webglBuffersInitted = true;
+            }
+
+
+            function createEmitterBuffers(emitter, transform) {
+                var MAX = Emitter.MAX_PARTICLES,
+
+                    DRAW = _gl.DYNAMIC_DRAW,
+                    FLOAT = _gl.FLOAT,
+                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+
+                    positionArray, dataArray, colorArray,
+                    positionBuffer, dataBuffer, colorBuffer,
+
+                    particles = emitter.particles,
+                    particle,
+                    i = 0,
+                    len = particles.length,
+                    offset, position, color,
+                    me, x, y, z,
+                    m13, m23, m33, m43,
+                    m14, m24, m34, m44
+
+                if (len) {
+                    if (emitter.sort) {
+                        emitter.worldSpace ? _mat4.copy(_projScreenMatrix) : _mat4.mmul(_projScreenMatrix, transform.matrixWorld);
+                        me = _mat4.elements;
+                        m13 = me[2];
+                        m23 = me[6];
+                        m33 = me[10];
+                        m43 = me[14];
+                        m14 = me[3];
+                        m24 = me[7];
+                        m34 = me[11];
+                        m44 = me[15];
+
+                        i = len;
+                        while (i--) {
+                            particle = particles[i];
+                            position = particle.position;
+                            x = position.x;
+                            y = position.y;
+                            z = position.z;
+
+                            particle.z = (m13 * x + m23 * y + m33 * z + m43) / (m14 * x + m24 * y + m34 * z + m44);
+                        }
+
+                        particles.sort(zSort);
+                    }
+
+                    positionArray = emitter._webglVertexArray || (emitter._webglVertexArray = new Float32Array(MAX * 3));
+                    dataArray = emitter._webglParticleArray || (emitter._webglParticleArray = new Float32Array(MAX * 3));
+                    colorArray = emitter._webglParticleColorArray || (emitter._webglParticleColorArray = new Float32Array(MAX * 3));
+
+                    i = len;
+                    while (i--) {
+                        particle = particles[i];
+                        position = particle.position;
+                        color = particle.color;
+                        offset = i * 3;
+
+                        positionArray[offset] = position.x;
+                        positionArray[offset + 1] = position.y;
+                        positionArray[offset + 2] = position.z;
+
+                        dataArray[offset] = particle.angle;
+                        dataArray[offset + 1] = particle.size;
+                        dataArray[offset + 2] = particle.alpha;
+
+                        colorArray[offset] = color.r;
+                        colorArray[offset + 1] = color.g;
+                        colorArray[offset + 2] = color.b;
+                    }
+
+                    positionBuffer = emitter._webglVertexBuffer || (emitter._webglVertexBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, positionBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, positionArray, DRAW);
+
+                    dataBuffer = emitter._webglParticleBuffer || (emitter._webglParticleBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, dataBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, dataArray, DRAW);
+
+                    colorBuffer = emitter._webglParticleColorBuffer || (emitter._webglParticleColorBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, colorBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, colorArray, DRAW);
+                }
+
+                emitter._webglParticleCount = len;
+            }
+
+
+            function createEmitter2DBuffers(emitter, transform) {
+                var MAX = Emitter2D.MAX_PARTICLES,
+
+                    DRAW = _gl.DYNAMIC_DRAW,
+                    FLOAT = _gl.FLOAT,
+                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+
+                    positionArray, dataArray, colorArray,
+                    positionBuffer, dataBuffer, colorBuffer,
+
+                    particles = emitter.particles,
+                    particle,
+                    i = 0,
+                    len = particles.length,
+                    offset, position, color;
+
+                if (len) {
+                    positionArray = emitter._webglVertexArray || (emitter._webglVertexArray = new Float32Array(MAX * 3));
+                    dataArray = emitter._webglParticleArray || (emitter._webglParticleArray = new Float32Array(MAX * 3));
+                    colorArray = emitter._webglParticleColorArray || (emitter._webglParticleColorArray = new Float32Array(MAX * 3));
+
+                    i = len;
+                    while (i--) {
+                        particle = particles[i];
+                        position = particle.position;
+                        color = particle.color;
+                        offset = i * 3;
+
+                        positionArray[offset] = position.x;
+                        positionArray[offset + 1] = position.y;
+                        positionArray[offset + 2] = 0.0;
+
+                        dataArray[offset] = particle.angle;
+                        dataArray[offset + 1] = particle.size;
+                        dataArray[offset + 2] = particle.alpha;
+
+                        colorArray[offset] = color.r;
+                        colorArray[offset + 1] = color.g;
+                        colorArray[offset + 2] = color.b;
+                    }
+
+                    positionBuffer = emitter._webglVertexBuffer || (emitter._webglVertexBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, positionBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, positionArray, DRAW);
+
+                    dataBuffer = emitter._webglParticleBuffer || (emitter._webglParticleBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, dataBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, dataArray, DRAW);
+
+                    colorBuffer = emitter._webglParticleColorBuffer || (emitter._webglParticleColorBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, colorBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, colorArray, DRAW);
+                }
+
+                emitter._webglParticleCount = len;
+            }
+
+
+            function zSort(a, b) {
+
+                return b.z - a.z;
+            }
+
+
+            function createMeshShader(mesh, material, lights) {
+                if (!material.needsUpdate && (_shaders[mesh._id])) return _shaders[mesh._id];
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.mobile = Device.mobile;
+
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = mesh.useBones && mesh.bones.length > 0;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = mesh.vertices.length > 0;
+                parameters.normals = mesh.normals.length > 0;
+                parameters.tangents = mesh.tangents.length > 0;
+                parameters.uvs = mesh.uvs.length > 0;
+                parameters.colors = mesh.colors.length > 0;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material.needsUpdate = false;
+                return (_shaders[mesh._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
+            }
+
+
+            function createSpriteShader(sprite, material, lights) {
+                if (!material.needsUpdate && (_shaders[sprite._id])) return _shaders[sprite._id];
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.sprite = true;
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = false;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = true;
+                parameters.normals = false;
+                parameters.tangents = false;
+                parameters.uvs = true;
+                parameters.colors = false;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material.needsUpdate = false;
+                return (_shaders[sprite._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
+            }
+
+
+            function createEmitterShader(emitter, material, lights) {
+                if (!material.needsUpdate && (_shaders[emitter._id])) return _shaders[emitter._id];
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.emitter = true;
+                parameters.worldSpace = emitter.worldSpace;
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = false;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = true;
+                parameters.normals = false;
+                parameters.tangents = false;
+                parameters.uvs = false;
+                parameters.colors = false;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material.needsUpdate = false;
+                return (_shaders[emitter._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
+            }
+
+
+            function createEmitter2DShader(emitter, material, lights) {
+                if (!material.needsUpdate && (_shaders[emitter._id])) return _shaders[emitter._id];
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.emitter = true;
+                parameters.emitter2d = true;
+                parameters.worldSpace = emitter.worldSpace;
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = false;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = true;
+                parameters.normals = false;
+                parameters.tangents = false;
+                parameters.uvs = false;
+                parameters.colors = false;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material.needsUpdate = false;
+                return (_shaders[emitter._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
+            }
+
+
+            function allocateLights(lights, parameters) {
+                var maxPointLights = 0,
+                    maxDirectionalLights = 0,
+                    maxSpotLights = 0,
+                    maxHemiLights = 0,
+                    light, type,
+                    i = lights.length;
+
+                while (i--) {
+                    light = lights[i];
+                    if (!light.visible || light.onlyShadow) continue;
+                    type = light.type;
+
+                    if (type === LightType.Point) {
+                        maxPointLights++;
+                    } else if (type === LightType.Directional) {
+                        maxDirectionalLights++;
+                    } else if (type === LightType.Spot) {
+                        maxSpotLights++;
+                    } else if (type === LightType.Hemi) {
+                        maxHemiLights++;
+                    }
+                }
+
+                parameters.maxPointLights = maxPointLights;
+                parameters.maxDirectionalLights = maxDirectionalLights;
+                parameters.maxSpotLights = maxSpotLights;
+                parameters.maxHemiLights = maxHemiLights;
+            }
+
+
+            function allocateShadows(lights, parameters) {
+                var maxShadows = 0,
+                    light, type,
+                    i = lights.length;
+
+                while (i--) {
+                    light = lights[i];
+                    if (!light.visible || !light.castShadow) continue;
+                    type = light.type;
+
+                    if (type === LightType.Directional) {
+                        maxShadows++;
+                    } else if (type === LightType.Spot) {
+                        maxShadows++;
+                    }
+                }
+
+                parameters.maxShadows = maxShadows;
+            }
+
+
+            var HEADER = /([\s\S]*)?(void[\s]+main)/,
+                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
+                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
+
+            function createShaderProgram(vertexShader, fragmentShader, parameters) {
+                var chunks = [],
+                    key, program, code, key;
+
+                chunks.push(vertexShader, fragmentShader);
+                for (key in parameters) chunks.push(key, parameters[key]);
+
+                code = chunks.join();
+
+                for (key in _shaders) {
+                    program = _shaders[key];
+
+                    if (program.code === code) {
+                        program.used++;
+                        return program;
+                    }
+                }
+
+                program = new Shader(vertexShader, fragmentShader, parameters, code);
+                return program;
+            }
+
+
+            var HEADER = /([\s\S]*)?(void[\s]+main)/,
+                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
+                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
+
+            function Shader(vertex, fragment, parameters, code) {
+
+                this.vertex = vertex;
+                this.fragment = fragment;
+                this.parameters = parameters;
+                this.code = code;
+                this.used = 1;
+
+                this.program = undefined;
+                this.attributes = undefined;
+                this.uniforms = undefined;
+                this._customAttributes = undefined;
+                this._customUniforms = undefined;
+
+                buildShader(this);
+            }
+
+            Shader.prototype.bind = function(obj, material, transform, camera, lights, ambient) {
+                var program = this.program,
+                    parameters = this.parameters,
+                    uniforms = this.uniforms,
+                    attributes = this.attributes,
+                    force = setProgram(program),
+                    sprite = parameters.sprite,
+                    texture, w, h, i, length, particleSizeRatio;
+
+                if (sprite) {
+                    if (_lastBuffers !== _spriteBuffers) {
+                        disableAttributes();
+
+                        attributes.position.set(_spriteBuffers._webglVertexBuffer);
+                        attributes.uv.set(_spriteBuffers._webglUvBuffer);
+
+                        _lastBuffers = _spriteBuffers;
+                    }
+                } else {
+                    if (_lastBuffers !== obj) {
+                        disableAttributes();
+
+                        if (obj._webglVertexBuffer && attributes.position) attributes.position.set(obj._webglVertexBuffer);
+                        if (obj._webglNormalBuffer && attributes.normal) attributes.normal.set(obj._webglNormalBuffer);
+                        if (obj._webglTangentBuffer && attributes.tangent) attributes.tangent.set(obj._webglTangentBuffer);
+                        if (obj._webglColorBuffer && attributes.color) attributes.color.set(obj._webglColorBuffer);
+
+                        if (obj._webglUvBuffer && attributes.uv) attributes.uv.set(obj._webglUvBuffer);
+                        if (obj._webglUv2Buffer && attributes.uv2) attributes.uv2.set(obj._webglUv2Buffer);
+
+                        if (obj._webglBoneIndicesBuffer && attributes.boneIndex) attributes.boneIndex.set(obj._webglBoneIndicesBuffer);
+                        if (obj._webglBoneWeightsBuffer && attributes.boneWeight) attributes.boneWeight.set(obj._webglBoneWeightsBuffer);
+
+                        if (obj._webglParticleBuffer && attributes.data) attributes.data.set(obj._webglParticleBuffer);
+                        if (obj._webglParticleColorBuffer && attributes.particleColor) attributes.particleColor.set(obj._webglParticleColorBuffer);
+
+                        if (material.wireframe) {
+                            if (obj._webglLineBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, obj._webglLineBuffer);
+                        } else {
+                            if (obj._webglIndexBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, obj._webglIndexBuffer);
+                        }
+
+                        _lastBuffers = obj;
+                    }
+                }
+
+                if (sprite) {
+                    texture = material.uniforms.diffuseMap;
+                    if (!texture) throw "Shader.bind: Sprite material and shader requires diffuseMap";
+
+                    w = texture.invWidth;
+                    h = texture.invHeight;
+
+                    uniforms.size.set(_vector2.set(obj.width, obj.height), force);
+                    uniforms.crop.set(_vector4.set(obj.x * w, obj.y * h, obj.w * w, obj.h * h), force);
+                }
+
+                if (parameters.emitter && parameters.worldSpace) {
+                    if (uniforms.modelMatrix) uniforms.modelMatrix.set(_mat4.identity(), force);
+                    if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.set(camera.view, force);
+                } else {
+                    if (uniforms.modelMatrix) uniforms.modelMatrix.set(transform.matrixWorld, force);
+                    if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.set(transform.modelView, force);
+                }
+                if (uniforms.particleSizeRatio) {
+                    particleSizeRatio = (_viewportWidth < _viewportHeight ? _viewportWidth : _viewportHeight);
+
+                    if (parameters.emitter2d || camera.camera2d || camera.orthographic) {
+                        particleSizeRatio *= 1.0 / (camera.orthographicSize * 2.0);
+                    } else {
+                        particleSizeRatio *= 2.0;
+                    }
+
+                    uniforms.particleSizeRatio.set(particleSizeRatio);
+                }
+
+                if (uniforms.projectionMatrix) uniforms.projectionMatrix.set(camera.projection, force);
+                if (uniforms.viewMatrix) uniforms.viewMatrix.set(camera.view, force);
+                if (uniforms.normalMatrix) uniforms.normalMatrix.set(transform.normalMatrix, force);
+                if (uniforms.cameraPosition) uniforms.cameraPosition.set(_vector3.positionFromMat4((camera.transform || camera.transform2d).matrixWorld), force);
+                if (uniforms.ambient) uniforms.ambient.set(ambient, force);
+
+                if (force && parameters.useLights && (length = lights.length)) {
+                    var maxPointLights = parameters.maxPointLights,
+                        maxDirectionalLights = parameters.maxDirectionalLights,
+                        maxSpotLights = parameters.maxSpotLights,
+                        maxHemiLights = parameters.maxHemiLights,
+
+                        pointLights = 0,
+                        pointLightColor = uniforms.pointLightColor,
+                        pointLightPosition = uniforms.pointLightPosition,
+                        pointLightDistance = uniforms.pointLightDistance,
+
+                        directionalLights = 0,
+                        directionalLightColor = uniforms.directionalLightColor,
+                        directionalLightDirection = uniforms.directionalLightDirection,
+
+                        spotLights = 0,
+                        spotLightColor = uniforms.spotLightColor,
+                        spotLightPosition = uniforms.spotLightPosition,
+                        spotLightDirection = uniforms.spotLightDirection,
+                        spotLightDistance = uniforms.spotLightDistance,
+                        spotLightAngleCos = uniforms.spotLightAngleCos,
+                        spotLightExponent = uniforms.spotLightExponent,
+
+                        hemiLights = 0,
+                        hemiLightColor = uniforms.hemiLightColor,
+                        hemiLightDirection = uniforms.hemiLightDirection,
+
+                        light, type;
+
+                    for (i = 0; i < length; i++) {
+                        light = lights[i];
+                        if (!light.visible) continue;
+
+                        type = light.type;
+                        _color.copy(light.color).smul(light.energy);
+
+                        if (pointLightColor.length && type === LightType.Point) {
+                            if (pointLights >= maxPointLights) continue;
+
+                            _vector3.positionFromMat4((light.transform || light.transform2d).matrixWorld);
+
+                            pointLightColor[pointLights].set(_color, force);
+                            pointLightPosition[pointLights].set(_vector3, force);
+                            pointLightDistance[pointLights].set(light.distance, force);
+                            pointLights++;
+                        } else if (directionalLightColor.length && type === LightType.Directional) {
+                            if (directionalLights >= maxDirectionalLights) continue;
+
+                            _vector3.positionFromMat4((light.transform || light.transform2d).matrixWorld).sub(light.target).normalize();
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            directionalLightColor[directionalLights].set(_color, force);
+                            directionalLightDirection[directionalLights].set(_vector3, force);
+                            directionalLights++;
+
+                        } else if (spotLightColor.length && type === LightType.Spot) {
+                            if (spotLights >= maxSpotLights) continue;
+
+                            _vector3.positionFromMat4((light.transform || light.transform2d).matrixWorld);
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            _vector3_2.copy(_vector3).sub(light.target).normalize();
+                            if (_vector3_2.lengthSq() === 0) continue;
+
+                            spotLightColor[spotLights].set(_color, force);
+                            spotLightPosition[spotLights].set(_vector3, force);
+                            spotLightDirection[spotLights].set(_vector3_2, force);
+                            spotLightDistance[spotLights].set(light.distance, force);
+                            spotLightAngleCos[spotLights].set(light._angleCos, force);
+                            spotLightExponent[spotLights].set(light.exponent, force);
+                            spotLights++;
+
+                        } else if (hemiLightColor.length && type === LightType.Hemi) {
+                            if (hemiLights >= maxHemiLights) continue;
+
+                            _vector3.positionFromMat4((light.transform || light.transform2d).matrixWorld).sub(light.target).normalize();
+                            if (_vector3.lengthSq() === 0) continue;
+
+                            hemiLightColor[hemiLights].set(_color, force);
+                            hemiLightDirection[hemiLights].set(_vector3, force);
+                            hemiLights++;
+                        }
+                    }
+                }
+
+                bindCustomUniforms(this._customUniforms, uniforms, material.name, material.uniforms, force);
+                _textureIndex = 0;
+            };
+
+            function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms, force) {
+                var i = customUniforms.length,
+                    customUniform, uniformValue, length, name, type, value, j;
+
+                while (i--) {
+                    customUniform = customUniforms[i];
+                    name = customUniform;
+
+                    uniformValue = uniforms[name];
+                    value = materialUniforms[name];
+
+                    if (!uniformValue) continue;
+                    if (!value) throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
+
+                    if ((length = uniformValue.length)) {
+                        j = length;
+                        while (j--) uniformValue.set(value[j], force);
+                    } else {
+                        uniformValue.set(value, force);
+                    }
+                }
+            }
+
+            function buildShader(shader) {
+                var parameters = shader.parameters,
+                    vertexShader = shader.vertex,
+                    fragmentShader = shader.fragment,
+                    sprite = parameters.sprite,
+                    emitter = parameters.emitter,
+                    useLights = parameters.useLights,
+                    useShadows = parameters.useShadows,
+                    useFog = parameters.useFog,
+                    useBones = parameters.useBones,
+                    useVertexLit = parameters.useVertexLit,
+                    useSpecular = parameters.useSpecular,
+                    OES_standard_derivatives = parameters.OES_standard_derivatives,
+
+                    definesPrefix = [
+                        "precision " + _precision + " float;",
+                        "precision " + _precision + " int;",
+
+                        useLights ? "#define USE_LIGHTS" : "",
+                        useShadows ? "#define USE_SHADOWS" : "",
+                        useBones ? "#define USE_SKINNING" : "",
+                        sprite ? "#define IS_SPRITE" : "",
+
+                        useLights ? "#define MAX_DIR_LIGHTS " + parameters.maxDirectionalLights : "",
+                        useLights ? "#define MAX_POINT_LIGHTS " + parameters.maxPointLights : "",
+                        useLights ? "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights : "",
+                        useLights ? "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights : "",
+
+                        useShadows ? "#define MAX_SHADOWS " + parameters.maxShadows : "",
+                        ""
+                    ].join("\n"),
+
+                    vertexPrefix = [
+                        definesPrefix,
+
+                        "uniform mat4 modelMatrix;",
+                        "uniform mat4 modelViewMatrix;",
+                        "uniform mat4 projectionMatrix;",
+                        "uniform mat4 viewMatrix;",
+                        "uniform mat3 normalMatrix;",
+                        "uniform vec3 cameraPosition;",
+
+                        parameters.positions ? "attribute vec3 position;" : "",
+                        parameters.normals ? "attribute vec3 normal;" : "",
+                        parameters.tangents ? "attribute vec4 tangent;" : "",
+                        parameters.uvs ? "attribute vec2 uv;" : "",
+                        parameters.colors ? "attribute vec3 color;" : "",
+                        emitter ? "attribute vec3 data;" : "",
+
+                        useBones ? "attribute int boneIndex;" : "",
+                        useBones ? "attribute vec3 boneWeight;" : "",
+                        useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
+                    ].join("\n"),
+
+                    fragmentPrefix = [
+                        OES_standard_derivatives ? "#extension GL_OES_standard_derivatives : enable" : "",
+                        definesPrefix,
+
+                        "uniform mat4 viewMatrix;",
+                        "uniform vec3 cameraPosition;"
+                    ].join("\n"),
+
+                    glVertexShader = vertexPrefix + "\n" + vertexShader,
+                    glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
+
+                    main = "void main(void) {\n",
+                    footer = "\n}",
+
+                    vertexHeader = glVertexShader.match(HEADER)[1],
+                    vertexMain = glVertexShader.match(MAIN_FUNCTION)[5],
+                    fragmentHeader = glFragmentShader.match(HEADER)[1],
+                    fragmentMain = glFragmentShader.match(MAIN_FUNCTION)[5];
+
+                if (sprite) {
+                    vertexHeader += ShaderChunks.sprite_header;
+                    vertexMain += ShaderChunks.sprite_vertex_after;
+                }
+
+                if (emitter) {
+                    vertexHeader += ShaderChunks.particle_header_vertex + ShaderChunks.particle_header;
+                    fragmentHeader += ShaderChunks.particle_header;
+                    if (parameters.emitter2d) {
+                        vertexMain = ShaderChunks.particle_vertex_size_2d + vertexMain;
+                    } else {
+                        vertexMain = ShaderChunks.particle_vertex_size + vertexMain;
+                    }
+                    vertexMain = ShaderChunks.particle_vertex + vertexMain;
+                }
+
+                if (OES_standard_derivatives) {
+                    if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
+                    if (parameters.useBump) fragmentHeader += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
+                }
+
+                if (useLights) {
+                    if (useVertexLit) {
+                        vertexHeader += ShaderChunks.lights + ShaderChunks.VertexLight;
+                    } else {
+                        vertexHeader += ShaderChunks.perPixelVaryingHeader;
+                        vertexMain = ShaderChunks.perPixelVaryingMain + vertexMain;
+
+                        fragmentHeader += ShaderChunks.lights + ShaderChunks.perPixelVaryingHeader;
+                        if (useSpecular) {
+                            fragmentHeader += ShaderChunks.PixelLight;
+                        } else {
+                            fragmentHeader += ShaderChunks.PixelLightNoSpec;
+                        }
+                    }
+
+                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                    if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
+                    vertexMain = ShaderChunks.worldPosition + vertexMain;
+                } else {
+                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                }
+
+                if (useBones) {
+                    vertexHeader += ShaderChunks.getBoneMatrix;
+                    if (parameters.normals) vertexMain = ShaderChunks.boneNormal + vertexMain;
+                    vertexMain = ShaderChunks.bone + vertexMain;
+                }
+
+                glVertexShader = vertexHeader + main + vertexMain + footer;
+                glFragmentShader = fragmentHeader + main + fragmentMain + footer;
+
+                shader.program = createProgram(_gl, glVertexShader, glFragmentShader);
+
+                parseUniformsAttributesArrays(vertexShader, fragmentShader, (shader._customAttributes = []), (shader._customUniforms = []));
+                parseUniformsAttributes(shader.program, glVertexShader, glFragmentShader, (shader.attributes = {}), (shader.uniforms = {}));
+            };
+
+
+            var useDepth = !opts.disableDepth,
+
+                _this = this,
+
+                _gl = undefined,
+                _canvas = undefined,
+                _element = undefined,
+                _context = false,
+
+                _extensions = undefined,
+
+                _precision = "highp",
+                _maxAnisotropy = 0,
+                _maxTextures = 0,
+                _maxVertexTextures = 0,
+                _maxTextureSize = 0,
+                _maxCubeTextureSize = 0,
+                _maxRenderBufferSize = 0,
+
+                _maxUniforms = 0,
+                _maxVaryings = 0,
+                _maxAttributes = 0,
+
+                _viewportX = 0,
+                _viewportY = 0,
+                _viewportWidth = 1,
+                _viewportHeight = 1,
+
+                _textureIndex = 0,
+
+                _lastClearColor = new Color,
+                _lastClearAlpha = 1,
+                _lastBlending = -1,
+                _lastCullFace = -1,
+                _cullFaceDisabled = true,
+                _lastDepthTest = -1,
+                _lastDepthWrite = -1,
+                _lastLineWidth = -1,
+
+                _enabledAttributes = undefined,
+                _lastProgram = undefined,
+
+                _attributes = merge(opts.attributes || {}, {
+                    alpha: true,
+                    antialias: true,
+                    depth: true,
+                    premultipliedAlpha: true,
+                    preserveDrawingBuffer: false,
+                    stencil: true
+                });
 
             this.init = function(canvas) {
                 if (_canvas) this.clear();
@@ -99,12 +1435,26 @@ define([
                 addEvent(_element, "webglcontextlost", handleWebGLContextLost, this);
                 addEvent(_element, "webglcontextrestored", handleWebGLContextRestored, this);
 
+                createBuffer(_spriteBuffers, "_webglVertexBuffer", new Float32Array([-0.5, 0.5, 0.0, -0.5, -0.5, 0.0,
+                    0.5, 0.5, 0.0,
+                    0.5, -0.5, 0.0
+                ]));
+                createBuffer(_spriteBuffers, "_webglUvBuffer", new Float32Array([
+                    0, 0,
+                    0, 1,
+                    1, 0,
+                    1, 1
+                ]));
+                _spriteBuffers._webglVertexCount = 4;
+
                 return this;
             };
 
 
             this.clear = function() {
                 if (!_canvas) return this;
+
+                this.off();
 
                 removeEvent(element, "webglcontextlost", handleWebGLContextLost, this);
                 removeEvent(element, "webglcontextrestored", handleWebGLContextRestored, this);
@@ -113,7 +1463,6 @@ define([
                 _canvas = undefined;
                 _element = undefined;
                 _context = false;
-                _programs.length = 0;
 
                 _extensions = undefined;
 
@@ -129,32 +1478,34 @@ define([
                 _maxVaryings = 0;
                 _maxAttributes = 0;
 
-                _lastCamera = undefined;
-                _lastResizeFn = undefined;
-                _lastScene = undefined;
-
                 _viewportX = 0;
                 _viewportY = 0;
                 _viewportWidth = 1;
                 _viewportHeight = 1;
 
-                _lastBlending = -1;
+                _textureIndex = 0;
+
                 _lastClearColor.set(0, 0, 0);
+                _lastClearAlpha = 1;
+                _lastBlending = -1;
                 _lastCullFace = -1;
+                _cullFaceDisabled = true;
                 _lastDepthTest = -1;
                 _lastDepthWrite = -1;
                 _lastLineWidth = -1;
 
-                _lastBuffer = undefined;
-                _lastProgram = undefined;
                 _enabledAttributes = undefined;
+                _lastProgram = undefined;
 
-                _spriteBuffers = undefined;
-                _spriteShader = undefined;
+                _shaders = {};
+                _spriteBuffers = {}
+                _lastBuffers = undefined;
+                _lastCamera = undefined;
+                _lastResizeFn = undefined;
+                _lastScene = undefined;
 
                 return this;
             };
-
 
             defineProperty(this, "gl", {
                 get: function() {
@@ -222,11 +1573,12 @@ define([
                 }
             });
 
+            function createBuffer(obj, name, array) {
 
-            var _viewportX = 0,
-                _viewportY = 0,
-                _viewportWidth = 1,
-                _viewportHeight = 1;
+                obj[name] = obj[name] || _gl.createBuffer();
+                _gl.bindBuffer(_gl.ARRAY_BUFFER, obj[name]);
+                _gl.bufferData(_gl.ARRAY_BUFFER, array, _gl.STATIC_DRAW);
+            }
 
             function setViewport(x, y, width, height) {
                 x || (x = 0);
@@ -246,8 +1598,6 @@ define([
             this.setViewport = setViewport;
 
 
-            var _lastDepthTest = -1;
-
             function setDepthTest(depthTest) {
 
                 if (_lastDepthTest !== depthTest) {
@@ -264,8 +1614,6 @@ define([
             this.setDepthTest = setDepthTest;
 
 
-            var _lastDepthWrite = -1;
-
             function setDepthWrite(depthWrite) {
 
                 if (_lastDepthWrite !== depthWrite) {
@@ -277,8 +1625,6 @@ define([
             this.setDepthWrite = setDepthWrite;
 
 
-            var _lastLineWidth = 1;
-
             function setLineWidth(width) {
 
                 if (_lastLineWidth !== width) {
@@ -289,9 +1635,6 @@ define([
             }
             this.setLineWidth = setLineWidth;
 
-
-            var _lastCullFace = -1,
-                _cullFaceDisabled = true;
 
             function setCullFace(cullFace) {
 
@@ -318,8 +1661,6 @@ define([
             }
             this.setCullFace = setCullFace;
 
-
-            var _lastBlending = -1;
 
             function setBlending(blending) {
 
@@ -360,18 +1701,15 @@ define([
             this.setScissor = setScissor;
 
 
-            var _clearColor = new Color,
-                _clearAlpha = 1;
-
             function setClearColor(color, alpha) {
                 alpha || (alpha = 1);
 
-                if (!_clearColor.equals(color) || alpha !== _clearAlpha) {
+                if (!_lastClearColor.equals(color) || alpha !== _lastClearAlpha) {
 
-                    _clearColor.copy(color);
-                    _clearAlpha = alpha;
+                    _lastClearColor.copy(color);
+                    _lastClearAlpha = alpha;
 
-                    this.context.clearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha);
+                    this.context.clearColor(_lastClearColor.r, _lastClearColor.g, _lastClearColor.b, _lastClearAlpha);
                 }
             }
             this.setClearColor = setClearColor;
@@ -410,9 +1748,43 @@ define([
             this.clearStencil = clearStencil;
 
 
-            var _textureIndex = 0;
+            function setProgram(program) {
 
-            function setTexture(location, texture) {
+                if (_lastProgram !== program) {
+                    _gl.useProgram(program);
+                    _lastProgram = program;
+                    return true;
+                }
+                return false;
+            };
+            this.setProgram = setProgram;
+
+
+            function enableAttribute(attribute) {
+
+                if (_enabledAttributes[attribute] === 0) {
+                    _gl.enableVertexAttribArray(attribute);
+                    _enabledAttributes[attribute] = 1;
+                }
+            };
+            this.enableAttribute = enableAttribute;
+
+
+            function disableAttributes() {
+                var i = _maxAttributes;
+
+                while (i--) {
+
+                    if (_enabledAttributes[i] === 1) {
+                        _gl.disableVertexAttribArray(i);
+                        _enabledAttributes[i] = 0;
+                    }
+                }
+            };
+            this.disableAttributes = disableAttributes;
+
+
+            function setTexture(location, texture, force) {
                 if (!texture || !texture.raw) return;
                 var index, glTexture;
 
@@ -504,13 +1876,13 @@ define([
             }
 
 
-            function setTextureCube(location, cubeTexture) {
+            function setTextureCube(location, cubeTexture, force) {
                 if (!cubeTexture || !cubeTexture.raw) return;
                 var glTexture = cubeTexture._webgl,
                     index;
 
                 if (_textureIndex >= _maxTextures) {
-                    Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
+                    Log.warn("Renderer setTextureCube: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
                     return;
                 }
 
@@ -618,892 +1990,9 @@ define([
                 canvas.height = newHeight;
                 ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, newWidth, newHeight);
 
-                Log.once("Renderer clampToMaxSize: image height larger than machines max cube texture size (max = " + maxSize + ")");
+                Log.once("Renderer clampToMaxSize: image height larger than machines max size (max = " + maxSize + ")");
 
                 return canvas;
-            }
-
-
-            function initMeshBuffers(mesh) {
-                if (!mesh.dynamic && mesh._webgl.inittedBuffers) return mesh._webgl;
-                var webgl = mesh._webgl,
-                    DRAW = mesh.dynamic ? _gl.DYNAMIC_DRAW : _gl.STATIC_DRAW,
-                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
-                    ELEMENT_ARRAY_BUFFER = _gl.ELEMENT_ARRAY_BUFFER,
-                    bufferArray, items, item, i, len, offset, vertexIndex;
-
-                items = mesh.vertices || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.verticesNeedUpdate) {
-                    bufferArray = webgl.vertexArray;
-                    if (!bufferArray || bufferArray.length !== len * 3) {
-                        bufferArray = webgl.vertexArray = new Float32Array(len * 3);
-                        webgl.vertexCount = len;
-                    }
-
-                    for (i = 0; i < len; i++) {
-                        item = items[i];
-                        offset = i * 3;
-
-                        bufferArray[offset] = item.x;
-                        bufferArray[offset + 1] = item.y;
-                        bufferArray[offset + 2] = item.z;
-                    }
-
-                    webgl.vertexBuffer = webgl.vertexBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.vertexBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.verticesNeedUpdate = false;
-                }
-
-                items = mesh.normals || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.normalsNeedUpdate) {
-                    bufferArray = webgl.normalArray;
-                    if (!bufferArray || bufferArray.length !== len * 3) bufferArray = webgl.normalArray = new Float32Array(len * 3);
-
-                    for (i = 0; i < len; i++) {
-                        item = items[i];
-                        offset = i * 3;
-
-                        bufferArray[offset] = item.x;
-                        bufferArray[offset + 1] = item.y;
-                        bufferArray[offset + 2] = item.z;
-                    }
-
-                    webgl.normalBuffer = webgl.normalBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.normalBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.normalsNeedUpdate = false;
-                }
-
-                items = mesh.tangents || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.tangentsNeedUpdate) {
-                    bufferArray = webgl.tangentArray;
-                    if (!bufferArray || bufferArray.length !== len * 4) bufferArray = webgl.tangentArray = new Float32Array(len * 4);
-
-                    for (i = 0; i < len; i++) {
-                        item = items[i];
-                        offset = i * 4;
-
-                        bufferArray[offset] = item.x;
-                        bufferArray[offset + 1] = item.y;
-                        bufferArray[offset + 2] = item.z;
-                        bufferArray[offset + 3] = item.w;
-                    }
-
-                    webgl.tangentBuffer = webgl.tangentBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.tangentBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.tangentsNeedUpdate = false;
-                }
-
-                items = mesh.indices || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.indicesNeedUpdate) {
-                    bufferArray = webgl.indexArray;
-                    if (!bufferArray || bufferArray.length !== len) {
-                        bufferArray = webgl.indexArray = new Uint16Array(len);
-                        webgl.indexCount = len;
-                    }
-
-                    for (i = 0; i < len; i++) bufferArray[i] = items[i];
-
-                    webgl.indexBuffer = webgl.indexBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ELEMENT_ARRAY_BUFFER, webgl.indexBuffer);
-                    _gl.bufferData(ELEMENT_ARRAY_BUFFER, bufferArray, DRAW);
-
-                    bufferArray = webgl.lineArray;
-                    if (!bufferArray || bufferArray.length !== len * 3) {
-                        bufferArray = webgl.lineArray = new Uint16Array(len * 3);
-                        webgl.lineCount = len * 3;
-                    }
-
-                    vertexIndex = offset = 0;
-                    for (i = 0; i < len; i++) {
-
-                        bufferArray[offset] = items[vertexIndex];
-                        bufferArray[offset + 1] = items[vertexIndex + 1];
-
-                        bufferArray[offset + 2] = items[vertexIndex];
-                        bufferArray[offset + 3] = items[vertexIndex + 2];
-
-                        bufferArray[offset + 4] = items[vertexIndex + 1];
-                        bufferArray[offset + 5] = items[vertexIndex + 2];
-
-                        offset += 6;
-                        vertexIndex += 3;
-                    }
-
-                    webgl.lineBuffer = webgl.lineBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ELEMENT_ARRAY_BUFFER, webgl.lineBuffer);
-                    _gl.bufferData(ELEMENT_ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.indicesNeedUpdate = false;
-                }
-
-                items = mesh.colors || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.colorsNeedUpdate) {
-                    bufferArray = webgl.colorArray;
-                    if (!bufferArray || bufferArray.length !== len * 3) bufferArray = webgl.colorArray = new Float32Array(len * 3);
-
-                    for (i = 0; i < len; i++) {
-                        item = items[i];
-                        offset = i * 3;
-
-                        bufferArray[offset] = item.x;
-                        bufferArray[offset + 1] = item.y;
-                        bufferArray[offset + 2] = item.z;
-                    }
-
-                    webgl.colorBuffer = webgl.colorBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.colorBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.colorsNeedUpdate = false;
-                }
-
-                items = mesh.uvs || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.uvsNeedUpdate) {
-                    bufferArray = webgl.uvArray;
-                    if (!bufferArray || bufferArray.length !== len * 2) bufferArray = webgl.uvArray = new Float32Array(len * 2);
-
-                    for (i = 0; i < len; i++) {
-                        item = items[i];
-                        offset = i * 2;
-
-                        bufferArray[offset] = item.x;
-                        bufferArray[offset + 1] = item.y;
-                    }
-
-                    webgl.uvBuffer = webgl.uvBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.uvBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.uvsNeedUpdate = false;
-                }
-
-                items = mesh.boneIndices || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.boneIndicesNeedUpdate) {
-                    bufferArray = webgl.boneIndexArray;
-                    if (!bufferArray || bufferArray.length !== len) bufferArray = webgl.boneIndexArray = new Uint16Array(len);
-
-                    for (i = 0; i < len; i++) bufferArray[i] = items[i];
-
-                    webgl.boneIndexBuffer = webgl.boneIndexBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.boneIndexBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.boneIndicesNeedUpdate = false;
-                }
-
-                items = mesh.boneWeights || EMPTY_ARRAY;
-                len = items.length;
-                if (len && mesh.boneWeightsNeedUpdate) {
-                    bufferArray = webgl.boneWeightArray;
-                    if (!bufferArray || bufferArray.length !== len) bufferArray = webgl.boneWeightArray = new Float32Array(len);
-
-                    for (i = 0; i < len; i++) bufferArray[i] = items[i];
-
-                    webgl.boneWeightBuffer = webgl.boneWeightBuffer || _gl.createBuffer();
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.boneWeightBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, bufferArray, DRAW);
-
-                    mesh.boneWeightsNeedUpdate = false;
-                }
-
-                webgl.inittedBuffers = true;
-
-                return webgl;
-            }
-
-
-            function initEmitterBuffers(emitter, transform, attributes) {
-                var MAX = Emitter.MAX_PARTICLES,
-
-                    webgl = emitter._webgl,
-                    DRAW = _gl.DYNAMIC_DRAW,
-                    FLOAT = _gl.FLOAT,
-                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
-
-                    positionArray, dataArray,
-                    positionBuffer, dataBuffer,
-
-                    particles = emitter.particles,
-                    particle,
-                    i = 0,
-                    len = particles.length,
-                    offset, position,
-                    me, x, y, z,
-                    m13, m23, m33, m43,
-                    m14, m24, m34, m44
-
-                if (len) {
-                    if (emitter.sort) {
-                        _mat4.mmul(_projScreenMatrix, transform.matrixWorld);
-                        me = _mat4.elements;
-                        m13 = me[2];
-                        m23 = me[6];
-                        m33 = me[10];
-                        m43 = me[14];
-                        m14 = me[3];
-                        m24 = me[7];
-                        m34 = me[11];
-                        m44 = me[15];
-
-                        i = len;
-                        while (i--) {
-                            particle = particles[i];
-                            position = particle.position;
-                            x = position.x;
-                            y = position.y;
-                            z = position.z;
-
-                            particle.z = (m13 * x + m23 * y + m33 * z + m43) / (m14 * x + m24 * y + m34 * z + m44);
-                        }
-
-                        particles.sort(zSort);
-                    }
-
-                    positionArray = webgl.positionArray || (webgl.positionArray = new Float32Array(MAX * 3));
-                    dataArray = webgl.dataArray || (webgl.dataArray = new Float32Array(MAX * 3));
-
-                    i = len;
-                    while (i--) {
-                        particle = particles[i];
-                        position = particle.position;
-                        offset = i * 3;
-
-                        positionArray[offset] = position.x;
-                        positionArray[offset + 1] = position.y;
-                        positionArray[offset + 2] = position.z;
-
-                        dataArray[offset] = particle.angle;
-                        dataArray[offset + 1] = particle.size;
-                        dataArray[offset + 2] = particle.alpha;
-                    }
-
-                    disableAttributes();
-
-                    positionBuffer = webgl.positionBuffer || (webgl.positionBuffer = _gl.createBuffer());
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.positionBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, positionArray, DRAW);
-                    enableAttribute(attributes.position);
-                    _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
-
-                    dataBuffer = webgl.dataBuffer || (webgl.dataBuffer = _gl.createBuffer());
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.dataBuffer);
-                    _gl.bufferData(ARRAY_BUFFER, dataArray, DRAW);
-                    enableAttribute(attributes.data);
-                    _gl.vertexAttribPointer(attributes.data, 3, FLOAT, false, 0, 0);
-                }
-
-                webgl.particleCount = len;
-                _lastBuffer = webgl;
-
-                return webgl;
-            }
-
-
-            function zSort(a, b) {
-
-                return b.z - a.z;
-            }
-
-
-            function initShader(material, mesh, lights) {
-                if (!material.needsUpdate && material._webgl) return material._webgl;
-
-                var shader = material.shader,
-                    uniforms = material.uniforms,
-                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
-                    parameters = {};
-
-                parameters.mobile = Device.mobile;
-                parameters.useLights = shader.lights;
-                parameters.useShadows = shader.shadows;
-                parameters.useFog = shader.fog;
-                parameters.useBones = mesh.useBones && mesh.bones.length > 0;
-                parameters.useVertexLit = shader.vertexLit;
-                parameters.useSpecular = shader.specular;
-
-                parameters.useNormal = !! uniforms.normalMap;
-                parameters.useBump = !! uniforms.bumpMap;
-
-                parameters.positions = mesh.vertices.length > 0;
-                parameters.normals = mesh.normals.length > 0;
-                parameters.tangents = mesh.tangents.length > 0;
-                parameters.uvs = mesh.uvs.length > 0;
-                parameters.colors = mesh.colors.length > 0;
-
-                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
-
-                allocateLights(lights, parameters);
-                allocateShadows(lights, parameters);
-
-                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
-                material.needsUpdate = false;
-
-                return material._webgl;
-            }
-
-
-            function initSpriteShader(material, sprite, lights) {
-                if (!material.needsUpdate && material._webgl) return material._webgl;
-
-                var shader = material.shader,
-                    uniforms = material.uniforms,
-                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
-                    parameters = {};
-
-                parameters.mobile = Device.mobile;
-                parameters.useLights = shader.lights;
-                parameters.useShadows = shader.shadows;
-                parameters.useFog = shader.fog;
-                parameters.useBones = mesh.useBones && mesh.bones.length > 0;
-                parameters.useVertexLit = shader.vertexLit;
-                parameters.useSpecular = shader.specular;
-
-                parameters.useNormal = !! uniforms.normalMap;
-                parameters.useBump = !! uniforms.bumpMap;
-
-                parameters.positions = mesh.vertices.length > 0;
-                parameters.normals = mesh.normals.length > 0;
-                parameters.tangents = mesh.tangents.length > 0;
-                parameters.uvs = mesh.uvs.length > 0;
-                parameters.colors = mesh.colors.length > 0;
-
-                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
-
-                allocateLights(lights, parameters);
-                allocateShadows(lights, parameters);
-
-                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
-                material.needsUpdate = false;
-
-                return material._webgl;
-            }
-
-
-            function initEmitterShader(material, emitter, lights) {
-                if (!material.needsUpdate && material._webgl) return material._webgl;
-
-                var shader = material.shader,
-                    webgl = emitter._webgl,
-                    uniforms = material.uniforms,
-                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
-                    parameters = {};
-
-                parameters.emitter = true;
-                parameters.mobile = Device.mobile;
-                parameters.useLights = shader.lights;
-                parameters.useShadows = shader.shadows;
-                parameters.useFog = shader.fog;
-                parameters.useBones = false;
-                parameters.useVertexLit = shader.vertexLit;
-                parameters.useSpecular = shader.specular;
-
-                parameters.useNormal = !! uniforms.normalMap;
-                parameters.useBump = !! uniforms.bumpMap;
-
-                parameters.positions = true;
-                parameters.normals = false;
-                parameters.tangents = false;
-                parameters.uvs = false;
-                parameters.colors = false;
-
-                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
-
-                allocateLights(lights, parameters);
-                allocateShadows(lights, parameters);
-
-                material._webgl = createShaderProgram(shader.vertex, shader.fragment, parameters);
-                material.needsUpdate = false;
-
-                return material._webgl;
-            }
-
-
-            function allocateLights(lights, parameters) {
-                var maxPointLights = 0,
-                    maxDirectionalLights = 0,
-                    maxSpotLights = 0,
-                    maxHemiLights = 0,
-                    light, type,
-                    i = 0,
-                    il = lights.length;
-
-                for (; i < il; i++) {
-                    light = lights[i];
-                    if (!light.visible || light.onlyShadow) continue;
-                    type = light.type;
-
-                    if (type === LightType.Point) {
-                        maxPointLights++;
-                    } else if (type === LightType.Directional) {
-                        maxDirectionalLights++;
-                    } else if (type === LightType.Spot) {
-                        maxSpotLights++;
-                    } else if (type === LightType.Hemi) {
-                        maxHemiLights++;
-                    }
-                }
-
-                parameters.maxPointLights = maxPointLights;
-                parameters.maxDirectionalLights = maxDirectionalLights;
-                parameters.maxSpotLights = maxSpotLights;
-                parameters.maxHemiLights = maxHemiLights;
-            }
-
-
-            function allocateShadows(lights, parameters) {
-                var maxShadows = 0,
-                    light, type,
-                    i = 0,
-                    il = lights.length;
-
-                for (; i < il; i++) {
-                    light = lights[i];
-                    if (!light.visible || !light.castShadow) continue;
-                    type = light.type;
-
-                    if (type === LightType.Directional) {
-                        maxShadows++;
-                    } else if (type === LightType.Spot) {
-                        maxShadows++;
-                    }
-                }
-
-                parameters.maxShadows = maxShadows;
-            }
-
-
-            var HEADER = /([\s\S]*)?(void[\s]+main)/,
-                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
-                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
-
-            function createShaderProgram(vertexShader, fragmentShader, parameters) {
-                var chunks = [],
-                    key, program, code, i;
-
-                chunks.push(fragmentShader, vertexShader);
-                for (key in parameters) chunks.push(key, parameters[key]);
-
-                code = chunks.join();
-
-                for (i = _programs.length; i--;) {
-                    program = _programs[i];
-
-                    if (program.code === code) {
-                        program.used++;
-                        return program;
-                    }
-                }
-
-                program = new Shader(vertexShader, fragmentShader, parameters, code);
-                return program;
-            }
-
-
-            var _lastBuffer = undefined;
-
-            function bindSprite(attributes, wireframe) {
-                if (_lastBuffer === _spriteBuffers) return;
-
-                var ARRAY_BUFFER = _gl.ARRAY_BUFFER,
-                    FLOAT = _gl.FLOAT;
-
-
-                if (attributes.position > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, _spriteBuffers.vertexBuffer);
-                    enableAttribute(attributes.position);
-                    _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
-                }
-                if (attributes.uv > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, _spriteBuffers.uvBuffer);
-                    enableAttribute(attributes.uv);
-                    _gl.vertexAttribPointer(attributes.uv, 2, FLOAT, false, 0, 0);
-                }
-
-                _lastBuffer = _spriteBuffers;
-            }
-
-            function bindMesh(mesh, attributes, wireframe) {
-                if (_lastBuffer === mesh._webgl) return;
-                disableAttributes();
-
-                var webgl = mesh._webgl,
-                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
-                    FLOAT = _gl.FLOAT;
-
-                if (webgl.vertexBuffer && attributes.position > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.vertexBuffer);
-                    enableAttribute(attributes.position);
-                    _gl.vertexAttribPointer(attributes.position, 3, FLOAT, false, 0, 0);
-                }
-                if (webgl.normalBuffer && attributes.normal > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.normalBuffer);
-                    enableAttribute(attributes.normal);
-                    _gl.vertexAttribPointer(attributes.normal, 3, FLOAT, false, 0, 0);
-                }
-                if (webgl.tangentBuffer && attributes.tangent > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.tangentBuffer);
-                    enableAttribute(attributes.tangent);
-                    _gl.vertexAttribPointer(attributes.tangent, 4, FLOAT, false, 0, 0);
-                }
-                if (webgl.colorBuffer && attributes.color > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.colorBuffer);
-                    enableAttribute(attributes.color);
-                    _gl.vertexAttribPointer(attributes.color, 3, FLOAT, false, 0, 0);
-                }
-                if (webgl.uvBuffer && attributes.uv > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.uvBuffer);
-                    enableAttribute(attributes.uv);
-                    _gl.vertexAttribPointer(attributes.uv, 2, FLOAT, false, 0, 0);
-                }
-                if (webgl.boneIndexBuffer && attributes.boneIndex > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.boneIndexBuffer);
-                    enableAttribute(attributes.boneIndex);
-                    _gl.vertexAttribPointer(attributes.boneIndex, 1, FLOAT, false, 0, 0);
-                }
-                if (webgl.boneWeightBuffer && attributes.boneWeight > -1) {
-                    _gl.bindBuffer(ARRAY_BUFFER, webgl.boneWeightBuffer);
-                    enableAttribute(attributes.boneWeight);
-                    _gl.vertexAttribPointer(attributes.boneWeight, 3, FLOAT, false, 0, 0);
-                }
-
-                if (wireframe) {
-                    if (webgl.lineBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, webgl.lineBuffer);
-                } else {
-                    if (webgl.indexBuffer) _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, webgl.indexBuffer);
-                }
-
-                _lastBuffer = mesh._webgl;
-            }
-
-
-            var _enabledAttributes = undefined;
-
-            function enableAttribute(attribute) {
-
-                if (_enabledAttributes[attribute] === 0) {
-                    _gl.enableVertexAttribArray(attribute);
-                    _enabledAttributes[attribute] = 1;
-                }
-            };
-
-
-            function disableAttributes() {
-                var i = _maxAttributes;
-
-                while (i--) {
-
-                    if (_enabledAttributes[i] === 1) {
-                        _gl.disableVertexAttribArray(i);
-                        _enabledAttributes[i] = 0;
-                    }
-                }
-            };
-
-
-            function bindMaterial(material, transform, camera, lights, ambient) {
-                var shader = material._webgl;
-
-                material._webgl.bind(material, transform, camera, lights, ambient);
-            };
-
-
-            var _lastCamera = undefined,
-                _lastResizeFn = undefined,
-                _lastScene = undefined;
-            this.preRender = function(gui, scene, camera) {
-                if (!_context) return;
-                var background = camera.background;
-
-                if (_clearColor.r !== background.r || _clearColor.g !== background.g || _clearColor.b !== background.b) {
-                    _clearColor.copy(background);
-                    _gl.clearColor(background.r, background.g, background.b, 1);
-                    if (!this.autoClear) clearCanvas(true, this.autoClearDepth, this.autoClearStencil);
-                }
-                if (_lastCamera !== camera) {
-                    var w = _canvas.pixelWidth,
-                        h = _canvas.pixelHeight;
-
-                    camera.set(w, h);
-                    this.setViewport(0, 0, w, h);
-
-                    if (_lastResizeFn) _canvas.off("resize", _lastResizeFn);
-
-                    _lastResizeFn = function() {
-                        var w = this.pixelWidth,
-                            h = this.pixelHeight;
-
-                        camera.set(w, h);
-                        _this.setViewport(0, 0, w, h);
-                    };
-
-                    _canvas.on("resize", _lastResizeFn);
-                    _lastCamera = camera;
-                }
-                if (scene && _lastScene !== scene) {
-
-                    _lastScene = scene;
-                }
-
-                _projScreenMatrix.mmul(camera.projection, camera.view);
-                if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
-            };
-
-
-            this.renderGUI = function(gui, camera) {
-                if (!_context) return;
-                var components = gui.components,
-                    transform,
-                    i;
-
-            };
-
-
-            var EMPTY_ARRAY = [];
-            /**
-             * @method render
-             * @memberof Renderer
-             * @brief renderers scene from camera's perspective
-             * @param Scene scene
-             * @param Camera camera
-             */
-            this.render = function(scene, camera) {
-                if (!_context) return;
-                var lineWidth = _lastLineWidth,
-                    blending = _lastBlending,
-                    cullFace = _lastCullFace,
-
-                    components = scene.components,
-                    ambient = scene.world.ambient,
-                    lights = components.Light || EMPTY_ARRAY,
-                    meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                    sprites = components.Sprite || EMPTY_ARRAY,
-                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                    meshFilter, particleSystem, sprite, transform, transform2d,
-                    i;
-
-                for (i = meshFilters.length; i--;) {
-                    meshFilter = meshFilters[i];
-                    transform = meshFilter.transform;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderMeshFilter(camera, lights, ambient, transform, meshFilter);
-                }
-
-                for (i = sprites.length; i--;) {
-                    sprite = sprites[i];
-                    transform = sprite.transform;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderSprite(camera, lights, ambient, transform, sprite);
-                }
-
-                for (i = particleSystems.length; i--;) {
-                    particleSystem = particleSystems[i];
-                    transform = particleSystem.transform;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderParticleSystem(camera, lights, ambient, transform, particleSystem);
-                }
-
-                setCullFace(cullFace);
-                setBlending(blending);
-                setLineWidth(lineWidth);
-            };
-
-
-            function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
-                var mesh = meshFilter.mesh,
-                    material = meshFilter.material,
-                    side = material.side,
-
-                    buffers = initMeshBuffers(mesh),
-                    shader = initShader(material, mesh, lights);
-
-                shader.bind(material, transform, camera, lights, ambient);
-                bindMesh(mesh, shader.attributes, material.wireframe);
-
-                setBlending(material.blending);
-
-                if (side === Side.Front) {
-                    setCullFace(CullFace.Back);
-                } else if (side === Side.Back) {
-                    setCullFace(CullFace.Front);
-                } else if (side === Side.Both) {
-                    setCullFace();
-                }
-
-                if (material.wireframe) {
-                    setLineWidth(material.wireframeLineWidth);
-                    _gl.drawElements(_gl.LINES, buffers.lineCount, _gl.UNSIGNED_SHORT, 0);
-                } else {
-                    _gl.drawElements(_gl.TRIANGLES, buffers.indexCount, _gl.UNSIGNED_SHORT, 0);
-                }
-            }
-
-
-            function renderSprite(camera, lights, ambient, transform, sprite) {
-                var material = sprite.material,
-                    texture = sprite.texture,
-                    side, buffers, shader;
-
-                if (material) {
-                    side = material.side;
-                    shader = initSpriteShader(material, sprite, lights);
-
-                    shader.bind(material, transform, camera, lights, ambient);
-                    bindSprite(_spriteShader.attributes, material.wireframe);
-
-                    setBlending(material.blending);
-
-                    if (side === Side.Front) {
-                        setCullFace(CullFace.Back);
-                    } else if (side === Side.Back) {
-                        setCullFace(CullFace.Front);
-                    } else if (side === Side.Both) {
-                        setCullFace();
-                    }
-
-                    if (material.wireframe) {
-                        setLineWidth(material.wireframeLineWidth);
-                        _gl.drawArrays(_gl.LINE_LOOP, 0, _spriteBuffers.vertexCount);
-                    } else {
-                        _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers.vertexCount);
-                    }
-                } else if (texture) {
-                    var uniforms = _spriteShader.uniforms,
-                        w, h;
-
-                    if (texture.raw) {
-                        w = texture.invWidth;
-                        h = texture.invHeight;
-                    } else {
-                        return;
-                    }
-
-                    _mat4.mmul(camera.projection, transform.modelView);
-
-                    if (_lastShader !== _spriteShader) {
-                        _gl.useProgram(_spriteShader.program);
-                        _lastShader = _spriteShader;
-                    }
-                    bindSprite(_spriteBuffers, _spriteShader.attributes);
-
-                    uniforms.matrix.bind(_mat4);
-                    uniforms.crop.bind(VEC4.set(sprite.x * w, sprite.y * h, sprite.w * w, sprite.h * h));
-                    uniforms.size.bind(VEC2.set(sprite.width, sprite.height));
-                    uniforms.alpha.bind(sprite.alpha);
-                    uniforms.texture.bind(texture);
-
-                    _gl.drawArrays(_gl.TRIANGLE_STRIP, 0, _spriteBuffers.vertexCount);
-                    _textureIndex = 0;
-                }
-            }
-
-
-            function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
-                var emitters = particleSystem.emitters,
-                    emitter, i = emitters.length,
-                    material, shader, buffers;
-
-                while (i--) {
-                    emitter = emitters[i];
-                    material = emitter.material;
-
-                    shader = initEmitterShader(material, emitter, lights);
-                    shader.bind(material, transform, camera, lights, ambient);
-
-                    buffers = initEmitterBuffers(emitter, transform, shader.attributes);
-                    if (!buffers.particleCount) continue;
-
-                    setBlending(material.blending);
-                    setCullFace(CullFace.Back);
-
-                    _gl.drawArrays(_gl.POINTS, 0, buffers.particleCount);
-                }
-            }
-
-
-            function initGL() {
-                try {
-                    _gl = getWebGLContext(_element, _this.attributes);
-                    if (_gl === null) throw "Error creating WebGL context";
-                } catch (e) {
-                    Log.error(e);
-                }
-
-                if (_gl.getShaderPrecisionFormat == undefined) {
-                    _gl.getShaderPrecisionFormat = function() {
-                        return {
-                            rangeMin: 1,
-                            rangeMax: 1,
-                            precision: 1
-                        };
-                    }
-                }
-
-                getExtensions();
-                getGPUInfo();
-
-                _enabledAttributes = new Uint8Array(_maxAttributes);
-            }
-
-
-            function setDefaultGLState() {
-
-                _gl.clearColor(0, 0, 0, 1);
-                _gl.clearDepth(1);
-                _gl.clearStencil(0);
-
-                setDepthTest(true);
-                _gl.depthFunc(_gl.LEQUAL);
-
-                _gl.frontFace(_gl.CCW);
-
-                setCullFace(CullFace.Back);
-                setBlending(Blending.Default);
-
-                setViewport();
-
-                _spriteBuffers = {};
-                createBuffer(_spriteBuffers, "vertexBuffer", new Float32Array([-0.5, 0.5, 0, -0.5, -0.5, 0,
-                    0.5, 0.5, 0,
-                    0.5, -0.5, 0
-                ]));
-                createBuffer(_spriteBuffers, "uvBuffer", new Float32Array([
-                    0, 0,
-                    0, 1,
-                    1, 0,
-                    1, 1
-                ]));
-                _spriteBuffers.vertexCount = 4;
-                _spriteShader = new SimpleShader(sprite_vertex, sprite_fragment);
-            }
-
-
-            function createBuffer(obj, name, array) {
-
-                obj[name] = obj[name] || _gl.createBuffer();
-                _gl.bindBuffer(_gl.ARRAY_BUFFER, obj[name]);
-                _gl.bufferData(_gl.ARRAY_BUFFER, array, _gl.STATIC_DRAW);
             }
 
 
@@ -1525,19 +2014,6 @@ define([
                 _context = true;
                 this.emit("webglcontextrestored", e);
             }
-
-
-            var _precision = "highp",
-                _maxAnisotropy = 0,
-                _maxTextures = 0,
-                _maxVertexTextures = 0,
-                _maxTextureSize = 0,
-                _maxCubeTextureSize = 0,
-                _maxRenderBufferSize = 0,
-
-                _maxUniforms = 0,
-                _maxVaryings = 0,
-                _maxAttributes = 0;
 
             function getGPUInfo() {
                 var VERTEX_SHADER = _gl.VERTEX_SHADER,
@@ -1589,9 +2065,6 @@ define([
                 _extensions.WEBGL_compressed_texture_s3tc_formats = _extensions.WEBGL_compressed_texture_s3tc ? _gl.getParameter(_gl.COMPRESSED_TEXTURE_FORMATS) : null;
 
                 getExtension("OES_standard_derivatives");
-
-                getExtension("OES_texture_float");
-                getExtension("OES_texture_float_linear");
             }
 
 
@@ -1614,298 +2087,47 @@ define([
             this.getExtension = getExtension;
 
 
-            function SimpleShader(vertex, fragment) {
-                var precision = "precision " + _precision + " float;\nprecision " + _precision + " int;\n",
-
-                    glVertexShader = precision + vertex,
-                    glFragmentShader = precision + fragment;
-
-                this.vertex = vertex;
-                this.fragment = fragment;
-
-                this.attributes = {};
-                this.uniforms = {};
-
-                this.program = createProgram(_gl, glVertexShader, glFragmentShader);
-                parseUniformsAttributes(this.program, glVertexShader, glFragmentShader, this.attributes, this.uniforms);
-            }
-
-
-            var HEADER = /([\s\S]*)?(void[\s]+main)/,
-                MAIN_FUNCTION = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{([^}]*)}/,
-                MAIN_SPLITER = /void[\s]+main([\s]+)?(\((void)?\))([\s]+)?{/;
-
-            function Shader(vertex, fragment, parameters, code, simple) {
-
-                this.vertex = vertex;
-                this.fragment = fragment;
-                this.parameters = parameters;
-                this.code = code;
-
-                this.program = undefined;
-                this.used = 1;
-                this.attributes = undefined;
-                this.uniforms = undefined;
-                this._customAttributes = undefined;
-                this._customUniforms = undefined;
-
-                buildShader(this);
-            }
-
-
-            var _lastProgram = undefined;
-
-            Shader.prototype.bind = function(material, transform, camera, lights, ambient) {
-                var program = this.program,
-                    parameters = this.parameters,
-                    uniforms = this.uniforms,
-                    i, length;
-
-                if (_lastProgram !== program) {
-                    _gl.useProgram(program);
-                    _lastProgram = program;
+            function initGL() {
+                try {
+                    _gl = getWebGLContext(_element, _attributes);
+                    if (_gl == null) throw "Error creating WebGL context";
+                } catch (e) {
+                    throw e
                 }
 
-                if (uniforms.modelMatrix) uniforms.modelMatrix.bind(transform.matrixWorld);
-                if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.bind(transform.modelView);
-                if (uniforms.projectionMatrix) uniforms.projectionMatrix.bind(camera.projection);
-                if (uniforms.viewMatrix) uniforms.viewMatrix.bind(camera.view);
-                if (uniforms.normalMatrix) uniforms.normalMatrix.bind(transform.normalMatrix);
-                if (uniforms.cameraPosition) uniforms.cameraPosition.bind(_vector3.positionFromMat4(camera.transform.matrixWorld));
-                if (uniforms.ambient) uniforms.ambient.bind(ambient);
-
-                if (parameters.useLights && (length = lights.length)) {
-                    var maxPointLights = parameters.maxPointLights,
-                        maxDirectionalLights = parameters.maxDirectionalLights,
-                        maxSpotLights = parameters.maxSpotLights,
-                        maxHemiLights = parameters.maxHemiLights,
-
-                        pointLights = 0,
-                        pointLightColor = uniforms.pointLightColor,
-                        pointLightPosition = uniforms.pointLightPosition,
-                        pointLightDistance = uniforms.pointLightDistance,
-
-                        directionalLights = 0,
-                        directionalLightColor = uniforms.directionalLightColor,
-                        directionalLightDirection = uniforms.directionalLightDirection,
-
-                        spotLights = 0,
-                        spotLightColor = uniforms.spotLightColor,
-                        spotLightPosition = uniforms.spotLightPosition,
-                        spotLightDirection = uniforms.spotLightDirection,
-                        spotLightDistance = uniforms.spotLightDistance,
-                        spotLightAngleCos = uniforms.spotLightAngleCos,
-                        spotLightExponent = uniforms.spotLightExponent,
-
-                        hemiLights = 0,
-                        hemiLightColor = uniforms.hemiLightColor,
-                        hemiLightDirection = uniforms.hemiLightDirection,
-
-                        light, type;
-
-                    for (i = 0; i < length; i++) {
-                        light = lights[i];
-                        if (!light.visible) continue;
-
-                        type = light.type;
-                        _color.copy(light.color).smul(light.energy);
-
-                        if (pointLightColor.length && type === LightType.Point) {
-                            if (pointLights >= maxPointLights) continue;
-
-                            _vector3.positionFromMat4(light.transform.matrixWorld);
-
-                            pointLightColor[pointLights].bind(_color);
-                            pointLightPosition[pointLights].bind(_vector3);
-                            pointLightDistance[pointLights].bind(light.distance);
-                            pointLights++;
-                        } else if (directionalLightColor.length && type === LightType.Directional) {
-                            if (directionalLights >= maxDirectionalLights) continue;
-
-                            _vector3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
-                            if (_vector3.lengthSq() === 0) continue;
-
-                            directionalLightColor[directionalLights].bind(_color);
-                            directionalLightDirection[directionalLights].bind(_vector3);
-                            directionalLights++;
-
-                        } else if (spotLightColor.length && type === LightType.Spot) {
-                            if (spotLights >= maxSpotLights) continue;
-
-                            _vector3.positionFromMat4(light.transform.matrixWorld);
-                            if (_vector3.lengthSq() === 0) continue;
-
-                            _vector3_2.copy(_vector3).sub(light.target).normalize();
-                            if (_vector3_2.lengthSq() === 0) continue;
-
-                            spotLightColor[spotLights].bind(_color);
-                            spotLightPosition[spotLights].bind(_vector3);
-                            spotLightDirection[spotLights].bind(_vector3_2);
-                            spotLightDistance[spotLights].bind(light.distance);
-                            spotLightAngleCos[spotLights].bind(light._angleCos);
-                            spotLightExponent[spotLights].bind(light.exponent);
-                            spotLights++;
-
-                        } else if (hemiLightColor.length && type === LightType.Hemi) {
-                            if (hemiLights >= maxHemiLights) continue;
-
-                            _vector3.positionFromMat4(light.transform.matrixWorld).sub(light.target).normalize();
-                            if (_vector3.lengthSq() === 0) continue;
-
-                            hemiLightColor[hemiLights].bind(_color);
-                            hemiLightDirection[hemiLights].bind(_vector3);
-                            hemiLights++;
-                        }
+                if (_gl.getShaderPrecisionFormat == undefined) {
+                    _gl.getShaderPrecisionFormat = function() {
+                        return {
+                            rangeMin: 1,
+                            rangeMax: 1,
+                            precision: 1
+                        };
                     }
                 }
 
-                bindCustomUniforms(this._customUniforms, uniforms, material.name, material.uniforms);
-                _textureIndex = 0;
-            };
+                getExtensions();
+                getGPUInfo();
 
-            function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms) {
-                var i = customUniforms.length,
-                    customUniform, uniformValue, length, name, type, value, j;
-
-                while (i--) {
-                    customUniform = customUniforms[i];
-                    name = customUniform.name;
-
-                    uniformValue = uniforms[name];
-                    value = materialUniforms[name];
-
-                    if (!uniformValue) continue;
-                    if (!value) throw "WebGLRenderer bindShader: material " + materialName + " was not given a uniform named " + name;
-
-                    if ((length = uniformValue.length)) {
-                        j = length;
-                        while (j--) uniformValue.bind(value[j]);
-                    } else {
-                        uniformValue.bind(value);
-                    }
-                }
+                _enabledAttributes = new Uint8Array(_maxAttributes);
             }
 
-            function buildShader(shader) {
-                var parameters = shader.parameters,
-                    vertexShader = shader.vertex,
-                    fragmentShader = shader.fragment,
-                    emitter = parameters.emitter,
-                    useLights = parameters.useLights,
-                    useShadows = parameters.useShadows,
-                    useFog = parameters.useFog,
-                    useBones = parameters.useBones,
-                    useVertexLit = parameters.useVertexLit,
-                    useSpecular = parameters.useSpecular,
-                    OES_standard_derivatives = parameters.OES_standard_derivatives,
 
-                    definesPrefix = [
-                        "precision " + _precision + " float;",
-                        "precision " + _precision + " int;",
+            function setDefaultGLState() {
 
-                        useLights ? "#define USE_LIGHTS" : "",
-                        useShadows ? "#define USE_SHADOWS" : "",
-                        useBones ? "#define USE_SKINNING" : "",
+                _gl.clearColor(0, 0, 0, 1);
+                useDepth && _gl.clearDepth(1);
+                _gl.clearStencil(0);
 
-                        useLights ? "#define MAX_DIR_LIGHTS " + parameters.maxDirectionalLights : "",
-                        useLights ? "#define MAX_POINT_LIGHTS " + parameters.maxPointLights : "",
-                        useLights ? "#define MAX_SPOT_LIGHTS " + parameters.maxSpotLights : "",
-                        useLights ? "#define MAX_HEMI_LIGHTS " + parameters.maxHemiLights : "",
+                useDepth && setDepthTest(true);
+                useDepth && _gl.depthFunc(_gl.LEQUAL);
 
-                        useShadows ? "#define MAX_SHADOWS " + parameters.maxShadows : "",
-                        ""
-                    ].join("\n"),
+                _gl.frontFace(_gl.CCW);
 
-                    vertexPrefix = [
-                        definesPrefix,
+                setCullFace(CullFace.Back);
+                setBlending(Blending.Default);
 
-                        "uniform mat4 modelMatrix;",
-                        "uniform mat4 modelViewMatrix;",
-                        "uniform mat4 projectionMatrix;",
-                        "uniform mat4 viewMatrix;",
-                        "uniform mat3 normalMatrix;",
-                        "uniform vec3 cameraPosition;",
-
-                        parameters.positions ? "attribute vec3 position;" : "",
-                        parameters.normals ? "attribute vec3 normal;" : "",
-                        parameters.tangents ? "attribute vec4 tangent;" : "",
-                        parameters.uvs ? "attribute vec2 uv;" : "",
-                        parameters.colors ? "attribute vec3 color;" : "",
-                        emitter ? "attribute vec3 data;" : "",
-
-                        useBones ? "attribute int boneIndex;" : "",
-                        useBones ? "attribute vec3 boneWeight;" : "",
-                        useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
-                    ].join("\n"),
-
-                    fragmentPrefix = [
-                        OES_standard_derivatives ? "#extension GL_OES_standard_derivatives : enable" : "",
-                        definesPrefix,
-
-                        "uniform mat4 viewMatrix;",
-                        "uniform vec3 cameraPosition;"
-                    ].join("\n"),
-
-                    glVertexShader = vertexPrefix + "\n" + vertexShader,
-                    glFragmentShader = fragmentPrefix + "\n" + fragmentShader,
-
-                    main = "void main(void) {\n",
-                    footer = "\n}",
-
-                    vertexHeader = glVertexShader.match(HEADER)[1],
-                    vertexMain = glVertexShader.match(MAIN_FUNCTION)[5],
-                    fragmentHeader = glFragmentShader.match(HEADER)[1],
-                    fragmentMain = glFragmentShader.match(MAIN_FUNCTION)[5];
-
-                if (emitter) {
-                    vertexHeader += ShaderChunks.particle_header;
-                    fragmentHeader += ShaderChunks.particle_header;
-                    vertexMain = ShaderChunks.particle_vertex + vertexMain;
-                }
-
-                if (OES_standard_derivatives) {
-                    if (parameters.useNormal) fragmentHeader += ShaderChunks.perturbNormal2Arb;
-                    if (parameters.useBump) fragmentHeader += ShaderChunks.dHdxy_fwd + ShaderChunks.perturbNormalArb;
-                }
-
-                if (useLights) {
-                    if (useVertexLit) {
-                        vertexHeader += ShaderChunks.lights + ShaderChunks.VertexLight;
-                    } else {
-                        vertexHeader += ShaderChunks.perPixelVaryingHeader;
-                        vertexMain = ShaderChunks.perPixelVaryingMain + vertexMain;
-
-                        fragmentHeader += ShaderChunks.lights + ShaderChunks.perPixelVaryingHeader;
-                        if (useSpecular) {
-                            fragmentHeader += ShaderChunks.PixelLight;
-                        } else {
-                            fragmentHeader += ShaderChunks.PixelLightNoSpec;
-                        }
-                    }
-
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
-                    if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
-                    vertexMain = ShaderChunks.worldPosition + vertexMain;
-                } else {
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
-                }
-
-                if (useBones) {
-                    vertexHeader += ShaderChunks.getBoneMatrix;
-                    if (parameters.normals) vertexMain = ShaderChunks.boneNormal + vertexMain;
-                    vertexMain = ShaderChunks.bone + vertexMain;
-                }
-
-                glVertexShader = vertexHeader + main + vertexMain + footer;
-                glFragmentShader = fragmentHeader + main + fragmentMain + footer;
-
-                shader.program = createProgram(_gl, glVertexShader, glFragmentShader);
-
-                parseUniformsAttributesCustom(vertexShader, fragmentShader, (shader._customAttributes = []), (shader._customUniforms = []));
-                parseUniformsAttributes(shader.program, glVertexShader, glFragmentShader, (shader.attributes = {}), (shader.uniforms = {}));
-
-                _programs.push(shader);
-            };
+                setViewport();
+            }
 
 
             var SHADER_SPLITER = /[\n;]+/,
@@ -1913,52 +2135,49 @@ define([
                 UNIFORM = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
                 DEFINE = /#define\s+([a-zA-Z_0-9]+)?\s+([0-9]+)?/;
 
-            function parseUniformsAttributesCustom(vertexShader, fragmentShader, attributes, uniforms) {
+            function parseUniformsAttributesArrays(vertexShader, fragmentShader, attributes, uniforms) {
                 var src = vertexShader + fragmentShader,
                     lines = src.split(SHADER_SPLITER),
                     matchAttributes, matchUniforms,
-                    name, length, line,
-                    i, j;
+                    i = lines.length,
+                    line;
 
-                for (i = lines.length; i--;) {
+                while (i--) {
                     line = lines[i];
                     matchAttributes = line.match(ATTRIBURE);
                     matchUniforms = line.match(UNIFORM);
 
                     if (matchAttributes) {
-                        attributes.push({
-                            type: matchAttributes[2],
-                            name: matchAttributes[3]
-                        });
+                        attributes.push(matchAttributes[3]);
                     } else if (matchUniforms) {
-                        uniforms.push({
-                            type: matchUniforms[2],
-                            name: matchUniforms[3]
-                        });
+                        uniforms.push(matchUniforms[3]);
                     }
                 }
             }
+            this.parseUniformsAttributesArrays = parseUniformsAttributesArrays;
 
             function parseUniformsAttributes(program, vertexShader, fragmentShader, attributes, uniforms) {
                 var src = vertexShader + fragmentShader,
                     lines = src.split(SHADER_SPLITER),
                     defines = {}, matchAttributes, matchUniforms, matchDefines,
-                    uniformArray, name, location, type, length, line,
+                    uniformArray, name, type, location, length, line,
                     i, j;
 
-                for (i = lines.length; i--;) {
+                i = lines.length;
+                while (i--) {
                     matchDefines = lines[i].match(DEFINE);
                     if (matchDefines) defines[matchDefines[1]] = Number(matchDefines[2]);
                 }
 
-                for (i = lines.length; i--;) {
+                i = lines.length;
+                while (i--) {
                     line = lines[i];
                     matchAttributes = line.match(ATTRIBURE);
                     matchUniforms = line.match(UNIFORM);
 
                     if (matchAttributes) {
                         name = matchAttributes[3];
-                        attributes[name] = _gl.getAttribLocation(program, name);
+                        attributes[name] = createAttribute(matchAttributes[2], _gl.getAttribLocation(program, name));
                     } else if (matchUniforms) {
                         type = matchUniforms[2];
                         name = matchUniforms[3];
@@ -1967,16 +2186,106 @@ define([
                         if (length) {
                             length = defines[length.trim()] || length;
                             uniformArray = uniforms[name] = [];
-                            for (j = length; j--;) uniformArray[j] = createUniform(type, _gl.getUniformLocation(program, name + "[" + j + "]"));
+
+                            j = length;
+                            while (j--) uniformArray[j] = createUniform(type, _gl.getUniformLocation(program, name + "[" + j + "]"));
                         } else {
-                            uniforms[name] = createUniform(type, _gl.getUniformLocation(program, name));
+                            location = _gl.getUniformLocation(program, name);
+                            if (location) uniforms[name] = createUniform(type, location);
                         }
                     }
                 }
             }
+            this.parseUniformsAttributes = parseUniformsAttributes;
+
+
+            function createAttribute(type, location) {
+                if (location < 0) return null;
+
+                if (type === "int") {
+                    return new Attribute1i(location);
+                } else if (type === "float") {
+                    return new Attribute1f(location);
+                } else if (type === "vec2") {
+                    return new Attribute2f(location);
+                } else if (type === "vec3") {
+                    return new Attribute3f(location);
+                } else if (type === "vec4") {
+                    return new Attribute4f(location);
+                }
+
+                return null;
+            };
+
+
+            function Attribute1i(location) {
+                this.location = location;
+            }
+            Attribute1i.prototype.set = function(value) {
+                var location = this.location;
+
+                if (location > -1) {
+                    _gl.bindBuffer(_gl.ARRAY_BUFFER, value);
+                    enableAttribute(location);
+                    _gl.vertexAttribPointer(location, 1, _gl.FLOAT, false, 0, 0);
+                }
+            };
+
+            function Attribute1f(location) {
+                this.location = location;
+            }
+            Attribute1f.prototype.set = function(value) {
+                var location = this.location;
+
+                if (location > -1) {
+                    _gl.bindBuffer(_gl.ARRAY_BUFFER, value);
+                    enableAttribute(location);
+                    _gl.vertexAttribPointer(location, 1, _gl.FLOAT, false, 0, 0);
+                }
+            };
+
+            function Attribute2f(location) {
+                this.location = location;
+            }
+            Attribute2f.prototype.set = function(value) {
+                var location = this.location;
+
+                if (location > -1) {
+                    _gl.bindBuffer(_gl.ARRAY_BUFFER, value);
+                    enableAttribute(location);
+                    _gl.vertexAttribPointer(location, 2, _gl.FLOAT, false, 0, 0);
+                }
+            };
+
+            function Attribute3f(location) {
+                this.location = location;
+            }
+            Attribute3f.prototype.set = function(value) {
+                var location = this.location;
+
+                if (location > -1) {
+                    _gl.bindBuffer(_gl.ARRAY_BUFFER, value);
+                    enableAttribute(location);
+                    _gl.vertexAttribPointer(location, 3, _gl.FLOAT, false, 0, 0);
+                }
+            };
+
+            function Attribute4f(location) {
+                this.location = location;
+            }
+            Attribute4f.prototype.set = function(value) {
+                var location = this.location;
+
+                if (location > -1) {
+                    _gl.bindBuffer(_gl.ARRAY_BUFFER, value);
+                    enableAttribute(location);
+                    _gl.vertexAttribPointer(location, 4, _gl.FLOAT, false, 0, 0);
+                }
+            };
 
 
             function createUniform(type, location) {
+                if (!location) return null;
 
                 if (type === "int") {
                     return new Uniform1i(location);
@@ -2007,8 +2316,8 @@ define([
                 this.location = location;
                 this.value = undefined;
             }
-            Uniform1f.prototype.bind = function(value) {
-                if (this.value !== value) {
+            Uniform1f.prototype.set = function(value, force) {
+                if (force || this.value !== value) {
                     _gl.uniform1f(this.location, value);
                     this.value = value;
                 }
@@ -2018,8 +2327,8 @@ define([
                 this.location = location;
                 this.value = undefined;
             }
-            Uniform1i.prototype.bind = function(value) {
-                if (this.value !== value) {
+            Uniform1i.prototype.set = function(value, force) {
+                if (force || this.value !== value) {
                     _gl.uniform1i(this.location, value);
                     this.value = value;
                 }
@@ -2029,8 +2338,8 @@ define([
                 this.location = location;
                 this.value = new Vec2(NaN, NaN);
             }
-            Uniform2f.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            Uniform2f.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniform2f(this.location, value.x, value.y);
                     this.value.copy(value);
                 }
@@ -2040,8 +2349,8 @@ define([
                 this.location = location;
                 this.value = new Vec3(NaN, NaN, NaN);
             }
-            Uniform3f.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            Uniform3f.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniform3f(this.location, value.x, value.y, value.z);
                     this.value.copy(value);
                 }
@@ -2051,8 +2360,8 @@ define([
                 this.location = location;
                 this.value = new Vec4(NaN, NaN, NaN, NaN);
             }
-            Uniform4f.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            Uniform4f.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniform4f(this.location, value.x, value.y, value.z, value.w);
                     this.value.copy(value);
                 }
@@ -2065,8 +2374,8 @@ define([
                     NaN, NaN
                 );
             }
-            UniformMatrix2fv.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            UniformMatrix2fv.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniformMatrix2fv(this.location, false, value.elements);
                     this.value.copy(value);
                 }
@@ -2080,8 +2389,8 @@ define([
                     NaN, NaN, NaN
                 );
             }
-            UniformMatrix3fv.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            UniformMatrix3fv.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniformMatrix3fv(this.location, false, value.elements);
                     this.value.copy(value);
                 }
@@ -2096,8 +2405,8 @@ define([
                     NaN, NaN, NaN, NaN
                 );
             }
-            UniformMatrix4fv.prototype.bind = function(value) {
-                if (this.value.notEquals(value)) {
+            UniformMatrix4fv.prototype.set = function(value, force) {
+                if (force || this.value.notEquals(value)) {
                     _gl.uniformMatrix4fv(this.location, false, value.elements);
                     this.value.copy(value);
                 }
@@ -2106,51 +2415,19 @@ define([
             function UniformTexture(location) {
                 this.location = location;
             }
-            UniformTexture.prototype.bind = function(value) {
-                setTexture(this.location, value);
+            UniformTexture.prototype.set = function(value, force) {
+                setTexture(this.location, value, force);
             };
 
             function UniformTextureCube(location) {
                 this.location = location;
             }
-            UniformTextureCube.prototype.bind = function(value) {
-                setTextureCube(this.location, value);
+            UniformTextureCube.prototype.set = function(value, force) {
+                setTextureCube(this.location, value, force);
             };
         }
 
         EventEmitter.extend(Renderer);
-
-
-        var sprite_vertex = [
-            "uniform mat4 matrix;",
-            "uniform vec4 crop;",
-            "uniform vec2 size;",
-
-            "attribute vec2 position;",
-            "attribute vec2 uv;",
-
-            "varying vec2 vUv;",
-
-            "void main() {",
-
-            "	vUv = vec2(uv.x * crop.z, uv.y * crop.w) + crop.xy;",
-            "	gl_Position = matrix * vec4(position * size, 0.0, 1.0);",
-            "}"
-        ].join("\n");
-
-        var sprite_fragment = [
-            "uniform float alpha;",
-            "uniform sampler2D texture;",
-
-            "varying vec2 vUv;",
-
-            "void main() {",
-            "	vec4 finalColor = texture2D(texture, vUv);",
-            "	finalColor.w *= alpha;",
-
-            "	gl_FragColor = finalColor;",
-            "}"
-        ].join("\n");
 
 
         return Renderer;

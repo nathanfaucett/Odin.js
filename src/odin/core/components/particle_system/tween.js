@@ -2,9 +2,9 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-		"odin/base/class",
-		"odin/math/mathf",
-	],
+        "odin/base/class",
+        "odin/math/mathf",
+    ],
     function(Class, Mathf) {
         "use strict";
 
@@ -84,20 +84,20 @@ define([
 
 
         function fromJSON(json) {
-			var classes = Class._classes,
+            var classes = Class._classes,
                 mathClasses = Mathf._classes;
 
-			if (typeof(json) !== "object") {
-				return json;
-			} else if (mathClasses[json._className]) {
-				return Mathf.fromJSON(json);
-			} else if (classes[json._className]) {
-				return Class.fromJSON(json);
-			} else {
-				return json;
-			}
-			
-			return null;
+            if (typeof(json) !== "object") {
+                return json;
+            } else if (mathClasses[json._className]) {
+                return Mathf.fromJSON(json);
+            } else if (classes[json._className]) {
+                return Class.fromJSON(json);
+            } else {
+                return json;
+            }
+
+            return null;
         }
 
 

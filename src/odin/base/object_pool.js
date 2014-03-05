@@ -38,8 +38,8 @@ define(
 
 
         ObjectPool.prototype.remove = ObjectPool.prototype.removeObjects = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.removeObject(arguments[i]);
 
             return this;

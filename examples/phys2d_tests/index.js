@@ -21,30 +21,44 @@ require({
             this.speed = 1;
             this.zoomSpeed = 6;
         }
-
         Component.extend(CameraControl);
-
 
         CameraControl.prototype.update = function() {
             var transform = this.transform2d,
                 position = this.transform2d.position,
                 camera2d = this.camera2d,
                 dt = Time.delta,
-                spd = this.speed;
+                spd = this.speed,
+                mouseWheel = Input.axis("mouseWheel");
 
             if (Input.mouseButton(0)) {
                 position.x += -dt * spd * Input.axis("mouseX");
                 position.y += dt * spd * Input.axis("mouseY");
             }
-            if (Input.mouseButton(1)) {
-                var instance = random() < 0.5 ? box.clone() : circle.clone();
+            if (mouseWheel) camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * mouseWheel);
+        };
 
-                camera2d.toWorld(Input.mousePosition, instance.transform2d.position);
-                instance.transform2d.rotation = TWO_PI * random();
+        function Control(opts) {
+            opts || (opts = {});
 
-                this.gameObject.scene.addGameObject(instance);
-            }
-            camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * Input.axis("mouseWheel"));
+            Component.call(this, "Control", opts);
+
+            this.speed = 1;
+        }
+        Component.extend(Control);
+
+        var VEC2 = new Vec2;
+        Control.prototype.update = function() {
+            var body = this.rigidBody2d.body,
+                dt = Time.delta,
+                spd = this.speed,
+                x = Input.axis("horizontal"),
+                y = Input.axis("vertical");
+
+            body.applyVelocity(VEC2.set(
+                x * spd * dt,
+                y * spd * dt
+            ));
         };
 
 
@@ -101,10 +115,10 @@ require({
         var camera = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0, 8)
+                    position: new Vec2(0, 0)
                 }),
                 new Camera2D({
-                    orthographicSize: 9
+                    orthographicSize: 4
                 }),
                 new CameraControl
             ],
@@ -112,68 +126,57 @@ require({
         });
         var circle = new GameObject({
             components: [
-                new Transform2D,
+                new Transform2D({
+                    position: new Vec2(0.0, 5.0)
+                }),
                 new Sprite({
                     material: Assets.get("mat_player"),
                     x: 0,
                     y: 0,
                     w: 64,
                     h: 64,
-                    width: 0.5,
-                    height: 0.5
+                    width: 1.0,
+                    height: 1.0
                 }),
                 new RigidBody2D({
+                    allowSleep: false,
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
                     shape: new Phys2D.P2Circle({
-                        radius: 0.25
+                        radius: 0.5
                     })
                 })
             ]
         });
-        var box = new GameObject({
+        var segment = new GameObject({
             components: [
-                new Transform2D,
+                new Transform2D({
+                    position: new Vec2(0.0, -0.5)
+                }),
                 new Sprite({
                     material: Assets.get("mat_player"),
                     x: 0,
                     y: 0,
                     w: 64,
                     h: 64,
-                    width: 0.5,
-                    height: 0.5
+                    width: 1.0,
+                    height: 3.0
                 }),
+                new Control,
                 new RigidBody2D({
-                    motionState: Phys2D.P2Enums.MotionState.Dynamic,
-                    shape: new Phys2D.P2Rect({
-                        extents: new Vec2(0.25, 0.25)
-                    })
-                })
-            ]
-        });
-        var top = new GameObject({
-            components: [
-                new Transform2D({
-                    position: new Vec2(0, 32)
-                }),
-                new Sprite({
-                    material: Assets.get("mat_hospital"),
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64,
-                    width: 32,
-                }),
-                new RigidBody2D({
-                    motionState: Phys2D.P2Enums.MotionState.Static,
-                    shape: new Phys2D.P2Rect({
-                        extents: new Vec2(16, 0.5)
+                    motionState: Phys2D.P2Enums.MotionState.Kinematic,
+                    shape: new Phys2D.P2Segment({
+                        radius: 0.5,
+                        a: new Vec2(0.0, -1.0),
+                        b: new Vec2(0.0, 1.0)
                     })
                 })
             ]
         });
         var bottom = new GameObject({
             components: [
-                new Transform2D,
+                new Transform2D({
+                    position: new Vec2(0.0, -5.0)
+                }),
                 new Sprite({
                     material: Assets.get("mat_hospital"),
                     x: 0,
@@ -190,50 +193,8 @@ require({
                 })
             ]
         });
-        var left = new GameObject({
-            components: [
-                new Transform2D({
-                    position: new Vec2(-16, 16)
-                }),
-                new Sprite({
-                    material: Assets.get("mat_hospital"),
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64,
-                    height: 32,
-                }),
-                new RigidBody2D({
-                    motionState: Phys2D.P2Enums.MotionState.Static,
-                    shape: new Phys2D.P2Rect({
-                        extents: new Vec2(0.5, 16)
-                    })
-                })
-            ]
-        });
-        var right = new GameObject({
-            components: [
-                new Transform2D({
-                    position: new Vec2(16, 16)
-                }),
-                new Sprite({
-                    material: Assets.get("mat_hospital"),
-                    x: 0,
-                    y: 0,
-                    w: 64,
-                    h: 64,
-                    height: 32,
-                }),
-                new RigidBody2D({
-                    motionState: Phys2D.P2Enums.MotionState.Static,
-                    shape: new Phys2D.P2Rect({
-                        extents: new Vec2(0.5, 16)
-                    })
-                })
-            ]
-        });
 
-        scene.addGameObjects(camera, left, right, top, bottom);
+        scene.addGameObjects(camera, segment, circle, bottom);
 
 
         function TEST(opts) {

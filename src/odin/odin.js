@@ -64,11 +64,11 @@ define(
             this.Transform = require("odin/core/components/transform");
             this.Transform2D = require("odin/core/components/transform_2d");
 
-            this.Game = require("odin/core/game/game");
+            this.BaseGame = require("odin/core/game/base_game");
             this.ClientGame = require("odin/core/game/client_game");
+            this.Game = require("odin/core/game/game");
             this.Config = require("odin/core/game/config");
             this.Log = require("odin/core/game/log");
-            this.BaseGame = require("odin/core/game/base_game");
 
             this.GUIComponent = require("odin/core/gui/components/gui_component");
             this.GUIContent = require("odin/core/gui/components/gui_content");
@@ -81,6 +81,10 @@ define(
 
             this.Handler = require("odin/core/input/handler");
             this.Input = require("odin/core/input/input");
+
+            this.Canvas = require("odin/core/renderer/canvas");
+            this.Renderer = require("odin/core/renderer/renderer");
+            this.ShaderChunks = require("odin/core/renderer/shader_chunks");
 
             this.World = require("odin/core/world/world");
             this.World2D = require("odin/core/world/world_2d");

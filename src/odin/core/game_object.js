@@ -55,7 +55,7 @@ define([
                     this.addComponent(otherComponent.clone());
                 }
             }
-			i = tags.length;
+            i = tags.length;
             while (i--) this.addTag(tags[i]);
 
             return this;
@@ -65,16 +65,16 @@ define([
         GameObject.prototype.clear = function() {
             var components = this.components,
                 tags = this.tags,
-				componentLength = components.length,
+                componentLength = components.length,
                 i;
 
-			i = componentLength;
+            i = componentLength;
             while (i--) components[i].clear();
 
-			i = tags.length;
+            i = tags.length;
             while (i--) this.removeTag(tags[i]);
-			
-			i = componentLength;
+
+            i = componentLength;
             while (i--) this.removeComponent(components[i]);
 
             this.off();
@@ -119,8 +119,8 @@ define([
 
 
         GameObject.prototype.addTags = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.addTag(arguments[i]);
             return this;
         };
@@ -137,8 +137,8 @@ define([
 
 
         GameObject.prototype.removeTags = function() {
-			var i = arguments.length;
-			
+            var i = arguments.length;
+
             while (i--) this.removeTag(arguments[i]);
             return this;
         };
@@ -173,12 +173,12 @@ define([
                 this[name] = component;
 
                 if (!others) {
-					i = components.length;
+                    i = components.length;
                     while (i--) {
                         comp = components[i];
                         if (!comp) continue;
-						
-						j = components.length;
+
+                        j = components.length;
                         while (j--) {
                             name = components[j]._name;
                             comp[name] = components[j];
@@ -204,15 +204,15 @@ define([
                 component, name,
                 i, j;
 
-			i = length;
+            i = length;
             while (i--) this.addComponent(arguments[i], true);
-			
-			i = components.length;
-			while (i--) {
+
+            i = components.length;
+            while (i--) {
                 component = components[i];
                 if (!component) continue;
 
-				j = components.length;
+                j = components.length;
                 while (j--) {
                     name = components[j]._name;
                     component[name] = components[j];
@@ -236,12 +236,12 @@ define([
             if (this[name]) {
 
                 if (!others) {
-					i = components.length;
+                    i = components.length;
                     while (i--) {
                         comp = components[i];
                         if (!comp) continue;
-						
-						j = components.length;
+
+                        j = components.length;
                         while (j--) {
                             if (name === components[j]._name) comp[name] = undefined;
                         }
@@ -277,16 +277,16 @@ define([
                 component, name,
                 i, j;
 
-			i = length;
+            i = length;
             while (i--) this.removeComponent(arguments[i], null, true);
 
-			i = components.length;
-            while ( i--) {
+            i = components.length;
+            while (i--) {
                 component = components[i];
                 if (!component) continue;
 
                 name = component._name;
-				j = toRemove.length;
+                j = toRemove.length;
                 while (j--) {
                     if (name === toRemove[i]._name) component[name] = undefined;
                 }
@@ -338,7 +338,7 @@ define([
             while (i--) {
                 if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
             }
-			i = tags.length;
+            i = tags.length;
             while (i--) jsonTags[i] = tags[i];
 
             return json;
@@ -363,7 +363,7 @@ define([
                 }
             }
 
-			i = jsonTags.length;
+            i = jsonTags.length;
             while (i--) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
             }

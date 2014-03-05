@@ -456,6 +456,22 @@ define([
         };
 
         /**
+         * @method perp
+         * @memberof Odin.Vec2
+         * @param Vec2 other
+         * @return Number
+         */
+        Vec2.prototype.perp = function() {
+            var x = this.x,
+                y = this.y;
+
+            this.x = -y;
+            this.y = x;
+
+            return this;
+        };
+
+        /**
          * @method min
          * @memberof Odin.Vec2
          * returns min values from this and other vector

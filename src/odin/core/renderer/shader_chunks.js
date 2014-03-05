@@ -123,12 +123,20 @@ define(
                 "	vec4 worldPosition = modelMatrix * bone;",
                 "	#endif",
 
-                "	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
+                "	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING ) && !defined( IS_SPRITE )",
                 "	vec4 worldPosition = modelMatrix * vec4( morphed, 1.0 );",
                 "	#endif",
 
-                "	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
+                "	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING ) && !defined( IS_SPRITE )",
                 "	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
+                "	vec4 worldPosition = modelMatrix * vec4( morphed.xy * size, morphed.z, 1.0 );",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
+                "	vec4 worldPosition = modelMatrix * vec4( position.xy * size, position.z, 1.0 );",
                 "	#endif",
                 ""
             ].join("\n"),
@@ -140,13 +148,27 @@ define(
                 "	mvPosition = modelViewMatrix * bone;",
                 "	#endif",
 
-                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS )",
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && !defined( IS_SPRITE )",
                 "	mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
                 "	#endif",
 
-                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )",
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && !defined( IS_SPRITE )",
                 "	mvPosition = modelViewMatrix * vec4( position, 1.0 );",
                 "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
+                "	mvPosition = modelViewMatrix * vec4( morphed.xy * size, morphed.z, 1.0 );",
+                "	#endif",
+
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
+                "	mvPosition = modelViewMatrix * vec4( position.xy * size, position.z, 1.0 );",
+                "	#endif",
+                ""
+            ].join("\n"),
+
+            particle_header_vertex: [
+                "attribute vec3 particleColor;",
+                "uniform float particleSizeRatio;",
                 ""
             ].join("\n"),
 
@@ -154,6 +176,7 @@ define(
                 "varying float vAngle;",
                 "varying float vAlpha;",
                 "varying float vSize;",
+                "varying vec3 vParticleColor;",
                 ""
             ].join("\n"),
 
@@ -161,7 +184,29 @@ define(
                 "	vAngle = data.x;",
                 "	vAlpha = data.z;",
                 "	vSize = data.y;",
-                "	gl_PointSize = vSize * (256.0 / length(mvPosition.xyz));\n",
+                "	vParticleColor = particleColor;",
+                ""
+            ].join("\n"),
+
+            particle_vertex_size: [
+                "	gl_PointSize = vSize * (particleSizeRatio / length(mvPosition.xyz));\n",
+                ""
+            ].join("\n"),
+
+            particle_vertex_size_2d: [
+                "	gl_PointSize = vSize * particleSizeRatio;\n",
+                ""
+            ].join("\n"),
+
+            sprite_header: [
+                "uniform vec2 size;",
+                "uniform vec4 crop;",
+                ""
+            ].join("\n"),
+
+            sprite_vertex_after: [
+                "	vUv.x = vUv.x * crop.z + crop.x;",
+                "	vUv.y = vUv.y * crop.w + crop.y;",
                 ""
             ].join("\n"),
 

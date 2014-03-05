@@ -29,9 +29,9 @@ define([
             Class.call(this, opts);
 
             this.useGravity = opts.useGravity != undefined ? !! opts.useGravity : true;
-            this.gravity = opts.gravity != undefined ? opts.gravity : new Vec2(0, -9.801);
+            this.gravity = opts.gravity != undefined ? opts.gravity : new Vec2(0.0, -9.801);
 
-            this.time = 0;
+            this.time = 0.0;
 
             this.broadphase = new P2Broadphase;
             this.nearphase = new P2Nearphase;
@@ -51,11 +51,11 @@ define([
             this._collisionMatrixPrevious = [];
 
             this.stats = {
-                step: 0,
-                solve: 0,
-                integrate: 0,
-                nearphase: 0,
-                broadphase: 0
+                step: 0.0,
+                solve: 0.0,
+                integrate: 0.0,
+                nearphase: 0.0,
+                broadphase: 0.0
             };
         }
 
@@ -244,7 +244,7 @@ define([
             while (i--) {
                 c = contacts[i];
 
-                if (c.u > 0) {
+                if (c.u > 0.0) {
                     bi = c.bi;
                     bj = c.bj;
                     fc = FRICTION_POOL.create();

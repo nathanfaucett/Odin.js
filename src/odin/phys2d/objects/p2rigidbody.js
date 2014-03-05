@@ -73,6 +73,7 @@ define([
         };
 
 
+        var VEC2_SCALE = new Vec2(1.0, 1.0);
         P2Rigidbody.prototype.init = function() {
             var shapes = this.shapes,
                 matrix = this.matrix,
@@ -80,9 +81,7 @@ define([
                 shape,
                 i = shapes.length;
 
-            matrix.setRotation(this.rotation);
-            matrix.setPosition(this.position);
-
+            matrix.compose(this.position, VEC2_SCALE, this.rotation);
             aabb.clear();
 
             while (i--) {
@@ -126,9 +125,7 @@ define([
 
                 this.rotation += this.angularVelocity * dt;
 
-                matrix.setRotation(this.rotation);
-                matrix.setPosition(pos);
-
+                matrix.compose(pos, VEC2_SCALE, this.rotation);
                 aabb.clear();
 
                 i = shapes.length;
@@ -151,7 +148,6 @@ define([
                 px, py;
 
             worldPoint = worldPoint || pos;
-
 
             px = worldPoint.x - pos.x;
             py = worldPoint.y - pos.y;
