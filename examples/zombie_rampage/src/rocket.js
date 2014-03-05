@@ -11,7 +11,7 @@ define([
                     new Bullet,
                     new Odin.Transform2D,
                     new Odin.Sprite({
-                        texture: Odin.Assets.get("img_objects"),
+                        material: Odin.Assets.get("mat_objects"),
                         x: 7,
                         y: 0,
                         w: 5,
@@ -36,7 +36,7 @@ define([
                         playing: true,
                         emitter: new Odin.ParticleSystem.Emitter2D({
                             loop: true,
-                            texture: Odin.Assets.hash["img_smoke"],
+                            material: Odin.Assets.hash["mat_smoke"],
 
                             worldSpace: true,
                             emissionRate: 0.1,

@@ -204,7 +204,7 @@ define([
                 this.needsUpdate = false;
             }
 
-            this.view.inverseMat(this.transform.matrixWorld);
+            this.view.inverseMat((this.transform || this.transform2d).matrixWorld);
         };
 
 

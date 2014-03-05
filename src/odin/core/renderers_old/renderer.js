@@ -435,7 +435,7 @@ define([
             var clearColor = this._clearColor;
 
             clearColor.set(color);
-            this._clearAlpha = alpha !== undefined ? alpha : 1;
+            this._clearAlpha = alpha != undefined ? alpha : 1;
 
             this.context.clearColor(clearColor.r, clearColor.g, clearColor.b, this._clearAlpha);
         };

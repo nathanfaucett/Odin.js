@@ -99,7 +99,15 @@ define([
 
             this.particles = [];
 
-            this._webgl = {};
+            this._webglInitted = undefined;
+
+            this._webglVertexBuffer = undefined;
+            this._webglParticleBuffer = undefined;
+            this._webglParticleColorBuffer = undefined;
+
+            this._webglVertexArray = undefined;
+            this._webglParticleArray = undefined;
+            this._webglParticleColorArray = undefined;
         }
 
         Class.extend(Emitter);

@@ -31,15 +31,16 @@ define([
 
             this.aspect = this.width / this.height;
 
-            this.orthographicSize = opts.orthographicSize !== undefined ? opts.orthographicSize : 2;
+            this.orthographicSize = opts.orthographicSize != undefined ? opts.orthographicSize : 2;
 
-            this.minOrthographicSize = opts.minOrthographicSize !== undefined ? opts.minOrthographicSize : EPSILON;
-            this.maxOrthographicSize = opts.maxOrthographicSize !== undefined ? opts.maxOrthographicSize : 1024;
+            this.minOrthographicSize = opts.minOrthographicSize != undefined ? opts.minOrthographicSize : EPSILON;
+            this.maxOrthographicSize = opts.maxOrthographicSize != undefined ? opts.maxOrthographicSize : 1024;
 
-            this.projection = new Mat32;
-            this._projectionMat4 = new Mat4;
+            this.projection = new Mat4;
+            this._projection = new Mat32;
 
-            this.view = new Mat32;
+            this.view = new Mat4;
+            this._view = new Mat32;
 
             this.needsUpdate = true;
             this._active = false;
@@ -117,7 +118,7 @@ define([
 
             out.x = 2 * (v.x * this.invWidth) - 1;
             out.y = -2 * (v.y * this.invHeight) + 1;
-            out.transformMat32(MAT32.mmul(this.projection, this.view).inverse());
+            out.transformMat32(MAT32.mmul(this._projection, this._view).inverse());
 
             return out;
         };
@@ -126,7 +127,7 @@ define([
         Camera2D.prototype.toScreen = function(v, out) {
             out || (out = new Vec2);
 
-            VEC2.copy(v).transformMat32(MAT32.mmul(this.projection, this.view));
+            VEC2.copy(v).transformMat32(MAT32.mmul(this._projection, this._view));
 
             out.x = ((VEC2.x + 1) * 0.5) * this.width;
             out.y = ((1 - VEC2.y) * 0.5) * this.height;
@@ -145,12 +146,13 @@ define([
                     top = orthographicSize,
                     bottom = -top;
 
-                this.projection.orthographic(left, right, top, bottom);
-                this._projectionMat4.orthographic(left, right, top, bottom, -1, 1);
+                this.projection.orthographic(left, right, top, bottom, -1, 1);
+                this._projection.fromMat4(this.projection);
                 this.needsUpdate = false;
             }
 
-            this.view.inverseMat(this.transform2d.matrixWorld);
+            this.view.inverseMat((this.transform || this.transform2d).matrixWorld);
+            this._view.fromMat4(this.view);
         };
 
 

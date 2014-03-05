@@ -5,19 +5,6 @@ define([
     ],
     function(Odin, CameraControl, Level) {
 
-        Odin.Assets.addAssets(
-            new Odin.Texture({
-                src: "content/hospital.png",
-                name: "img_hospital",
-                minFilter: "NEAREST",
-                magFilter: "NEAREST"
-            }),
-            new Odin.AudioClip({
-                name: "snd_sure_shot",
-                src: "content/audio/sure_shot.ogg"
-            })
-        );
-
         var sceneLevel = new Odin.Scene({
             name: "Level",
             world: new Odin.World2D({
@@ -44,7 +31,7 @@ define([
             components: [
                 new Odin.Transform2D,
                 new Odin.Sprite({
-                    texture: Odin.Assets.get("img_hospital"),
+                    material: Odin.Assets.get("mat_hospital"),
                     x: 0,
                     y: 0,
                     w: 480,

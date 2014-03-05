@@ -38,11 +38,11 @@ define([
 
             this.motionState = opts.motionState != undefined ? opts.motionState : MotionState.Static;
 
-            this.allowSleep = opts.allowSleep !== undefined ? !! opts.allowSleep : true;
+            this.allowSleep = opts.allowSleep != undefined ? !! opts.allowSleep : true;
             this.sleepState = SleepState.Awake;
 
-            this.sleepVelocityLimit = opts.sleepVelocityLimit !== undefined ? !! opts.sleepVelocityLimit : 0.01;
-            this.sleepTimeLimit = opts.sleepTimeLimit !== undefined ? !! opts.sleepTimeLimit : 1;
+            this.sleepVelocityLimit = opts.sleepVelocityLimit != undefined ? !! opts.sleepVelocityLimit : 0.01;
+            this.sleepTimeLimit = opts.sleepTimeLimit != undefined ? !! opts.sleepTimeLimit : 1;
 
             this.userData = undefined;
 

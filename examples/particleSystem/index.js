@@ -118,9 +118,13 @@ require({
                                 times: [0, 0.25, 1],
                                 values: [0, 1, 0]
                             }),
+                            colorTween: new ParticleSystem.Tween({
+                                times: [0.0, 0.5, 1.0],
+                                values: [new Color("white"), new Color("blue"), new Color("red")]
+                            }),
                             sizeTween: new ParticleSystem.Tween({
                                 times: [0, 0.25, 1],
-                                values: [0.25, 0.5, 1.0]
+                                values: [0.1, 0.25, 0.5]
                             }),
 
                             worldSpace: true

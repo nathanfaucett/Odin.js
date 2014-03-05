@@ -42,7 +42,7 @@ define([
              * @property Number w
              * @memberof Odin.Vec4
              */
-            this.w = w !== undefined ? w : 1.0;
+            this.w = w != undefined ? w : 1.0;
         }
 
         Mathf._classes["Vec4"] = Vec4;

@@ -7,7 +7,7 @@ define([
         return new Odin.ParticleSystem({
             emitter: new Odin.ParticleSystem.Emitter2D({
                 loop: false,
-                texture: Odin.Assets.hash["img_blood"],
+                material: Odin.Assets.get("mat_blood"),
 
                 worldSpace: true,
                 emissionRate: 0.1,

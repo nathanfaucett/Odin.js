@@ -45,8 +45,8 @@ define([
                 v1, v2,
                 i;
 
-
-            for (i = vertices.length; i--;) {
+            i = vertices.length;
+            while (i--) {
                 v1 = vertices[i];
                 v2 = vertices[i + 1] || vertices[0];
 
@@ -68,8 +68,11 @@ define([
 
             this.vertices.length = this.normals.length = this._vertices.length = this._normals.length = 0;
 
-            for (i = vertices.length; i--;) this.vertices[i] = vertices[i].clone();
-            for (i = normals.length; i--;) this.normals[i] = normals[i].clone();
+            i = vertices.length;
+            while (i--) this.vertices[i] = vertices[i].clone();
+
+            i = normals.length;
+            while (i--) this.normals[i] = normals[i].clone();
 
             return this;
         };
@@ -82,9 +85,9 @@ define([
                 px = p.x,
                 py = p.y,
                 n, nx, ny, v, vx, vy,
-                i;
+                i = vertices.length;;
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 n = normals[i];
                 nx = n.x;
                 ny = n.y;
@@ -110,11 +113,11 @@ define([
                     len = vertices.length,
                     v1x, v1y, v2x, v2y, area = 0,
                     cross,
-                    i;
+                    i = len;
 
                 vsum.x = vsum.y = 0;
 
-                for (i = len; i--;) {
+                while (i--) {
                     v1.vadd(localPosition, vertices[i]);
                     v2.vadd(localPosition, vertices[(i + 1) % len]);
 
@@ -139,9 +142,9 @@ define([
             var vertices = this.vertices,
                 len = vertices.length,
                 v1, v2, area = 0,
-                i;
+                i = len;
 
-            for (i = len; i--;) {
+            while (i--) {
                 v1 = vertices[i];
                 v2 = vertices[(i + 1) % len];
 
@@ -164,9 +167,9 @@ define([
                     b = 0,
                     sum1 = 0,
                     sum2 = 0,
-                    i;
+                    i = len;
 
-                for (i = len; i--;) {
+                while (i--) {
                     v1.vadd(localPosition, vertices[i]);
                     v2.vadd(localPosition, vertices[(i + 1) % len]);
 
@@ -207,7 +210,7 @@ define([
                 wnorms = this._normals,
                 wnorm, wverts = this._vertices,
                 wvert, x, y,
-                i;
+                i = vertices.length;
 
             localMatrix.setRotation(this.localRotation);
             localMatrix.setPosition(localPos);
@@ -217,7 +220,7 @@ define([
             pos.y = localPos.y;
             pos.transformMat32(matrix);
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 wvert = wverts[i] || (wverts[i] = new Vec2);
                 wnorm = wnorms[i] || (wnorms[i] = new Vec2);
 
@@ -248,8 +251,11 @@ define([
                 jsonNormals = json.normals || (json.normals = []),
                 i;
 
-            for (i = vertices.length; i--;) jsonVertices[i] = vertices[i].toJSON(jsonVertices[i]);
-            for (i = normals.length; i--;) jsonNormals[i] = normals[i].toJSON(jsonNormals[i]);
+            i = vertices.length;
+            while (i--) jsonVertices[i] = vertices[i].toJSON(jsonVertices[i]);
+
+            i = normals.length;
+            while (i--) jsonNormals[i] = normals[i].toJSON(jsonNormals[i]);
 
             return json;
         };
@@ -261,12 +267,18 @@ define([
                 normals = this.normals,
                 jsonVertices = json.vertices,
                 jsonNormals = json.normals,
+                verticesLength = jsonVertices.length,
+                normalsLength = jsonNormals.length,
                 i;
 
-            vertices.length = normals.length = this._vertices.length = this._normals.length = 0;
+            vertices.length = this._vertices.length = verticesLength;
+            normals.length = this._normals.length = normalsLength;
 
-            for (i = jsonVertices.length; i--;) vertices[i] = new Vec2().fromJSON(jsonVertices[i]);
-            for (i = jsonNormals.length; i--;) normals[i] = new Vec2().fromJSON(jsonNormals[i]);
+            i = verticesLength;
+            while (i--) vertices[i] = (vertices[i] || new Vec2()).fromJSON(jsonVertices[i]);
+
+            i = normalsLength;
+            while (i--) normals[i] = (normals[i] || new Vec2()).fromJSON(jsonNormals[i]);
 
             return this;
         };

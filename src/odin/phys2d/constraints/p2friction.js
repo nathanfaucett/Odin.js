@@ -158,8 +158,8 @@ define([
 
                 GWlambda = ulambdax * t.x + ulambday * t.y;
 
-            if (wlambdai !== undefined) GWlambda -= wlambdai * this.rixt;
-            if (wlambdaj !== undefined) GWlambda += wlambdaj * this.rjxt;
+            if (wlambdai != undefined) GWlambda -= wlambdai * this.rixt;
+            if (wlambdaj != undefined) GWlambda += wlambdaj * this.rjxt;
 
             return GWlambda;
         };
@@ -184,8 +184,8 @@ define([
             vlambdaj.x += deltaLambda * invMj * tx;
             vlambdaj.y += deltaLambda * invMj * ty;
 
-            if (bi.wlambda !== undefined) bi.wlambda -= deltaLambda * bi.invInertia * this.rixt;
-            if (bj.wlambda !== undefined) bj.wlambda += deltaLambda * bj.invInertia * this.rjxt;
+            if (bi.wlambda != undefined) bi.wlambda -= deltaLambda * bi.invInertia * this.rixt;
+            if (bj.wlambda != undefined) bj.wlambda += deltaLambda * bj.invInertia * this.rjxt;
         };
 
 

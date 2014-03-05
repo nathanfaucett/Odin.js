@@ -13,7 +13,7 @@ define([
                     }),
                     new Odin.Transform2D,
                     new Odin.Sprite({
-                        texture: Odin.Assets.get("img_objects"),
+                        material: Odin.Assets.get("mat_objects"),
                         x: 44,
                         y: 0,
                         w: 9,

@@ -49,17 +49,31 @@ require({
 
 
         Assets.addAssets(
+			new ShaderLib.Unlit,
             new Texture({
                 name: "img_player",
-                src: "../content/images/player.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                src: "../content/images/player.png"
             }),
             new Texture({
                 name: "img_hospital",
-                src: "../content/images/hospital.png",
-                magFilter: "NEAREST",
-                minFilter: "NEAREST"
+                src: "../content/images/hospital.png"
+            })
+        );
+		
+		Assets.addAssets(
+            new Material({
+                name: "mat_player",
+				uniforms: {
+					diffuseMap: Assets.get("img_player")
+				},
+				shader: Assets.get("shader_unlit")
+            }),
+            new Material({
+                name: "mat_hospital",
+				uniforms: {
+					diffuseMap: Assets.get("img_hospital")
+				},
+				shader: Assets.get("shader_unlit")
             })
         );
 
@@ -67,11 +81,7 @@ require({
             debug: true,
             forceCanvas: false,
             width: 960,
-            height: 640,
-            CanvasRenderer2DOptions: {
-                autoClear: true,
-                imageSmoothingEnabled: false
-            }
+            height: 640
         });
 
         var scene = new Scene({
@@ -100,7 +110,7 @@ require({
             components: [
                 new Transform2D,
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    material: Assets.get("mat_player"),
                     x: 0,
                     y: 0,
                     w: 64,
@@ -120,7 +130,7 @@ require({
             components: [
                 new Transform2D,
                 new Sprite({
-                    texture: Assets.hash["img_player"],
+                    material: Assets.get("mat_player"),
                     x: 0,
                     y: 0,
                     w: 64,
@@ -142,7 +152,7 @@ require({
                     position: new Vec2(0, 32)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_hospital"],
+                    material: Assets.get("mat_hospital"),
                     x: 0,
                     y: 0,
                     w: 64,
@@ -161,7 +171,7 @@ require({
             components: [
                 new Transform2D,
                 new Sprite({
-                    texture: Assets.hash["img_hospital"],
+                    material: Assets.get("mat_hospital"),
                     x: 0,
                     y: 0,
                     w: 64,
@@ -182,7 +192,7 @@ require({
                     position: new Vec2(-16, 16)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_hospital"],
+                    material: Assets.get("mat_hospital"),
                     x: 0,
                     y: 0,
                     w: 64,
@@ -203,7 +213,7 @@ require({
                     position: new Vec2(16, 16)
                 }),
                 new Sprite({
-                    texture: Assets.hash["img_hospital"],
+                    material: Assets.get("mat_hospital"),
                     x: 0,
                     y: 0,
                     w: 64,

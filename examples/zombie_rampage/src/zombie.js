@@ -19,7 +19,7 @@ define([
                     blood.clone(),
                     new Odin.Transform2D,
                     new Odin.Sprite({
-                        texture: Odin.Assets.get("img_zombie"),
+                        material: Odin.Assets.get("mat_zombie"),
                         x: 0,
                         y: 0,
                         w: 16,

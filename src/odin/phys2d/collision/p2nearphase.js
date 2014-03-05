@@ -43,12 +43,12 @@ define([
 
         P2Nearphase.prototype.collisions = function(pairsi, pairsj, contacts) {
             var si, sj,
-                i;
+                i = pairsi.length;
 
             contacts.length = 0;
             CONTACT_POOL.clearForEach(clearContact);
 
-            for (i = pairsi.length; i--;) {
+            while (i--) {
                 si = pairsi[i];
                 sj = pairsj[i];
 
@@ -205,9 +205,9 @@ define([
                 v1, v2, v1x, v1y, v2x, v2y, ex, ey, dx, dy, u, dist, invDist,
 
                 c, n, nx, ny, p,
-                i;
+                i = vertices.length;
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 vertex = vertices[i];
                 normal = normals[i];
                 s = normal.x * (xjx - vertex.x) + normal.y * (xjy - vertex.y);
@@ -309,9 +309,9 @@ define([
                 v1, v2, v1x, v1y, v2x, v2y, ex, ey, dx, dy, u, dist, invDist,
 
                 c, n, nx, ny, p,
-                i;
+                i = vertices.length;
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 vertex = vertices[i];
                 normal = normals[i];
                 s = normal.x * (xjx - vertex.x) + normal.y * (xjy - vertex.y);
@@ -401,9 +401,9 @@ define([
 
         function contains(vertices, normals, px, py) {
             var n, nx, ny, v, vx, vy,
-                i;
+                i = vertices.length;
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 n = normals[i];
                 nx = n.x;
                 ny = n.y;
@@ -433,7 +433,8 @@ define([
 
                 i;
 
-            for (i = verticesi.length; i--;) {
+            i = verticesi.length;
+            while (i--) {
                 v = verticesi[i];
                 vx = v.x;
                 vy = v.y;
@@ -461,7 +462,8 @@ define([
                 }
             }
 
-            for (i = verticesj.length; i--;) {
+            i = verticesj.length;
+            while (i--) {
                 v = verticesj[i];
                 vx = v.x;
                 vy = v.y;
@@ -495,9 +497,9 @@ define([
             var nx = n.x,
                 ny = n.y,
                 v, m = Infinity,
-                i;
+                i = vertices.length;
 
-            for (i = vertices.length; i--;) {
+            while (i--) {
                 v = vertices[i];
                 m = min(m, nx * v.x + ny * v.y);
             }
@@ -516,9 +518,9 @@ define([
 
                 n, v, dist, min = -Infinity,
                 index = -1,
-                i;
+                i = counti;
 
-            for (i = counti; i--;) {
+            while (i--) {
                 n = normalsi[i];
                 v = verticesi[i];
 

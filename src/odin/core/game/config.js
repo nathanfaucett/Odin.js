@@ -6,10 +6,12 @@ define(
         "use strict";
 
 
+        var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+
         function Config() {
 
             this.debug = false;
-            this.forceCanvas = false;
 
             this.host = "127.0.0.1";
             this.port = 3000;
@@ -31,6 +33,17 @@ define(
             }
 
             return this;
+        };
+
+
+        Config.prototype.toJSON = function(json) {
+            json || (json = {});
+
+            for (var key in this) {
+                if (this[key] != undefined && hasOwnProperty.call(this, key)) json[key] = this[key];
+            }
+
+            return json;
         };
 
 

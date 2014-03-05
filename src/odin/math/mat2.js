@@ -29,10 +29,10 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[0] = m11 != undefined ? m11 : 1.0;
             te[2] = m12 || 0.0;
             te[1] = m21 || 0.0;
-            te[3] = m22 !== undefined ? m22 : 1.0;
+            te[3] = m22 != undefined ? m22 : 1.0;
         }
 
         Mathf._classes["Mat2"] = Mat2;

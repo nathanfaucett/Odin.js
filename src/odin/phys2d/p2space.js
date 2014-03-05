@@ -88,7 +88,7 @@ define([
 
             i = (i * (i + 1) >> 1) + j - 1;
 
-            if (current === undefined || current) {
+            if (current == undefined || current) {
                 this._collisionMatrix[i] = value;
             } else {
                 this._collisionMatrixPrevious[i] = value;
@@ -128,8 +128,9 @@ define([
 
 
         P2Space.prototype.add = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.addBody(arguments[i]);
+            while (i--) this.addBody(arguments[i]);
             return this;
         };
 
@@ -153,8 +154,9 @@ define([
 
 
         P2Space.prototype.remove = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeBody(arguments[i]);
+            while (i--) this.removeBody(arguments[i]);
             return this;
         };
 
@@ -162,14 +164,16 @@ define([
         P2Space.prototype.findBodyByPoint = function(p) {
             var bodies = this.bodies,
                 body, shapes, shape,
-                i, j;
+                i = bodies.length,
+                j;
 
-            for (i = bodies.length; i--;) {
+            while (i--) {
                 body = bodies[i];
                 if (!body) continue;
 
                 shapes = body.shapes;
-                for (j = shapes.length; j--;) {
+                j = shapes.length;
+                while (j--) {
                     shape = shapes[j];
                     if (!shape) continue;
 
@@ -206,7 +210,8 @@ define([
             time = this.time += dt;
 
             if (this.useGravity) {
-                for (i = numBodies; i--;) {
+                i = numBodies;
+                while (i--) {
                     body = bodies[i];
 
                     if (body.motionState === MotionState.Dynamic) {
@@ -235,7 +240,8 @@ define([
             FRICTION_POOL.clear();
             frictions.length = 0;
 
-            for (i = contacts.length; i--;) {
+            i = contacts.length;
+            while (i--) {
                 c = contacts[i];
 
                 if (c.u > 0) {
@@ -271,7 +277,8 @@ define([
             stats.solve = now() - start;
 
             start = now();
-            for (i = numBodies; i--;) {
+            i = numBodies;
+            while (i--) {
                 body = bodies[i];
                 if (!body) continue;
 

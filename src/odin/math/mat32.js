@@ -32,11 +32,11 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[0] = m11 != undefined ? m11 : 1.0;
             te[2] = m12 || 0.0;
             te[4] = m13 || 0.0;
             te[1] = m21 || 0.0;
-            te[3] = m22 !== undefined ? m22 : 1.0;
+            te[3] = m22 != undefined ? m22 : 1.0;
             te[5] = m23 || 0.0;
         }
 
@@ -297,7 +297,7 @@ define([
             te[3] = m11 * det;
 
             te[4] = (m21 * m23 - m22 * m13) * det;
-            te[5] = (m12 * m13 - m11 * m23) * det;
+            te[5] = -(m11 * m23 - m12 * m13) * det;
 
             return this;
         };
@@ -330,7 +330,7 @@ define([
             te[3] = m11 * det;
 
             te[4] = (m21 * m23 - m22 * m13) * det;
-            te[5] = (m12 * m13 - m11 * m23) * det;
+            te[5] = -(m11 * m23 - m12 * m13) * det;
 
             return this;
         };
@@ -687,8 +687,8 @@ define([
             te[1] = me[1];
             te[2] = me[4];
             te[3] = me[5];
-            te[4] = me[11];
-            te[5] = me[12];
+            te[4] = me[12];
+            te[5] = me[13];
 
             return this;
         };

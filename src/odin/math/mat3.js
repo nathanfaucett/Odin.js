@@ -33,15 +33,15 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[0] = m11 != undefined ? m11 : 1.0;
             te[3] = m12 || 0.0;
             te[6] = m13 || 0.0;
             te[1] = m21 || 0.0;
-            te[4] = m22 !== undefined ? m22 : 1.0;
+            te[4] = m22 != undefined ? m22 : 1.0;
             te[7] = m23 || 0.0;
             te[2] = m31 || 0.0;
             te[5] = m32 || 0.0;
-            te[8] = m33 !== undefined ? m33 : 1.0;
+            te[8] = m33 != undefined ? m33 : 1.0;
         }
 
         Mathf._classes["Mat3"] = Mat3;

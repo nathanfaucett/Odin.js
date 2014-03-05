@@ -29,9 +29,9 @@ define([
             this.parent = undefined;
             this.children = [];
 
-            this.position = opts.position !== undefined ? opts.position : new Vec3;
-            this.rotation = opts.rotation !== undefined ? opts.rotation : new Quat;
-            this.scale = opts.scale !== undefined ? opts.scale : new Vec3(1, 1, 1);
+            this.position = opts.position != undefined ? opts.position : new Vec3;
+            this.rotation = opts.rotation != undefined ? opts.rotation : new Quat;
+            this.scale = opts.scale != undefined ? opts.scale : new Vec3(1, 1, 1);
 
             this.matrix = new Mat4;
             this.matrixWorld = new Mat4;

@@ -43,22 +43,22 @@ define([
              */
             this.elements = te;
 
-            te[0] = m11 !== undefined ? m11 : 1.0;
+            te[0] = m11 != undefined ? m11 : 1.0;
             te[4] = m12 || 0.0;
             te[8] = m13 || 0.0;
             te[12] = m14 || 0.0;
             te[1] = m21 || 0.0;
-            te[5] = m22 !== undefined ? m22 : 1.0;
+            te[5] = m22 != undefined ? m22 : 1.0;
             te[9] = m23 || 0.0;
             te[13] = m24 || 0.0;
             te[2] = m31 || 0.0;
             te[6] = m32 || 0.0;
-            te[10] = m33 !== undefined ? m33 : 1.0;
+            te[10] = m33 != undefined ? m33 : 1.0;
             te[14] = m34 || 0.0;
             te[3] = m41 || 0.0;
             te[7] = m42 || 0.0;
             te[11] = m43 || 0.0;
-            te[15] = m44 !== undefined ? m44 : 1.0;
+            te[15] = m44 != undefined ? m44 : 1.0;
         }
 
         Mathf._classes["Mat4"] = Mat4;
@@ -605,7 +605,7 @@ define([
             te[0] = v.x;
             te[5] = v.y;
             te[10] = v.z;
-            te[15] = w !== undefined ? w : 1.0;
+            te[15] = w != undefined ? w : 1.0;
 
             return this;
         };
@@ -817,7 +817,7 @@ define([
 
             te[12] = v.x;
             te[13] = v.y;
-            te[14] = z !== undefined ? z : 0.0;
+            te[14] = z != undefined ? z : 0.0;
 
             return this;
         };

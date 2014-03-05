@@ -23,11 +23,7 @@ define([
                 if (self.callback) {
                     self.callback.call(ctx, ms);
 
-                    if (!self.paused) {
-                        self._pump();
-                    } else {
-                        self.pause();
-                    }
+                    if (!self.paused) self._pump();
                 }
             }
         }

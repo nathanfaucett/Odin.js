@@ -32,6 +32,8 @@ define([
             this.y = opts.y || 0;
             this.w = opts.w || 1;
             this.h = opts.h || 1;
+
+            this._webglMeshInitted = false;
         }
 
         Component.extend(Sprite);
@@ -57,6 +59,8 @@ define([
             this.w = other.w;
             this.h = other.h;
 
+            this._webglMeshInitted = false;
+
             return this;
         };
 
@@ -65,6 +69,7 @@ define([
             Component.prototype.clear.call(this);
 
             this.material = undefined;
+            this._webglMeshInitted = false;
 
             return this;
         };
@@ -115,6 +120,8 @@ define([
             this.y = json.y;
             this.w = json.w;
             this.h = json.h;
+
+            this._webglMeshInitted = false;
 
             return this;
         };

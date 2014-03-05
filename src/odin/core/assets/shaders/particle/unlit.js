@@ -21,20 +21,16 @@ define([
 
                 fragment: [
                     "uniform sampler2D diffuseMap;",
-                    "uniform vec3 diffuseColor;",
 
                     "void main() {",
-                    "	gl_FragColor.xyz = diffuseColor;",
-                    "	gl_FragColor.w = vAlpha;",
-
                     "	float c = cos(vAngle);",
                     "	float s = sin(vAngle);",
 
                     "	vec2 rotatedUV = vec2(c * (gl_PointCoord.x - 0.5) + s * (gl_PointCoord.y - 0.5) + 0.5,",
                     "						  c * (gl_PointCoord.y - 0.5) - s * (gl_PointCoord.x - 0.5) + 0.5);",
 
-                    "	vec4 rotatedTexture = texture2D(diffuseMap,  rotatedUV);",
-                    "	gl_FragColor = gl_FragColor * rotatedTexture;",
+                    "	vec4 rotatedTexture = texture2D(diffuseMap, rotatedUV);",
+                    "	gl_FragColor = vec4(vParticleColor * rotatedTexture.xyz, vAlpha * rotatedTexture.w);",
                     "}"
                 ].join("\n")
             });

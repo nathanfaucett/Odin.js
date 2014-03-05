@@ -13,7 +13,7 @@ define([
                     blood.clone(),
                     new Odin.Transform2D,
                     new Odin.Sprite({
-                        texture: Odin.Assets.get("img_player"),
+                        material: Odin.Assets.get("mat_player"),
                         x: 0,
                         y: 0,
                         w: 16,

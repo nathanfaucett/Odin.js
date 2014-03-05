@@ -4,10 +4,11 @@ if (typeof define !== "function") {
 define([
         "odin/base/class",
         "odin/math/vec2",
+        "odin/math/vec3",
         "odin/core/components/component",
         "odin/phys2d/phys2d"
     ],
-    function(Class, Vec2, Component, Phys2D) {
+    function(Class, Vec2, Vec3, Component, Phys2D) {
         "use strict";
 
 
@@ -46,10 +47,16 @@ define([
         RigidBody2D.prototype.init = function() {
             var body = this.body,
                 gameObject = this.gameObject,
-                transform = gameObject.transform2d;
+                transform = gameObject.transform,
+                transform2d = gameObject.transform2d;
 
-            body.position.copy(transform.position);
-            body.rotation = transform.rotation;
+            if (transform) {
+                body.position.copy(transform.position);
+                body.rotation = transform.rotation.rotationZ();
+            } else {
+                body.position.copy(transform2d.position);
+                body.rotation = transform2d.rotation;
+            }
 
             body.init();
             body.userData = this;
@@ -58,13 +65,20 @@ define([
         };
 
 
+        var zAxis = new Vec3(0.0, 0.0, 1.0);
         RigidBody2D.prototype.update = function() {
             var body = this.body,
                 gameObject = this.gameObject,
-                transform = gameObject.transform2d;
+                transform = gameObject.transform,
+                transform2d = gameObject.transform2d;
 
-            transform.position.copy(body.position);
-            transform.rotation = body.rotation;
+            if (transform) {
+                transform.position.copy(body.position);
+                transform.rotation.fromAxisAngle(zAxis, body.rotation);
+            } else {
+                transform2d.position.copy(body.position);
+                transform2d.rotation = body.rotation;
+            }
         };
 
 

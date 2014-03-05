@@ -27,13 +27,13 @@ define([
              * @brief max number of iterations
              * @memberof P2Solver
              */
-            this.iterations = opts.iterations !== undefined ? opts.iterations : 10;
+            this.iterations = opts.iterations != undefined ? opts.iterations : 10;
 
             /**
              * @property Number tolerance
              * @memberof P2Solver
              */
-            this.tolerance = opts.tolerance !== undefined ? opts.tolerance : 1e-6;
+            this.tolerance = opts.tolerance != undefined ? opts.tolerance : 1e-6;
         }
 
         Class.extend(P2Solver, Class);
@@ -57,19 +57,22 @@ define([
 
             if (num > -1) {
 
-                for (i = num; i--;) {
+                i = num;
+                while (i--) {
                     eq = equations[i];
 
                     eq.updateConstants(h);
                     eq.init(h);
                 }
 
-                for (i = iterations; i--;) {
+                i = iterations;
+                while (i--) {
 
                     iter++;
                     deltaLambdaTotal = 0;
 
-                    for (j = num; j--;) {
+                    j = num;
+                    while (j--) {
                         eq = equations[j];
 
                         GWlambda = eq.calculateGWlambda();
@@ -86,7 +89,8 @@ define([
                     if (deltaLambdaTotal * deltaLambdaTotal < toleranceSq) break;
                 }
 
-                for (i = num; i--;) {
+                i = num;
+                while (i--) {
                     eq = equations[i];
 
                     bi = eq.bi;
@@ -104,11 +108,11 @@ define([
 
                     vlambdai.x = vlambdai.y = vlambdaj.x = vlambdaj.y = 0;
 
-                    if (bi.wlambda !== undefined) {
+                    if (bi.wlambda != undefined) {
                         bi.angularVelocity += bi.wlambda;
                         bi.wlambda = 0;
                     }
-                    if (bj.wlambda !== undefined) {
+                    if (bj.wlambda != undefined) {
                         bj.angularVelocity += bj.wlambda;
                         bj.wlambda = 0;
                     }

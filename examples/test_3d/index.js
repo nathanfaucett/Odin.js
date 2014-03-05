@@ -80,19 +80,13 @@ require({
                 shader: Assets.get("shader_normal_specular")
             }),
             new Material({
-                name: "mat_env",
-
-                wireframe: false,
-                wireframeLineWidth: 1,
+                name: "mat_sprite",
 
                 uniforms: {
-                    diffuseMap: Assets.get("tex_marine_dif"),
-                    envMap: Assets.get("cm_sky"),
-                    reflectivity: 0.5,
-                    combine: 3
+                    diffuseMap: Assets.get("tex_marine_nor")
                 },
 
-                shader: Assets.get("shader_reflective_vertex_lit")
+                shader: Assets.get("shader_unlit")
             })
         );
 
@@ -170,10 +164,10 @@ require({
         sprite = new GameObject({
             components: [
                 new Transform({
-                    position: new Vec3(0, 0, 5)
+                    position: new Vec3(0, 0, 1)
                 }),
                 new Sprite({
-                    material: Assets.get("mat_default"),
+                    material: Assets.get("mat_sprite"),
                     x: 0,
                     y: 0,
                     w: 1024,
@@ -214,8 +208,8 @@ require({
                 }),
                 new Light({
                     type: Enums.LightType.Directional,
-                    color: new Color(1, 1, 0),
-                    energy: 0.1
+                    color: new Color(1, 1, 1),
+                    energy: 1
                 })
             ],
             tags: [
@@ -266,7 +260,7 @@ require({
             ]
         });
 
-        scene.addGameObjects(camera, sprite, pointLight, spotLight);
+        scene.addGameObjects(camera, sprite, pointLight, spotLight, directionalLight);
         game.addScene(scene);
 
         function addObject(s) {

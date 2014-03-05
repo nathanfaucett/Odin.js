@@ -73,7 +73,7 @@ define(
         };
 
 
-        RectOffset.prototype.remove = function(rect) {
+        RectOffset.prototype.sub = function(rect) {
 
             rect.xMin += this.left;
             rect.xMax -= this.right;

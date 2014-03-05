@@ -28,7 +28,7 @@ define([
 
 
         CameraControl.prototype.update = function() {
-            var transform = this.transform2d,
+            var transform2d = this.transform2d,
                 position = this.transform2d.position,
                 camera2d = this.camera2d,
                 player = this.player || (this.player = this.gameObject.scene.findByTagFirst("Player")),
@@ -37,7 +37,7 @@ define([
 
             if (player) {
                 if (player.character && !player.character.dead) {
-                    transform.follow(player.transform2d, dt * spd);
+                    transform2d.follow(player.transform2d, dt * spd);
                 } else {
                     this.player = this.gameObject.scene.findByTagFirst("Player");
                 }

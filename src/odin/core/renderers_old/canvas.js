@@ -76,13 +76,13 @@ define([
              * @property Number width
              * @memberof Canvas
              */
-            this.width = opts.width !== undefined ? opts.width : window.innerWidth;
+            this.width = opts.width != undefined ? opts.width : window.innerWidth;
 
             /**
              * @property Number height
              * @memberof Canvas
              */
-            this.height = opts.height !== undefined ? opts.height : window.innerHeight;
+            this.height = opts.height != undefined ? opts.height : window.innerHeight;
 
             /**
              * @property Number aspect

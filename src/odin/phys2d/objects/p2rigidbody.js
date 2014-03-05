@@ -45,7 +45,7 @@ define([
 
             this.aabb = new AABB2;
 
-            this.sleepAngularVelocityLimit = opts.sleepAngularVelocityLimit !== undefined ? !! opts.sleepAngularVelocityLimit : TWO_PI * 0.01;
+            this.sleepAngularVelocityLimit = opts.sleepAngularVelocityLimit != undefined ? !! opts.sleepAngularVelocityLimit : TWO_PI * 0.01;
 
             this.wlambda = 0;
 
@@ -59,7 +59,7 @@ define([
         P2Rigidbody.prototype.copy = function(other) {
             P2Particle.prototype.copy.call(this, other);
             var shapes = other.shapes,
-                i;
+                i = shapes.length;
 
             this.rotation = other.rotation;
             this.angularVelocity = other.angularVelocity;
@@ -67,7 +67,7 @@ define([
 
             this.angularDamping = other.angularDamping;
 
-            for (i = shapes.length; i--;) this.addShape(shapes[i].clone());
+            while (i--) this.addShape(shapes[i].clone());
 
             return this;
         };
@@ -78,14 +78,14 @@ define([
                 matrix = this.matrix,
                 aabb = this.aabb,
                 shape,
-                i;
+                i = shapes.length;
 
             matrix.setRotation(this.rotation);
             matrix.setPosition(this.position);
 
             aabb.clear();
 
-            for (i = shapes.length; i--;) {
+            while (i--) {
                 shape = shapes[i];
                 shape.update(matrix);
                 aabb.union(shape.aabb);
@@ -131,7 +131,8 @@ define([
 
                 aabb.clear();
 
-                for (i = shapes.length; i--;) {
+                i = shapes.length;
+                while (i--) {
                     shape = shapes[i];
                     shape.update(matrix);
                     aabb.union(shape.aabb);
@@ -224,7 +225,8 @@ define([
 
             totalCentroid.x = totalCentroid.y = 0;
 
-            for (i = shapes.length; i--;) {
+            i = shapes.length;
+            while (i--) {
                 shape = shapes[i];
 
                 shape.centroid(centroid);
@@ -320,14 +322,16 @@ define([
 
         P2Rigidbody.prototype.forEachShape = function(fn, ctx) {
             var shapes = this.shapes,
-                i;
+                i = shapes.length;
 
             if (ctx) {
-                for (i = shapes.length; i--;)
+                while (i--) {
                     if (fn.call(ctx, shapes[i], i, shapes) === false) break;
+                }
             } else {
-                for (i = shapes.length; i--;)
+                while (i--) {
                     if (fn(shapes[i], i, shapes) === false) break;
+                }
             }
 
             return this;
@@ -359,7 +363,7 @@ define([
             json = P2Particle.prototype.toJSON.call(this, json);
             var shapes = this.shapes,
                 jsonShapes = json.shapes || (json.shapes = []),
-                i;
+                i = shapes.length;
 
             json.rotation = this.rotation;
             json.angularVelocity = this.angularVelocity;
@@ -367,7 +371,7 @@ define([
 
             json.angularDamping = this.angularDamping;
 
-            for (i = shapes.length; i--;) jsonShapes[i] = shapes[i].toJSON(jsonShapes[i]);
+            while (i--) jsonShapes[i] = shapes[i].toJSON(jsonShapes[i]);
 
             return json;
         };
@@ -376,7 +380,7 @@ define([
         P2Rigidbody.prototype.fromJSON = function(json) {
             P2Particle.prototype.fromJSON.call(this, json);
             var jsonShapes = json.shapes || (json.shapes = []),
-                i;
+                i = jsonShapes.length;
 
             this.rotation = json.rotation;
             this.angularVelocity = json.angularVelocity;
@@ -384,7 +388,7 @@ define([
 
             this.angularDamping = json.angularDamping;
 
-            for (i = jsonShapes.length; i--;) this.addShape(Class.fromJSON(jsonShapes[i]));
+            while (i--) this.addShape(Class.fromJSON(jsonShapes[i]));
 
             return this;
         };

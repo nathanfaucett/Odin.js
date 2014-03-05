@@ -11,14 +11,13 @@ define([
         "odin/core/game/log",
         "odin/core/rendering/canvas",
         "odin/core/rendering/renderer",
-        "odin/core/renderer/renderer_2d",
         "odin/core/game_object",
         "odin/core/components/component",
         "odin/core/scene",
         "odin/core/input/input",
         "odin/core/input/handler"
     ],
-    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, Renderer, Renderer2D, GameObject, Component, Scene, Input, Handler) {
+    function(Class, Device, Time, Mathf, Config, BaseGame, Log, Canvas, Renderer, GameObject, Component, Scene, Input, Handler) {
         "use strict";
 
 
@@ -37,19 +36,18 @@ define([
             this.camera = undefined;
 
             this.canvas = new Canvas(opts.canvas);
-            this.renderer = undefined;
-
-            this._Renderer = undefined;
-            this._RendererOptions = opts.renderer;
-
-            this._Renderer2D = undefined;
-            this._Renderer2DOptions = opts.renderer2d;
+            this.renderer = new Renderer(opts.renderer);
         }
 
         BaseGame.extend(Game);
 
 
         Game.prototype.init = function() {
+            var canvas = this.canvas;
+
+            canvas.init();
+            this.renderer.init(canvas);
+            Handler.setElement(canvas.element);
 
             this._loop.resume();
             this.emit("init");
@@ -134,37 +132,12 @@ define([
                 this.camera._active = true;
                 if (lastCamera) lastCamera._active = false;
 
-                this.updateRenderer();
                 this.emit("setCamera", this.camera);
             } else {
                 Log.error("Game.setCamera: GameObject does't have a Camera or a Camera2D Component");
             }
 
             return this;
-        };
-
-
-        Game.prototype.updateRenderer = function() {
-            var lastRenderer = this.renderer,
-                camera = this.camera,
-                canvas = this.canvas;
-
-            if (camera.camera2d) {
-                this._Renderer2D = this._Renderer2D || new Renderer2D(this._Renderer2DOptions);
-                this.renderer = this._Renderer2D;
-            } else {
-                this._Renderer = this._Renderer || new Renderer(this._RendererOptions);
-                this.renderer = this._Renderer;
-            }
-
-            if (lastRenderer !== this.renderer) {
-                if (lastRenderer) lastRenderer.clear();
-                canvas.clear();
-
-                canvas.init();
-                this.renderer.init(canvas);
-                Handler.setElement(canvas.element);
-            }
         };
 
 
@@ -180,7 +153,7 @@ define([
             this.emit("update", Time.sinceStart);
 
             if (renderer && camera) {
-                renderer.preRender(scene, gui, camera);
+                renderer.preRender(gui, scene, camera);
 
                 if (scene) {
                     scene.emit("update");

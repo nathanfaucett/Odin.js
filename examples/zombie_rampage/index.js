@@ -13,12 +13,9 @@ require({
             forceCanvas: false,
             width: 960,
             height: 640,
-            CanvasRenderer2DOptions: {
-                imageSmoothingEnabled: false,
-                autoClear: false
-            },
-            Renderer2DOptions: {
-                autoClear: false
+            renderer: {
+                autoClear: false,
+                disableDepth: false
             }
         });
 

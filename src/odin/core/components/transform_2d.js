@@ -5,12 +5,13 @@ define([
         "odin/math/mathf",
         "odin/math/vec2",
         "odin/math/mat32",
+        "odin/math/mat3",
         "odin/math/mat4",
         "odin/core/components/component",
         "odin/core/game/config",
         "odin/core/game/log"
     ],
-    function(Mathf, Vec2, Mat32, Mat4, Component, Config, Log) {
+    function(Mathf, Vec2, Mat32, Mat3, Mat4, Component, Config, Log) {
         "use strict";
 
 
@@ -33,15 +34,12 @@ define([
             this.rotation = opts.rotation != undefined ? opts.rotation : 0;
             this.scale = opts.scale != undefined ? opts.scale : new Vec2(1, 1);
 
-            this.matrix = new Mat32;
-            this.matrixWorld = new Mat32;
-            this._matrixWorldMat4 = new Mat4;
+            this.matrix = new Mat4;
+            this.matrixWorld = new Mat4;
 
-            this.modelView = new Mat32;
-            this._modelViewMat4 = new Mat4;
-
-            this._modelViewNeedsUpdate = false;
-            this._modelViewMat4NeedsUpdate = false;
+            this.modelView = new Mat4;
+            this.normalMatrix = new Mat3;
+            this._matricesViewNeedsUpdate = false;
         }
 
         Component.extend(Transform2D);
@@ -140,8 +138,8 @@ define([
                 delta = new Vec2;
 
             return function(transform, speed) {
-                position.set(0, 0).transformMat32(this.matrixWorld);
-                target.set(0, 0).transformMat32(transform.matrixWorld);
+                position.set(0, 0).transformMat4(this.matrixWorld);
+                target.set(0, 0).transformMat4(transform.matrixWorld);
 
                 delta.vsub(target, position);
 
@@ -239,7 +237,7 @@ define([
 
         Transform2D.prototype.toWorld = function(v) {
 
-            return v.transformMat32(this.matrixWorld);
+            return v.transformMat4(this.matrixWorld);
         };
 
 
@@ -248,45 +246,37 @@ define([
 
             return function(v) {
 
-                return v.transformMat32(mat.inverseMat(this.matrixWorld));
+                return v.transformMat4(mat.inverseMat(this.matrixWorld));
             };
         }();
 
 
         Transform2D.prototype.update = function() {
-            var matrix = this.matrix,
-                parent = this.parent;
+            var mat = new Mat32;
 
-            matrix.compose(this.position, this.scale, this.rotation);
+            return function() {
+                var matrix = this.matrix,
+                    parent = this.parent;
 
-            if (parent) {
-                this.matrixWorld.mmul(parent.matrixWorld, matrix);
-            } else {
-                this.matrixWorld.copy(matrix);
-            }
+                matrix.fromMat32(mat.compose(this.position, this.scale, this.rotation));
 
-            this._matrixWorldMat4.fromMat32(this.matrixWorld);
+                if (parent) {
+                    this.matrixWorld.mmul(parent.matrixWorld, matrix);
+                } else {
+                    this.matrixWorld.copy(matrix);
+                }
 
-            this._modelViewNeedsUpdate = true;
-            this._modelViewMat4NeedsUpdate = true;
-        };
+                this._matricesViewNeedsUpdate = true;
+            };
+        }();
 
 
-        Transform2D.prototype.updateModelViewMat32 = function(viewMatrix) {
-            if (!this._modelViewNeedsUpdate) return;
+        Transform2D.prototype.updateMatrices = function(viewMatrix) {
+            if (!this._matricesViewNeedsUpdate) return;
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
-
-            this._modelViewNeedsUpdate = false;
-        };
-
-
-        Transform2D.prototype.updateModelView = function(viewMatrix) {
-            if (!this._modelViewMat4NeedsUpdate) return;
-
-            this._modelViewMat4.mmul(viewMatrix, this._matrixWorldMat4);
-
-            this._modelViewMat4NeedsUpdate = false;
+            this.normalMatrix.inverseMat4(this.modelView).transpose();
+            this._matricesViewNeedsUpdate = false;
         };
 
 
