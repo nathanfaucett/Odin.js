@@ -40,7 +40,6 @@ define([
             this.positionType = opts.positionType != undefined ? opts.positionType : EmitterType.Box;
             this.velocityType = opts.velocityType != undefined ? opts.velocityType : EmitterType.Box;
 
-            this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
             this.material = opts.material != undefined ? opts.material : undefined;
 
             this.positionSpread = opts.positionSpread != undefined ? opts.positionSpread : new Vec2(0.5, 0.5);
@@ -100,7 +99,15 @@ define([
 
             this.particles = [];
 
-            this._webgl = {};
+            this._webglInitted = undefined;
+
+            this._webglVertexBuffer = undefined;
+            this._webglParticleBuffer = undefined;
+            this._webglParticleColorBuffer = undefined;
+
+            this._webglVertexArray = undefined;
+            this._webglParticleArray = undefined;
+            this._webglParticleColorArray = undefined;
         }
 
         Class.extend(Emitter2D);
@@ -111,7 +118,6 @@ define([
             this.positionType = other.positionType;
             this.velocityType = other.velocityType;
 
-            this.blending = other.blending;
             this.material = other.material;
 
             this.position.copy(other.position);
@@ -374,7 +380,6 @@ define([
             json.positionType = this.positionType;
             json.velocityType = this.velocityType;
 
-            json.blending = this.blending;
             json.material = this.material ? this.material.name : undefined;
 
             json.position = this.position.toJSON(json.position);
@@ -434,8 +439,7 @@ define([
             this.positionType = json.positionType;
             this.velocityType = json.velocityType;
 
-            this.blending = json.blending;
-            this.material = json.material ? Assets.hash[json.material] : undefined;
+            this.material = json.material ? Assets.get(json.material) : undefined;
 
             this.position.fromJSON(json.position);
             this.positionSpread.fromJSON(json.positionSpread);

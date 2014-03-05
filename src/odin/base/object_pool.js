@@ -38,8 +38,9 @@ define(
 
 
         ObjectPool.prototype.remove = ObjectPool.prototype.removeObjects = function() {
-
-            for (var i = arguments.length; i--;) this.removeObject(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.removeObject(arguments[i]);
 
             return this;
         };
@@ -48,9 +49,9 @@ define(
         ObjectPool.prototype.clear = function() {
             var objects = this.objects,
                 pooled = this.pooled,
-                i;
+                i = objects.length;
 
-            for (i = objects.length; i--;) pooled.push(objects[i]);
+            while (i--) pooled.push(objects[i]);
             objects.length = 0;
 
             return this;
@@ -61,9 +62,9 @@ define(
             var objects = this.objects,
                 pooled = this.pooled,
                 object,
-                i;
+                i = objects.length;
 
-            for (i = objects.length; i--;) {
+            while (i--) {
                 object = objects[i];
 
                 pooled.push(object);

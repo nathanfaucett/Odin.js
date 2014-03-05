@@ -18,9 +18,10 @@ define([
         "odin/core/game/log",
         "odin/core/game/config",
         "odin/core/components/particle_system/emitter",
+        "odin/core/components/particle_system/emitter_2d",
         "odin/core/rendering/shader_chunks"
     ],
-    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec2, Vec3, Vec4, Mat2, Mat3, Mat4, Enums, Log, Config, Emitter, ShaderChunks) {
+    function(EventEmitter, Device, Dom, util, Mathf, Color, Vec2, Vec3, Vec4, Mat2, Mat3, Mat4, Enums, Log, Config, Emitter, Emitter2D, ShaderChunks) {
         "use strict";
 
 
@@ -296,7 +297,24 @@ define([
                         }
 
                         _gl.drawArrays(_gl.POINTS, 0, emitter._webglParticleCount);
-                    }
+                    } else if (emitter instanceof Emitter2D) {
+						material = emitter.material;
+                        if (!material) return;
+
+                        setBlending(material.blending);
+                        setCullFace(CullFace.Back);
+
+                        createEmitter2DBuffers(emitter, transform);
+                        shader = createEmitter2DShader(emitter, material, lights);
+                        shader.bind(emitter, material, transform, camera, lights, ambient);
+
+                        if (!emitter._webglInitted) {
+                            shader.used++;
+                            emitter._webglInitted = true;
+                        }
+
+                        _gl.drawArrays(_gl.POINTS, 0, emitter._webglParticleCount);
+					}
                 }
             }
 
@@ -716,6 +734,64 @@ define([
             }
 
 
+            function createEmitter2DBuffers(emitter, transform) {
+                var MAX = Emitter2D.MAX_PARTICLES,
+
+                    DRAW = _gl.DYNAMIC_DRAW,
+                    FLOAT = _gl.FLOAT,
+                    ARRAY_BUFFER = _gl.ARRAY_BUFFER,
+
+                    positionArray, dataArray, colorArray,
+                    positionBuffer, dataBuffer, colorBuffer,
+
+                    particles = emitter.particles,
+                    particle,
+                    i = 0,
+                    len = particles.length,
+                    offset, position, color;
+
+                if (len) {
+                    positionArray = emitter._webglVertexArray || (emitter._webglVertexArray = new Float32Array(MAX * 3));
+                    dataArray = emitter._webglParticleArray || (emitter._webglParticleArray = new Float32Array(MAX * 3));
+                    colorArray = emitter._webglParticleColorArray || (emitter._webglParticleColorArray = new Float32Array(MAX * 3));
+
+                    i = len;
+                    while (i--) {
+                        particle = particles[i];
+                        position = particle.position;
+                        color = particle.color;
+                        offset = i * 3;
+
+                        positionArray[offset] = position.x;
+                        positionArray[offset + 1] = position.y;
+                        positionArray[offset + 2] = 0.0;
+
+                        dataArray[offset] = particle.angle;
+                        dataArray[offset + 1] = particle.size;
+                        dataArray[offset + 2] = particle.alpha;
+
+                        colorArray[offset] = color.r;
+                        colorArray[offset + 1] = color.g;
+                        colorArray[offset + 2] = color.b;
+                    }
+
+                    positionBuffer = emitter._webglVertexBuffer || (emitter._webglVertexBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, positionBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, positionArray, DRAW);
+
+                    dataBuffer = emitter._webglParticleBuffer || (emitter._webglParticleBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, dataBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, dataArray, DRAW);
+
+                    colorBuffer = emitter._webglParticleColorBuffer || (emitter._webglParticleColorBuffer = _gl.createBuffer());
+                    _gl.bindBuffer(ARRAY_BUFFER, colorBuffer);
+                    _gl.bufferData(ARRAY_BUFFER, colorArray, DRAW);
+                }
+
+                emitter._webglParticleCount = len;
+            }
+
+
             function zSort(a, b) {
 
                 return b.z - a.z;
@@ -803,6 +879,44 @@ define([
                     parameters = {};
 
                 parameters.emitter = true;
+                parameters.worldSpace = emitter.worldSpace;
+                parameters.mobile = Device.mobile;
+                parameters.useLights = shader.lights;
+                parameters.useShadows = shader.shadows;
+                parameters.useFog = shader.fog;
+                parameters.useBones = false;
+                parameters.useVertexLit = shader.vertexLit;
+                parameters.useSpecular = shader.specular;
+
+                parameters.useNormal = !! uniforms.normalMap;
+                parameters.useBump = !! uniforms.bumpMap;
+
+                parameters.positions = true;
+                parameters.normals = false;
+                parameters.tangents = false;
+                parameters.uvs = false;
+                parameters.colors = false;
+
+                parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
+
+                allocateLights(lights, parameters);
+                allocateShadows(lights, parameters);
+
+                material.needsUpdate = false;
+                return (_shaders[emitter._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
+            }
+
+
+            function createEmitter2DShader(emitter, material, lights) {
+                if (!material.needsUpdate && (_shaders[emitter._id])) return _shaders[emitter._id];
+
+                var shader = material.shader,
+                    uniforms = material.uniforms,
+                    OES_standard_derivatives = !! _extensions.OES_standard_derivatives,
+                    parameters = {};
+
+                parameters.emitter = true;
+                parameters.emitter2d = true;
                 parameters.worldSpace = emitter.worldSpace;
                 parameters.mobile = Device.mobile;
                 parameters.useLights = shader.lights;
@@ -938,7 +1052,7 @@ define([
                     attributes = this.attributes,
                     force = setProgram(program),
                     sprite = parameters.sprite,
-                    texture, w, h, i, length;
+                    texture, w, h, i, length, particleSizeRatio;
 
                 if (sprite) {
                     if (_lastBuffers !== _spriteBuffers) {
@@ -995,7 +1109,17 @@ define([
                     if (uniforms.modelMatrix) uniforms.modelMatrix.set(transform.matrixWorld, force);
                     if (uniforms.modelViewMatrix) uniforms.modelViewMatrix.set(transform.modelView, force);
                 }
-                if (uniforms.particleSizeRatio) uniforms.particleSizeRatio.set((_viewportWidth > _viewportHeight ? _viewportHeight : _viewportWidth) * 2);
+                if (uniforms.particleSizeRatio) {
+					particleSizeRatio = (_viewportWidth < _viewportHeight ? _viewportWidth : _viewportHeight);
+					
+					if (parameters.emitter2d || camera.camera2d || camera.orthographic) {
+						particleSizeRatio *= 1.0 / (camera.orthographicSize * 2.0);
+					} else {
+						particleSizeRatio *= 2.0;
+					}
+					
+					uniforms.particleSizeRatio.set(particleSizeRatio);
+                }
 
                 if (uniforms.projectionMatrix) uniforms.projectionMatrix.set(camera.projection, force);
                 if (uniforms.viewMatrix) uniforms.viewMatrix.set(camera.view, force);
@@ -1196,6 +1320,11 @@ define([
                 if (emitter) {
                     vertexHeader += ShaderChunks.particle_header_vertex + ShaderChunks.particle_header;
                     fragmentHeader += ShaderChunks.particle_header;
+					if (parameters.emitter2d) {
+						vertexMain = ShaderChunks.particle_vertex_size_2d + vertexMain;
+					} else {
+						vertexMain = ShaderChunks.particle_vertex_size + vertexMain;
+					}
                     vertexMain = ShaderChunks.particle_vertex + vertexMain;
                 }
 

@@ -6,6 +6,7 @@ define([
 
         Odin.Assets.addAssets(
             new Odin.ShaderLib.Unlit,
+            new Odin.ShaderLib.ParticleUnlit,
             new Odin.Texture({
                 src: "content/hospital.png",
                 name: "img_hospital",
@@ -137,14 +138,14 @@ define([
                 uniforms: {
                     diffuseMap: Odin.Assets.get("img_smoke")
                 },
-                shader: Odin.Assets.get("shader_unlit")
+                shader: Odin.Assets.get("shader_particle_unlit")
             }),
             new Odin.Material({
                 name: "mat_blood",
                 uniforms: {
                     diffuseMap: Odin.Assets.get("img_blood")
                 },
-                shader: Odin.Assets.get("shader_unlit")
+                shader: Odin.Assets.get("shader_particle_unlit")
             }),
             new Odin.Material({
                 name: "mat_objects",

@@ -44,9 +44,9 @@ define([
 
         BaseGame.prototype.clear = function() {
             var scenes = this.scenes,
-                i;
+                i = scenes.length;
 
-            for (i = scenes.length; i--;) this.removeScene(scenes[i], true);
+            while (i--) this.removeScene(scenes[i], true);
             return this;
         };
 
@@ -126,8 +126,9 @@ define([
 
 
         BaseGame.prototype.removeScenes = function() {
+			var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeScene(arguments[i]);
+            while (i--) this.removeScene(arguments[i]);
             return this;
         };
 
@@ -161,8 +162,9 @@ define([
 
 
         BaseGame.prototype.addGUIs = function() {
-
-            for (var i = arguments.length; i--;) this.addGUI(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.addGUI(arguments[i]);
             return this;
         };
 
@@ -198,8 +200,9 @@ define([
 
 
         BaseGame.prototype.removeGUIs = function() {
+			var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeGUI(arguments[i]);
+            while (i--) this.removeGUI(arguments[i]);
             return this;
         };
 
@@ -246,9 +249,9 @@ define([
             json = Class.prototype.toJSON.call(this, json);
             var scenes = this.scenes,
                 jsonScenes = json.scenes || (json.scenes = []),
-                i;
+                i = scenes.length;
 
-            for (i = scenes.length; i--;) jsonScenes[i] = scenes[i].toJSON(jsonScenes[i]);
+            while (i--) jsonScenes[i] = scenes[i];
 
             return json;
         };
@@ -257,16 +260,18 @@ define([
         BaseGame.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
+				scenes = this.scenes,
                 scene, jsonScene,
-                i;
+				i = jsonScenes.length,
+				index;
 
-            for (i = jsonScenes.length; i--;) {
+            while (i--) {
                 jsonScene = jsonScenes[i];
 
-                if ((scene = this.findById(jsonScene._id))) {
-                    scene.fromJSON(jsonScene);
+                if ((scene = this.findSceneByJSONId(jsonScene._id))) {
+					this.removeScene(scene).addScene(jsonScene);
                 } else {
-                    this.addScene(new Scene().fromJSON(jsonScene));
+                    this.addScene(jsonScene);
                 }
             }
 

@@ -5,6 +5,7 @@ define([
 
 
         return new Odin.ParticleSystem({
+			playing: false,
             emitter: new Odin.ParticleSystem.Emitter2D({
                 loop: false,
                 material: Odin.Assets.get("mat_blood"),

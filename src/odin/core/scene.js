@@ -68,9 +68,11 @@ define([
 
             this.world && this.world.init();
 
-            for (i = types.length; i--;) {
+            i = types.length;
+			while (i--) {
                 components = types[i];
-                for (j = components.length; j--;) {
+				j = components.length;
+                while (j--) {
                     component = components[j];
 
                     component.emit("init");
@@ -78,7 +80,8 @@ define([
                 }
             }
 
-            for (i = gameObjects.length; i--;) gameObjects[i].emit("init");
+			i = gameObjects.length;
+            while (i--) gameObjects[i].emit("init");
         };
 
 
@@ -89,12 +92,15 @@ define([
 
             this.world && this.world.update();
 
-            for (i = types.length; i--;) {
+            i = types.length;
+			while (i--) {
                 components = types[i];
-                for (j = components.length; j--;) components[j].update();
+				j = components.length;
+                while (j--) components[j].update();
             }
 
-            for (i = gameObjects.length; i--;) gameObjects[i].emit("update");
+			i = gameObjects.length;
+            while (i--) gameObjects[i].emit("update");
         };
 
 
@@ -163,7 +169,8 @@ define([
                 gameObject.scene = this;
 
                 components = gameObject.components;
-                for (i = components.length; i--;) this._addComponent(components[i]);
+				i = components.length;
+                while (i--) this._addComponent(components[i]);
 
                 if (this.game) gameObject.emit("init");
                 this.emit("addGameObject", gameObject);
@@ -176,8 +183,9 @@ define([
 
 
         Scene.prototype.addGameObjects = function() {
-
-            for (var i = arguments.length; i--;) this.addGameObject(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.addGameObject(arguments[i]);
             return this;
         };
 
@@ -232,7 +240,8 @@ define([
                 gameObject.scene = undefined;
 
                 components = gameObject.components;
-                for (i = components.length; i--;) this._removeComponent(components[i]);
+				i = components.length;
+                while (i--) this._removeComponent(components[i]);
 
                 this.emit("removeGameObject", gameObject);
                 gameObject.emit("remove", gameObject);
@@ -246,8 +255,9 @@ define([
 
 
         Scene.prototype.removeGameObjects = function() {
-
-            for (var i = arguments.length; i--;) this.removeGameObject(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.removeGameObject(arguments[i]);
             return this;
         };
 
@@ -326,12 +336,12 @@ define([
             var gameObjects = this.gameObjects,
                 jsonGameObjects = json.gameObjects || (json.gameObjects = []),
                 gameObject,
-                i;
+                i = gameObjects.length;
 
             json.name = this.name;
             json.world = this.world.toJSON(json.world);
 
-            for (i = gameObjects.length; i--;) {
+            while (i--) {
                 if ((gameObject = gameObjects[i])) jsonGameObjects[i] = gameObject.toJSON(jsonGameObjects[i]);
             }
 
@@ -343,13 +353,13 @@ define([
             Class.prototype.fromJSON.call(this, json);
             var jsonGameObjects = json.gameObjects,
                 gameObject, jsonGameObject,
-                i;
+                i = jsonGameObjects.length;
 
             this.name = json.name;
             this.world = Class.fromJSON(json.world);
             this.world.scene = this;
 
-            for (i = jsonGameObjects.length; i--;) {
+            while (i--) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
 
                 if ((gameObject = this.findById(jsonGameObject._id))) {

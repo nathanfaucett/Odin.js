@@ -44,9 +44,9 @@ define([
             var components = other.components,
                 tags = other.tags,
                 otherComponent, component,
-                i;
+                i = components.length;
 
-            for (i = components.length; i--;) {
+            while (i--) {
                 otherComponent = components[i];
 
                 if ((component = this.getComponent(otherComponent._type))) {
@@ -55,7 +55,8 @@ define([
                     this.addComponent(otherComponent.clone());
                 }
             }
-            for (i = tags.length; i--;) this.addTag(tags[i]);
+			i = tags.length;
+            while (i--) this.addTag(tags[i]);
 
             return this;
         };
@@ -64,12 +65,17 @@ define([
         GameObject.prototype.clear = function() {
             var components = this.components,
                 tags = this.tags,
+				componentLength = components.length,
                 i;
 
-            for (i = components.length; i--;) components[i].clear();
+			i = componentLength;
+            while (i--) components[i].clear();
 
-            for (i = tags.length; i--;) this.removeTag(tags[i]);
-            for (i = components.length; i--;) this.removeComponent(components[i]);
+			i = tags.length;
+            while (i--) this.removeTag(tags[i]);
+			
+			i = componentLength;
+            while (i--) this.removeComponent(components[i]);
 
             this.off();
 
@@ -113,8 +119,9 @@ define([
 
 
         GameObject.prototype.addTags = function() {
-
-            for (var i = arguments.length; i--;) this.addTag(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.addTag(arguments[i]);
             return this;
         };
 
@@ -130,8 +137,9 @@ define([
 
 
         GameObject.prototype.removeTags = function() {
-
-            for (var i = arguments.length; i--;) this.removeTag(arguments[i]);
+			var i = arguments.length;
+			
+            while (i--) this.removeTag(arguments[i]);
             return this;
         };
 
@@ -165,11 +173,13 @@ define([
                 this[name] = component;
 
                 if (!others) {
-                    for (i = components.length; i--;) {
+					i = components.length;
+                    while (i--) {
                         comp = components[i];
                         if (!comp) continue;
-
-                        for (j = components.length; j--;) {
+						
+						j = components.length;
+                        while (j--) {
                             name = components[j]._name;
                             comp[name] = components[j];
                         }
@@ -194,13 +204,16 @@ define([
                 component, name,
                 i, j;
 
-            for (i = length; i--;) this.addComponent(arguments[i], true);
-
-            for (i = components.length; i--;) {
+			i = length;
+            while (i--) this.addComponent(arguments[i], true);
+			
+			i = components.length;
+			while (i--) {
                 component = components[i];
                 if (!component) continue;
 
-                for (j = components.length; j--;) {
+				j = components.length;
+                while (j--) {
                     name = components[j]._name;
                     component[name] = components[j];
                 }
@@ -223,11 +236,13 @@ define([
             if (this[name]) {
 
                 if (!others) {
-                    for (i = components.length; i--;) {
+					i = components.length;
+                    while (i--) {
                         comp = components[i];
                         if (!comp) continue;
-
-                        for (j = components.length; j--;) {
+						
+						j = components.length;
+                        while (j--) {
                             if (name === components[j]._name) comp[name] = undefined;
                         }
                     }
@@ -262,15 +277,17 @@ define([
                 component, name,
                 i, j;
 
-            for (i = length; i--;) this.removeComponent(arguments[i], null, true);
+			i = length;
+            while (i--) this.removeComponent(arguments[i], null, true);
 
-            for (i = components.length; i--;) {
+			i = components.length;
+            while ( i--) {
                 component = components[i];
                 if (!component) continue;
 
                 name = component._name;
-                for (j = toRemove.length; j--;) {
-
+				j = toRemove.length;
+                while (j--) {
                     if (name === toRemove[i]._name) component[name] = undefined;
                 }
             }
@@ -287,9 +304,9 @@ define([
 
         GameObject.prototype.hasComponent = function(type) {
             var components = this.components,
-                i;
+                i = components.length;;
 
-            for (i = components.length; i--;) {
+            while (i--) {
                 if (components[i]._type === type) return true;
             }
 
@@ -321,7 +338,8 @@ define([
             while (i--) {
                 if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
             }
-            for (i = tags.length; i--;) jsonTags[i] = tags[i];
+			i = tags.length;
+            while (i--) jsonTags[i] = tags[i];
 
             return json;
         };
@@ -345,7 +363,8 @@ define([
                 }
             }
 
-            for (i = jsonTags.length; i--;) {
+			i = jsonTags.length;
+            while (i--) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
             }
 

@@ -185,7 +185,16 @@ define(
                 "	vAlpha = data.z;",
                 "	vSize = data.y;",
                 "	vParticleColor = particleColor;",
+                ""
+            ].join("\n"),
+
+            particle_vertex_size: [
                 "	gl_PointSize = vSize * (particleSizeRatio / length(mvPosition.xyz));\n",
+                ""
+            ].join("\n"),
+
+            particle_vertex_size_2d: [
+                "	gl_PointSize = vSize * particleSizeRatio;\n",
                 ""
             ].join("\n"),
 
