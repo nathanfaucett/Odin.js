@@ -48,10 +48,10 @@ define([
 
 
         P2Circle.prototype.centroid = function(v) {
-            var localPos = this.localPosition;
+            var localPosition = this.localPosition;
 
-            v.x = localPos.x;
-            v.y = localPos.y;
+            v.x = localPosition.x;
+            v.y = localPosition.y;
 
             return v;
         };
@@ -66,9 +66,9 @@ define([
 
         P2Circle.prototype.inertia = function(mass) {
             var r = this.radius,
-                localPos = this.localPosition,
-                lx = localPos.x,
-                ly = localPos.y;
+                localPosition = this.localPosition,
+                lx = localPosition.x,
+                ly = localPosition.y;
 
             return mass * ((r * r * 0.5) + (lx * lx + ly * ly));
         };
@@ -77,7 +77,7 @@ define([
         P2Circle.prototype.update = function(matrix) {
             var localMatrix = this.matrix,
                 matrixWorld = this.matrixWorld,
-                localPos = this.localPosition,
+                localPosition = this.localPosition,
                 pos = this.position,
                 r = this.radius,
                 aabb = this.aabb,
@@ -86,11 +86,11 @@ define([
                 x, y;
 
             localMatrix.setRotation(this.localRotation);
-            localMatrix.setPosition(localPos);
+            localMatrix.setPosition(localPosition);
             matrixWorld.mmul(matrix, localMatrix);
 
-            pos.x = localPos.x;
-            pos.y = localPos.y;
+            pos.x = localPosition.x;
+            pos.y = localPosition.y;
             pos.transformMat32(matrix);
             x = pos.x;
             y = pos.y;

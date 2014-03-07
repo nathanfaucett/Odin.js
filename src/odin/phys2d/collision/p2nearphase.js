@@ -14,6 +14,7 @@ define([
 
 
         var min = Math.min,
+            abs = Math.abs,
             sqrt = Math.sqrt,
 
             EPSILON = Mathf.EPSILON,
@@ -51,11 +52,11 @@ define([
             contacts.push(c);
         }
 
-        function circle2Circle(si, sj, bi, bj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
+        function circle2Circle(si, sj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
             var dx = xjx - xix,
                 dy = xjy - xiy,
                 dist = dx * dx + dy * dy,
-                invDist, separation = 0,
+                invDist, separation = 0.0,
                 r = ri + rj,
                 nx, ny;
 
@@ -63,13 +64,13 @@ define([
             if (!collide(si, sj)) return;
 
             if (dist < EPSILON) {
-                nx = 0;
-                ny = 1;
-                invDist = 0;
+                nx = 0.0;
+                ny = 1.0;
+                invDist = 0.0;
                 separation = -r;
             } else {
                 dist = sqrt(dist);
-                invDist = 1 / dist;
+                invDist = 1.0 / dist;
 
                 nx = dx * invDist;
                 ny = dy * invDist;
@@ -78,8 +79,8 @@ define([
             }
 
             createContact(
-                bi,
-                bj,
+                si.body,
+                sj.body,
                 e,
                 u,
                 nx,
@@ -91,11 +92,11 @@ define([
             );
         }
 
-        function circle2CircleParticle(si, sj, bi, bj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
+        function circle2CircleParticle(si, sj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
             var dx = xjx - xix,
                 dy = xjy - xiy,
                 dist = dx * dx + dy * dy,
-                invDist, separation = 0,
+                invDist, separation = 0.0,
                 r = ri + rj,
                 nx, ny;
 
@@ -103,9 +104,9 @@ define([
             if (!collideParticle(si, sj)) return;
 
             if (dist < EPSILON) {
-                nx = 0;
-                ny = 1;
-                invDist = 0;
+                nx = 0.0;
+                ny = 1.0;
+                invDist = 0.0;
                 separation = -r;
             } else {
                 dist = sqrt(dist);
@@ -118,8 +119,8 @@ define([
             }
 
             createContact(
-                bi,
-                bj,
+                si.body,
+                sj,
                 e,
                 u,
                 nx,
@@ -216,9 +217,12 @@ define([
                 xj = sj.position;
 
             circle2Circle(
-                si, sj, si.body, sj.body,
-                xi.x, xi.y, si.radius, xj.x, xj.y, sj.radius,
-                1 + min(si.elasticity, sj.elasticity), min(si.friction, sj.friction),
+                si,
+                sj,
+                xi.x, xi.y, si.radius,
+                xj.x, xj.y, sj.radius,
+                1.0 + min(si.elasticity, sj.elasticity),
+                min(si.friction, sj.friction),
                 contacts
             );
         }
@@ -229,35 +233,403 @@ define([
                 xj = sj.position;
 
             circle2CircleParticle(
-                si, sj, si.body, sj,
-                xi.x, xi.y, si.radius, xj.x, xj.y, sj.radius,
-                1 + min(si.elasticity, sj.elasticity), min(si.friction, sj.friction),
+                si,
+                sj,
+                xi.x, xi.y, si.radius,
+                xj.x, xj.y, 0.0,
+                1.0 + min(si.elasticity, sj.elasticity),
+                min(si.friction, sj.friction),
                 contacts
             );
         }
 
 
         function segmentParticle(si, sj, contacts) {
+            var r = si.radius,
+                a = si._a,
+                b = si._b,
+                n = si._normal,
+                ax = a.x,
+                ay = a.y,
+                bx = b.x,
+                by = b.y,
+                nx = n.x,
+                ny = n.y,
+
+                xj = sj.position,
+                xjx = xj.x,
+                xjy = xj.y,
+
+                dn = (nx * xjx + ny * xjy) - (ax * nx + ay * ny),
+                dist = abs(dn),
+                dt, dta, dtb, dx, dy, invDist;
+
+            if (dist > r) return;
+
+            dt = xjx * ny - xjy * nx;
+            dta = ax * ny - ay * nx;
+            dtb = bx * ny - by * nx;
+
+            if (dt <= dta) {
+                if (dt < dta - r) return;
+
+                dx = xjx - ax;
+                dy = xjy - ay;
+
+                dist = dx * dx + dy * dy;
+                if (dist > r * r) return;
+
+                dist = dist === 0.0 ? 0.0 : sqrt(dist);
+                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
+
+                nx = dx * invDist;
+                ny = dy * invDist;
+            } else if (dt > dtb) {
+                if (dt > dtb + r) return;
+
+                dx = xjx - bx;
+                dy = xjy - by;
+
+                dist = dx * dx + dy * dy;
+                if (dist > r * r) return;
+
+                dist = dist === 0.0 ? 0.0 : sqrt(dist);
+                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
+
+                nx = dx * invDist;
+                ny = dy * invDist;
+            } else if (dn < 0.0) {
+                nx = -nx;
+                ny = -ny;
+            }
             if (!collideParticle(si, sj)) return;
 
-        }
-
-
-        function segmentSegment(si, sj, contacts) {
-            if (!collide(si, sj)) return;
-
+            createContact(
+                si.body,
+                sj.body,
+                1 + si.elasticity,
+                si.friction,
+                nx,
+                ny,
+                xjx - r * nx,
+                xjy - r * ny,
+                dist - r,
+                contacts
+            );
         }
 
 
         function segmentCircle(si, sj, contacts) {
+            var ri = si.radius,
+                a = si._a,
+                b = si._b,
+                n = si._normal,
+                ax = a.x,
+                ay = a.y,
+                bx = b.x,
+                by = b.y,
+                nx = n.x,
+                ny = n.y,
+
+                xj = sj.position,
+                xjx = xj.x,
+                xjy = xj.y,
+                rj = sj.radius,
+                r = ri + rj,
+
+                dn = (nx * xjx + ny * xjy) - (ax * nx + ay * ny),
+                dist = abs(dn),
+                dt, dta, dtb, dx, dy, invDist;
+
+            if (dist > r) return;
+
+            dt = xjx * ny - xjy * nx;
+            dta = ax * ny - ay * nx;
+            dtb = bx * ny - by * nx;
+
+            if (dt <= dta) {
+                if (dt < dta - r) return;
+
+                dx = xjx - ax;
+                dy = xjy - ay;
+
+                dist = dx * dx + dy * dy;
+                if (dist > r * r) return;
+
+                dist = dist === 0.0 ? 0.0 : sqrt(dist);
+                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
+
+                nx = dx * invDist;
+                ny = dy * invDist;
+            } else if (dt > dtb) {
+                if (dt > dtb + r) return;
+
+                dx = xjx - bx;
+                dy = xjy - by;
+
+                dist = dx * dx + dy * dy;
+                if (dist > r * r) return;
+
+                dist = dist === 0.0 ? 0.0 : sqrt(dist);
+                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
+
+                nx = dx * invDist;
+                ny = dy * invDist;
+            } else {
+                if (dn < 0.0) {
+                    nx = -nx;
+                    ny = -ny;
+                }
+            }
             if (!collide(si, sj)) return;
 
+            createContact(
+                si.body,
+                sj.body,
+                1.0 + min(si.elasticity, sj.elasticity),
+                min(si.friction, sj.friction),
+                nx,
+                ny,
+                xjx - r * nx,
+                xjy - r * ny,
+                dist - r,
+                contacts
+            );
+        }
+
+
+        function segmentSegment(si, sj, contacts) {
+            var ai = si._a,
+                aix = ai.x,
+                aiy = ai.y,
+                bi = si._b,
+                bix = bi.x,
+                biy = bi.y,
+                ni = sj._normal,
+                nix = ni.x,
+                niy = ni.y,
+                ri = si.radius,
+
+                aj = sj._a,
+                ajx = aj.x,
+                ajy = aj.y,
+                bj = sj._b,
+                bjx = bj.x,
+                bjy = bj.y,
+                nj = sj._normal,
+                njx = nj.x,
+                njy = nj.y,
+                rj = sj.radius,
+                mi, mj, m, s, t, ux, uy, vx, vy, amx, amy, bmx, bmy;
+
+            segmentSegmentArray[0] = segmentPointDistanceSq(aix, aiy, bix, biy, ajx, ajy);
+            segmentSegmentArray[1] = segmentPointDistanceSq(aix, aiy, bix, biy, bjx, bjy);
+            segmentSegmentArray[2] = segmentPointDistanceSq(ajx, ajy, bjx, bjy, aix, aiy);
+            segmentSegmentArray[3] = segmentPointDistanceSq(ajx, ajy, bjx, bjy, bix, biy);
+
+            mi = segmentSegmentArray[0] < segmentSegmentArray[1] ? 0 : 1;
+            mj = segmentSegmentArray[2] < segmentSegmentArray[3] ? 2 : 3;
+            m = segmentSegmentArray[mi] < segmentSegmentArray[mj] ? mi : mj;
+
+            ux = bix - aix;
+            uy = biy - aiy;
+            vx = bjx - ajx;
+            vy = bjy - ajy;
+
+            if (m === 0) {
+                s = ((ajx - aix) * ux + (ajy - aiy) * uy) / (ux * ux + uy * uy);
+                s = s < 0 ? 0 : (s > 1 ? 1 : s);
+                t = 0;
+            } else if (m === 1) {
+                s = ((bjx - aix) * ux + (bjy - aiy) * uy) / (ux * ux + uy * uy);
+                s = s < 0 ? 0 : (s > 1 ? 1 : s);
+                t = 1;
+            } else if (m === 2) {
+                s = 0;
+                t = ((aix - ajx) * vx + (aiy - ajy) * vy) / (vx * vx + vy * vy);
+                t = t < 0 ? 0 : (t > 1 ? 1 : t);
+            } else if (m === 3) {
+                s = 1;
+                t = ((bix - ajx) * vx + (biy - ajy) * vy) / (vx * vx + vy * vy);
+                t = t < 0 ? 0 : (t > 1 ? 1 : t);
+            }
+
+            amx = aix + (ux * s);
+            amy = aiy + (uy * s);
+            bmx = ajx + (vx * t);
+            bmy = ajy + (vy * t);
+
+            circle2Circle(
+                si,
+                sj,
+                amx, amy, ri,
+                bmx, bmy, rj,
+                1.0 + min(si.elasticity, sj.elasticity),
+                min(si.friction, sj.friction),
+                contacts
+            );
         }
 
 
         function convexSegment(si, sj, contacts) {
-            if (!collide(si, sj)) return;
+			var vertices = si._vertices,
+				normals = si._normals,
+				
+				a = sj._a,
+				ax = a.x,
+				ay = a.y,
+				b = sj._b,
+				bx = b.x,
+				by = b.y,
+				nj = sj._normal,
+				radius = sj.radius,
+				nx = nj.x,
+				ny = nj.y,
+				
+				segD = nx * ax + ny * ay,
+				minNorm = valueOnAxis(vertices, nx, ny, segD) - radius,
+				minNeg = valueOnAxis(vertices, -nx, -ny, -segD) - radius,
+				index = -1, polyMin = -Infinity, v, n, dist, i, vax, vay, vbx, vby, u, e, normal, count = 0;
 
+			if (minNeg > 0 || minNorm > 0) return;
+			
+            i = vertices.length;
+			while(i--) {
+				v = vertices[i];
+				n = normals[i];
+				nx = n.x;
+				ny = n.y;
+				dist = segmentValueOnAxis(ax, ay, bx, by, radius, nx, ny, (nx * v.x + ny * v.y));
+				
+				if (dist > 0.0) {
+					return;
+				} else if (dist > polyMin) {
+					polyMin = dist;
+					index = i;
+				}
+			}
+			
+			if (index === -1) return;
+            if (!collide(si, sj)) return;
+			
+			e = 1.0 + min(si.elasticity, sj.elasticity);
+			u = min(si.friction, sj.friction);
+			
+			normal = normals[index];
+			nx = normal.x;
+			ny = normal.y;
+			
+			vax = ax + (radius * nx);
+			vay = ay + (radius * ny);
+			
+			vbx = bx + (radius * nx);
+			vby = by + (radius * ny);
+			
+			if (contains(vertices, normals, vax, vay)) {
+				createContact(
+					si.body,
+					sj.body,
+					e,
+					u,
+					nx,
+					ny,
+					vax,
+					vay,
+					polyMin,
+					contacts
+				);
+				count++;
+			}
+			if (contains(vertices, normals, vbx, vby)) {
+				createContact(
+					si.body,
+					sj.body,
+					e,
+					u,
+					nx,
+					ny,
+					vbx,
+					vby,
+					polyMin,
+					contacts
+				);
+				count++;
+			}
+			
+			if (minNorm >= polyMin || minNeg >= polyMin) {
+				if (minNorm > minNeg) {
+					count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nj.x, nj.y, poly, minNorm, 1, contacts);
+				} else {
+					count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nj.x, nj.y, poly, minNeg, -1, contacts);
+				}
+			}
+        }
+
+		
+		function pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nx, ny, pDist, coef, contacts) {
+			var dta = nx * ax + ny * ay,
+				dtb = nx * bx + ny * by,
+				vertices = sj._vertices,
+				i = vertices.length,
+				v, vx, vy, dt,
+				count = 0;
+			
+			nx *= coef;
+			ny *= coef;
+
+			while (i--) {
+				v = vertices[i]
+				vx = v.x;
+				vy = v.y;
+				
+				if((vx * nx + vy * ny) < (nx * ax + ny * ay) * coef + radius){
+					dt = nx * vy - ny * vx;
+					if(dta >= dt && dt >= dtb){
+						createContact(
+							si.body,
+							sj.body,
+							e,
+							u,
+							nx,
+							ny,
+							vx,
+							vy,
+							pDist,
+							contacts
+						);
+						count++;
+					}
+				}
+			}
+			
+			return count;
+		}
+
+        var segmentSegmentArray = [0.0, 0.0, 0.0, 0.0];
+
+        function segmentPointDistanceSq(ax, ay, bx, by, px, py) {
+            var wx = px - ax,
+                wy = py - ay,
+                dx = bx - ax,
+                dy = by - ay,
+
+                proj = wx * dx + wy * dy,
+                vsq;
+
+            if (proj <= 0.0) return wx * wx + wy * wy;
+
+            vsq = dx * dx + dy * dy;
+            if (proj >= vsq) return (wx * wx + wy * wy) - 2 * proj + vsq;
+
+
+            return (wx * wx + wy * wy) - proj * proj / vsq;
+        }
+		
+		function segmentValueOnAxis(ax, ay, bx, by, r, nx, ny, d) {
+            var a = (nx * ax + ny * by) - r,
+				b = (nx * bx + ny * by) - r;
+			
+			return min(a, b) - d;
         }
 
 
@@ -272,7 +644,7 @@ define([
                 index = -1,
                 v1, v2, v1x, v1y, v2x, v2y, ex, ey, dx, dy, u, dist, invDist,
 
-                c, n, nx, ny, p,
+                nx, ny,
                 i = vertices.length;
 
             while (i--) {
@@ -288,7 +660,7 @@ define([
                 }
             }
 
-            if (index < 0) return;
+            if (index === -1) return;
 
             normal = normals[index];
             nx = normal.x;
@@ -309,7 +681,7 @@ define([
 
             u = (ex * dx + ey * dy) / (ex * ex + ey * ey);
 
-            if (u < 0) {
+            if (u < 0.0) {
                 dx = xjx - v1x;
                 dy = xjy - v1y;
 
@@ -321,7 +693,7 @@ define([
 
                 nx = dx * invDist;
                 ny = dy * invDist;
-            } else if (u > 1) {
+            } else if (u > 1.0) {
                 dx = xjx - v2x;
                 dy = xjy - v2y;
 
@@ -345,7 +717,7 @@ define([
             createContact(
                 si.body,
                 sj,
-                1 + si.elasticity,
+                1.0 + si.elasticity,
                 si.friction,
                 nx,
                 ny,
@@ -369,7 +741,7 @@ define([
                 index = -1,
                 v1, v2, v1x, v1y, v2x, v2y, ex, ey, dx, dy, u, dist, invDist,
 
-                c, n, nx, ny, p,
+                nx, ny,
                 i = vertices.length;
 
             while (i--) {
@@ -385,7 +757,7 @@ define([
                 }
             }
 
-            if (index < 0) return;
+            if (index === -1) return;
 
             normal = normals[index];
             nx = normal.x;
@@ -406,7 +778,7 @@ define([
 
             u = (ex * dx + ey * dy) / (ex * ex + ey * ey);
 
-            if (u < 0) {
+            if (u < 0.0) {
                 dx = xjx - v1x;
                 dy = xjy - v1y;
 
@@ -418,7 +790,7 @@ define([
 
                 nx = dx * invDist;
                 ny = dy * invDist;
-            } else if (u > 1) {
+            } else if (u > 1.0) {
                 dx = xjx - v2x;
                 dy = xjy - v2y;
 
@@ -442,7 +814,7 @@ define([
             createContact(
                 si.body,
                 sj.body,
-                1 + min(si.elasticity, sj.elasticity),
+                1.0 + min(si.elasticity, sj.elasticity),
                 min(si.friction, sj.friction),
                 nx,
                 ny,
@@ -480,11 +852,10 @@ define([
                 verticesj = sj._vertices,
                 normalsj = sj._normals,
                 v, vx, vy,
-                c, n, nx = normal.x,
+                nx = normal.x,
                 ny = normal.y,
-                p,
 
-                e = 1 + min(si.elasticity, sj.elasticity),
+                e = 1.0 + min(si.elasticity, sj.elasticity),
                 u = min(si.friction, sj.friction),
 
                 i;
@@ -535,10 +906,8 @@ define([
         }
 
 
-        function valueOnAxis(vertices, n, d) {
-            var nx = n.x,
-                ny = n.y,
-                v, m = Infinity,
+        function valueOnAxis(vertices, nx, ny, d) {
+            var v, m = Infinity,
                 i = vertices.length;
 
             while (i--) {
@@ -550,7 +919,7 @@ define([
         }
 
 
-        var lastMinMSA = 0;
+        var lastMinMSA = 0.0;
 
         function findMSA(si, sj) {
             var verticesi = si._vertices,
@@ -566,9 +935,9 @@ define([
                 n = normalsi[i];
                 v = verticesi[i];
 
-                dist = valueOnAxis(verticesj, n, (n.x * v.x + n.y * v.y));
+                dist = valueOnAxis(verticesj, n.x, n.y, (n.x * v.x + n.y * v.y));
 
-                if (dist > 0) return -1;
+                if (dist > 0.0) return -1;
 
                 if (dist > min) {
                     min = dist;
@@ -650,7 +1019,7 @@ define([
                     } else if (sjType === ShapeType.Segment) {
                         segmentSegment(si, sj, contacts);
                     } else if (sjType === ShapeType.Convex) {
-                        convexSegment(si, sj, contacts);
+                        convexSegment(sj, si, contacts);
                     }
                 }
             }

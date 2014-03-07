@@ -96,11 +96,12 @@ define([
 
 
         P2Segment.prototype.centroid = function(v) {
-            var a = this.a,
+            var localPosition = this.localPosition,
+                a = this.a,
                 b = this.b;
 
-            v.x = (a.x + b.x) * 0.5;
-            v.y = (a.y + b.y) * 0.5;
+            v.x = localPosition.x + (a.x + b.x) * 0.5;
+            v.y = localPosition.y + (a.y + b.y) * 0.5;
 
             return v;
         };
@@ -120,21 +121,25 @@ define([
         };
 
 
+        var inv12 = 1.0 / 12.0;
         P2Segment.prototype.inertia = function(mass) {
-            var a = this.a,
+            var localPosition = this.localPosition,
+                lx = localPosition.x,
+                ly = localPosition.y,
+                a = this.a,
                 b = this.b,
                 r = this.radius,
-                ax = a.x,
-                ay = a.y,
-                bx = b.x,
-                by = b.y,
+                ax = lx + a.x,
+                ay = ly + a.y,
+                bx = lx + b.x,
+                by = ly + b.y,
                 abx = bx - ax,
                 aby = by - ay,
                 lsq = abx * abx + aby * aby,
                 x = (ax + bx) * 0.5,
                 y = (ay + by) * 0.5;
 
-            return mass * (lsq / 12 + (x * x + y * y));
+            return mass * (lsq * inv12 + (x * x + y * y));
         };
 
 
@@ -149,11 +154,11 @@ define([
                 _normal = this._normal,
                 a = this.a,
                 b = this.b,
-                r = this.radius,
+                radius = this.radius,
                 aabb = this.aabb,
                 min = aabb.min,
                 max = aabb.max,
-                x, y, l, r, b, t;
+                l, r, b, t;
 
             localMatrix.compose(localPos, VEC2_SCALE, this.localRotation);
             matrixWorld.mmul(matrix, localMatrix);
@@ -170,8 +175,8 @@ define([
             _b.y = b.y;
             _b.transformMat32(matrix);
 
-            _normal.x = -(b.y - a.y);
-            _normal.y = b.x - a.x;
+            _normal.x = -(_b.y - _a.y);
+            _normal.y = _b.x - _a.x;
             _normal.normalize();
 
             if (_a.x < _b.x) {
@@ -190,13 +195,10 @@ define([
                 t = _a.y;
             }
 
-            x = pos.x;
-            y = pos.y;
-
-            min.x = l - r;
-            min.y = b - r;
-            max.x = r + r;
-            max.y = t + r;
+            min.x = l - radius;
+            min.y = b - radius;
+            max.x = r + radius;
+            max.y = t + radius;
         };
 
 

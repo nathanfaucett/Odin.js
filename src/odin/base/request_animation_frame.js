@@ -9,7 +9,6 @@ define(
         var RATE = 1000 / 60,
             w = typeof(window) !== "undefined" ? window : global;
 
-
         return (
             w.requestAnimationFrame ||
             w.webkitRequestAnimationFrame ||

@@ -10,8 +10,8 @@ require({
 
         var random = Math.random,
             PI = Math.PI,
+            HALF_PI = PI * 0.5,
             TWO_PI = PI * 2;
-
 
         function CameraControl(opts) {
             opts || (opts = {});
@@ -23,6 +23,7 @@ require({
         }
         Component.extend(CameraControl);
 
+        var mouseWorld = new Vec2;
         CameraControl.prototype.update = function() {
             var transform = this.transform2d,
                 position = this.transform2d.position,
@@ -35,6 +36,10 @@ require({
                 position.x += -dt * spd * Input.axis("mouseX");
                 position.y += dt * spd * Input.axis("mouseY");
             }
+            if (Input.mouseButton(1)) {
+                camera2d.toWorld(Input.mousePosition, mouseWorld);
+                console.log(this.gameObject.scene.world.space.findBodyByPoint(mouseWorld));
+            }
             if (mouseWheel) camera2d.setOrthographicSize(camera2d.orthographicSize + -dt * this.zoomSpeed * mouseWheel);
         };
 
@@ -43,7 +48,7 @@ require({
 
             Component.call(this, "Control", opts);
 
-            this.speed = 1;
+            this.speed = 32;
         }
         Component.extend(Control);
 
@@ -55,6 +60,12 @@ require({
                 x = Input.axis("horizontal"),
                 y = Input.axis("vertical");
 
+            if (Input.key("z")) {
+                body.applyAngularVelocity(HALF_PI * spd * dt);
+            }
+            if (Input.key("x")) {
+                body.applyAngularVelocity(-HALF_PI * spd * dt);
+            }
             body.applyVelocity(VEC2.set(
                 x * spd * dt,
                 y * spd * dt
@@ -164,6 +175,33 @@ require({
                 new Control,
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Kinematic,
+                    linearDamping: 0.9,
+                    shape: new Phys2D.P2Segment({
+                        radius: 0.5,
+                        a: new Vec2(0.0, -1.0),
+                        b: new Vec2(0.0, 1.0)
+                    })
+                })
+            ]
+        });
+        var segment2 = new GameObject({
+            components: [
+                new Transform2D({
+                    position: new Vec2(0.0, 5.0)
+                }),
+                new Sprite({
+                    material: Assets.get("mat_player"),
+                    x: 0,
+                    y: 0,
+                    w: 64,
+                    h: 64,
+                    width: 1.0,
+                    height: 3.0
+                }),
+                new Control,
+                new RigidBody2D({
+                    motionState: Phys2D.P2Enums.MotionState.Dynamic,
+                    //linearDamping: 0.999999,
                     shape: new Phys2D.P2Segment({
                         radius: 0.5,
                         a: new Vec2(0.0, -1.0),
@@ -175,7 +213,7 @@ require({
         var bottom = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0.0, -5.0)
+                    position: new Vec2(0.0, -0.5)
                 }),
                 new Sprite({
                     material: Assets.get("mat_hospital"),
@@ -194,7 +232,7 @@ require({
             ]
         });
 
-        scene.addGameObjects(camera, segment, circle, bottom);
+        scene.addGameObjects(camera, segment2, bottom);
 
 
         function TEST(opts) {
