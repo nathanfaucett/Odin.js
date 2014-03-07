@@ -118,12 +118,10 @@ define([
                 playerPosition;
 
             if (player && player.character && !player.character.dead) {
-                if (player.character && !player.character.dead) {
-                    playerPosition = player.transform2d.position;
-                    if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.lineOfSight * this.lineOfSight)) follow = true;
-                } else {
-                    this.player = this.gameObject.scene.findByTagFirst("Player");
-                }
+                playerPosition = player.transform2d.position;
+                if (abs(position.lengthSq() - playerPosition.lengthSq()) <= (this.lineOfSight * this.lineOfSight)) follow = true;
+            } else {
+                this.player = this.gameObject.scene.findByTagFirst("Player");
             }
 
             if (follow) this.dir = atan2(playerPosition.y - position.y, playerPosition.x - position.x);

@@ -127,37 +127,24 @@ define(
         };
 
         /**
-         * benchmarks function n number of times returns average time it took
+         * benchmarks function console.logs number of operations / second
+         * @param String name
+         * @param Function fn
          */
-        Odin.prototype.benchmark = function() {
-            var sec = 1000,
-                min = 60 * sec,
-                hour = 60 * min;
+        Odin.prototype.benchmark = function(name, fn, times) {
+            times || (times = 1000);
+            var start = 0.0,
+                time = 0.0,
+                i = times;
 
-            function humanize(ms) {
-                return (
-                    ms >= hour ? (ms / hour).toFixed(1) + "h" :
-                    ms >= min ? (ms / min).toFixed(1) + "m" :
-                    ms >= sec ? (ms / sec | 0) + "s" :
-                    ms + "ms"
-                );
+            while (i--) {
+                start = now();
+                fn();
+                time += now() - start;
             }
 
-            return function(name, fn, times) {
-                times || (times = 1000.0);
-                var start = 0.0,
-                    avg = 0.0,
-                    i = times | 0;
-
-                while (i--) {
-                    start = now();
-                    fn();
-                    avg += now() - start;
-                }
-
-                console.log(name + ": " + humanize(avg / times));
-            };
-        }();
+            console.log(name + ":\n\t" + times / time + " (ops/sec)\n\t" + time / times + "(avg/call)");
+        };
 
 
         return new Odin;

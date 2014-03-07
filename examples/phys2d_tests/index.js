@@ -7,7 +7,6 @@ require({
 
         Odin.globalize();
 
-
         var random = Math.random,
             PI = Math.PI,
             HALF_PI = PI * 0.5,

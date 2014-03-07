@@ -7,11 +7,6 @@ define(
 
 
         var SPLITER = /[ ,]+/,
-            SHADER_SPLITER = /[\n;]+/,
-
-            regAttribute = /attribute\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
-            regUniform = /uniform\s+([a-z]+\s+)?([A-Za-z0-9]+)\s+([a-zA-Z_0-9]+)\s*(\[\s*(.+)\s*\])?/,
-            regDefine = /#define\s+([a-zA-Z_0-9]+)?\s+([0-9]+)?/,
 
             WEBGL_NAMES = ["webgl", "webkit-3d", "moz-webgl", "experimental-webgl", "3d"],
             WEBGL_ATTRIBUTES = {
@@ -140,79 +135,6 @@ define(
             }
 
             return program;
-        };
-
-
-        Dom.prototype.getUniformsAttributes = function(vertexShader, fragmentShader, attributes, uniforms) {
-            var src = vertexShader + fragmentShader,
-                lines = src.split(SHADER_SPLITER),
-                matchAttributes, matchUniforms,
-                name, length, line,
-                i, j;
-
-            for (i = lines.length; i--;) {
-                line = lines[i];
-                matchAttributes = line.match(regAttribute);
-                matchUniforms = line.match(regUniform);
-
-                if (matchAttributes) {
-                    attributes.push({
-                        type: matchAttributes[2],
-                        name: matchAttributes[3]
-                    });
-                } else if (matchUniforms) {
-                    uniforms.push({
-                        type: matchUniforms[2],
-                        name: matchUniforms[3]
-                    });
-                }
-            }
-        };
-
-
-        Dom.prototype.parseUniformsAttributes = function(gl, program, vertexShader, fragmentShader, attributes, uniforms) {
-            var src = vertexShader + fragmentShader,
-                lines = src.split(SHADER_SPLITER),
-                defines = {}, matchAttributes, matchUniforms, matchDefines,
-                isArray, name, location, length, line,
-                i, j;
-
-            for (i = lines.length; i--;) {
-                matchDefines = lines[i].match(regDefine);
-                if (matchDefines) defines[matchDefines[1]] = Number(matchDefines[2]);
-            }
-
-            for (i = lines.length; i--;) {
-                line = lines[i];
-                matchAttributes = line.match(regAttribute);
-                matchUniforms = line.match(regUniform);
-
-                if (matchAttributes) {
-                    name = matchAttributes[3];
-                    attributes[name] = gl.getAttribLocation(program, name);
-                } else if (matchUniforms) {
-                    name = matchUniforms[3];
-                    length = matchUniforms[5];
-
-                    if (length) {
-                        length = defines[length.trim()] || length;
-                        location = [];
-                        isArray = true;
-                        for (j = length; j--;) location[j] = gl.getUniformLocation(program, name + "[" + j + "]");
-                    } else {
-                        isArray = false;
-                        location = gl.getUniformLocation(program, name);
-                    }
-
-                    if (location) {
-                        uniforms[name] = {
-                            isArray: isArray,
-                            type: matchUniforms[2],
-                            location: location
-                        };
-                    }
-                }
-            }
         };
 
 

@@ -52,7 +52,7 @@ define([
             contacts.push(c);
         }
 
-        function circle2Circle(si, sj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
+        function circle2Circle(si, sj, xix, xiy, ri, xjx, xjy, rj, contacts) {
             var dx = xjx - xix,
                 dy = xjy - xiy,
                 dist = dx * dx + dy * dy,
@@ -81,8 +81,8 @@ define([
             createContact(
                 si.body,
                 sj.body,
-                e,
-                u,
+                1.0 + min(si.elasticity, sj.elasticity),
+                min(si.friction, sj.friction),
                 nx,
                 ny,
                 xjx - rj * nx,
@@ -92,7 +92,7 @@ define([
             );
         }
 
-        function circle2CircleParticle(si, sj, xix, xiy, ri, xjx, xjy, rj, e, u, contacts) {
+        function circle2CircleParticle(si, sj, xix, xiy, ri, xjx, xjy, rj, contacts) {
             var dx = xjx - xix,
                 dy = xjy - xiy,
                 dist = dx * dx + dy * dy,
@@ -121,8 +121,8 @@ define([
             createContact(
                 si.body,
                 sj,
-                e,
-                u,
+                1.0 + si.elasticity,
+                si.friction,
                 nx,
                 ny,
                 xjx - rj * nx,
@@ -199,11 +199,11 @@ define([
                 bi.wake();
                 bj.wake();
 
-                bi.emit("collide", bj, si);
-                bj.emit("collide", bi, si);
+                bi.emit("collideParticle", bj, si);
+                bj.emit("collideParticle", bi, si);
             } else {
-                bi.emit("colliding", bj, si);
-                bj.emit("colliding", bi, si);
+                bi.emit("collidingParticle", bj, si);
+                bj.emit("collidingParticle", bi, si);
             }
 
             if (si.isTrigger) return false;
@@ -221,8 +221,6 @@ define([
                 sj,
                 xi.x, xi.y, si.radius,
                 xj.x, xj.y, sj.radius,
-                1.0 + min(si.elasticity, sj.elasticity),
-                min(si.friction, sj.friction),
                 contacts
             );
         }
@@ -237,8 +235,6 @@ define([
                 sj,
                 xi.x, xi.y, si.radius,
                 xj.x, xj.y, 0.0,
-                1.0 + min(si.elasticity, sj.elasticity),
-                min(si.friction, sj.friction),
                 contacts
             );
         }
@@ -420,15 +416,15 @@ define([
                 njx = nj.x,
                 njy = nj.y,
                 rj = sj.radius,
-                mi, mj, m, s, t, ux, uy, vx, vy, amx, amy, bmx, bmy;
+                d0, d1, d2, d3, mi, mj, m, s, t, ux, uy, vx, vy, amx, amy, bmx, bmy;
 
-            segmentSegmentArray[0] = segmentPointDistanceSq(aix, aiy, bix, biy, ajx, ajy);
-            segmentSegmentArray[1] = segmentPointDistanceSq(aix, aiy, bix, biy, bjx, bjy);
-            segmentSegmentArray[2] = segmentPointDistanceSq(ajx, ajy, bjx, bjy, aix, aiy);
-            segmentSegmentArray[3] = segmentPointDistanceSq(ajx, ajy, bjx, bjy, bix, biy);
+            segmentSegmentArray[0] = d0 = segmentPointDistanceSq(aix, aiy, bix, biy, ajx, ajy);
+            segmentSegmentArray[1] = d1 = segmentPointDistanceSq(aix, aiy, bix, biy, bjx, bjy);
+            segmentSegmentArray[2] = d2 = segmentPointDistanceSq(ajx, ajy, bjx, bjy, aix, aiy);
+            segmentSegmentArray[3] = d3 = segmentPointDistanceSq(ajx, ajy, bjx, bjy, bix, biy);
 
-            mi = segmentSegmentArray[0] < segmentSegmentArray[1] ? 0 : 1;
-            mj = segmentSegmentArray[2] < segmentSegmentArray[3] ? 2 : 3;
+            mi = d0 < d1 ? 0 : 1;
+            mj = d2 < d3 ? 2 : 3;
             m = segmentSegmentArray[mi] < segmentSegmentArray[mj] ? mi : mj;
 
             ux = bix - aix;
@@ -464,148 +460,147 @@ define([
                 sj,
                 amx, amy, ri,
                 bmx, bmy, rj,
-                1.0 + min(si.elasticity, sj.elasticity),
-                min(si.friction, sj.friction),
                 contacts
             );
         }
 
 
         function convexSegment(si, sj, contacts) {
-			var vertices = si._vertices,
-				normals = si._normals,
-				
-				a = sj._a,
-				ax = a.x,
-				ay = a.y,
-				b = sj._b,
-				bx = b.x,
-				by = b.y,
-				nj = sj._normal,
-				radius = sj.radius,
-				nx = nj.x,
-				ny = nj.y,
-				
-				segD = nx * ax + ny * ay,
-				minNorm = valueOnAxis(vertices, nx, ny, segD) - radius,
-				minNeg = valueOnAxis(vertices, -nx, -ny, -segD) - radius,
-				index = -1, polyMin = -Infinity, v, n, dist, i, vax, vay, vbx, vby, u, e, normal, count = 0;
+            var vertices = si._vertices,
+                normals = si._normals,
 
-			if (minNeg > 0 || minNorm > 0) return;
-			
+                a = sj._a,
+                ax = a.x,
+                ay = a.y,
+                b = sj._b,
+                bx = b.x,
+                by = b.y,
+                nj = sj._normal,
+                radius = sj.radius,
+                njx = nj.x,
+                njy = nj.y,
+
+                segD = njx * ax + njy * ay,
+                minNorm = valueOnAxis(vertices, njx, njy, segD) - radius,
+                minNeg = valueOnAxis(vertices, -njx, -njy, -segD) - radius,
+                index = -1,
+                polyMin = -Infinity,
+                v, n, dist, i, vax, vay, vbx, vby, u, e, nx, ny, count = 0;
+
+            if (minNeg > 0 || minNorm > 0) return;
+
             i = vertices.length;
-			while(i--) {
-				v = vertices[i];
-				n = normals[i];
-				nx = n.x;
-				ny = n.y;
-				dist = segmentValueOnAxis(ax, ay, bx, by, radius, nx, ny, (nx * v.x + ny * v.y));
-				
-				if (dist > 0.0) {
-					return;
-				} else if (dist > polyMin) {
-					polyMin = dist;
-					index = i;
-				}
-			}
-			
-			if (index === -1) return;
+            while (i--) {
+                v = vertices[i];
+                n = normals[i];
+                nx = n.x;
+                ny = n.y;
+                dist = segmentValueOnAxis(ax, ay, bx, by, radius, nx, ny, (nx * v.x + ny * v.y));
+
+                if (dist > 0.0) {
+                    return;
+                } else if (dist > polyMin) {
+                    polyMin = dist;
+                    index = i;
+                }
+            }
+
+            if (index === -1) return;
             if (!collide(si, sj)) return;
-			
-			e = 1.0 + min(si.elasticity, sj.elasticity);
-			u = min(si.friction, sj.friction);
-			
-			normal = normals[index];
-			nx = normal.x;
-			ny = normal.y;
-			
-			vax = ax + (radius * nx);
-			vay = ay + (radius * ny);
-			
-			vbx = bx + (radius * nx);
-			vby = by + (radius * ny);
-			
-			if (contains(vertices, normals, vax, vay)) {
-				createContact(
-					si.body,
-					sj.body,
-					e,
-					u,
-					nx,
-					ny,
-					vax,
-					vay,
-					polyMin,
-					contacts
-				);
-				count++;
-			}
-			if (contains(vertices, normals, vbx, vby)) {
-				createContact(
-					si.body,
-					sj.body,
-					e,
-					u,
-					nx,
-					ny,
-					vbx,
-					vby,
-					polyMin,
-					contacts
-				);
-				count++;
-			}
-			
-			if (minNorm >= polyMin || minNeg >= polyMin) {
-				if (minNorm > minNeg) {
-					count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nj.x, nj.y, poly, minNorm, 1, contacts);
-				} else {
-					count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nj.x, nj.y, poly, minNeg, -1, contacts);
-				}
-			}
+
+            e = 1.0 + min(si.elasticity, sj.elasticity);
+            u = min(si.friction, sj.friction);
+
+            n = normals[index];
+            nx = n.x;
+            ny = n.y;
+
+            vax = ax + (-nx * radius);
+            vay = ay + (-ny * radius);
+
+            vbx = bx + (-nx * radius);
+            vby = by + (-ny * radius);
+
+            if (contains(vertices, normals, vax, vay)) {
+                createContact(
+                    si.body,
+                    sj.body,
+                    e,
+                    u,
+                    nx,
+                    ny,
+                    vax,
+                    vay,
+                    polyMin,
+                    contacts
+                );
+                count++;
+            }
+            if (contains(vertices, normals, vbx, vby)) {
+                createContact(
+                    si.body,
+                    sj.body,
+                    e,
+                    u,
+                    nx,
+                    ny,
+                    vbx,
+                    vby,
+                    polyMin,
+                    contacts
+                );
+                count++;
+            }
+
+            if (minNorm >= polyMin || minNeg >= polyMin) {
+                if (minNorm > minNeg) {
+                    count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, radius, nx, ny, minNorm, 1, contacts);
+                } else {
+                    count += pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, radius, nx, ny, minNeg, -1, contacts);
+                }
+            }
         }
 
-		
-		function pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, nx, ny, pDist, coef, contacts) {
-			var dta = nx * ax + ny * ay,
-				dtb = nx * bx + ny * by,
-				vertices = sj._vertices,
-				i = vertices.length,
-				v, vx, vy, dt,
-				count = 0;
-			
-			nx *= coef;
-			ny *= coef;
-
-			while (i--) {
-				v = vertices[i]
-				vx = v.x;
-				vy = v.y;
-				
-				if((vx * nx + vy * ny) < (nx * ax + ny * ay) * coef + radius){
-					dt = nx * vy - ny * vx;
-					if(dta >= dt && dt >= dtb){
-						createContact(
-							si.body,
-							sj.body,
-							e,
-							u,
-							nx,
-							ny,
-							vx,
-							vy,
-							pDist,
-							contacts
-						);
-						count++;
-					}
-				}
-			}
-			
-			return count;
-		}
-
         var segmentSegmentArray = [0.0, 0.0, 0.0, 0.0];
+
+        function pointsBehindSegment(si, sj, e, u, ax, ay, bx, by, radius, nx, ny, dist, coef, contacts) {
+            var dta = nx * ay - ny * ax,
+                dtb = nx * by - ny * bx,
+                vertices = si._vertices,
+                i = vertices.length,
+                v, vx, vy, dt,
+                count = 0;
+
+            nx *= coef;
+            ny *= coef;
+
+            while (i--) {
+                v = vertices[i]
+                vx = v.x;
+                vy = v.y;
+
+                if ((vx * nx + vy * ny) < (nx * ax + ny * ay) * coef + radius) {
+                    dt = nx * vy - ny * vx;
+                    if (dta >= dt && dt >= dtb) {
+                        createContact(
+                            si.body,
+                            sj.body,
+                            e,
+                            u,
+                            nx,
+                            ny,
+                            vx,
+                            vy,
+                            dist,
+                            contacts
+                        );
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
 
         function segmentPointDistanceSq(ax, ay, bx, by, px, py) {
             var wx = px - ax,
@@ -624,12 +619,12 @@ define([
 
             return (wx * wx + wy * wy) - proj * proj / vsq;
         }
-		
-		function segmentValueOnAxis(ax, ay, bx, by, r, nx, ny, d) {
-            var a = (nx * ax + ny * by) - r,
-				b = (nx * bx + ny * by) - r;
-			
-			return min(a, b) - d;
+
+        function segmentValueOnAxis(ax, ay, bx, by, r, nx, ny, d) {
+            var a = (nx * ax + ny * ay) - r,
+                b = (nx * bx + ny * by) - r;
+
+            return min(a, b) - d;
         }
 
 
