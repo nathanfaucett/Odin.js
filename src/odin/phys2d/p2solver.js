@@ -2,10 +2,9 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/class",
         "odin/math/mathf"
     ],
-    function(Class, Mathf) {
+    function(Mathf) {
         "use strict";
 
 
@@ -13,14 +12,11 @@ define([
 
         /**
          * @class P2Solver
-         * @extends Class
          * @brief World Solver
          * @param Object opts sets Class properties from passed Object
          */
         function P2Solver(opts) {
             opts || (opts = {});
-
-            Class.call(this);
 
             /**
              * @property Number iterations
@@ -35,8 +31,6 @@ define([
              */
             this.tolerance = opts.tolerance != undefined ? opts.tolerance : 1e-6;
         }
-
-        Class.extend(P2Solver, Class);
 
         /**
          * @method solve

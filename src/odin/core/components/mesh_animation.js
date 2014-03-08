@@ -3,15 +3,20 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/base/time",
+        "odin/math/mathf",
+        "odin/math/mat4",
+        "odin/math/vec3",
+        "odin/math/quat",
         "odin/core/assets/assets",
         "odin/core/components/component",
         "odin/core/enums"
     ],
-    function(Time, Assets, Component, Enums) {
+    function(Time, Mathf, Mat4, Vec3, Quat, Assets, Component, Enums) {
         "use strict";
 
 
-        var abs = Math.abs,
+        var clamp01 = Mathf.clamp01,
+            abs = Math.abs,
             WrapMode = Enums.WrapMode;
 
 
@@ -27,9 +32,11 @@ define([
 
             this._time = 0;
             this._frame = 0;
+            this._lastFrame = 0;
             this._order = 1;
 
             this.playing = this.sheet ? true : false;
+            this._bones = [];
         }
 
         Component.extend(MeshAnimation);
@@ -44,9 +51,18 @@ define([
 
             this._time = other._time;
             this._frame = other._frame;
+            this._lastFrame = other._lastFrame;
             this._order = other._order;
 
             this.playing = other.playing;
+
+            return this;
+        };
+
+
+        MeshAnimation.prototype.clear = function() {
+
+            this._bones.length = 0;
 
             return this;
         };
@@ -60,6 +76,7 @@ define([
             this.rate = rate != undefined ? rate : (rate = this.rate);
             this.mode = mode || (mode = this.mode);
             this._frame = 0;
+            this._lastFrame = 0;
             this._order = 1;
             this._time = 0;
 
@@ -75,6 +92,7 @@ define([
             if (this.playing) this.emit("stop");
             this.playing = false;
             this._frame = 0;
+            this._lastFrame = 0;
             this._order = 1;
             this._time = 0;
 
@@ -82,21 +100,36 @@ define([
         };
 
 
+        var POSITION = new Vec3,
+            LAST_POSITION = new Vec3,
+            ROTATION = new Quat,
+            LAST_ROTATION = new Quat,
+            SCALE = new Vec3,
+            LAST_SCALE = new Vec3;
+
         MeshAnimation.prototype.update = function() {
             if (!this.playing) return;
             var meshFilter = this.meshFilter,
-                mesh, current, dt, count, length, order, frame, mode, animation;
+                meshBones, mesh, bones, bone, bonesLength, alpha = 0.0,
+                boneCurrent, boneFrame, lastBoneFrame, uniform, matrix, pos, rot, scl, parent,
+                current, dt, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, i, il;
 
             if (!meshFilter) return;
+            meshBones = meshFilter.bones;
 
             mesh = meshFilter.mesh;
-            current = mesh.animations[this.current];
+            if (!mesh) return;
 
+            bones = mesh.bones;
+            if (!(bonesLength = bones.length)) return;
+
+            current = mesh.animations[this.current];
             if (!current) return;
 
             dt = Time.delta;
             order = this._order;
             frame = this._frame;
+            lastFrame = this._lastFrame;
             mode = this.mode;
 
             if (!this.rate || this.rate === Infinity || this.rate < 0) {
@@ -104,8 +137,12 @@ define([
             } else {
                 this._time += dt;
                 count = this._time / this.rate;
+                alpha = count;
 
                 if (count >= 1) {
+                    lastFrame = frame;
+                    alpha = 0.0;
+
                     this._time = 0;
                     length = current.length;
                     frame += (order * (count | 0));
@@ -146,8 +183,68 @@ define([
                 }
             }
 
-            animation = current[frame];
+            alpha = clamp01(alpha);
+            frameState = current[frame];
+            lastFrameState = current[lastFrame] || frameState;
+
+            for (i = 0, il = bonesLength; i < il; i++) {
+                bone = bones[i];
+
+                boneCurrent = meshBones[i] || (meshBones[i] = bone.clone());
+                matrix = boneCurrent.matrix;
+                uniform = boneCurrent.uniform;
+                pos = boneCurrent.position;
+                rot = boneCurrent.rotation;
+                scl = boneCurrent.scale;
+
+                boneFrame = frameState[i];
+                lastBoneFrame = lastFrameState[i];
+
+                LAST_POSITION.x = lastBoneFrame[0];
+                LAST_POSITION.y = lastBoneFrame[1];
+                LAST_POSITION.z = lastBoneFrame[2];
+
+                LAST_ROTATION.x = lastBoneFrame[3];
+                LAST_ROTATION.y = lastBoneFrame[4];
+                LAST_ROTATION.z = lastBoneFrame[5];
+                LAST_ROTATION.w = lastBoneFrame[6];
+
+                LAST_SCALE.x = lastBoneFrame[7];
+                LAST_SCALE.y = lastBoneFrame[8];
+                LAST_SCALE.z = lastBoneFrame[9];
+
+                POSITION.x = boneFrame[0];
+                POSITION.y = boneFrame[1];
+                POSITION.z = boneFrame[2];
+
+                ROTATION.x = boneFrame[3];
+                ROTATION.y = boneFrame[4];
+                ROTATION.z = boneFrame[5];
+                ROTATION.w = boneFrame[6];
+
+                SCALE.x = boneFrame[7];
+                SCALE.y = boneFrame[8];
+                SCALE.z = boneFrame[9];
+
+                pos.vlerp(LAST_POSITION, POSITION, alpha);
+                rot.qlerp(LAST_ROTATION, ROTATION, alpha);
+                scl.vlerp(LAST_SCALE, SCALE, alpha);
+
+                uniform.compose(pos, scl, rot);
+                matrix.copy(uniform);
+                uniform.mmul(uniform, bone.bindPose);
+
+                parent = boneCurrent.parent;
+
+                if (parent) {
+                    boneCurrent.matrixWorld.mmul(parent.matrixWorld, matrix);
+                } else {
+                    boneCurrent.matrixWorld.copy(matrix);
+                }
+            }
+
             this._frame = frame;
+            this._lastFrame = lastFrame;
         };
 
 

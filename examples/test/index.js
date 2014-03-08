@@ -294,14 +294,14 @@ require({
         }
 
 
-        game.on("init", function() {
+        game.on("start", function() {
             start();
         });
 
 
         AssetLoader.on("load", function() {
 
-            game.init();
+            game.start();
         }).load();
     }
 );

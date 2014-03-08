@@ -15,7 +15,6 @@ define([
             Class.call(this);
 
             this.scene = undefined;
-            this.sync = false;
 
             this.ambient = opts.ambient != undefined ? opts.ambient : new Color;
         }
@@ -24,6 +23,11 @@ define([
 
 
         World.prototype.init = function() {
+
+        };
+
+
+        World.prototype.start = function() {
 
         };
 

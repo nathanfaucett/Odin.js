@@ -15,8 +15,8 @@ define([
 
         function Bone(parentIndex, name) {
 
-            this.name = name != undefined ? name : "Bone_" + UNKNOWN++;
             this.parentIndex = parentIndex != undefined ? parentIndex : -1;
+            this.name = name != undefined ? name : "Bone_" + UNKNOWN++;
 
             this.skinned = false;
 
@@ -27,11 +27,18 @@ define([
             this.matrix = new Mat4;
             this.matrixWorld = new Mat4;
             this.bindPose = new Mat4;
+            this.uniform = new Mat4;
 
             this.inheritPosition = true;
             this.inheritRotation = true;
             this.inheritScale = true;
         }
+
+
+        Bone.prototype.clone = function() {
+
+            return new Bone().copy(this);
+        };
 
 
         Bone.prototype.copy = function(other) {

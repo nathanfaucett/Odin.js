@@ -58,13 +58,13 @@ define([
         Component.extend(OrbitControl);
 
 
-        OrbitControl.prototype.copy = function(other) {
+        OrbitControl.prototype.copy = function() {
 
             return this;
         };
 
 
-        OrbitControl.prototype.init = function() {
+        OrbitControl.prototype.start = function() {
 
             if (Device.mobile) {
                 Input.on("touchstart", this.onTouchStart, this);
@@ -128,7 +128,7 @@ define([
         };
 
 
-        OrbitControl.prototype.onTouchEnd = OrbitControl.prototype.onMouseUp = function(button) {
+        OrbitControl.prototype.onTouchEnd = OrbitControl.prototype.onMouseUp = function() {
 
             this._state = NONE;
         };

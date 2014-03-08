@@ -73,12 +73,10 @@ define([
                     }
 
                     this[ext](s, function(err, data) {
-                        if (err) {
-                            callback && callback(new Error("AssetLoader.load: " + err.message));
-                            return;
-                        }
                         loaded--;
                         raw[i] = data;
+
+                        if (err) Log.error(err);
 
                         if (loaded <= 0) {
                             asset._loaded = true;
@@ -164,15 +162,25 @@ define([
                 },
                 success: function() {
                     if (AudioCtx) {
-                        AudioCtx.decodeAudioData(
-                            this.response,
-                            function success(buffer) {
+                        if (AudioCtx.decodeAudioData) {
+                            AudioCtx.decodeAudioData(
+                                this.response,
+                                function success(buffer) {
+                                    callback && callback(null, buffer);
+                                },
+                                function failure() {
+                                    callback && callback(new Error("AudioContext Failed to parse Audio Clip"));
+                                }
+                            );
+                        } else {
+                            var buffer = AudioCtx.createBuffer(this.response, false);
+
+                            if (buffer) {
                                 callback && callback(null, buffer);
-                            },
-                            function failure() {
+                            } else {
                                 callback && callback(new Error("AudioContext Failed to parse Audio Clip"));
                             }
-                        );
+                        }
                     } else {
                         callback && callback(new Error("AudioContext (WebAudio API) is not supported by this browser"));
                     }

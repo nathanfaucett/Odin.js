@@ -103,7 +103,18 @@ define([
             this._collisionMatrixPrevious = this._collisionMatrix;
             this._collisionMatrix = collisionMatrix;
 
-            for (i = collisionMatrix.length; i--;) collisionMatrix[i] = 0;
+            i = collisionMatrix.length;
+            while (i--) collisionMatrix[i] = 0;
+        };
+
+
+        P2Space.prototype.clear = function() {
+            var bodies = this.bodies,
+                i = bodies.length;
+
+            while (i--) this.removeBody(bodies[i]);
+
+            return this;
         };
 
 

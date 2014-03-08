@@ -22,8 +22,7 @@ define([
         "use strict";
 
 
-        var now = Time.now,
-            stamp = Time.stamp;
+        var stamp = Time.stamp;
 
 
         function ClientGame(opts) {

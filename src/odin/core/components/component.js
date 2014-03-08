@@ -30,7 +30,22 @@ define([
         Class.extend(Component);
 
 
+        Component.prototype.copy = function(other) {
+
+            this.sync = other.sync;
+            this.json = other.json;
+
+            return this;
+        };
+
+
         Component.prototype.init = function() {
+
+            return this;
+        };
+
+
+        Component.prototype.start = function() {
 
             return this;
         };
@@ -75,7 +90,7 @@ define([
         };
 
 
-        Component.prototype.sort = function(a, b) {
+        Component.prototype.sort = function() {
 
             return 0;
         };

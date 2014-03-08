@@ -52,7 +52,7 @@ define([
             this.vlambda = new Vec2;
         }
 
-        Class.extend(P2Particle, Class);
+        Class.extend(P2Particle);
 
 
         P2Particle.prototype.copy = function(other) {
@@ -99,6 +99,12 @@ define([
                 pos.x += vel.x * dt;
                 pos.y += vel.y * dt;
             }
+        };
+
+
+        P2Particle.prototype.clear = function() {
+
+            return this;
         };
 
 

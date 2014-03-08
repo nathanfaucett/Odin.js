@@ -2,10 +2,9 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/class",
         "odin/phys2d/p2enums"
     ],
-    function(Class, P2Enums) {
+    function(P2Enums) {
         "use strict";
 
 
@@ -13,12 +12,7 @@ define([
             SleepState = P2Enums.SleepState;
 
 
-        function P2Broadphase() {
-
-            Class.call(this);
-        }
-
-        Class.extend(P2Broadphase);
+        function P2Broadphase() {}
 
 
         P2Broadphase.prototype.collisions = function(bodies, pairsi, pairsj) {

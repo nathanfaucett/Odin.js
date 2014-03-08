@@ -12,7 +12,6 @@ define([
             AxisType: new Enum("Button Mouse MouseWheel Touch Joystick"),
 
             Blending: new Enum("Default None Additive Subtractive Muliply Custom"),
-            Shading: new Enum("Lambert Phong"),
             Side: new Enum("Front Back Both"),
 
             CullFace: new Enum("None Back Front FrontBack"),

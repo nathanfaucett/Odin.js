@@ -2,9 +2,9 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/class"
+        "odin/base/event_emitter"
     ],
-    function(Class) {
+    function(EventEmitter) {
         "use strict";
 
         /**
@@ -14,7 +14,7 @@ define([
          */
         function P2Equation() {
 
-            Class.call(this);
+            EventEmitter.call(this);
 
             /**
              * @property P2Body sj
@@ -63,7 +63,7 @@ define([
             this.invC = 0;
         }
 
-        Class.extend(P2Equation, Class);
+        EventEmitter.extend(P2Equation);
 
 
         P2Equation.prototype.updateConstants = function(h) {

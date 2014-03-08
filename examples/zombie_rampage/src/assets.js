@@ -74,7 +74,10 @@ define([
             }),
             new Odin.AudioClip({
                 name: "snd_shot_mid",
-                src: "content/audio/shot_mid.ogg"
+                src: [
+                    "content/audio/shot_mid.ogg",
+                    "content/audio/shot_mid.mp3"
+                ]
             }),
             new Odin.AudioClip({
                 name: "snd_shot_long",
@@ -83,15 +86,24 @@ define([
 
             new Odin.AudioClip({
                 name: "snd_player_moan1",
-                src: "content/audio/player_moan1.ogg"
+                src: [
+                    "content/audio/player_moan1.ogg",
+                    "content/audio/player_moan1.mp3"
+                ]
             }),
             new Odin.AudioClip({
                 name: "snd_player_moan2",
-                src: "content/audio/player_moan2.ogg"
+                src: [
+                    "content/audio/player_moan2.ogg",
+                    "content/audio/player_moan2.mp3"
+                ]
             }),
             new Odin.AudioClip({
                 name: "snd_player_moan3",
-                src: "content/audio/player_moan3.ogg"
+                src: [
+                    "content/audio/player_moan3.ogg",
+                    "content/audio/player_moan3.mp3"
+                ]
             }),
 
             new Odin.AudioClip({

@@ -10,7 +10,8 @@ define([
         "use strict";
 
 
-        var defineProperty = Object.defineProperty,
+        var isArray = util.isArray,
+            defineProperty = Object.defineProperty,
             arrayBufferToBase64 = util.arrayBufferToBase64,
             base64ToArrayBuffer = util.base64ToArrayBuffer;
 
@@ -50,6 +51,21 @@ define([
                 return this.raw ? this.raw.numberOfChannels : 0;
             }
         });
+
+
+        AudioClip.prototype.parse = function(raw) {
+            Asset.prototype.parse.call(this, raw);
+            var i;
+
+            if (isArray(raw)) {
+                i = raw.length;
+                while (i--) {
+                    if (raw[i]) this.raw = raw[i];
+                }
+            }
+
+            return this;
+        };
 
 
         AudioClip.prototype.getData = function(array, offset) {

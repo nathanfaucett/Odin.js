@@ -33,6 +33,7 @@ define([
             this.material = opts.material != undefined ? opts.material : undefined;
 
 
+            this.bones = [];
             this._webglMeshInitted = false;
         }
 
@@ -50,12 +51,22 @@ define([
         };
 
 
+        MeshFilter.prototype.init = function() {
+            var bones = this.bones,
+                meshBones = this.mesh.bones,
+                i = meshBones.length;
+
+            while (i--) bones[i] = meshBones[i].clone();
+        };
+
+
         MeshFilter.prototype.clear = function() {
             Component.prototype.clear.call(this);
 
             this.mesh = undefined;
             this.material = undefined;
 
+            this.bones.length = 0;
             this._webglMeshInitted = false;
 
             return this;
@@ -84,6 +95,7 @@ define([
             this.mesh = json.mesh ? Assets.get(json.mesh) : undefined;
             this.material = json.material ? Assets.get(json.material) : undefined;
 
+            this.bones.length = 0;
             this._webglMeshInitted = false;
 
             return this;

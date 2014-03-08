@@ -324,7 +324,7 @@ define([
                     }
                 }
             } else {
-                this.once("init", function() {
+                this.once("start", function() {
                     while (i--) {
                         child = this.gameObject.scene.findComponentByJSONId(children[i]);
 

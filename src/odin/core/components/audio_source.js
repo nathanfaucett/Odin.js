@@ -18,7 +18,6 @@ define([
             clamp01 = Mathf.clamp01,
             defineProperty = Object.defineProperty;
 
-
         function AudioSource(opts) {
             opts || (opts = {});
 
@@ -164,7 +163,7 @@ define([
 
 
         AudioSource.prototype.play = function(delay, offset) {
-            if (!AudioCtx) return this;
+            if (!AudioCtx || !this.clip || !this.clip.raw) return this;
             delay || (delay = 0);
             offset || (offset = this.time);
 
@@ -183,7 +182,7 @@ define([
 
 
         AudioSource.prototype.pause = function() {
-            if (!AudioCtx) return this;
+            if (!AudioCtx || !this.clip || !this.clip.raw) return this;
 
             this.playing = false;
             this.stopped = false;
@@ -197,7 +196,7 @@ define([
 
 
         AudioSource.prototype.stop = function() {
-            if (!AudioCtx) return this;
+            if (!AudioCtx || !this.clip || !this.clip.raw) return this;
 
             this.time = 0;
             this.playing = false;

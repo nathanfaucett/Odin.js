@@ -773,6 +773,52 @@ define([
         };
 
         /**
+         * @method fromArray
+         * @memberof Odin.Mat3
+         * sets values from Array object
+         * @param Object json
+         * @return this
+         */
+        Mat3.prototype.fromArray = function(array) {
+            var te = this.elements;
+
+            te[0] = array[0];
+            te[1] = array[1];
+            te[2] = array[2];
+            te[3] = array[3];
+            te[4] = array[4];
+            te[5] = array[5];
+            te[6] = array[6];
+            te[7] = array[7];
+            te[8] = array[8];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Odin.Mat3
+         * returns array object of this
+         * @return Object
+         */
+        Mat3.prototype.toArray = function(array) {
+            array || (array = []);
+            var te = this.elements;
+
+            array[0] = te[0];
+            array[1] = te[1];
+            array[2] = te[2];
+            array[3] = te[3];
+            array[4] = te[4];
+            array[5] = te[5];
+            array[6] = te[6];
+            array[7] = te[7];
+            array[8] = te[8];
+
+            return array;
+        };
+
+        /**
          * @method toString
          * @memberof Odin.Mat3
          * returns string of this

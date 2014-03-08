@@ -60,7 +60,7 @@ define([
             this.rjxn = 0;
         }
 
-        Class.extend(P2Contact, P2Equation);
+        P2Equation.extend(P2Contact);
 
 
         P2Contact.prototype.init = function(h) {

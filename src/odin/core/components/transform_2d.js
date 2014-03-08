@@ -115,8 +115,7 @@ define([
             var mat = new Mat32,
                 vec = new Vec2;
 
-            return function(target, up) {
-                up = up || dup;
+            return function(target) {
 
                 if (target instanceof Transform2D) {
                     vec.copy(target.position);
@@ -288,6 +287,11 @@ define([
 
         Transform2D.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
+            var children = this.children,
+                jsonChildren = json.children || (json.children = []),
+                i = children.length;
+
+            while (i--) jsonChildren[i] = children[i]._id;
 
             json.position = this.position.toJSON(json.position);
             json.scale = this.scale.toJSON(json.scale);
@@ -299,6 +303,29 @@ define([
 
         Transform2D.prototype.fromJSON = function(json) {
             Component.prototype.fromJSON.call(this, json);
+            var children = json.children,
+                i = children.length,
+                child;
+
+            if (this.gameObject && this.gameObject.scene) {
+                while (i--) {
+                    child = this.gameObject.scene.findComponentByJSONId(children[i]);
+
+                    if (!this.hasChild(child)) {
+                        this.addChild(child);
+                    }
+                }
+            } else {
+                this.once("start", function() {
+                    while (i--) {
+                        child = this.gameObject.scene.findComponentByJSONId(children[i]);
+
+                        if (!this.hasChild(child)) {
+                            this.addChild(child);
+                        }
+                    }
+                });
+            }
 
             this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);

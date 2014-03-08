@@ -40,7 +40,7 @@ define([
             this.rjxt = 0;
         }
 
-        Class.extend(P2Friction, P2Equation);
+        P2Equation.extend(P2Friction);
 
 
         P2Friction.prototype.init = function(h) {

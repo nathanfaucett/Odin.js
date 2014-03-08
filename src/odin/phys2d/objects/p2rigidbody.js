@@ -61,6 +61,8 @@ define([
             var shapes = other.shapes,
                 i = shapes.length;
 
+            this.clear();
+
             this.rotation = other.rotation;
             this.angularVelocity = other.angularVelocity;
             this.torque = other.torque;
@@ -135,6 +137,16 @@ define([
                     aabb.union(shape.aabb);
                 }
             }
+        };
+
+
+        P2Rigidbody.prototype.clear = function() {
+            var shapes = this.shapes,
+                i = shapes.length;
+
+            while (i--) this.removeShape(shapes[i]);
+
+            return this;
         };
 
 

@@ -113,8 +113,7 @@ define([
             var mat = new Mat32,
                 vec = new Vec2;
 
-            return function(target, up) {
-                up = up || dup;
+            return function(target) {
 
                 if (target instanceof GUITransform) {
                     vec.copy(target.position);

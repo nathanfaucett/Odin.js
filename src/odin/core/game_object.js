@@ -55,6 +55,7 @@ define([
                     this.addComponent(otherComponent.clone());
                 }
             }
+
             i = tags.length;
             while (i--) this.addTag(tags[i]);
 
@@ -179,15 +180,16 @@ define([
                         if (!comp) continue;
 
                         j = components.length;
-                        while (j--) {
-                            name = components[j]._name;
-                            comp[name] = components[j];
-                        }
+                        while (j--) comp[components[j]._name] = components[j];
                     }
+
+                    component.init();
+                    component.emit("init");
                 }
 
                 this.emit("add" + component._type, component);
                 this.emit("addComponent", component);
+                component.emit("add", this);
 
                 if (this.scene) this.scene._addComponent(component);
             } else {
@@ -219,6 +221,13 @@ define([
                 }
             }
 
+            i = components.length;
+            while (i--) {
+                component = components[i];
+                component.init();
+                component.emit("init");
+            }
+
             return this;
         };
 
@@ -234,6 +243,9 @@ define([
                 comp, i, j;
 
             if (this[name]) {
+                component.emit("remove", this);
+                this.emit("remove" + component._type, component);
+                this.emit("removeComponent", component);
 
                 if (!others) {
                     i = components.length;
@@ -255,10 +267,6 @@ define([
 
                 component.gameObject = undefined;
                 this[name] = undefined;
-
-                this.emit("remove" + component._type, component);
-                this.emit("removeComponent", component);
-                component.emit("remove", component);
 
                 if (this.scene) this.scene._removeComponent(component);
                 if (clear) component.clear();

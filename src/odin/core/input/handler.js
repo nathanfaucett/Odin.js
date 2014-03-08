@@ -86,7 +86,7 @@ define([
 
             } else if (type === "touchend") {
 
-                for (i = 0, il = changedTouches.length; i < il; i++) this.emit("touchend", touches.end(i, changedTouches[i]));
+                for (i = 0, il = changedTouches.length; i < il; i++) this.emit("touchend", touches.end(i));
 
             } else if (type === "touchcancel") {
 

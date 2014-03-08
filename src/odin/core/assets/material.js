@@ -23,7 +23,6 @@ define([
             Asset.call(this, opts);
 
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
-            this.shading = opts.shading != undefined ? opts.shading : Enums.Shading.Lambert;
             this.side = opts.side != undefined ? opts.side : Enums.Side.Front;
 
             this.lineWidth = opts.lineWidth != undefined ? opts.lineWidth : 1;
@@ -38,7 +37,9 @@ define([
                 shininess: 8
             });
 
-            this._webgl = undefined;
+            this.receiveShadow = opts.receiveShadow != undefined ? !! opts.receiveShadow : true;
+            this.castShadow = opts.castShadow != undefined ? !! opts.castShadow : true;
+
             this.needsUpdate = true;
         }
 
@@ -49,7 +50,6 @@ define([
             Asset.prototype.copy.call(this, other);
 
             this.blending = other.blending;
-            this.shading = other.shading;
             this.side = other.side;
 
             this.lineWidth = other.lineWidth;
@@ -59,7 +59,10 @@ define([
 
             this.shader = other.shader;
 
-            this.uniforms = other.uniforms;
+            this.uniforms = copy(other.uniforms);
+
+            this.receiveShadow = other.receiveShadow;
+            this.castShadow = other.castShadow;
 
             return this;
         };
@@ -85,7 +88,6 @@ define([
             json = Asset.prototype.toJSON.call(this, json, pack);
 
             json.blending = this.blending;
-            json.shading = this.shading;
             json.side = this.side;
 
             json.lineWidth = this.lineWidth;
@@ -97,6 +99,9 @@ define([
 
             toJSON(this.uniforms, json.uniforms || (json.uniforms = {}));
 
+            json.receiveShadow = this.receiveShadow;
+            json.castShadow = this.castShadow;
+
             return json;
         };
 
@@ -105,7 +110,6 @@ define([
             Asset.prototype.fromJSON.call(this, json);
 
             this.blending = json.blending;
-            this.shading = json.shading;
             this.side = json.side;
 
             this.lineWidth = json.lineWidth;
@@ -116,6 +120,9 @@ define([
             this.shader = json.shader != undefined ? Assets.get(json.shader) : undefined;
 
             fromJSON(this.uniforms, json.uniforms);
+
+            this.receiveShadow = json.receiveShadow;
+            this.castShadow = json.castShadow;
 
             return this;
         };
@@ -158,6 +165,30 @@ define([
                     obj[key] = value;
                 }
             }
+        }
+
+
+        function copy(obj) {
+            var out = {},
+                classes = Class._classes,
+                mathClasses = Mathf._classes,
+                value, key;
+
+            for (key in obj) {
+                value = obj[key];
+
+                if (typeof(value) !== "object") {
+                    out[key] = value;
+                } else if (mathClasses[value._className]) {
+                    out[key] = new mathClasses[value._className]().copy(value);
+                } else if (classes[value._className]) {
+                    out[key] = new classes[value._className]().copy(value);
+                } else {
+                    out[key] = value;
+                }
+            }
+
+            return out;
         }
 
 

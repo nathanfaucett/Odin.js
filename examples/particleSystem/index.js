@@ -160,7 +160,7 @@ require({
 
         AssetLoader.on("load", function() {
 
-            game.on("init", start).init();
+            game.on("start", start).start();
         }).load();
     }
 );

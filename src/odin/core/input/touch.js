@@ -2,10 +2,9 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/math/vec2",
-        "odin/core/game/log"
+        "odin/math/vec2"
     ],
-    function(Vec2, Log) {
+    function(Vec2) {
         "use strict";
 
 

@@ -128,7 +128,6 @@ define([
                 ly = localPosition.y,
                 a = this.a,
                 b = this.b,
-                r = this.radius,
                 ax = lx + a.x,
                 ay = ly + a.y,
                 bx = lx + b.x,

@@ -5,10 +5,9 @@ define([
         "odin/base/event_emitter",
         "odin/base/device",
         "odin/base/dom",
-        "odin/core/game/log",
         "odin/core/game/config"
     ],
-    function(EventEmitter, Device, Dom, Log, Config) {
+    function(EventEmitter, Device, Dom, Config) {
         "use strict";
 
 

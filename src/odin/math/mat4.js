@@ -620,16 +620,17 @@ define([
          * @return this
          */
         Mat4.prototype.lookAt = function() {
-            var dup = new Vec3(0.0, 0.0, 1),
+            var dup = new Vec3(0.0, 0.0, 1.0),
                 x = new Vec3,
                 y = new Vec3,
                 z = new Vec3;
 
             return function(eye, target, up) {
+                up || (up = dup);
                 var te = this.elements;
 
                 z.vsub(eye, target).normalize();
-                if (z.length() === 0.0) z.z = 1;
+                if (z.length() === 0.0) z.z = 1.0;
 
                 x.vcross(up, z).normalize();
 
@@ -1503,8 +1504,75 @@ define([
             je[6] = te[6];
             je[7] = te[7];
             je[8] = te[8];
+            je[9] = te[9];
+            je[10] = te[10];
+            je[11] = te[11];
+            je[12] = te[12];
+            je[13] = te[13];
+            je[14] = te[14];
+            je[15] = te[15];
 
             return json;
+        };
+
+        /**
+         * @method fromArray
+         * @memberof Odin.Mat4
+         * sets values from Array object
+         * @param Object json
+         * @return this
+         */
+        Mat4.prototype.fromArray = function(array) {
+            var te = this.elements;
+
+            te[0] = array[0];
+            te[1] = array[1];
+            te[2] = array[2];
+            te[3] = array[3];
+            te[4] = array[4];
+            te[5] = array[5];
+            te[6] = array[6];
+            te[7] = array[7];
+            te[8] = array[8];
+            te[9] = array[9];
+            te[10] = array[10];
+            te[11] = array[11];
+            te[12] = array[12];
+            te[13] = array[13];
+            te[14] = array[14];
+            te[15] = array[15];
+
+            return this;
+        };
+
+        /**
+         * @method toArray
+         * @memberof Odin.Mat4
+         * returns array object of this
+         * @return Object
+         */
+        Mat4.prototype.toArray = function(array) {
+            array || (array = []);
+            var te = this.elements;
+
+            array[0] = te[0];
+            array[1] = te[1];
+            array[2] = te[2];
+            array[3] = te[3];
+            array[4] = te[4];
+            array[5] = te[5];
+            array[6] = te[6];
+            array[7] = te[7];
+            array[8] = te[8];
+            array[9] = te[9];
+            array[10] = te[10];
+            array[11] = te[11];
+            array[12] = te[12];
+            array[13] = te[13];
+            array[14] = te[14];
+            array[15] = te[15];
+
+            return array;
         };
 
         /**

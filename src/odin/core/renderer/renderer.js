@@ -31,7 +31,6 @@ define([
             Side = Enums.Side,
 
             LightType = Enums.LightType,
-            Shading = Enums.Shading,
 
             FilterMode = Enums.FilterMode,
             TextureFormat = Enums.TextureFormat,
@@ -44,7 +43,6 @@ define([
             createProgram = Dom.createProgram,
 
             merge = util.merge,
-            copy = util.copy,
 
             max = Math.max,
             floor = Math.floor,
@@ -70,10 +68,17 @@ define([
             this.autoClearDepth = opts.autoClearDepth != undefined ? opts.autoClearDepth : true;
             this.autoClearStencil = opts.autoClearStencil != undefined ? opts.autoClearStencil : true;
 
+            this.shadowMapEnabled = opts.shadowMapEnabled != undefined ? opts.shadowMapEnabled : true;
+            this.shadowMapAutoUpdate = opts.shadowMapAutoUpdate != undefined ? opts.shadowMapAutoUpdate : true;
+            this.shadowMapType = opts.shadowMapType != undefined ? opts.shadowMapType : ShadowMapType.PCFShadowMap;
+            this.shadowMapCullFace = opts.shadowMapCullFace != undefined ? opts.shadowMapCullFace : CullFace.Front;
+            this.shadowMapDebug = opts.shadowMapDebug != undefined ? opts.shadowMapDebug : false;
+            this.shadowMapCascade = opts.shadowMapCascade != undefined ? opts.shadowMapCascade : false;
 
             var _lastCamera = undefined,
                 _lastResizeFn = undefined,
                 _lastScene = undefined,
+                _lastGUI = undefined,
                 _mat4 = new Mat4,
                 _projScreenMatrix = new Mat4,
                 _vector2 = new Vec2,
@@ -83,7 +88,7 @@ define([
                 _color = new Color,
                 _shaders = {},
                 _lastBuffers = undefined,
-                _spriteBuffers = {};
+                _spriteBuffers = undefined;
 
             this.preRender = function(gui, scene, camera) {
                 if (!_context) return;
@@ -120,6 +125,12 @@ define([
 
                     _lastScene = scene;
                 }
+                if (gui && _lastGUI !== gui) {
+                    if (_lastGUI) removeGUIEvents(_lastGUI);
+                    addGUIEvents(gui);
+
+                    _lastScene = gui;
+                }
 
                 _projScreenMatrix.mmul(camera.projection, camera.view);
                 if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
@@ -133,6 +144,7 @@ define([
              * @param Camera camera
              */
             function renderGUI(gui, camera) {
+
 
             }
             this.renderGUI = renderGUI;
@@ -156,7 +168,7 @@ define([
                     meshFilters = components.MeshFilter || EMPTY_ARRAY,
                     sprites = components.Sprite || EMPTY_ARRAY,
                     particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                    meshFilter, particleSystem, sprite, transform, transform2d,
+                    meshFilter, particleSystem, sprite, transform,
                     i;
 
                 i = meshFilters.length;
@@ -219,7 +231,7 @@ define([
 
                 createMeshBuffers(mesh);
                 shader = createMeshShader(mesh, material, lights);
-                shader.bind(mesh, material, transform, camera, lights, ambient);
+                shader.bind(meshFilter, mesh, material, transform, camera, lights, ambient);
 
                 if (!meshFilter._webglMeshInitted) {
                     mesh._webglUsed++;
@@ -241,6 +253,7 @@ define([
                     side, shader;
 
                 if (!material) return;
+                if (!_spriteBuffers) createSprite();
 
                 setBlending(material.blending);
 
@@ -260,7 +273,7 @@ define([
                     sprite._webglMeshInitted = true;
                 }
 
-                shader.bind(sprite, material, transform, camera, lights, ambient);
+                shader.bind(sprite, sprite, material, transform, camera, lights, ambient);
 
                 if (material.wireframe) {
                     setLineWidth(material.wireframeLineWidth);
@@ -274,8 +287,10 @@ define([
             function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
                 var emitters = particleSystem.emitters,
                     material = particleSystem.material,
-                    side, shader, emitter,
+                    shader, emitter,
                     i = emitters.length;
+
+                setCullFace(CullFace.Back);
 
                 while (i--) {
                     emitter = emitters[i];
@@ -289,7 +304,7 @@ define([
 
                         createEmitterBuffers(emitter, transform);
                         shader = createEmitterShader(emitter, material, lights);
-                        shader.bind(emitter, material, transform, camera, lights, ambient);
+                        shader.bind(particleSystem, emitter, material, transform, camera, lights, ambient);
 
                         if (!emitter._webglInitted) {
                             shader.used++;
@@ -306,7 +321,7 @@ define([
 
                         createEmitter2DBuffers(emitter, transform);
                         shader = createEmitter2DShader(emitter, material, lights);
-                        shader.bind(emitter, material, transform, camera, lights, ambient);
+                        shader.bind(particleSystem, emitter, material, transform, camera, lights, ambient);
 
                         if (!emitter._webglInitted) {
                             shader.used++;
@@ -321,35 +336,39 @@ define([
             function addSceneEvents(scene) {
                 var components = scene.components,
                     meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                    sprites = components.Sprite || EMPTY_ARRAY,
                     particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                    meshFilter, particleSystem, sprite, transform, transform2d,
                     i;
 
                 i = meshFilters.length;
-                while (i--) {
-                    meshFilter = meshFilters[i];
-                    meshFilter.on("remove", onMeshFilterRemove);
-                }
+                while (i--) meshFilters[i].on("remove", onMeshFilterRemove);
+
+                i = sprites.length;
+                while (i--) sprites[i].on("remove", onSpriteRemove);
 
                 i = particleSystems.length;
-                while (i--) {
-                    particleSystem = particleSystems[i];
-                    particleSystem.on("remove", onParticleSystemRemove);
-                }
+                while (i--) particleSystems[i].on("remove", onParticleSystemRemove);
 
                 scene.on("addMeshFilter", onMeshFilterAdd);
-                scene.on("addParticleSystem", onMeshFilterAdd);
+                scene.on("addSprite", onSpriteAdd);
+                scene.on("addParticleSystem", onParticleSystemAdd);
             }
 
             function removeSceneEvents(scene) {
 
                 scene.off("addMeshFilter", onMeshFilterAdd);
+                scene.off("addSprite", onSpriteAdd);
                 scene.off("addParticleSystem", onMeshFilterAdd);
             }
 
             function onMeshFilterAdd(meshFilter) {
 
                 meshFilter.on("remove", onMeshFilterRemove);
+            }
+
+            function onSpriteAdd(sprite) {
+
+                sprite.on("remove", onSpriteRemove);
             }
 
             function onParticleSystemAdd(particleSystem) {
@@ -364,6 +383,13 @@ define([
                 deleteShader(mesh);
 
                 this.off("remove", onMeshFilterRemove);
+            }
+
+            function onSpriteRemove() {
+
+                deleteShader(this);
+
+                this.off("remove", onSpriteRemove);
             }
 
             function onParticleSystemRemove() {
@@ -393,17 +419,63 @@ define([
                 if (mesh._webglUvBuffer != undefined) _gl.deleteBuffer(mesh._webglUvBuffer);
                 if (mesh._webglUv2Buffer != undefined) _gl.deleteBuffer(mesh._webglUv2Buffer);
 
-                if (mesh._webglBoneIndicesBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneIndicesBuffer);
-                if (mesh._webglBoneWeightsBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneWeightsBuffer);
+                if (mesh._webglBoneIndexBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneIndexBuffer);
+                if (mesh._webglBoneWeightBuffer != undefined) _gl.deleteBuffer(mesh._webglBoneWeightBuffer);
 
                 if (mesh._webglIndexBuffer != undefined) _gl.deleteBuffer(mesh._webglIndexBuffer);
                 if (mesh._webglLineBuffer != undefined) _gl.deleteBuffer(mesh._webglLineBuffer);
+
+                mesh._webglVertexArray = undefined;
+                mesh._webglNormalArray = undefined;
+                mesh._webglTangentArray = undefined;
+                mesh._webglColorArray = undefined;
+                mesh._webglUvArray = undefined;
+                mesh._webglUv2Array = undefined;
+
+                mesh._webglBoneIndexArray = undefined;
+                mesh._webglBoneWeightArray = undefined;
+
+                mesh._webglIndexArray = undefined;
+                mesh._webglLineArray = undefined;
             }
 
             function deleteEmitterBuffers(emitter) {
 
                 if (emitter._webglVertexBuffer != undefined) _gl.deleteBuffer(emitter._webglVertexBuffer);
                 if (emitter._webglParticleBuffer != undefined) _gl.deleteBuffer(emitter._webglParticleBuffer);
+                if (emitter._webglParticleColorBuffer != undefined) _gl.deleteBuffer(emitter._webglParticleColorBuffer);
+
+                emitter._webglVertexArray = undefined;
+                emitter._webglParticleArray = undefined;
+                emitter._webglParticleColorArray = undefined;
+            }
+
+            function addGUIEvents(gui) {
+                var components = gui.components,
+                    guiContents = components.GUIContent || EMPTY_ARRAY,
+                    i;
+
+                i = guiContents.length;
+                while (i--) guiContents[i].on("remove", onGUIContentRemove);
+
+                gui.on("addGUIContent", onGUIContentAdd);
+            }
+
+            function removeGUIEvents(gui) {
+
+                gui.off("addGUIContent", onGUIContentAdd);
+            }
+
+            function onGUIContentAdd(guiContent) {
+
+                guiContent.on("remove", onGUIContentRemove);
+            }
+
+            function onGUIContentRemove() {
+
+                deleteShader(this);
+
+                this.off("remove", onGUIContentRemove);
             }
 
             function deleteShader(obj) {
@@ -615,7 +687,7 @@ define([
                 len = items.length;
                 if (len && mesh.boneIndicesNeedUpdate) {
                     bufferArray = mesh._webglBoneIndexArray;
-                    if (!bufferArray || bufferArray.length !== len) bufferArray = mesh._webglBoneIndexArray = new Uint16Array(len);
+                    if (!bufferArray || bufferArray.length !== len) bufferArray = mesh._webglBoneIndexArray = new Float32Array(len);
 
                     i = len;
                     while (i--) bufferArray[i] = items[i];
@@ -651,7 +723,6 @@ define([
                 var MAX = Emitter.MAX_PARTICLES,
 
                     DRAW = _gl.DYNAMIC_DRAW,
-                    FLOAT = _gl.FLOAT,
                     ARRAY_BUFFER = _gl.ARRAY_BUFFER,
 
                     positionArray, dataArray, colorArray,
@@ -734,11 +805,10 @@ define([
             }
 
 
-            function createEmitter2DBuffers(emitter, transform) {
+            function createEmitter2DBuffers(emitter) {
                 var MAX = Emitter2D.MAX_PARTICLES,
 
                     DRAW = _gl.DYNAMIC_DRAW,
-                    FLOAT = _gl.FLOAT,
                     ARRAY_BUFFER = _gl.ARRAY_BUFFER,
 
                     positionArray, dataArray, colorArray,
@@ -826,8 +896,14 @@ define([
 
                 parameters.OES_standard_derivatives = OES_standard_derivatives && shader.OES_standard_derivatives;
 
+                if (parameters.useBones) parameters.bones = mesh.bones.length;
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
+
+                parameters.shadowMapEnabled = _this.shadowMapEnabled && material.receiveShadow && parameters.maxShadows > 0;
+                parameters.shadowMapType = _this.shadowMapType;
+                parameters.shadowMapDebug = _this.shadowMapDebug;
+                parameters.shadowMapCascade = _this.shadowMapCascade;
 
                 material.needsUpdate = false;
                 return (_shaders[mesh._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
@@ -855,8 +931,8 @@ define([
                 parameters.useBump = !! uniforms.bumpMap;
 
                 parameters.positions = true;
-                parameters.normals = false;
-                parameters.tangents = false;
+                parameters.normals = parameters.useNormal;
+                parameters.tangents = parameters.useNormal;
                 parameters.uvs = true;
                 parameters.colors = false;
 
@@ -864,6 +940,11 @@ define([
 
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
+
+                parameters.shadowMapEnabled = _this.shadowMapEnabled && material.receiveShadow && parameters.maxShadows > 0;
+                parameters.shadowMapType = _this.shadowMapType;
+                parameters.shadowMapDebug = _this.shadowMapDebug;
+                parameters.shadowMapCascade = _this.shadowMapCascade;
 
                 material.needsUpdate = false;
                 return (_shaders[sprite._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
@@ -902,6 +983,11 @@ define([
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
 
+                parameters.shadowMapEnabled = _this.shadowMapEnabled && material.receiveShadow && parameters.maxShadows > 0;
+                parameters.shadowMapType = _this.shadowMapType;
+                parameters.shadowMapDebug = _this.shadowMapDebug;
+                parameters.shadowMapCascade = _this.shadowMapCascade;
+
                 material.needsUpdate = false;
                 return (_shaders[emitter._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
             }
@@ -939,6 +1025,11 @@ define([
 
                 allocateLights(lights, parameters);
                 allocateShadows(lights, parameters);
+
+                parameters.shadowMapEnabled = _this.shadowMapEnabled && material.receiveShadow && parameters.maxShadows > 0;
+                parameters.shadowMapType = _this.shadowMapType;
+                parameters.shadowMapDebug = _this.shadowMapDebug;
+                parameters.shadowMapCascade = _this.shadowMapCascade;
 
                 material.needsUpdate = false;
                 return (_shaders[emitter._id] = createShaderProgram(shader.vertex, shader.fragment, parameters));
@@ -1045,14 +1136,14 @@ define([
                 buildShader(this);
             }
 
-            Shader.prototype.bind = function(obj, material, transform, camera, lights, ambient) {
+            Shader.prototype.bind = function(component, obj, material, transform, camera, lights, ambient) {
                 var program = this.program,
                     parameters = this.parameters,
                     uniforms = this.uniforms,
                     attributes = this.attributes,
                     force = setProgram(program),
                     sprite = parameters.sprite,
-                    texture, w, h, i, length, particleSizeRatio;
+                    texture, w, h, i, length, particleSizeRatio, bone, bones, uBones;
 
                 if (sprite) {
                     if (_lastBuffers !== _spriteBuffers) {
@@ -1060,6 +1151,9 @@ define([
 
                         attributes.position.set(_spriteBuffers._webglVertexBuffer);
                         attributes.uv.set(_spriteBuffers._webglUvBuffer);
+
+                        if (attributes.normal) attributes.normal.set(_spriteBuffers._webglNormalBuffer);
+                        if (attributes.tangent) attributes.tangent.set(_spriteBuffers._webglTangentBuffer);
 
                         _lastBuffers = _spriteBuffers;
                     }
@@ -1075,8 +1169,8 @@ define([
                         if (obj._webglUvBuffer && attributes.uv) attributes.uv.set(obj._webglUvBuffer);
                         if (obj._webglUv2Buffer && attributes.uv2) attributes.uv2.set(obj._webglUv2Buffer);
 
-                        if (obj._webglBoneIndicesBuffer && attributes.boneIndex) attributes.boneIndex.set(obj._webglBoneIndicesBuffer);
-                        if (obj._webglBoneWeightsBuffer && attributes.boneWeight) attributes.boneWeight.set(obj._webglBoneWeightsBuffer);
+                        if (obj._webglBoneIndexBuffer && attributes.boneIndex) attributes.boneIndex.set(obj._webglBoneIndexBuffer);
+                        if (obj._webglBoneWeightBuffer && attributes.boneWeight) attributes.boneWeight.set(obj._webglBoneWeightBuffer);
 
                         if (obj._webglParticleBuffer && attributes.data) attributes.data.set(obj._webglParticleBuffer);
                         if (obj._webglParticleColorBuffer && attributes.particleColor) attributes.particleColor.set(obj._webglParticleColorBuffer);
@@ -1126,6 +1220,21 @@ define([
                 if (uniforms.normalMatrix) uniforms.normalMatrix.set(transform.normalMatrix, force);
                 if (uniforms.cameraPosition) uniforms.cameraPosition.set(_vector3.positionFromMat4((camera.transform || camera.transform2d).matrixWorld), force);
                 if (uniforms.ambient) uniforms.ambient.set(ambient, force);
+
+                if (parameters.useBones) {
+                    _mat4.identity();
+
+                    if (transform.meshAnimation) {
+                        uBones = uniforms.bones;
+                        bones = component.bones;
+                        i = uBones.length;
+                        while (i--) uBones[i].set(((bone = bones[i]) && bone.uniform) || _mat4); //_gl.uniformMatrix4fv(uBones[i].location, false, (bones[i] || _mat4).elements);
+                    } else {
+                        uBones = uniforms.bones;
+                        i = uBones.length;
+                        while (i--) uBones[i].set(_mat4); //_gl.uniformMatrix4fv(uBones[i].location, false, _mat4.elements);
+                    }
+                }
 
                 if (force && parameters.useLights && (length = lights.length)) {
                     var maxPointLights = parameters.maxPointLights,
@@ -1218,7 +1327,7 @@ define([
 
             function bindCustomUniforms(customUniforms, uniforms, materialName, materialUniforms, force) {
                 var i = customUniforms.length,
-                    customUniform, uniformValue, length, name, type, value, j;
+                    customUniform, uniformValue, length, name, value, j;
 
                 while (i--) {
                     customUniform = customUniforms[i];
@@ -1257,6 +1366,7 @@ define([
                         "precision " + _precision + " float;",
                         "precision " + _precision + " int;",
 
+                        useFog ? "#define USE_FOG" : "",
                         useLights ? "#define USE_LIGHTS" : "",
                         useShadows ? "#define USE_SHADOWS" : "",
                         useBones ? "#define USE_SKINNING" : "",
@@ -1288,9 +1398,9 @@ define([
                         parameters.colors ? "attribute vec3 color;" : "",
                         emitter ? "attribute vec3 data;" : "",
 
-                        useBones ? "attribute int boneIndex;" : "",
+                        useBones ? "attribute vec3 boneIndex;" : "",
                         useBones ? "attribute vec3 boneWeight;" : "",
-                        useBones ? "uniform mat4 bone[" + parameters.bones + "];" : ""
+                        useBones ? "uniform mat4 bones[" + parameters.bones + "];" : ""
                     ].join("\n"),
 
                     fragmentPrefix = [
@@ -1435,18 +1545,6 @@ define([
                 addEvent(_element, "webglcontextlost", handleWebGLContextLost, this);
                 addEvent(_element, "webglcontextrestored", handleWebGLContextRestored, this);
 
-                createBuffer(_spriteBuffers, "_webglVertexBuffer", new Float32Array([-0.5, 0.5, 0.0, -0.5, -0.5, 0.0,
-                    0.5, 0.5, 0.0,
-                    0.5, -0.5, 0.0
-                ]));
-                createBuffer(_spriteBuffers, "_webglUvBuffer", new Float32Array([
-                    0, 0,
-                    0, 1,
-                    1, 0,
-                    1, 1
-                ]));
-                _spriteBuffers._webglVertexCount = 4;
-
                 return this;
             };
 
@@ -1498,11 +1596,12 @@ define([
                 _lastProgram = undefined;
 
                 _shaders = {};
-                _spriteBuffers = {}
+                _spriteBuffers = undefined;
                 _lastBuffers = undefined;
                 _lastCamera = undefined;
                 _lastResizeFn = undefined;
                 _lastScene = undefined;
+                _lastGUI = undefined;
 
                 return this;
             };
@@ -1578,6 +1677,34 @@ define([
                 obj[name] = obj[name] || _gl.createBuffer();
                 _gl.bindBuffer(_gl.ARRAY_BUFFER, obj[name]);
                 _gl.bufferData(_gl.ARRAY_BUFFER, array, _gl.STATIC_DRAW);
+            }
+
+            function createSprite() {
+                _spriteBuffers = {};
+
+                createBuffer(_spriteBuffers, "_webglVertexBuffer", new Float32Array([-0.5, 0.5, 0.0, -0.5, -0.5, 0.0,
+                    0.5, 0.5, 0.0,
+                    0.5, -0.5, 0.0
+                ]));
+                createBuffer(_spriteBuffers, "_webglUvBuffer", new Float32Array([
+                    0.0, 0.0,
+                    0.0, 1.0,
+                    1.0, 0.0,
+                    1.0, 1.0
+                ]));
+                createBuffer(_spriteBuffers, "_webglNormalBuffer", new Float32Array([
+                    0.0, 0.0, 1.0,
+                    0.0, 0.0, 1.0,
+                    0.0, 0.0, 1.0,
+                    0.0, 0.0, 1.0,
+                ]));
+                createBuffer(_spriteBuffers, "_webglTangentBuffer", new Float32Array([
+                    0.0, 0.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+                    1.0, 0.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+                ]));
+                _spriteBuffers._webglVertexCount = 4;
             }
 
             function setViewport(x, y, width, height) {
@@ -1784,7 +1911,7 @@ define([
             this.disableAttributes = disableAttributes;
 
 
-            function setTexture(location, texture, force) {
+            function setTexture(location, texture) {
                 if (!texture || !texture.raw) return;
                 var index, glTexture;
 
@@ -1876,7 +2003,7 @@ define([
             }
 
 
-            function setTextureCube(location, cubeTexture, force) {
+            function setTextureCube(location, cubeTexture) {
                 if (!cubeTexture || !cubeTexture.raw) return;
                 var glTexture = cubeTexture._webgl,
                     index;
@@ -1914,8 +2041,7 @@ define([
                     filter = cubeTexture.filter,
                     format = cubeTexture.format,
                     wrap = cubeTexture.wrap,
-                    WRAP, MAG_FILTER, MIN_FILTER, FORMAT,
-                    current, i;
+                    WRAP, MAG_FILTER, MIN_FILTER, FORMAT;
 
                 if (filter === FilterMode.None) {
                     MAG_FILTER = _gl.NEAREST;
@@ -2095,15 +2221,13 @@ define([
                     throw e
                 }
 
-                if (_gl.getShaderPrecisionFormat == undefined) {
-                    _gl.getShaderPrecisionFormat = function() {
-                        return {
-                            rangeMin: 1,
-                            rangeMax: 1,
-                            precision: 1
-                        };
-                    }
-                }
+                _gl.getShaderPrecisionFormat || (_gl.getShaderPrecisionFormat = function() {
+                    return {
+                        rangeMin: 1,
+                        rangeMax: 1,
+                        precision: 1
+                    };
+                });
 
                 getExtensions();
                 getGPUInfo();
@@ -2125,6 +2249,7 @@ define([
 
                 setCullFace(CullFace.Back);
                 setBlending(Blending.Default);
+                setLineWidth(1);
 
                 setViewport();
             }
@@ -2415,15 +2540,15 @@ define([
             function UniformTexture(location) {
                 this.location = location;
             }
-            UniformTexture.prototype.set = function(value, force) {
-                setTexture(this.location, value, force);
+            UniformTexture.prototype.set = function(value) {
+                setTexture(this.location, value);
             };
 
             function UniformTextureCube(location) {
                 this.location = location;
             }
-            UniformTextureCube.prototype.set = function(value, force) {
-                setTextureCube(this.location, value, force);
+            UniformTextureCube.prototype.set = function(value) {
+                setTextureCube(this.location, value);
             };
         }
 

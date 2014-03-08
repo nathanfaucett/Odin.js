@@ -13,8 +13,6 @@ define([
         "use strict";
 
 
-        var defineProperty = Object.defineProperty;
-
         /**
          * Scenes manage GameObjects and their Components
          * @class Odin.Scene
@@ -62,11 +60,22 @@ define([
 
 
         Scene.prototype.init = function() {
+            var gameObjects = this.gameObjects,
+                i;
+
+            this.world && this.world.init();
+
+            i = gameObjects.length;
+            while (i--) gameObjects[i].emit("init");
+        };
+
+
+        Scene.prototype.start = function() {
             var types = this._componentTypes,
                 gameObjects = this.gameObjects,
                 components, component, i, j;
 
-            this.world && this.world.init();
+            this.world && this.world.start();
 
             i = types.length;
             while (i--) {
@@ -75,13 +84,13 @@ define([
                 while (j--) {
                     component = components[j];
 
-                    component.emit("init");
-                    component.init();
+                    component.start();
+                    component.emit("start");
                 }
             }
 
             i = gameObjects.length;
-            while (i--) gameObjects[i].emit("init");
+            while (i--) gameObjects[i].emit("start");
         };
 
 
@@ -215,7 +224,7 @@ define([
         };
 
 
-        function sortComponentTypes(a, b) {
+        function sortComponentTypes(a) {
 
             return (a[0] instanceof Transform || a[0] instanceof Transform2D) ? 1 : -1;
         }

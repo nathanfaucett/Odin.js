@@ -199,8 +199,6 @@ define([
             while (i--) PARTICLE_POOL.removeObject(particles[i]);
             particles.length = 0;
 
-            this._webgl = {};
-
             return this;
         };
 

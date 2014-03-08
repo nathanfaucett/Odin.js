@@ -260,10 +260,8 @@ define([
         BaseGame.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
             var jsonScenes = json.scenes,
-                scenes = this.scenes,
                 scene, jsonScene,
-                i = jsonScenes.length,
-                index;
+                i = jsonScenes.length;
 
             while (i--) {
                 jsonScene = jsonScenes[i];

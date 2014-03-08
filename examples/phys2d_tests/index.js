@@ -125,7 +125,7 @@ require({
         var camera = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0, 0)
+                    position: new Vec2(0.0, 3.0)
                 }),
                 new Camera2D({
                     orthographicSize: 4
@@ -186,7 +186,7 @@ require({
         var segment2 = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0.0, 5.0)
+                    position: new Vec2(0.0, 15.0)
                 }),
                 new Sprite({
                     material: Assets.get("mat_player"),
@@ -292,14 +292,14 @@ require({
         }
 
 
-        game.on("init", function() {
+        game.on("start", function() {
             start();
         });
 
 
         AssetLoader.on("load", function() {
 
-            game.init();
+            game.start();
         }).load();
     }
 );

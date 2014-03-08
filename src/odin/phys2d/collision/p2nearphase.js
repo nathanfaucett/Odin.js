@@ -2,14 +2,13 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/class",
         "odin/base/object_pool",
         "odin/math/mathf",
         "odin/math/vec2",
         "odin/phys2d/p2enums",
         "odin/phys2d/constraints/p2contact"
     ],
-    function(Class, ObjectPool, Mathf, Vec2, P2Enums, P2Contact) {
+    function(ObjectPool, Mathf, Vec2, P2Enums, P2Contact) {
         "use strict";
 
 
@@ -132,13 +131,7 @@ define([
             );
         }
 
-        function P2Nearphase() {
-
-            Class.call(this);
-        }
-
-        Class.extend(P2Nearphase);
-
+        function P2Nearphase() {}
 
         P2Nearphase.CONTACT_POOL = CONTACT_POOL;
 
@@ -401,9 +394,6 @@ define([
                 bi = si._b,
                 bix = bi.x,
                 biy = bi.y,
-                ni = sj._normal,
-                nix = ni.x,
-                niy = ni.y,
                 ri = si.radius,
 
                 aj = sj._a,
@@ -412,9 +402,6 @@ define([
                 bj = sj._b,
                 bjx = bj.x,
                 bjy = bj.y,
-                nj = sj._normal,
-                njx = nj.x,
-                njy = nj.y,
                 rj = sj.radius,
                 d0, d1, d2, d3, mi, mj, m, s, t, ux, uy, vx, vy, amx, amy, bmx, bmy;
 

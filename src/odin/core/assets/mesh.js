@@ -38,10 +38,10 @@ define([
             this.dynamic = opts.dynamic != undefined ? !! opts.dynamic : false;
             this.useBones = opts.useBones != undefined ? !! opts.useBones : this.bones.length > 0 ? true : false;
 
+            this.animations = {};
+
             this.aabb = new AABB3;
             if (opts.vertices) this.aabb.fromPoints(this.vertices);
-
-            this._webgl = {};
 
             this.verticesNeedUpdate = true;
             this.normalsNeedUpdate = true;
@@ -64,8 +64,8 @@ define([
             this._webglUvBuffer = undefined;
             this._webglUv2Buffer = undefined;
 
-            this._webglBoneIndicesBuffer = undefined;
-            this._webglBoneWeightsBuffer = undefined;
+            this._webglBoneIndexBuffer = undefined;
+            this._webglBoneWeightBuffer = undefined;
 
             this._webglIndexBuffer = undefined;
             this._webglLineBuffer = undefined;
@@ -77,8 +77,8 @@ define([
             this._webglUvArray = undefined;
             this._webglUv2Array = undefined;
 
-            this._webglBoneIndicesArray = undefined;
-            this._webglBoneWeightsArray = undefined;
+            this._webglBoneIndexArray = undefined;
+            this._webglBoneWeightArray = undefined;
 
             this._webglIndexArray = undefined;
             this._webglLineArray = undefined;
@@ -242,11 +242,11 @@ define([
 
                 bone.bindPose.fromArray(item.bindPose);
 
-                bone.skinned = item.skinned;
+                bone.skinned = !! item.skinned;
 
-                bone.inheritPoosition = item.inheritPoosition;
-                bone.inheritRotation = item.inheritRotation;
-                bone.inheritScale = item.inheritScale;
+                bone.inheritPosition = !! item.inheritPoosition;
+                bone.inheritRotation = !! item.inheritRotation;
+                bone.inheritScale = !! item.inheritScale;
 
                 bones.push(bone);
             }
@@ -257,6 +257,8 @@ define([
 
             items = raw.boneIndices || EMPTY_ARRAY;
             for (i = 0, il = items.length; i < il; i++) boneIndices.push(items[i]);
+
+            this.animations = raw.animations;
 
             this.aabb.fromPoints(this.vertices);
 
@@ -600,6 +602,7 @@ define([
 
             mesh.calculateAABB();
             mesh.load = false;
+            if (opts.tangents) mesh.calculateTangents();
 
             return mesh;
         };
@@ -627,6 +630,7 @@ define([
 
             mesh.calculateAABB();
             mesh.load = false;
+            if (opts.tangents) mesh.calculateTangents();
 
             return mesh;
         };
@@ -636,8 +640,6 @@ define([
             opts || (opts = {});
             var w = opts.width || 1,
                 h = opts.height || 1,
-                hw = w * 0.5,
-                hh = h * 0.5,
                 ws = (opts.widthSegments || 1),
                 hs = (opts.heightSegments || 1),
                 mesh = new Mesh(opts);
@@ -646,6 +648,7 @@ define([
 
             mesh.calculateAABB();
             mesh.load = false;
+            if (opts.tangents) mesh.calculateTangents();
 
             return mesh;
         };

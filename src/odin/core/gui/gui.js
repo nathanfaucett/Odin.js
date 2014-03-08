@@ -10,9 +10,6 @@ define([
         "use strict";
 
 
-        var defineProperty = Object.defineProperty;
-
-
         function GUI(opts) {
             opts || (opts = {});
 

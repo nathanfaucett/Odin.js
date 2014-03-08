@@ -167,7 +167,7 @@ require({
                     position: new Vec3(0, 0, 1)
                 }),
                 new Sprite({
-                    material: Assets.get("mat_sprite"),
+                    material: Assets.get("mat_default"),
                     x: 0,
                     y: 0,
                     w: 1024,

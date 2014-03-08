@@ -10,7 +10,6 @@ require({
 
         var game = new Odin.Game({
             debug: true,
-            forceCanvas: false,
             width: 960,
             height: 640,
             renderer: {
@@ -44,8 +43,7 @@ require({
 
         Odin.AssetLoader.on("load", function() {
 
-            game.init();
-            startLevel();
+            game.on("start", startLevel).start();
         }).load();
     }
 );

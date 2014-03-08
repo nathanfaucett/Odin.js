@@ -56,6 +56,7 @@ define(
             this.GUIText = require("odin/core/components/gui_text");
             this.GUITexture = require("odin/core/components/gui_texture");
             this.Light = require("odin/core/components/light");
+            this.MeshAnimation = require("odin/core/components/mesh_animation");
             this.MeshFilter = require("odin/core/components/mesh_filter");
             this.OrbitControl = require("odin/core/components/orbit_control");
             this.RigidBody2D = require("odin/core/components/rigid_body_2d");

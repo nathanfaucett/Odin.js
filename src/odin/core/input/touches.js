@@ -36,7 +36,7 @@ define([
         };
 
 
-        Touches.prototype.end = function(index, targetTouch) {
+        Touches.prototype.end = function(index) {
             var touch = this[index];
 
             TOUCH_POOL.removeObject(touch);

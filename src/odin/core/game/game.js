@@ -56,6 +56,15 @@ define([
         };
 
 
+        Game.prototype.start = function() {
+
+            this.init();
+            this.emit("start");
+
+            return this;
+        };
+
+
         Game.prototype.setGUI = function(gui) {
             if (typeof(gui) === "string") {
                 gui = this._guiNameHash[gui];
@@ -70,7 +79,12 @@ define([
                 this.gui = gui;
 
                 gui.game = this;
+
                 gui.init();
+                gui.emit("init");
+
+                gui.start();
+                gui.emit("start");
 
                 this.emit("setGUI", this.gui);
             } else {
@@ -95,7 +109,12 @@ define([
                 this.scene = scene;
 
                 scene.game = this;
+
                 scene.init();
+                scene.emit("init");
+
+                scene.start();
+                scene.emit("start");
 
                 this.emit("setScene", this.scene);
             } else {
@@ -156,8 +175,8 @@ define([
                 renderer.preRender(gui, scene, camera);
 
                 if (scene) {
-                    scene.emit("update");
                     scene.update();
+                    scene.emit("update");
 
                     renderer.render(scene, camera);
                 }
@@ -168,8 +187,8 @@ define([
                     gui.invWidth = camera.invWidth;
                     gui.invHeight = camera.invHeight;
 
-                    gui.emit("update");
                     gui.update();
+                    gui.emit("update");
 
                     renderer.renderGUI(gui, camera);
                 }
