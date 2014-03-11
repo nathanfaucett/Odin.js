@@ -42,6 +42,7 @@ define([
         }
 
         Component.extend(Transform);
+        Transform.order = -1;
 
 
         Transform.prototype.copy = function(other) {
@@ -165,7 +166,7 @@ define([
                 root, depth;
 
             if (index === -1) {
-                if (child.parent) child.parent.remove(child);
+                if (child.parent) child.parent.removeChild(child);
 
                 child.parent = this;
                 children.push(child);
@@ -225,17 +226,18 @@ define([
 
 
         Transform.prototype.removeChildren = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeChild(arguments[i]);
+            while (i--) this.removeChild(arguments[i]);
             return this;
         };
 
 
         Transform.prototype.detachChildren = function() {
             var children = this.children,
-                i;
+                i = children.length;
 
-            for (i = children.length; i--;) this.removeChild(children[i]);
+            while (i--) this.removeChild(children[i]);
             return this;
         };
 
@@ -243,6 +245,22 @@ define([
         Transform.prototype.hasChild = function(child) {
 
             return !!~this.children.indexOf(child);
+        };
+
+
+        Transform.prototype.find = function(name) {
+            var children = this.children,
+                child,
+                i = children.length;
+
+            while (i--) {
+                child = children[i];
+
+                if (child.gameObject.name === name) return child.gameObject;
+                if ((child = child.find(name))) return child;
+            }
+
+            return undefined;
         };
 
 

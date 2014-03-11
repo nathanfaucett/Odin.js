@@ -2,22 +2,14 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/time",
-        "odin/math/mathf",
         "odin/math/mat4",
-        "odin/math/vec3",
-        "odin/math/quat",
-        "odin/core/assets/assets",
         "odin/core/components/component",
-        "odin/core/enums"
     ],
-    function(Time, Mathf, Mat4, Vec3, Quat, Assets, Component, Enums) {
+    function(Mat4, Component) {
         "use strict";
 
 
-        var clamp01 = Mathf.clamp01,
-            abs = Math.abs,
-            WrapMode = Enums.WrapMode;
+        var UNKNOWN = 0;
 
 
         function Bone(opts) {
@@ -25,16 +17,16 @@ define([
 
             Component.call(this, "Bone", opts);
 
-            this.parentIndex = parentIndex != undefined ? parentIndex : -1;
-            this.name = name != undefined ? name : "Bone_" + UNKNOWN++;
+            this.parentIndex = opts.parentIndex != undefined ? opts.parentIndex : -1;
+            this.name = opts.name != undefined ? opts.name : "Bone_" + UNKNOWN++;
 
-            this.skinned = false;
-            this.bindPose = new Mat4;
+            this.skinned = opts.skinned != undefined ? opts.skinned : false;
+            this.bindPose = opts.bindPose != undefined ? opts.bindPose : new Mat4;
             this.uniform = new Mat4;
 
-            this.inheritPosition = true;
-            this.inheritRotation = true;
-            this.inheritScale = true;
+            this.inheritPosition = opts.inheritPosition != undefined ? opts.inheritPosition : true;
+            this.inheritRotation = opts.inheritRotation != undefined ? opts.inheritRotation : true;
+            this.inheritScale = opts.inheritScale != undefined ? opts.inheritScale : true;
         }
 
         Component.extend(Bone);

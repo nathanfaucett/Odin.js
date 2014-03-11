@@ -21,7 +21,7 @@ define([
         Odin.Component.extend(Bullet);
 
 
-        Bullet.prototype.init = function() {
+        Bullet.prototype.start = function() {
 
             this.rigidBody2d.on("collide", this.onCollide, this.gameObject);
         };

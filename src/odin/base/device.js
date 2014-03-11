@@ -26,9 +26,9 @@ define(
             this.webgl = (function() {
                 var canvas = document.createElement("canvas"),
                     names = ["3d", "moz-webgl", "experimental-webgl", "webkit-3d", "webgl"],
-                    has, i;
+                    has, i = names.length;
 
-                for (i = names.length; i--;) {
+                while (i--) {
                     has = !! canvas.getContext(names[i]);
                     if (has) break;
                 }

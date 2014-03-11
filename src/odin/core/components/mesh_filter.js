@@ -3,9 +3,11 @@ if (typeof define !== "function") {
 }
 define([
         "odin/core/assets/assets",
-        "odin/core/components/component"
+        "odin/core/game_object",
+        "odin/core/components/component",
+        "odin/core/components/bone"
     ],
-    function(Assets, Component) {
+    function(Assets, GameObject, Component, Bone) {
         "use strict";
 
 
@@ -33,7 +35,7 @@ define([
             this.material = opts.material != undefined ? opts.material : undefined;
 
 
-            this.bones = [];
+            this._bones = [];
             this._webglMeshInitted = false;
         }
 
@@ -45,6 +47,7 @@ define([
             this.mesh = other.mesh;
             this.material = other.material;
 
+            this._bones.length = 0;
             this._webglMeshInitted = false;
 
             return this;
@@ -52,11 +55,44 @@ define([
 
 
         MeshFilter.prototype.init = function() {
-            var bones = this.bones,
+            var transform = this.transform,
+                bones = this._bones,
                 meshBones = this.mesh.bones,
-                i = meshBones.length;
+                subGameObject, meshBone, bone, parent,
+                i = 0,
+                il = meshBones.length;
 
-            while (i--) bones[i] = meshBones[i].clone();
+            if (!il) return;
+
+            for (; i < il; i++) {
+                meshBone = meshBones[i];
+
+                subGameObject = new GameObject().addComponents(
+                    new Bone({
+                        name: meshBone.name,
+                        parentIndex: meshBone.parentIndex,
+
+                        skinned: meshBone.skinned,
+                        bindPose: meshBone.bindPose
+                    }),
+                    new Transform({
+                        position: meshBone.position.clone()
+                    })
+                );
+                subGameObject.name = meshBone.name;
+                bones[i] = subGameObject.bone;
+            }
+
+            transform.addChild(bones[0].transform);
+
+            i = meshBones.length;
+            while (i--) {
+                bone = bones[i];
+                parent = bones[bone.parentIndex];
+                if (!parent) continue;
+
+                parent.transform.addChild(bone.transform);
+            }
         };
 
 
@@ -66,7 +102,7 @@ define([
             this.mesh = undefined;
             this.material = undefined;
 
-            this.bones.length = 0;
+            this._bones.length = 0;
             this._webglMeshInitted = false;
 
             return this;
@@ -95,7 +131,7 @@ define([
             this.mesh = json.mesh ? Assets.get(json.mesh) : undefined;
             this.material = json.material ? Assets.get(json.material) : undefined;
 
-            this.bones.length = 0;
+            this._bones.length = 0;
             this._webglMeshInitted = false;
 
             return this;

@@ -62,7 +62,7 @@ define([
         };
 
 
-        Enemy.prototype.init = function() {
+        Enemy.prototype.start = function() {
 
             this.rigidBody2d.on("collide", this.onCollide, this);
             this.rigidBody2d.on("colliding", this.onColliding, this);

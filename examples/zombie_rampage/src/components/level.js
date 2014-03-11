@@ -58,7 +58,7 @@ define([
         Odin.Component.extend(Level);
 
 
-        Level.prototype.init = function() {
+        Level.prototype.start = function() {
             var instance = player.create();
 
             instance.on("remove", this.onRemovePlayer, this);

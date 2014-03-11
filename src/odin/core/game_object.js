@@ -22,6 +22,8 @@ define([
 
             Class.call(this);
 
+            this.name = opts.name != undefined ? opts.name : "GameObject_" + this._id;
+
             this.scene = undefined;
 
             this.tags = [];
@@ -322,6 +324,26 @@ define([
         };
 
 
+        GameObject.prototype.find = function(name) {
+            var transform = this.transform || this.transform2d,
+                children, child, i;
+
+            if (!transform) return undefined;
+
+            children = transform.children;
+            i = children.length;
+
+            while (i--) {
+                child = children[i];
+
+                if (child.gameObject.name === name) return child.gameObject;
+                if ((child = child.find(name))) return child;
+            }
+
+            return undefined;
+        };
+
+
         GameObject.prototype.findComponentById = function(id) {
 
             return this._componentHash[id];
@@ -349,6 +371,8 @@ define([
             i = tags.length;
             while (i--) jsonTags[i] = tags[i];
 
+            json.name = this.name;
+
             return json;
         };
 
@@ -375,6 +399,8 @@ define([
             while (i--) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
             }
+
+            this.name = json.name;
 
             return this;
         };

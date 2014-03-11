@@ -3,13 +3,13 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/core/assets/asset",
-        "odin/core/assets/bone",
+        "odin/core/assets/mesh_bone",
         "odin/math/vec2",
         "odin/math/vec3",
         "odin/math/vec4",
         "odin/math/color"
     ],
-    function(Asset, Bone, Vec2, Vec3, Vec4, Color) {
+    function(Asset, MeshBone, Vec2, Vec3, Vec4, Color) {
         "use strict";
 
 
@@ -64,8 +64,8 @@ define([
             this._webglUvBuffer = undefined;
             this._webglUv2Buffer = undefined;
 
-            this._webglBoneIndexBuffer = undefined;
-            this._webglBoneWeightBuffer = undefined;
+            this._webglMeshBoneIndexBuffer = undefined;
+            this._webglMeshBoneWeightBuffer = undefined;
 
             this._webglIndexBuffer = undefined;
             this._webglLineBuffer = undefined;
@@ -77,8 +77,8 @@ define([
             this._webglUvArray = undefined;
             this._webglUv2Array = undefined;
 
-            this._webglBoneIndexArray = undefined;
-            this._webglBoneWeightArray = undefined;
+            this._webglMeshBoneIndexArray = undefined;
+            this._webglMeshBoneWeightArray = undefined;
 
             this._webglIndexArray = undefined;
             this._webglLineArray = undefined;
@@ -109,11 +109,11 @@ define([
                 uvs2 = this.uvs2,
                 otherUv2s = other.uvs2,
                 bones = this.bones,
-                otherBones = other.bones,
+                otherMeshBones = other.bones,
                 boneIndices = this.boneIndices,
-                otherBoneIndices = other.boneIndices,
+                otherMeshBoneIndices = other.boneIndices,
                 boneWeights = this.boneWeights,
-                otherBoneWeights = other.boneWeights,
+                otherMeshBoneWeights = other.boneWeights,
                 i;
 
             vertices.length = otherVertices.length;
@@ -124,9 +124,9 @@ define([
             uvs.length = otherUvs.length;
             uvs2.length = otherUv2s.length;
 
-            bones.length = otherBones.length;
-            boneIndices.length = otherBoneIndices.length;
-            boneWeights.length = otherBoneWeights.length;
+            bones.length = otherMeshBones.length;
+            boneIndices.length = otherMeshBoneIndices.length;
+            boneWeights.length = otherMeshBoneWeights.length;
 
             for (i = otherVertices.length; i--;) vertices[i] = (vertices[i] || new Vec3).copy(otherVertices[i]);
             for (i = otherNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy(otherNormals[i]);
@@ -135,9 +135,9 @@ define([
             for (i = otherColors.length; i--;) colors[i] = (colors[i] || new Color).copy(otherColors[i]);
             for (i = otherUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).copy(otherUvs[i]);
             for (i = otherUv2s.length; i--;) uvs2[i] = (uvs2[i] || new Vec2).copy(otherUv2s[i]);
-            for (i = otherBones.length; i--;) bones[i] = (bones[i] || new Bone).copy(otherBones[i]);
-            for (i = otherBoneIndices.length; i--;) boneIndices[i] = otherBoneIndices[i];
-            for (i = otherBoneWeights.length; i--;) boneWeights[i] = otherBoneWeights[i];
+            for (i = otherMeshBones.length; i--;) bones[i] = (bones[i] || new MeshBone).copy(otherMeshBones[i]);
+            for (i = otherMeshBoneIndices.length; i--;) boneIndices[i] = otherMeshBoneIndices[i];
+            for (i = otherMeshBoneWeights.length; i--;) boneWeights[i] = otherMeshBoneWeights[i];
 
             this.dynamic = other.dynamic;
             this.useBones = other.useBones;
@@ -234,19 +234,11 @@ define([
             for (i = 0, il = items.length; i < il; i++) {
                 item = items[i];
 
-                bone = new Bone(item.parent, item.name);
+                bone = new MeshBone(item.parent, item.name);
 
                 bone.position.fromArray(item.position);
-                bone.rotation.fromArray(item.rotation);
-                bone.scale.fromArray(item.scale);
-
                 bone.bindPose.fromArray(item.bindPose);
-
                 bone.skinned = !! item.skinned;
-
-                bone.inheritPosition = !! item.inheritPoosition;
-                bone.inheritRotation = !! item.inheritRotation;
-                bone.inheritScale = !! item.inheritScale;
 
                 bones.push(bone);
             }
@@ -448,11 +440,11 @@ define([
                 uvs2 = this.uvs2,
                 jsonUv2s = json.uvs2 || (json.uvs2 = []),
                 bones = this.bones,
-                jsonBones = json.bones || (json.bones = []),
+                jsonMeshBones = json.bones || (json.bones = []),
                 boneIndices = this.boneIndices,
-                jsonBoneIndices = json.boneIndices || (json.boneIndices = []),
+                jsonMeshBoneIndices = json.boneIndices || (json.boneIndices = []),
                 boneWeights = this.boneWeights,
-                jsonBoneWeights = json.boneWeights || (json.boneWeights = []),
+                jsonMeshBoneWeights = json.boneWeights || (json.boneWeights = []),
                 i;
 
             jsonVertices.length = vertices.length;
@@ -463,9 +455,9 @@ define([
             jsonUvs.length = uvs.length;
             jsonUv2s.length = uvs2.length;
 
-            jsonBones.length = bones.length;
-            jsonBoneIndices.length = boneIndices.length;
-            jsonBoneWeights.length = boneWeights.length;
+            jsonMeshBones.length = bones.length;
+            jsonMeshBoneIndices.length = boneIndices.length;
+            jsonMeshBoneWeights.length = boneWeights.length;
 
             for (i = vertices.length; i--;) jsonVertices[i] = vertices[i].toJSON(jsonVertices[i]);
             for (i = normals.length; i--;) jsonNormals[i] = normals[i].toJSON(jsonNormals[i]);
@@ -474,9 +466,9 @@ define([
             for (i = colors.length; i--;) jsonColors[i] = colors[i].toJSON(jsonColors[i]);
             for (i = uvs.length; i--;) jsonUvs[i] = uvs[i].toJSON(jsonUvs[i]);
             for (i = uvs2.length; i--;) jsonUv2s[i] = uvs2[i].toJSON(jsonUv2s[i]);
-            for (i = bones.length; i--;) jsonBones[i] = bones[i].toJSON(jsonBones[i]);
-            for (i = boneIndices.length; i--;) boneIndices[i] = jsonBoneIndices[i];
-            for (i = boneWeights.length; i--;) boneWeights[i] = jsonBoneWeights[i];
+            for (i = bones.length; i--;) jsonMeshBones[i] = bones[i].toJSON(jsonMeshBones[i]);
+            for (i = boneIndices.length; i--;) boneIndices[i] = jsonMeshBoneIndices[i];
+            for (i = boneWeights.length; i--;) boneWeights[i] = jsonMeshBoneWeights[i];
 
             json.dynamic = this.dynamic;
             json.useBones = this.useBones;
@@ -502,11 +494,11 @@ define([
                 uvs2 = this.uvs2,
                 jsonUv2s = json.uvs2,
                 bones = this.bones,
-                jsonBones = json.bones,
+                jsonMeshBones = json.bones,
                 boneIndices = this.boneIndices,
-                jsonBoneIndices = json.boneIndices,
+                jsonMeshBoneIndices = json.boneIndices,
                 boneWeights = this.boneWeights,
-                jsonBoneWeights = json.boneWeights,
+                jsonMeshBoneWeights = json.boneWeights,
                 i;
 
             vertices.length = jsonVertices.length;
@@ -517,9 +509,9 @@ define([
             uvs.length = jsonUvs.length;
             uvs2.length = jsonUv2s.length;
 
-            bones.length = jsonBones.length;
-            boneIndices.length = jsonBoneIndices.length;
-            boneWeights.length = jsonBoneWeights.length;
+            bones.length = jsonMeshBones.length;
+            boneIndices.length = jsonMeshBoneIndices.length;
+            boneWeights.length = jsonMeshBoneWeights.length;
 
             for (i = jsonVertices.length; i--;) vertices[i] = (vertices[i] || new Vec3).copy(jsonVertices[i]);
             for (i = jsonNormals.length; i--;) normals[i] = (normals[i] || new Vec3).copy.fromJSON(jsonNormals[i]);
@@ -528,9 +520,9 @@ define([
             for (i = jsonColors.length; i--;) colors[i] = (colors[i] || new Color).fromJSON(jsonColors[i]);
             for (i = jsonUvs.length; i--;) uvs[i] = (uvs[i] || new Vec2).fromJSON(jsonUvs[i]);
             for (i = jsonUv2s.length; i--;) uvs2[i] = (uvs2[i] || new Vec2).fromJSON(jsonUv2s[i]);
-            for (i = jsonBones.length; i--;) bones[i] = (bones[i] || new Bone).fromJSON(jsonBones[i]);
-            for (i = jsonBoneIndices.length; i--;) boneIndices[i] = jsonBoneIndices[i];
-            for (i = jsonBoneWeights.length; i--;) boneWeights[i] = jsonBoneWeights[i];
+            for (i = jsonMeshBones.length; i--;) bones[i] = (bones[i] || new MeshBone).fromJSON(jsonMeshBones[i]);
+            for (i = jsonMeshBoneIndices.length; i--;) boneIndices[i] = jsonMeshBoneIndices[i];
+            for (i = jsonMeshBoneWeights.length; i--;) boneWeights[i] = jsonMeshBoneWeights[i];
 
             this.dynamic = json.dynamic;
             this.useBones = json.useBones;
@@ -719,7 +711,7 @@ define([
         }
 
 
-        Mesh.Bone = Bone;
+        Mesh.MeshBone = MeshBone;
 
 
         return Mesh;

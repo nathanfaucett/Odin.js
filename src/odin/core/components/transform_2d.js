@@ -43,6 +43,7 @@ define([
         }
 
         Component.extend(Transform2D);
+        Transform2D.order = -1;
 
 
         Transform2D.prototype.copy = function(other) {
@@ -231,6 +232,28 @@ define([
 
             for (i = children.length; i--;) this.removeChild(children[i]);
             return this;
+        };
+
+
+        Transform2D.prototype.hasChild = function(child) {
+
+            return !!~this.children.indexOf(child);
+        };
+
+
+        Transform2D.prototype.find = function(name) {
+            var children = this.children,
+                child,
+                i = children.length;
+
+            while (i--) {
+                child = children[i];
+
+                if (child.gameObject.name === name) return child;
+                if ((child = child.find(name))) return child;
+            }
+
+            return undefined;
         };
 
 

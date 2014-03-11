@@ -41,11 +41,24 @@ require({
             Mesh.Sphere({
                 name: "mesh_sphere"
             }),
+            Mesh.Sphere({
+                name: "mesh_smallSphere",
+                radius: 0.1
+            }),
+            new Material({
+                name: "mat_wireframe",
+
+                wireframe: true,
+                wireframeLineWidth: 1,
+
+                uniforms: {
+                    diffuseMap: Assets.get("tex_marine_spec")
+                },
+
+                shader: Assets.get("shader_unlit")
+            }),
             new Material({
                 name: "mat_default",
-
-                wireframe: false,
-                wireframeLineWidth: 1,
 
                 uniforms: {
                     diffuseMap: Assets.get("tex_marine_spec")
@@ -74,13 +87,14 @@ require({
             tag: "Camera"
         });
         finger = new GameObject({
+            name: "finger",
             components: [
                 new Transform({
                     position: new Vec3(0, 0, 0)
                 }),
                 new MeshFilter({
                     mesh: Assets.get("mesh_finger"),
-                    material: Assets.get("mat_default")
+                    material: Assets.get("mat_wireframe")
                 }),
                 new MeshAnimation
             ],
@@ -96,8 +110,7 @@ require({
                 new MeshFilter({
                     mesh: Assets.get("mesh_sphere"),
                     material: Assets.get("mat_default")
-                }),
-                new MeshAnimation
+                })
             ],
             tags: [
                 "Sphere"
@@ -112,12 +125,31 @@ require({
             game.setCamera(game.scene.findByTagFirst("Camera"));
 
             var finger = game.scene.findByTagFirst("Mesh"),
-                sphere = game.scene.findByTagFirst("Sphere");
+                sphere = game.scene.findByTagFirst("Sphere"),
+                camera = game.scene.findByTagFirst("Camera");
 
             finger.meshAnimation.play("idle");
+            finger.find("finger03").transform.addChild(sphere.transform);
+            sphere.transform.position.z = 1;
 
-            sphere.transform.position.y = 1;
-            sphere.transform.parent = finger.meshFilter.bones[3];
+            finger.find("root").addComponent(new MeshFilter({
+                mesh: Assets.get("mesh_smallSphere"),
+                material: Assets.get("mat_default")
+            }));
+            finger.find("finger01").addComponent(new MeshFilter({
+                mesh: Assets.get("mesh_smallSphere"),
+                material: Assets.get("mat_default")
+            }));
+            finger.find("finger02").addComponent(new MeshFilter({
+                mesh: Assets.get("mesh_smallSphere"),
+                material: Assets.get("mat_default")
+            }));
+            finger.find("finger03").addComponent(new MeshFilter({
+                mesh: Assets.get("mesh_smallSphere"),
+                material: Assets.get("mat_default")
+            }));
+
+            console.log(finger);
         }
 
         function restart() {

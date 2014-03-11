@@ -87,7 +87,8 @@ define(
                 i;
 
             if (!type) {
-                for (i in thisEvents) thisEvents[i].length = 0;
+                for (i in thisEvents)
+                    if ((events = thisEvents[i])) events.length = 0;
                 return this;
             }
 
@@ -98,8 +99,9 @@ define(
                 events.length = 0;
             } else {
                 ctx = ctx || this;
+                i = events.length;
 
-                for (i = events.length; i--;) {
+                while (i--) {
                     event = events[i];
 
                     if (event.listener === listener && event.ctx === ctx) {
@@ -128,25 +130,29 @@ define(
             length = arguments.length;
 
             if (length === 1) {
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.call(event.ctx);
                 }
             } else if (length === 2) {
                 a1 = arguments[1];
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.call(event.ctx, a1);
                 }
             } else if (length === 3) {
                 a1 = arguments[1];
                 a2 = arguments[2];
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
                 }
             } else if (length === 4) {
                 a1 = arguments[1];
                 a2 = arguments[2];
                 a3 = arguments[3];
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
                 }
             } else if (length === 5) {
@@ -154,12 +160,14 @@ define(
                 a2 = arguments[2];
                 a3 = arguments[3];
                 a4 = arguments[4];
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
                 }
             } else {
                 shift.apply(arguments);
-                for (i = events.length; i--;) {
+                i = events.length;
+                while (i--) {
                     if ((event = events[i])) event.listener.apply(event.ctx, arguments);
                 }
             }

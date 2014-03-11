@@ -70,7 +70,7 @@ define([
                 return this;
             }
 
-            this.gameObject.removeComponent(this, true);
+            this.gameObject.removeComponent(this);
             this.emit("destroy");
 
             this.clear();

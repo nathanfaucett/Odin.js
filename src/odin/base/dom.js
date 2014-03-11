@@ -24,13 +24,13 @@ define(
 
         Dom.prototype.addEvent = function(obj, name, callback, ctx) {
             var names = name.split(SPLITER),
-                i,
+                i = names.length,
                 scope = ctx || obj,
                 afn = function(e) {
                     callback.call(scope, e || window.event);
                 };
 
-            for (i = names.length; i--;) {
+            while (i--) {
                 name = names[i];
 
                 if (obj.attachEvent) {
@@ -44,13 +44,13 @@ define(
 
         Dom.prototype.removeEvent = function(obj, name, callback, ctx) {
             var names = name.split(SPLITER),
-                i, il,
+                i = names.length,
                 scope = ctx || obj,
                 afn = function(e) {
                     if (callback) callback.call(scope, e || window.event);
                 };
 
-            for (i = 0, il = names.length; i < il; i++) {
+            while (i--) {
                 name = names[i];
 
                 if (obj.detachEvent) {
@@ -75,14 +75,14 @@ define(
 
 
         Dom.prototype.getWebGLContext = function(canvas, attributes) {
-            var key, gl, i;
+            var key, gl, i = WEBGL_NAMES.length;
 
             attributes || (attributes = {});
             for (key in WEBGL_ATTRIBUTES) {
                 if (attributes[key] == undefined) attributes[key] = WEBGL_ATTRIBUTES[key];
             }
 
-            for (i = WEBGL_NAMES.length; i--;) {
+            while (i--) {
 
                 try {
                     gl = canvas.getContext(WEBGL_NAMES[i], attributes);

@@ -76,7 +76,7 @@ define([
         Character.extend(Player);
 
 
-        Player.prototype.init = function() {
+        Player.prototype.start = function() {
 
             Input.on("mousewheel", this.onMouseWheel, this);
         };

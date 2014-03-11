@@ -44,7 +44,7 @@ define([
         };
 
 
-        RigidBody2D.prototype.init = function() {
+        RigidBody2D.prototype.start = function() {
             var body = this.body,
                 gameObject = this.gameObject,
                 transform = gameObject.transform,

@@ -36,6 +36,14 @@ def mat4_string( m ):
 		round(m[0][3], 15), round(m[1][3], 15), round(m[2][3], 15), round(m[3][3], 15)
 	)
 
+def mat4_string_transposed( m ):
+	return MAT4X4 % (
+		round(m[0][0], 15), round(m[0][1], 15), round(m[0][2], 15), round(m[0][3], 15),
+		round(m[1][0], 15), round(m[1][1], 15), round(m[1][2], 15), round(m[1][3], 15),
+		round(m[2][0], 15), round(m[2][1], 15), round(m[2][2], 15), round(m[2][3], 15),
+		round(m[3][0], 15), round(m[3][1], 15), round(m[3][2], 15), round(m[3][3], 15)
+	)
+
 def get_armature():
 	if len(bpy.data.armatures) == 0:
 		print("Warning: no armatures in the scene")
@@ -49,18 +57,24 @@ def get_armature():
 
 	print("Warning: no node of type 'ARMATURE' in the scene")
 	return None, None
+	
 
 def get_action_state( frame, action, bone, armatureObject ):
-	
 	armatureObject.animation_data.action = bpy.data.actions[ action.name ]
-	bpy.context.scene.frame_set( frame );
+	bpy.context.scene.frame_set( frame )
 	
 	bonePose = armatureObject.pose.bones[ bone.name ]
-	boneMatrix = bonePose.matrix
+	pos, rot, scl = (bonePose.matrix).decompose()
 	
-	pos, rot, scl =  boneMatrix.decompose()
-	rot.normalize()
-	
+	if bone.parent != None:
+		pos = bonePose.parent.matrix.inverted() * pos
+		rot = bonePose.parent.matrix.inverted().to_quaternion() * rot
+	else:
+		pos = bone.matrix_local.inverted() * pos
+		rot = bone.matrix_local.inverted().to_quaternion() * rot
+
+	pos.y, pos.z = pos.z, pos.y
+
 	return pos, rot, scl
 	
 	
@@ -100,9 +114,7 @@ TEMPLATE_BONE = """\
 	"skinned": %(skinned)s,
 	"bindPose": %(bindPose)s,
 	
-	"position": [%(position)s],
-	"rotation": [%(rotation)s],
-	"scale": [1,1,1]
+	"position": [%(position)s]
 }
 """
 
@@ -120,8 +132,11 @@ def get_animation():
 	
 	fps = bpy.data.scenes[0].render.fps
 	armature, armatureObject = get_armature()
+	if armature is None or armatureObject is None:
+		return ""
+
 	animations_string = ""
-	
+
 	count = -1
 	action_count = len( bpy.data.actions ) - 1
 	
@@ -217,7 +232,7 @@ def get_mesh_string( obj ):
 			colors.append( data.color3.b )
 	
 	if( len( bpy.data.armatures ) > 0 ):
-		armature = bpy.data.armatures[0]
+		armature, armatureObject = get_armature()
 		
 		for face in obj.data.polygons:
 			vertices_in_face = face.vertices[:]
@@ -263,12 +278,12 @@ def get_mesh_string( obj ):
 			weight = 0
 			skinned = "0"
 			name = bone.name
-			pos = bone.head
-			bindPose = bone.matrix_local.inverted()
-			rot = bindPose.to_quaternion()
+			pos = bone.head_local.copy()
+			bindPose = bone.matrix_local * mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
 			
 			if bone.parent != None:
 				parent_index = i = 0
+				pos -= bone.parent.head_local
 				
 				for parent in armature.bones:
 					if parent.name == bone.parent.name:
@@ -288,9 +303,8 @@ def get_mesh_string( obj ):
 				"parent": parent_index,
 				"name": name,
 				"skinned": skinned,
-				"bindPose": mat4_string(bindPose),
-				"position": ", ".join([ float_str(pos.x), float_str(pos.y), float_str(pos.z) ]),
-				"rotation": ", ".join([ float_str(rot.x), float_str(rot.y), float_str(rot.z), float_str(rot.w) ])
+				"bindPose": mat4_string(bindPose.inverted()),
+				"position": ", ".join([ float_str(pos.x), float_str(pos.y), float_str(pos.z) ])
 			})
 		
 	return TEMPLATE_FILE % {
@@ -305,11 +319,9 @@ def get_mesh_string( obj ):
 		"animations": get_animation()
 	}
 
-
 def export_mesh( obj, filepath ):
 	
-	text = get_mesh_string( obj )
-	write_file( filepath, text )
+	write_file( filepath, get_mesh_string( obj ) )
 	
 	print("writing", filepath, "done")
 

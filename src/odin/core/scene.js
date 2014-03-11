@@ -48,12 +48,12 @@ define([
 
         Scene.prototype.copy = function(other) {
             var otherGameObjects = other.gameObjects,
-                i;
+                i = otherGameObjects.length;
 
             this.clear();
             this.name = other.name + "." + this._id;
 
-            for (i = otherGameObjects.length; i--;) this.addGameObject(otherGameObjects[i].clone());
+            while (i--) this.addGameObject(otherGameObjects[i].clone());
 
             return this;
         };
@@ -115,10 +115,10 @@ define([
 
         Scene.prototype.clear = function() {
             var gameObjects = this.gameObjects,
-                i;
+                i = gameObjects.length;
 
             this.world = undefined;
-            for (i = gameObjects.length; i--;) this.removeGameObject(gameObjects[i], true);
+            while (i--) this.removeGameObject(gameObjects[i], true);
 
             this.off();
 
@@ -165,7 +165,7 @@ define([
             }
             var gameObjects = this.gameObjects,
                 index = gameObjects.indexOf(gameObject),
-                components,
+                components, transform, children, child,
                 i;
 
             if (index === -1) {
@@ -180,6 +180,16 @@ define([
                 components = gameObject.components;
                 i = components.length;
                 while (i--) this._addComponent(components[i]);
+
+                if ((transform = gameObject.transform || gameObject.transform2d)) {
+                    i = (children = transform.children).length;
+
+                    while (i--) {
+                        if ((child = children[i].gameObject) && !this.hasGameObject(child)) {
+                            this.addGameObject(child);
+                        }
+                    }
+                }
 
                 if (this.game) gameObject.emit("init");
                 this.emit("addGameObject", gameObject);
@@ -212,21 +222,26 @@ define([
 
             types.push(component);
             types.sort(component.sort);
+
             if (isNew) {
+                types.order = component.constructor.order || 0;
                 componentTypes.push(types);
                 componentTypes.sort(sortComponentTypes);
             }
 
-            if (this.game) component.init();
-
             this.emit("add" + type, component);
             this.emit("addComponent", component);
+
+            if (this.game) {
+                component.start();
+                component.emit("start");
+            }
         };
 
 
-        function sortComponentTypes(a) {
+        function sortComponentTypes(a, b) {
 
-            return (a[0] instanceof Transform || a[0] instanceof Transform2D) ? 1 : -1;
+            return b.order - a.order;
         }
 
 
@@ -237,7 +252,7 @@ define([
             }
             var gameObjects = this.gameObjects,
                 index = gameObjects.indexOf(gameObject),
-                components,
+                components, transform, children, child,
                 i;
 
             if (index !== -1) {
@@ -251,6 +266,16 @@ define([
                 components = gameObject.components;
                 i = components.length;
                 while (i--) this._removeComponent(components[i]);
+
+                if ((transform = gameObject.transform || gameObject.transform2d)) {
+                    i = (children = transform.children).length;
+
+                    while (i--) {
+                        if ((child = children[i].gameObject) && this.hasGameObject(child)) {
+                            this.removeGameObject(child);
+                        }
+                    }
+                }
 
                 this.emit("removeGameObject", gameObject);
                 gameObject.emit("remove", gameObject);
@@ -288,6 +313,12 @@ define([
             this.emit("removeComponent", component);
 
             component.clear();
+        };
+
+
+        Scene.prototype.hasGameObject = function(gameObject) {
+
+            return !!~this.gameObjects.indexOf(gameObject);
         };
 
 
@@ -337,6 +368,21 @@ define([
         Scene.prototype.findComponentByJSONId = function(id) {
 
             return this._componentJSONHash[id];
+        };
+
+
+        Scene.prototype.find = function(name) {
+            var gameObjects = this.gameObjects,
+                child, i = gameObjects.length;
+
+            while (i--) {
+                child = gameObjects[i];
+
+                if (child.name === name) return child;
+                if ((child = child.find(name))) return child;
+            }
+
+            return undefined;
         };
 
 

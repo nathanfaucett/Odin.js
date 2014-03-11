@@ -174,7 +174,7 @@ define([
                 i = meshFilters.length;
                 while (i--) {
                     meshFilter = meshFilters[i];
-                    transform = meshFilter.transform || sprite.transform2d;
+                    transform = meshFilter.transform || meshFilter.transform2d;
 
                     if (!transform) continue;
 
@@ -1143,7 +1143,7 @@ define([
                     attributes = this.attributes,
                     force = setProgram(program),
                     sprite = parameters.sprite,
-                    texture, w, h, i, length, particleSizeRatio, bone, bones, uBones;
+                    texture, w, h, i, length, particleSizeRatio, bone, boneTransform, bones, uBones;
 
                 if (sprite) {
                     if (_lastBuffers !== _spriteBuffers) {
@@ -1222,17 +1222,13 @@ define([
                 if (uniforms.ambient) uniforms.ambient.set(ambient, force);
 
                 if (parameters.useBones) {
-                    _mat4.identity();
-
-                    if (transform.meshAnimation) {
-                        uBones = uniforms.bones;
-                        bones = component.bones;
-                        i = uBones.length;
-                        while (i--) uBones[i].set(((bone = bones[i]) && bone.uniform) || _mat4); //_gl.uniformMatrix4fv(uBones[i].location, false, (bones[i] || _mat4).elements);
-                    } else {
-                        uBones = uniforms.bones;
-                        i = uBones.length;
-                        while (i--) uBones[i].set(_mat4); //_gl.uniformMatrix4fv(uBones[i].location, false, _mat4.elements);
+                    uBones = uniforms.bones;
+                    bones = component._bones;
+                    i = uBones.length;
+                    while (i--) {
+                        bone = bones[i];
+                        boneTransform = bone.transform;
+                        uBones[i].set(_mat4.mmul(bone.uniform, bone.bindPose));
                     }
                 }
 

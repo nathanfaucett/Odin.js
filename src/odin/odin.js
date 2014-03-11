@@ -41,7 +41,6 @@ define(
             this.AssetLoader = require("odin/core/assets/asset_loader");
             this.Assets = require("odin/core/assets/assets");
             this.AudioClip = require("odin/core/assets/audio_clip");
-            this.Bone = require("odin/core/assets/bone");
             this.Material = require("odin/core/assets/material");
             this.Mesh = require("odin/core/assets/mesh");
             this.SpriteSheet = require("odin/core/assets/sprite_sheet");

@@ -50,7 +50,7 @@ define([
         Odin.Component.extend(Character);
 
 
-        Character.prototype.init = function() {
+        Character.prototype.start = function() {
 
             this._deadTime = 0;
             this._hitTime = 0;

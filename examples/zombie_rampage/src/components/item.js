@@ -21,7 +21,7 @@ define([
         Odin.Component.extend(Item);
 
 
-        Item.prototype.init = function() {
+        Item.prototype.start = function() {
 
             this._life = 0;
             this.rigidBody2d.on("collide", this.onCollide, this);

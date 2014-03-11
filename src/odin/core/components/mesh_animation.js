@@ -36,10 +36,10 @@ define([
             this._order = 1;
 
             this.playing = this.sheet ? true : false;
-            this._bones = [];
         }
 
         Component.extend(MeshAnimation);
+        MeshAnimation.order = -2;
 
 
         MeshAnimation.prototype.copy = function(other) {
@@ -55,14 +55,6 @@ define([
             this._order = other._order;
 
             this.playing = other.playing;
-
-            return this;
-        };
-
-
-        MeshAnimation.prototype.clear = function() {
-
-            this._bones.length = 0;
 
             return this;
         };
@@ -105,23 +97,23 @@ define([
             ROTATION = new Quat,
             LAST_ROTATION = new Quat,
             SCALE = new Vec3,
-            LAST_SCALE = new Vec3;
+            LAST_SCALE = new Vec3,
+            MAT4 = new Mat4;
 
         MeshAnimation.prototype.update = function() {
             if (!this.playing) return;
             var meshFilter = this.meshFilter,
-                meshBones, mesh, bones, bone, bonesLength, alpha = 0.0,
-                boneCurrent, boneFrame, lastBoneFrame, uniform, matrix, pos, rot, scl, parent,
+                meshBones, mesh, bonesLength, alpha = 0.0,
+                boneCurrent, boneTransform, uniform, parentIndex, boneFrame, lastBoneFrame, pos, rot, scl,
                 current, dt, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, i, il;
 
             if (!meshFilter) return;
-            meshBones = meshFilter.bones;
+            meshBones = meshFilter._bones;
 
             mesh = meshFilter.mesh;
             if (!mesh) return;
 
-            bones = mesh.bones;
-            if (!(bonesLength = bones.length)) return;
+            if (!(bonesLength = meshBones.length)) return;
 
             current = mesh.animations[this.current];
             if (!current) return;
@@ -188,14 +180,14 @@ define([
             lastFrameState = current[lastFrame] || frameState;
 
             for (i = 0, il = bonesLength; i < il; i++) {
-                bone = bones[i];
+                boneCurrent = meshBones[i];
 
-                boneCurrent = meshBones[i] || (meshBones[i] = bone.clone());
-                matrix = boneCurrent.matrix;
+                boneTransform = boneCurrent.transform;
                 uniform = boneCurrent.uniform;
-                pos = boneCurrent.position;
-                rot = boneCurrent.rotation;
-                scl = boneCurrent.scale;
+                parentIndex = boneCurrent.parentIndex;
+                pos = boneTransform.position;
+                rot = boneTransform.rotation;
+                scl = boneTransform.scale;
 
                 boneFrame = frameState[i];
                 lastBoneFrame = lastFrameState[i];
@@ -231,16 +223,7 @@ define([
                 scl.vlerp(LAST_SCALE, SCALE, alpha);
 
                 uniform.compose(pos, scl, rot);
-                matrix.copy(uniform);
-                uniform.mmul(uniform, bone.bindPose);
-
-                parent = boneCurrent.parent;
-
-                if (parent) {
-                    boneCurrent.matrixWorld.mmul(parent.matrixWorld, matrix);
-                } else {
-                    boneCurrent.matrixWorld.copy(matrix);
-                }
+                if (parentIndex !== -1) uniform.mmul(meshBones[parentIndex].uniform, uniform);
             }
 
             this._frame = frame;

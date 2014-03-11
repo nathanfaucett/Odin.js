@@ -54,6 +54,14 @@ define([
 
 
         GUI.prototype.init = function() {
+            var guiObjects = this.guiObjects,
+                i;
+
+            for (i = guiObjects.length; i--;) guiObjects[i].emit("init");
+        };
+
+
+        GUI.prototype.start = function() {
             var types = this._componentTypes,
                 guiObjects = this.guiObjects,
                 components, component, i, j;
@@ -63,12 +71,12 @@ define([
                 for (j = components.length; j--;) {
                     component = components[j];
 
-                    component.emit("init");
-                    component.init();
+                    component.emit("start");
+                    component.start();
                 }
             }
 
-            for (i = guiObjects.length; i--;) guiObjects[i].emit("init");
+            for (i = guiObjects.length; i--;) guiObjects[i].emit("start");
         };
 
 

@@ -35,6 +35,11 @@ define([
         };
 
 
+        GUIComponent.prototype.start = function() {
+
+        };
+
+
         GUIComponent.prototype.update = function() {
 
         };
