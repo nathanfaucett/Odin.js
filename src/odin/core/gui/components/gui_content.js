@@ -22,9 +22,6 @@ define([
 
             this.style = opts.style instanceof GUIStyle ? opts.style : new GUIStyle(opts.style);
 
-            this.alpha = opts.alpha != undefined ? opts.alpha : 1;
-            this.z = opts.z != undefined ? opts.z : 0;
-
             this._down = false;
             this.needsUpdate = true;
         }
@@ -38,9 +35,6 @@ define([
             this.texture = other.texture;
 
             this.style.copy(other.style);
-
-            this.alpha = other.alpha;
-            this.z = other.z;
 
             return this;
         };
@@ -129,7 +123,7 @@ define([
 
         GUIContent.prototype.sort = function(a, b) {
 
-            return b.z - a.z;
+            return b.style.z - a.style.z;
         };
 
 
@@ -140,9 +134,6 @@ define([
             json.texture = this.texture ? this.texture.name : undefined;
 
             json.style = this.style.toJSON(json.style);
-
-            json.alpha = this.alpha;
-            json.z = this.z;
 
             return json;
         };
@@ -155,9 +146,6 @@ define([
             this.texture = json.texture ? Assets.get(json.texture) : undefined;
 
             this.style.fromJSON(json.style);
-
-            this.alpha = json.alpha;
-            this.z = json.z;
 
             return this;
         };

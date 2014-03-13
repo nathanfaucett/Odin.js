@@ -7,27 +7,35 @@ require({
 
         Odin.globalize();
 
+
+        function Test(opts) {
+
+            Component.call(this, opts);
+
+            this.camera = undefined;
+            this.finger = undefined;
+        }
+        Component.extend(Test);
+        Test.order = -2;
+
+
+        Test.prototype.start = function() {
+            var scene = this.gameObject.scene;
+
+            this.camera = scene.find("camera");
+            this.finger = scene.find("finger03");
+        };
+
+
+        Test.prototype.update = function() {
+
+            this.finger.transform.lookAt(this.camera.transform);
+        };
+
+
         Assets.addAssets(
             new ShaderLib.Unlit,
-            new ShaderLib.VertexLit,
-            new ShaderLib.Diffuse,
-            new ShaderLib.Specular,
-            new ShaderLib.NormalDiffuse,
-            new ShaderLib.NormalSpecular,
-            new ShaderLib.ParallaxDiffuse,
 
-            new ShaderLib.ParticleUnlit,
-
-            new ShaderLib.ReflectiveVertexLit,
-
-            new Texture({
-                name: "tex_marine_dif",
-                src: "../content/images/marine_dif_spec.png"
-            }),
-            new Texture({
-                name: "tex_marine_nor",
-                src: "../content/images/marine_nor.jpg"
-            }),
             new Texture({
                 name: "tex_marine_spec",
                 src: "../content/images/marine_spec.jpg"
@@ -49,7 +57,6 @@ require({
                 name: "mat_wireframe",
 
                 wireframe: true,
-                wireframeLineWidth: 1,
 
                 uniforms: {
                     diffuseMap: Assets.get("tex_marine_spec")
@@ -77,11 +84,12 @@ require({
         });
 
         var camera = new GameObject({
+            name: "camera",
             components: [
                 new Transform({
                     position: new Vec3(10, 10, 10)
                 }),
-                new Camera(),
+                new Camera,
                 new OrbitControl
             ],
             tag: "Camera"
@@ -96,6 +104,7 @@ require({
                     mesh: Assets.get("mesh_finger"),
                     material: Assets.get("mat_wireframe")
                 }),
+                new Test,
                 new MeshAnimation
             ],
             tags: [
@@ -130,7 +139,7 @@ require({
 
             finger.meshAnimation.play("idle");
             finger.find("finger03").transform.addChild(sphere.transform);
-            sphere.transform.position.z = 1;
+            sphere.transform.position.y = 1;
 
             finger.find("root").addComponent(new MeshFilter({
                 mesh: Assets.get("mesh_smallSphere"),
@@ -148,8 +157,6 @@ require({
                 mesh: Assets.get("mesh_smallSphere"),
                 material: Assets.get("mat_default")
             }));
-
-            console.log(finger);
         }
 
         function restart() {
@@ -158,6 +165,7 @@ require({
 
         AssetLoader.on("load", function() {
             var mesh = Assets.get("mesh_finger");
+            mesh.calculateTangents();
 
             game.on("start", start).start();
         }).load();

@@ -39,7 +39,7 @@ define([
         }
 
         Component.extend(MeshAnimation);
-        MeshAnimation.order = -2;
+        MeshAnimation.order = -Infinity;
 
 
         MeshAnimation.prototype.copy = function(other) {
@@ -105,7 +105,7 @@ define([
             var meshFilter = this.meshFilter,
                 meshBones, mesh, bonesLength, alpha = 0.0,
                 boneCurrent, boneTransform, uniform, parentIndex, boneFrame, lastBoneFrame, pos, rot, scl,
-                current, dt, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, i, il;
+                current, dt, count, length, order, frame, lastFrame, mode, frameState, lastFrameState, i;
 
             if (!meshFilter) return;
             meshBones = meshFilter._bones;
@@ -114,6 +114,7 @@ define([
             if (!mesh) return;
 
             if (!(bonesLength = meshBones.length)) return;
+            i = bonesLength;
 
             current = mesh.animations[this.current];
             if (!current) return;
@@ -179,7 +180,7 @@ define([
             frameState = current[frame];
             lastFrameState = current[lastFrame] || frameState;
 
-            for (i = 0, il = bonesLength; i < il; i++) {
+            while (i--) {
                 boneCurrent = meshBones[i];
 
                 boneTransform = boneCurrent.transform;
@@ -221,9 +222,6 @@ define([
                 pos.vlerp(LAST_POSITION, POSITION, alpha);
                 rot.qlerp(LAST_ROTATION, ROTATION, alpha);
                 scl.vlerp(LAST_SCALE, SCALE, alpha);
-
-                uniform.compose(pos, scl, rot);
-                if (parentIndex !== -1) uniform.mmul(meshBones[parentIndex].uniform, uniform);
             }
 
             this._frame = frame;

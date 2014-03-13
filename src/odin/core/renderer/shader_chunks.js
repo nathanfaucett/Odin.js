@@ -100,18 +100,16 @@ define(
             ].join("\n"),
 
             transformedNormal: [
-                "	vec3 objectNormal;",
-
                 "	#ifdef USE_SKINNING",
-                "	objectNormal = boneNormal.xyz;",
+                "	vec3 objectNormal = boneNormal.xyz;",
                 "	#endif",
 
                 "	#if !defined( USE_SKINNING ) && defined( USE_MORPHNORMALS )",
-                "	objectNormal = morphedNormal;",
+                "	vec3 objectNormal = morphedNormal;",
                 "	#endif",
 
                 "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHNORMALS )",
-                "	objectNormal = normal;",
+                "	vec3 objectNormal = normal;",
                 "	#endif",
 
                 "	vec3 transformedNormal = normalMatrix * objectNormal;",
@@ -123,46 +121,48 @@ define(
                 "	vec4 worldPosition = modelMatrix * bone;",
                 "	#endif",
 
-                "	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING ) && !defined( IS_SPRITE )",
+                "	#if defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
                 "	vec4 worldPosition = modelMatrix * vec4( morphed, 1.0 );",
                 "	#endif",
 
-                "	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING ) && !defined( IS_SPRITE )",
+                "	#if ! defined( USE_MORPHTARGETS ) && ! defined( USE_SKINNING )",
                 "	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
-                "	#endif",
-
-                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
-                "	vec4 worldPosition = modelMatrix * vec4( morphed.xy * size, morphed.z, 1.0 );",
-                "	#endif",
-
-                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
-                "	vec4 worldPosition = modelMatrix * vec4( position.xy * size, position.z, 1.0 );",
                 "	#endif",
                 ""
             ].join("\n"),
 
+            worldPosition_sprite: [
+                "	vec4 worldPosition = modelMatrix * vec4( position.xy * size, position.z, 1.0 );",
+                ""
+            ].join("\n"),
+
+            worldPosition_emitter: [
+                "	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+                ""
+            ].join("\n"),
+
             mvPosition: [
-                "	vec4 mvPosition;",
-
                 "	#ifdef USE_SKINNING",
-                "	mvPosition = modelViewMatrix * bone;",
+                "	vec4 mvPosition = modelViewMatrix * bone;",
                 "	#endif",
 
-                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && !defined( IS_SPRITE )",
-                "	mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
+                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS )",
+                "	vec4 mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
                 "	#endif",
 
-                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && !defined( IS_SPRITE )",
-                "	mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )",
+                "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
                 "	#endif",
+                ""
+            ].join("\n"),
 
-                "	#if !defined( USE_SKINNING ) && defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
-                "	mvPosition = modelViewMatrix * vec4( morphed.xy * size, morphed.z, 1.0 );",
-                "	#endif",
+            mvPosition_sprite: [
+                "	vec4 mvPosition = modelViewMatrix * vec4( position.xy * size, position.z, 1.0 );",
+                ""
+            ].join("\n"),
 
-                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS ) && defined( IS_SPRITE )",
-                "	mvPosition = modelViewMatrix * vec4( position.xy * size, position.z, 1.0 );",
-                "	#endif",
+            mvPosition_emitter: [
+                "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
                 ""
             ].join("\n"),
 

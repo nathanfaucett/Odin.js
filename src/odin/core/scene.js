@@ -3,13 +3,11 @@ if (typeof(define) !== "function") {
 }
 define([
         "odin/base/class",
-        "odin/core/components/transform",
-        "odin/core/components/transform_2d",
         "odin/core/game_object",
         "odin/core/world/world",
         "odin/core/game/log"
     ],
-    function(Class, Transform, Transform2D, GameObject, World, Log) {
+    function(Class, GameObject, World, Log) {
         "use strict";
 
 
@@ -224,7 +222,6 @@ define([
             types.sort(component.sort);
 
             if (isNew) {
-                types.order = component.constructor.order || 0;
                 componentTypes.push(types);
                 componentTypes.sort(sortComponentTypes);
             }
@@ -241,7 +238,7 @@ define([
 
         function sortComponentTypes(a, b) {
 
-            return b.order - a.order;
+            return (b[0].constructor.order || 0) - (a[0].constructor.order || 0);
         }
 
 

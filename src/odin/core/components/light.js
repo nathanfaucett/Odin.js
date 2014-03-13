@@ -82,6 +82,7 @@ define([
             json.energy = this.energy;
             json.distance = this.distance;
             json.angle = this.angle;
+
             return json;
         };
 

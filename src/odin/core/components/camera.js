@@ -42,6 +42,7 @@ define([
             this.maxOrthographicSize = opts.maxOrthographicSize != undefined ? opts.maxOrthographicSize : 1024;
 
             this.projection = new Mat4;
+            this.guiProjection = new Mat4;
             this.view = new Mat4;
 
             this.needsUpdate = true;
@@ -200,6 +201,8 @@ define([
 
                     this.projection.orthographic(left, right, top, bottom, this.near, this.far);
                 }
+
+                this.guiProjection.orthographic(0, this.width, 0, this.height, -1, 1);
 
                 this.needsUpdate = false;
             }

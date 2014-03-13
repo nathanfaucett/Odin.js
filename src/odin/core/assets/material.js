@@ -25,16 +25,15 @@ define([
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
             this.side = opts.side != undefined ? opts.side : Enums.Side.Front;
 
-            this.lineWidth = opts.lineWidth != undefined ? opts.lineWidth : 1;
-
             this.wireframe = opts.wireframe != undefined ? opts.wireframe : false;
-            this.wireframeLineWidth = opts.wireframeLineWidth != undefined ? opts.wireframeLineWidth : 1;
+            this.wireframeLineWidth = opts.wireframeLineWidth != undefined ? opts.wireframeLineWidth : 1.0;
 
             this.shader = opts.shader != undefined ? opts.shader : undefined;
 
             this.uniforms = merge(opts.uniforms || {}, {
-                diffuseColor: new Color(1, 1, 1),
-                shininess: 8
+                diffuseColor: new Color(1.0, 1.0, 1.0),
+                shininess: 8.0,
+                normalScale: 1.0
             });
 
             this.receiveShadow = opts.receiveShadow != undefined ? !! opts.receiveShadow : true;
@@ -51,8 +50,6 @@ define([
 
             this.blending = other.blending;
             this.side = other.side;
-
-            this.lineWidth = other.lineWidth;
 
             this.wireframe = other.wireframe;
             this.wireframeLineWidth = other.wireframeLineWidth;
@@ -90,8 +87,6 @@ define([
             json.blending = this.blending;
             json.side = this.side;
 
-            json.lineWidth = this.lineWidth;
-
             json.wireframe = this.wireframe;
             json.wireframeLineWidth = this.wireframeLineWidth;
 
@@ -111,8 +106,6 @@ define([
 
             this.blending = json.blending;
             this.side = json.side;
-
-            this.lineWidth = json.lineWidth;
 
             this.wireframe = json.wireframe;
             this.wireframeLineWidth = json.wireframeLineWidth;

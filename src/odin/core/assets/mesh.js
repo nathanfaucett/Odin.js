@@ -237,6 +237,8 @@ define([
                 bone = new MeshBone(item.parent, item.name);
 
                 bone.position.fromArray(item.position);
+                bone.rotation.fromArray(item.rotation);
+                bone.scale.fromArray(item.scale);
                 bone.bindPose.fromArray(item.bindPose);
                 bone.skinned = !! item.skinned;
 

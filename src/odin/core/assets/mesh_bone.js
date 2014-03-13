@@ -20,6 +20,8 @@ define([
 
             this.skinned = false;
             this.position = new Vec3;
+            this.rotation = new Quat;
+            this.scale = new Vec3;
             this.bindPose = new Mat4;
         }
 
@@ -37,6 +39,8 @@ define([
 
             this.skinned = other.skinned;
             this.position.copy(other.position);
+            this.rotation.copy(other.rotation);
+            this.scale.copy(other.scale);
             this.bindPose.copy(other.bindPose);
 
             return this;
@@ -51,6 +55,8 @@ define([
 
             json.skinned = this.skinned;
             json.position = this.position.toJSON(json.position);
+            json.rotation = this.rotation.toJSON(json.rotation);
+            json.scale = this.scale.toJSON(json.scale);
             json.bindPose = this.bindPose.toJSON(json.bindPose);
 
             return json;
@@ -64,6 +70,8 @@ define([
 
             this.skinned = json.skinned;
             this.position.fromJSON(json.position);
+            this.rotation.fromJSON(json.rotation);
+            this.scale.fromJSON(json.scale);
             this.bindPose.fromJSON(json.bindPose);
 
             return this;

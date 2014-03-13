@@ -38,6 +38,7 @@ define([
 
             this.projection = new Mat4;
             this._projection = new Mat32;
+            this.guiProjection = new Mat4;
 
             this.view = new Mat4;
             this._view = new Mat32;
@@ -149,6 +150,8 @@ define([
                 this.projection.orthographic(left, right, top, bottom, -1, 1);
                 this._projection.fromMat4(this.projection);
                 this.needsUpdate = false;
+
+                this.guiProjection.orthographic(0, this.width, 0, this.height, -1, 1);
             }
 
             this.view.inverseMat((this.transform || this.transform2d).matrixWorld);

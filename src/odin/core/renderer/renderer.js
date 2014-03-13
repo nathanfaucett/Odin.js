@@ -144,10 +144,37 @@ define([
              * @param Camera camera
              */
             function renderGUI(gui, camera) {
+                if (!_context) return;
+                var lineWidth = _lastLineWidth,
+                    blending = _lastBlending,
 
+                    components = gui.components,
+                    guiContents = components.GUIContent || EMPTY_ARRAY,
+                    guiContent, transform,
+                    i;
 
+                setCullFace(CullFace.Front);
+
+                i = guiContents.length;
+                while (i--) {
+                    guiContent = guiContents[i];
+                    transform = guiContent.guiTransform;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.guiProjection);
+                    renderGUIContent(camera, transform, guiContent);
+                }
+
+                setBlending(blending);
+                setLineWidth(lineWidth);
             }
             this.renderGUI = renderGUI;
+
+
+            function renderGUIContent(camera, transform, guiContent) {
+
+            }
 
             /**
              * @method render
@@ -1454,11 +1481,20 @@ define([
                         }
                     }
 
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                    if (emitter) {
+                        vertexMain = ShaderChunks.mvPosition_emitter + vertexMain;
+                        vertexMain = ShaderChunks.worldPosition_emitter + vertexMain;
+                    } else {
+                        vertexMain = (sprite ? ShaderChunks.mvPosition_sprite : ShaderChunks.mvPosition) + vertexMain;
+                        vertexMain = (sprite ? ShaderChunks.worldPosition_sprite : ShaderChunks.worldPosition) + vertexMain;
+                    }
                     if (parameters.normals) vertexMain = ShaderChunks.transformedNormal + vertexMain;
-                    vertexMain = ShaderChunks.worldPosition + vertexMain;
                 } else {
-                    vertexMain = ShaderChunks.mvPosition + vertexMain;
+                    if (emitter) {
+                        vertexMain = ShaderChunks.mvPosition_emitter + vertexMain;
+                    } else {
+                        vertexMain = (sprite ? ShaderChunks.mvPosition_sprite : ShaderChunks.mvPosition) + vertexMain;
+                    }
                 }
 
                 if (useBones) {

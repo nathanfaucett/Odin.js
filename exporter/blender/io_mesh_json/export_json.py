@@ -64,16 +64,15 @@ def get_action_state( frame, action, bone, armatureObject ):
 	bpy.context.scene.frame_set( frame )
 	
 	bonePose = armatureObject.pose.bones[ bone.name ]
-	pos, rot, scl = (bonePose.matrix).decompose()
+	matrix_local = bonePose.matrix
+	pos =  mathutils.Vector((1.0, 1.0, 1.0))
+	rot = mathutils.Quaternion((0.0, 0.0, 0.0, 1.0))
+	scl = mathutils.Vector((1.0, 1.0, 1.0))
 	
 	if bone.parent != None:
-		pos = bonePose.parent.matrix.inverted() * pos
-		rot = bonePose.parent.matrix.inverted().to_quaternion() * rot
-	else:
-		pos = bone.matrix_local.inverted() * pos
-		rot = bone.matrix_local.inverted().to_quaternion() * rot
-
-	pos.y, pos.z = pos.z, pos.y
+		matrix_local = bonePose.parent.matrix.inverted() * matrix_local
+	
+	pos, rot, scl = matrix_local.decompose()
 
 	return pos, rot, scl
 	
@@ -114,7 +113,9 @@ TEMPLATE_BONE = """\
 	"skinned": %(skinned)s,
 	"bindPose": %(bindPose)s,
 	
-	"position": [%(position)s]
+	"position": [%(position)s],
+	"rotation": [%(rotation)s],
+	"scale": [%(scale)s]
 }
 """
 
@@ -239,37 +240,46 @@ def get_mesh_string( obj ):
 			
 			for vertex_index in vertices_in_face:
 				vertex = obj.data.vertices[ vertex_index ]
-				bone_array = []
 				
+				bone_array = []
+
 				for group in vertex.groups:
 					index = group.group
 					weight = group.weight
-					
-					bone_array.append( (index, weight) )
+	
+					bone_array.append( [index, weight] )
+	
+				bone_array.sort(key = operator.itemgetter(1), reverse=True)
 				
-				for i in range( MAX_INFLUENCES ):
-					
-					if i < len( bone_array ):
+				total_weight = 0.0
+				for i in range(len(bone_array)):
+					total_weight += bone_array[i][1]
+				for i in range(len(bone_array)):
+					bone_array[i][1] /= total_weight
+	
+				for i in range(MAX_INFLUENCES):
+					if i < len(bone_array):
 						bone_proxy = bone_array[i]
 						
 						found = 0
 						index = bone_proxy[0]
 						weight = bone_proxy[1]
-						
-						for j, bone in enumerate( armature.bones ):
-							if obj.vertex_groups[ index ].name == bone.name:
-								boneIndices.append("%d" % j )
-								boneWeights.append("%g" % weight )
+	
+						for j, bone in enumerate(armature.bones):
+							if obj.vertex_groups[index].name == bone.name:
+								boneIndices.append(j)
+								boneWeights.append(weight)
 								found = 1
 								break
-						
+	
 						if found != 1:
-							boneIndices.append("0")
-							boneWeights.append("0")
+							boneIndices.append(0)
+							boneWeights.append(0)
+	
 					else:
-						boneIndices.append("0")
-						boneWeights.append("0")
-		
+						boneIndices.append(0)
+						boneWeights.append(0)
+					
 		bone_id = -1
 		for bone in armature.bones:
 			bone_id += 1
@@ -278,17 +288,24 @@ def get_mesh_string( obj ):
 			weight = 0
 			skinned = "0"
 			name = bone.name
-			pos = bone.head_local.copy()
-			bindPose = bone.matrix_local * mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
+			
+			matrix_local = bone.matrix_local
+			pos =  mathutils.Vector((1.0, 1.0, 1.0))
+			rot = mathutils.Quaternion((0.0, 0.0, 0.0, 1.0))
+			scl = mathutils.Vector((1.0, 1.0, 1.0))
 			
 			if bone.parent != None:
 				parent_index = i = 0
-				pos -= bone.parent.head_local
+				
+				matrix_local = bone.parent.matrix_local.inverted() * matrix_local
 				
 				for parent in armature.bones:
 					if parent.name == bone.parent.name:
 						parent_index = i
 					i += 1
+			
+			pos, rot, scl = matrix_local.decompose()
+			bindPose = bone.matrix_local
 			
 			j = -1
 			for boneIndex in boneIndices:
@@ -304,7 +321,9 @@ def get_mesh_string( obj ):
 				"name": name,
 				"skinned": skinned,
 				"bindPose": mat4_string(bindPose.inverted()),
-				"position": ", ".join([ float_str(pos.x), float_str(pos.y), float_str(pos.z) ])
+				"position": ", ".join([ float_str(pos.x), float_str(pos.y), float_str(pos.z) ]),
+				"rotation": ", ".join([ float_str(rot.x), float_str(rot.y), float_str(rot.z), float_str(rot.w) ]),
+				"scale": ", ".join([ float_str(scl.x), float_str(scl.y), float_str(scl.z) ])
 			})
 		
 	return TEMPLATE_FILE % {
@@ -314,8 +333,8 @@ def get_mesh_string( obj ):
 		"uvs": flat_array( uvs ),
 		"faces": flat_array( indices ),
 		"bones": ",".join( bones ),
-		"boneIndices": ",".join( boneIndices ),
-		"boneWeights": ",".join( boneWeights ),
+		"boneIndices": flat_array( boneIndices ),
+		"boneWeights": flat_array( boneWeights ),
 		"animations": get_animation()
 	}
 

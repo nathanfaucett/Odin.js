@@ -10,18 +10,19 @@ define([
     function(Class, GUIComponent, GUITransform, Log) {
         "use strict";
 
-
         /**
          * @class GUIObject
          * @extends Class
-         * @brief base class for gui elements in a gui
+         * @memberof Odin
+         * @brief Base class for entities in guis
          * @param Object options
          */
-
         function GUIObject(opts) {
             opts || (opts = {});
 
             Class.call(this);
+
+            this.name = opts.name != undefined ? opts.name : "GUIObject_" + this._id;
 
             this.gui = undefined;
 
@@ -46,9 +47,9 @@ define([
             var components = other.components,
                 tags = other.tags,
                 otherComponent, component,
-                i;
+                i = components.length;
 
-            for (i = components.length; i--;) {
+            while (i--) {
                 otherComponent = components[i];
 
                 if ((component = this.getComponent(otherComponent._type))) {
@@ -57,9 +58,9 @@ define([
                     this.addComponent(otherComponent.clone());
                 }
             }
-            for (i = tags.length; i--;) this.addTag(tags[i]);
 
-            if (other.gui && !this.gui) other.gui.addGUIObject(this);
+            i = tags.length;
+            while (i--) this.addTag(tags[i]);
 
             return this;
         };
@@ -68,12 +69,17 @@ define([
         GUIObject.prototype.clear = function() {
             var components = this.components,
                 tags = this.tags,
+                componentLength = components.length,
                 i;
 
-            for (i = components.length; i--;) components[i].clear();
+            i = componentLength;
+            while (i--) components[i].clear();
 
-            for (i = tags.length; i--;) this.removeTag(tags[i]);
-            for (i = components.length; i--;) this.removeComponent(components[i]);
+            i = tags.length;
+            while (i--) this.removeTag(tags[i]);
+
+            i = componentLength;
+            while (i--) this.removeComponent(components[i]);
 
             this.off();
 
@@ -98,7 +104,7 @@ define([
 
         GUIObject.prototype.remove = function() {
             if (!this.gui) {
-                Log.error("GUIObject.destroy: can't destroy GUIObject if it's not added to a Scene");
+                Log.error("GUIObject.remove: can't remove GUIObject if it's not added to a Scene");
                 return this;
             }
 
@@ -117,8 +123,9 @@ define([
 
 
         GUIObject.prototype.addTags = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.addTag(arguments[i]);
+            while (i--) this.addTag(arguments[i]);
             return this;
         };
 
@@ -134,8 +141,9 @@ define([
 
 
         GUIObject.prototype.removeTags = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeTag(arguments[i]);
+            while (i--) this.removeTag(arguments[i]);
             return this;
         };
 
@@ -169,19 +177,22 @@ define([
                 this[name] = component;
 
                 if (!others) {
-                    for (i = components.length; i--;) {
+                    i = components.length;
+                    while (i--) {
                         comp = components[i];
                         if (!comp) continue;
 
-                        for (j = components.length; j--;) {
-                            name = components[j]._name;
-                            comp[name] = components[j];
-                        }
+                        j = components.length;
+                        while (j--) comp[components[j]._name] = components[j];
                     }
+
+                    component.init();
+                    component.emit("init");
                 }
 
                 this.emit("add" + component._type, component);
                 this.emit("addComponent", component);
+                component.emit("add", this);
 
                 if (this.gui) this.gui._addComponent(component);
             } else {
@@ -198,16 +209,26 @@ define([
                 component, name,
                 i, j;
 
-            for (i = length; i--;) this.addComponent(arguments[i], true);
+            i = length;
+            while (i--) this.addComponent(arguments[i], true);
 
-            for (i = components.length; i--;) {
+            i = components.length;
+            while (i--) {
                 component = components[i];
                 if (!component) continue;
 
-                for (j = components.length; j--;) {
+                j = components.length;
+                while (j--) {
                     name = components[j]._name;
                     component[name] = components[j];
                 }
+            }
+
+            i = components.length;
+            while (i--) {
+                component = components[i];
+                component.init();
+                component.emit("init");
             }
 
             return this;
@@ -225,13 +246,18 @@ define([
                 comp, i, j;
 
             if (this[name]) {
+                component.emit("remove", this);
+                this.emit("remove" + component._type, component);
+                this.emit("removeComponent", component);
 
                 if (!others) {
-                    for (i = components.length; i--;) {
+                    i = components.length;
+                    while (i--) {
                         comp = components[i];
                         if (!comp) continue;
 
-                        for (j = components.length; j--;) {
+                        j = components.length;
+                        while (j--) {
                             if (name === components[j]._name) comp[name] = undefined;
                         }
                     }
@@ -244,10 +270,6 @@ define([
 
                 component.guiObject = undefined;
                 this[name] = undefined;
-
-                this.emit("remove" + component._type, component);
-                this.emit("removeComponent", component);
-                component.emit("remove", component);
 
                 if (this.gui) this.gui._removeComponent(component);
                 if (clear) component.clear();
@@ -266,15 +288,17 @@ define([
                 component, name,
                 i, j;
 
-            for (i = length; i--;) this.removeComponent(arguments[i], null, true);
+            i = length;
+            while (i--) this.removeComponent(arguments[i], null, true);
 
-            for (i = components.length; i--;) {
+            i = components.length;
+            while (i--) {
                 component = components[i];
                 if (!component) continue;
 
                 name = component._name;
-                for (j = toRemove.length; j--;) {
-
+                j = toRemove.length;
+                while (j--) {
                     if (name === toRemove[i]._name) component[name] = undefined;
                 }
             }
@@ -291,13 +315,33 @@ define([
 
         GUIObject.prototype.hasComponent = function(type) {
             var components = this.components,
-                i;
+                i = components.length;;
 
-            for (i = components.length; i--;) {
+            while (i--) {
                 if (components[i]._type === type) return true;
             }
 
             return false;
+        };
+
+
+        GUIObject.prototype.find = function(name) {
+            var transform = this.transform || this.transform2d,
+                children, child, i;
+
+            if (!transform) return undefined;
+
+            children = transform.children;
+            i = children.length;
+
+            while (i--) {
+                child = children[i];
+
+                if (child.guiObject.name === name) return child.guiObject;
+                if ((child = child.find(name))) return child;
+            }
+
+            return undefined;
         };
 
 
@@ -325,7 +369,10 @@ define([
             while (i--) {
                 if ((component = components[i]).json) jsonComponents[i] = component.toJSON(jsonComponents[i]);
             }
-            for (i = tags.length; i--;) jsonTags[i] = tags[i];
+            i = tags.length;
+            while (i--) jsonTags[i] = tags[i];
+
+            json.name = this.name;
 
             return json;
         };
@@ -349,9 +396,12 @@ define([
                 }
             }
 
-            for (i = jsonTags.length; i--;) {
+            i = jsonTags.length;
+            while (i--) {
                 if (tags.indexOf((tag = jsonTags[i])) === -1) tags.push(tag);
             }
+
+            this.name = json.name;
 
             return this;
         };

@@ -18,8 +18,8 @@ define(
         if (ctx) {
             ctx = new ctx;
 
-            ctx.createGain || (ctx.createGain = ctx.createGain || ctx.createGainNode);
-            ctx.createPanner || (ctx.createPanner = ctx.createPanner || ctx.createPannerNode);
+            ctx.createGain || (ctx.createGain = ctx.createGainNode);
+            ctx.createPanner || (ctx.createPanner = ctx.createPannerNode);
 
             AudioBufferSourceNode.prototype.start || (AudioBufferSourceNode.prototype.start = function(delay, time) {
 

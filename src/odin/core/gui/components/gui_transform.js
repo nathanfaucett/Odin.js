@@ -36,9 +36,13 @@ define([
 
             this.matrix = new Mat32;
             this.matrixWorld = new Mat32;
+
+            this.modelView = new Mat4;
+            this._matricesViewNeedsUpdate = false;
         }
 
         GUIComponent.extend(GUITransform);
+        GUITransform.order = -1;
 
 
         GUITransform.prototype.copy = function(other) {
@@ -116,7 +120,7 @@ define([
             return function(target) {
 
                 if (target instanceof GUITransform) {
-                    vec.copy(target.position);
+                    vec.set(0, 0).transformMat32(target.matrixWorld);
                 } else {
                     vec.copy(target);
                 }
@@ -263,6 +267,17 @@ define([
             } else {
                 this.matrixWorld.copy(matrix);
             }
+
+            this._matricesViewNeedsUpdate = true;
+        };
+
+
+        var MAT4 = new Mat4;
+        GUITransform.prototype.updateMatrices = function(projectionMatrix) {
+            if (!this._matricesViewNeedsUpdate) return;
+
+            this.modelView.mmul(projectionMatrix, MAT4.fromMat32(this.matrixWorld));
+            this._matricesViewNeedsUpdate = false;
         };
 
 

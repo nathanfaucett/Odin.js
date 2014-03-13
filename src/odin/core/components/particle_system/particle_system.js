@@ -53,12 +53,11 @@ define([
 
         ParticleSystem.prototype.copy = function(other) {
             var otherEmitters = other.emitters,
-                i = 0,
-                il = otherEmitters.length;;
+                i = otherEmitters.length;;
 
             this.clear();
 
-            for (; i < il; i++) this.addEmitter(otherEmitters[i].clone());
+            while (i--) this.addEmitter(otherEmitters[i].clone());
             this.playing = other.playing;
 
             return this;
@@ -95,8 +94,9 @@ define([
 
 
         ParticleSystem.prototype.add = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.addEmitter(arguments[i]);
+            while (i--) this.addEmitter(arguments[i]);
             return this;
         };
 
@@ -122,8 +122,9 @@ define([
 
 
         ParticleSystem.prototype.remove = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeEmitter(arguments[i]);
+            while (i--) this.removeEmitter(arguments[i]);
             return this;
         };
 
@@ -146,9 +147,9 @@ define([
          */
         ParticleSystem.prototype.play = function() {
             var emitters = this.emitters,
-                i;
+                i = emitters.length;
 
-            for (i = emitters.length; i--;) emitters[i].play();
+            while (i--) emitters[i].play();
             this.playing = true;
 
             return this;
@@ -161,9 +162,9 @@ define([
             var dt = Time.delta,
                 emitters = this.emitters,
                 emitter, playing = false,
-                i;
+                i = emitters.length;
 
-            for (i = emitters.length; i--;) {
+            while (i--) {
                 emitter = emitters[i];
                 emitter.update(dt);
                 if (emitter.playing) playing = true;
@@ -177,10 +178,9 @@ define([
             json = Component.prototype.toJSON.call(this, json);
             var emitters = this.emitters,
                 jsonEmitters = json.emitters || (json.emitters = []),
-                i = 0,
-                il = emitters.length;
+                i = emitters.length;
 
-            for (; i < il; i++) {
+            while (i--) {
                 jsonEmitters[i] = emitters[i].toJSON(jsonEmitters[i]);
             }
             json.playing = this.playing;
@@ -193,10 +193,9 @@ define([
             Component.prototype.fromJSON.call(this, json);
             var jsonEmitters = json.emitters,
                 emitter, jsonEmitter,
-                i = 0,
-                il = jsonEmitters.length;
+                i = jsonEmitters.length;
 
-            for (; i < il; i++) {
+            while (i--) {
                 jsonEmitter = jsonEmitters[i];
 
                 if ((emitter = this.findEmitterById(jsonEmitter._id))) {

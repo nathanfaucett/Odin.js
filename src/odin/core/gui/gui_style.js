@@ -25,6 +25,9 @@ define([
             this._state = "normal";
             this.name = opts.name || "GUIStyle_" + this._id;
 
+            this.alpha = opts.alpha != undefined ? opts.alpha : 1.0;
+            this.z = opts.z != undefined ? opts.z : 0.0;
+
             this.alignment = opts.alignment || TextAnchor.Left;
             this.clipping = opts.alignment || TextClipping.Clip;
             this.contentOffset = opts.contentOffset || new Vec2;
@@ -64,6 +67,9 @@ define([
 
             this.name = other.name;
 
+            this.alpha = other.alpha;
+            this.z = other.z;
+
             this.alignment = other.alignment;
             this.clipping = other.alignment;
             this.contentOffset.copy(other.contentOffset);
@@ -99,6 +105,9 @@ define([
 
             json.name = this.name;
 
+            json.alpha = this.alpha;
+            json.z = this.z;
+
             json.alignment = this.alignment;
             json.clipping = this.alignment;
             json.contentOffset = this.contentOffset.toJSON(json.contentOffset);
@@ -132,6 +141,9 @@ define([
         GUIStyle.prototype.fromJSON = function(json) {
 
             this.name = json.name;
+
+            this.alpha = json.alpha;
+            this.z = json.z;
 
             this.alignment = json.alignment;
             this.clipping = json.alignment;

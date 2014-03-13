@@ -30,6 +30,7 @@ define([
         }
 
         Component.extend(Bone);
+        Bone.order = Infinity;
 
 
         Bone.prototype.copy = function(other) {
@@ -45,6 +46,16 @@ define([
             this.inheritScale = other.inheritScale;
 
             return this;
+        };
+
+
+        Bone.prototype.update = function() {
+            var transform = this.transform,
+                uniform = this.uniform,
+                parent = transform.parent;
+
+            uniform.copy(transform.matrix);
+            if (this.parentIndex !== -1) uniform.mmul(parent.bone.uniform, uniform);
         };
 
 
@@ -79,6 +90,12 @@ define([
             this.inheritScale = json.inheritScale;
 
             return this;
+        };
+
+
+        Bone.prototype.sort = function(a, b) {
+
+            return b.parentIndex - a.parentIndex;
         };
 
 

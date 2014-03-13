@@ -20,9 +20,7 @@ require({
             this.speed = 1;
             this.zoomSpeed = 6;
         }
-
         Component.extend(CameraControl);
-
 
         CameraControl.prototype.update = function() {
             var transform = this.transform2d,

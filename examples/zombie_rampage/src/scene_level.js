@@ -40,7 +40,7 @@ define([
                     height: 20
                 }),
                 new Odin.AudioSource({
-                    playOnInit: false,
+                    playOnInit: true,
                     loop: true,
                     dopplerLevel: 0,
                     clip: Odin.Assets.get("snd_sure_shot")

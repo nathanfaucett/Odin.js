@@ -59,12 +59,11 @@ define([
                 bones = this._bones,
                 meshBones = this.mesh.bones,
                 subGameObject, meshBone, bone, parent,
-                i = 0,
-                il = meshBones.length;
+                i = meshBones.length;
 
-            if (!il) return;
+            if (!i) return;
 
-            for (; i < il; i++) {
+            while (i--) {
                 meshBone = meshBones[i];
 
                 subGameObject = new GameObject().addComponents(
@@ -76,7 +75,9 @@ define([
                         bindPose: meshBone.bindPose
                     }),
                     new Transform({
-                        position: meshBone.position.clone()
+                        position: meshBone.position.clone(),
+                        rotation: meshBone.rotation.clone(),
+                        scale: meshBone.scale.clone()
                     })
                 );
                 subGameObject.name = meshBone.name;

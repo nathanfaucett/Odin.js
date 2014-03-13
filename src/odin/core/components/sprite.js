@@ -22,7 +22,6 @@ define([
 
             this.alpha = opts.alpha != undefined ? opts.alpha : 1;
 
-            this.texture = opts.texture != undefined ? opts.texture : undefined;
             this.material = opts.material != undefined ? opts.material : undefined;
 
             this.width = opts.width || 1;
@@ -48,7 +47,6 @@ define([
 
             this.alpha = other.alpha;
 
-            this.texture = other.texture;
             this.material = other.material;
 
             this.width = other.width;
@@ -85,7 +83,6 @@ define([
 
             json.alpha = this.alpha;
 
-            json.texture = this.texture ? this.texture.name : undefined;
             json.material = this.material ? this.material.name : undefined;
 
             json.width = this.width;
@@ -110,7 +107,6 @@ define([
 
             this.alpha = json.alpha;
 
-            this.texture = json.texture ? Assets.get(json.texture) : undefined;
             this.material = json.material ? Assets.get(json.material) : undefined;
 
             this.width = json.width;

@@ -48,13 +48,13 @@ define([
 
         Transform2D.prototype.copy = function(other) {
             var children = other.children,
-                i;
+                i = children.length;
 
             this.position.copy(other.position);
             this.scale.copy(other.scale);
             this.rotation = other.rotation;
 
-            for (i = children.length; i--;) this.addChild(children[i].gameObject.clone().transform);
+            while (i--) this.addChild(children[i].gameObject.clone().transform);
             if (other.parent) other.parent.addChild(this);
 
             return this;
@@ -64,9 +64,9 @@ define([
         Transform2D.prototype.clear = function() {
             Component.prototype.clear.call(this);
             var children = this.children,
-                i;
+                i = children.length;
 
-            for (i = children.length; i--;) this.removeChild(children[i]);
+            while (i--) this.removeChild(children[i]);
 
             this.position.set(0, 0);
             this.scale.set(1, 1);
@@ -185,8 +185,9 @@ define([
 
 
         Transform2D.prototype.addChildren = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.addChild(arguments[i]);
+            while (i--) this.addChild(arguments[i]);
             return this;
         };
 
@@ -220,17 +221,17 @@ define([
 
 
         Transform2D.prototype.removeChildren = function() {
+            var i = arguments.length;
 
-            for (var i = arguments.length; i--;) this.removeChild(arguments[i]);
+            while (i--) this.removeChild(arguments[i]);
             return this;
         };
 
 
         Transform2D.prototype.detachChildren = function() {
-            var children = this.children,
-                i;
+            var i = arguments.length;
 
-            for (i = children.length; i--;) this.removeChild(children[i]);
+            while (i--) this.removeChild(children[i]);
             return this;
         };
 
@@ -360,10 +361,10 @@ define([
 
         function updateDepth(transform, depth) {
             var children = transform.children,
-                i;
+                i = children.length;
 
             transform.depth = depth;
-            for (i = children.length; i--;) updateDepth(children[i], depth + 1);
+            while (i--) updateDepth(children[i], depth + 1);
         }
 
 

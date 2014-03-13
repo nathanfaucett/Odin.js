@@ -38,8 +38,8 @@ define([
         Tween.prototype.update = function(time, out) {
             var times = this.times,
                 values = this.values,
-                i = 0,
                 n = times.length,
+                i = 0,
                 t;
 
             while (i < n && time > times[i]) i++;
@@ -62,8 +62,11 @@ define([
                 jsonValues = json.values || (json.values = []),
                 i;
 
-            for (i = times.length; i--;) jsonTimes[i] = times[i];
-            for (i = values.length; i--;) jsonValues[i] = values[i].toJSON ? values[i].toJSON(jsonValues[i]) : values[i];
+            i = times.length;
+            while (i--) jsonTimes[i] = times[i];
+
+            i = values.length;
+            while (i--) jsonValues[i] = values[i].toJSON ? values[i].toJSON(jsonValues[i]) : values[i];
 
             return json;
         };
@@ -76,8 +79,11 @@ define([
                 jsonValues = json.values,
                 i;
 
-            for (i = jsonTimes.length; i--;) times[i] = fromJSON(jsonTimes[i]);
-            for (i = jsonValues.length; i--;) values[i] = fromJSON(jsonValues[i]);
+            i = jsonTimes.length;
+            while (i--) times[i] = fromJSON(jsonTimes[i]);
+
+            i = jsonValues.length;
+            while (i--) values[i] = fromJSON(jsonValues[i]);
 
             return this;
         };

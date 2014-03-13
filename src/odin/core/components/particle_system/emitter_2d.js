@@ -252,7 +252,7 @@ define([
                 posy = randFloat(-positionSpread.y, positionSpread.y);
             }
 
-            for (; limit--;) {
+            while (limit--) {
                 particle = PARTICLE_POOL.create();
                 pos = particle.position;
                 vel = particle.velocity;
@@ -350,7 +350,8 @@ define([
                 if (!this.loop && this.time > this.duration) this.emitting = false;
             }
 
-            for (i = particles.length; i--;) {
+            i = particles.length;
+            while (i--) {
                 particle = particles[i];
                 particle.update(dt);
                 life = particle.lifeTime / particle.life;
