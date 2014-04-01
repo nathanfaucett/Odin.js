@@ -2,23 +2,31 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/core/enums",
-        "odin/core/assets/asset"
+        "odin/base/class",
+        "odin/core/enums"
     ],
-    function(Enums, Asset) {
+    function(Class, Enums) {
         "use strict";
 
+        /**
+         * @class RenderTarget
+         * @extends Class
+         * @brief WebGL Render Target helper
+         */
 
-        function Texture(opts) {
+        function RenderTarget(opts) {
             opts || (opts = {});
 
-            Asset.call(this, opts);
+            Class.call(this);
 
-            this.width = 0;
-            this.height = 0;
+            this.width = opts.width || 512;
+            this.height = opts.height || 512;
 
-            this.invWidth = 0;
-            this.invHeight = 0;
+            this.invWidth = 1 / this.width;
+            this.invHeight = 1 / this.height;
+
+            this.depthBuffer = opts.depthBuffer != undefined ? !! opts.depthBuffer : true;
+            this.stencilBuffer = opts.stencilBuffer != undefined ? !! opts.stencilBuffer : true;
 
             this.generateMipmap = opts.generateMipmap != undefined ? !! opts.generateMipmap : true;
             this.flipY = opts.flipY != undefined ? !! opts.flipY : true;
@@ -30,17 +38,22 @@ define([
             this.format = opts.format != undefined ? opts.format : Enums.TextureFormat.RGBA;
             this.wrap = opts.wrap != undefined ? opts.wrap : Enums.TextureWrap.Repeat;
 
-            this._webgl = undefined;
             this._webglUsed = 0;
-
-            this.needsUpdate = true;
+            this._webglTexture = undefined;
+            this._webglFramebuffer = undefined;
+            this._webglRenderbuffer = undefined;
         }
 
-        Asset.extend(Texture);
+        Class.extend(RenderTarget);
 
 
-        Texture.prototype.copy = function(other) {
-            Asset.prototype.copy.call(this, other);
+        RenderTarget.prototype.clone = function() {
+
+            return new RenderTarget().copy(this);
+        };
+
+
+        RenderTarget.prototype.copy = function(other) {
 
             this.width = other.width;
             this.height = other.height;
@@ -62,72 +75,57 @@ define([
         };
 
 
-        Texture.prototype.parse = function(raw) {
-            Asset.prototype.parse.call(this, raw);
+        RenderTarget.prototype.setWidth = function(width) {
 
-            this.width = raw.width;
-            this.height = raw.height;
-
-            this.invWidth = 1 / this.width;
-            this.invHeight = 1 / this.height;
-
-            return this;
+            this.width = width || this.width;
+            this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setMipmap = function(value) {
+        RenderTarget.prototype.setHeight = function(height) {
+
+            this.height = height || this.height;
+            this.needsUpdate = true;
+        };
+
+
+        RenderTarget.prototype.setMipmap = function(value) {
 
             this.generateMipmap = value != undefined ? !! value : !this.generateMipmap;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setAnisotropy = function(value) {
+        RenderTarget.prototype.setAnisotropy = function(value) {
 
             this.anisotropy = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setFilter = function(value) {
+        RenderTarget.prototype.setFilter = function(value) {
 
             this.filter = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setFormat = function(value) {
+        RenderTarget.prototype.setFormat = function(value) {
 
             this.format = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.setWrap = function(value) {
+        RenderTarget.prototype.setWrap = function(value) {
 
             this.wrap = value;
             this.needsUpdate = true;
         };
 
 
-        Texture.prototype.toJSON = function(json, pack) {
-            json = Asset.prototype.toJSON.call(this, json);
-
-            if ((pack || !this.src) && this.raw) {
-                if (typeof(window) === "undefined") {
-                    json.raw = this.raw;
-                } else {
-                    var raw = this.raw,
-                        canvas = document.createElement("canvas"),
-                        ctx = canvas.getContext("2d");
-
-                    canvas.width = raw.width;
-                    canvas.height = raw.height;
-                    ctx.drawImage(raw, 0, 0);
-
-                    json.raw = canvas.toDataURL();
-                }
-            }
+        RenderTarget.prototype.toJSON = function(json, pack) {
+            json = Class.prototype.toJSON.call(this, json);
 
             json.width = this.width;
             json.height = this.height;
@@ -149,18 +147,8 @@ define([
         };
 
 
-        Texture.prototype.fromJSON = function(json) {
-            Asset.prototype.fromJSON.call(this, json);
-
-            if (!json.src && json.raw) {
-                if (typeof(window) === "undefined") {
-                    this.raw = json.raw;
-                } else {
-                    var image = new Image;
-                    image.src = json.raw;
-                    this.raw = image;
-                }
-            }
+        RenderTarget.prototype.fromJSON = function(json) {
+            Class.prototype.fromJSON.call(this, json);
 
             this.width = json.width;
             this.height = json.height;
@@ -182,6 +170,6 @@ define([
         };
 
 
-        return Texture;
+        return RenderTarget;
     }
 );

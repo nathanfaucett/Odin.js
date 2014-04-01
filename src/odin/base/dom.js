@@ -83,7 +83,6 @@ define(
             }
 
             while (i--) {
-
                 try {
                     gl = canvas.getContext(WEBGL_NAMES[i], attributes);
                 } catch (err) {
@@ -91,6 +90,8 @@ define(
                 }
                 if (gl) break;
             }
+
+            if (!gl) throw "Dom.getWebGLContext: could not get a WebGL Context";
 
             return gl;
         };

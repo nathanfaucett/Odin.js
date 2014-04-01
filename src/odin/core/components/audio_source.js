@@ -212,11 +212,18 @@ define([
         AudioSource.prototype._refresh = function() {
             var source = this._source = AudioCtx.createBufferSource(),
                 gain = this._gain = AudioCtx.createGain(),
+                panner;
+
+            if (this.dopplerLevel === 0) {
+                gain.connect(AudioCtx.destination);
+                source.connect(gain);
+            } else {
                 panner = this._panner = AudioCtx.createPanner();
 
-            gain.connect(AudioCtx.destination);
-            panner.connect(gain);
-            source.connect(panner);
+                gain.connect(AudioCtx.destination);
+                panner.connect(gain);
+                source.connect(panner);
+            }
 
             source.buffer = this.clip.raw;
             source.onended = this._onended;

@@ -29,7 +29,6 @@ define(
 
                 this.noteOff(time);
             });
-
         }
 
         return ctx ? ctx : false;

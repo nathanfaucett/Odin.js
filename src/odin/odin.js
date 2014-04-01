@@ -83,6 +83,7 @@ define(
             this.Input = require("odin/core/input/input");
 
             this.Canvas = require("odin/core/renderer/canvas");
+            this.RenderTarget = require("odin/core/renderer/render_target");
             this.Renderer = require("odin/core/renderer/renderer");
             this.ShaderChunks = require("odin/core/renderer/shader_chunks");
 

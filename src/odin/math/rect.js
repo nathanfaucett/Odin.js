@@ -22,7 +22,6 @@ define(
             this._yMax = this._y + this._height;
         }
 
-
         defineProperty(Rect.prototype, "x", {
             get: function() {
                 return this._x;
@@ -127,10 +126,15 @@ define(
 
         Rect.prototype.copy = function(other) {
 
-            this.x = other.x;
-            this.y = other.y;
-            this.width = other.width;
-            this.height = other.height;
+            this._x = other._x;
+            this._y = other._y;
+            this._width = other._width;
+            this._height = other._height;
+
+            this._xMin = other._xMin;
+            this._xMax = other._xMax;
+            this._yMin = other._yMin;
+            this._yMax = other._yMax;
 
             return this;
         };
@@ -144,6 +148,24 @@ define(
             this.height = height;
 
             return this;
+        };
+
+
+        Rect.prototype.center = function(v) {
+
+            v.x = this._x + this._width * 0.5;
+            v.y = this._y + this._height * 0.5;
+
+            return v;
+        };
+
+
+        Rect.prototype.intersects = function(rect) {
+
+            return !(
+                rect._xMax < this._xMin || rect._xMin > this._xMax ||
+                rect._yMax < this._yMin || rect._yMin > this._yMax
+            );
         };
 
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: phys2d/constraints/p2equation.js</title>
+    <title>JSDoc: Source: core/renderer/render_target_cube.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: phys2d/constraints/p2equation.js</h1>
+    <h1 class="page-title">Source: core/renderer/render_target_cube.js</h1>
     
     
 
@@ -25,85 +25,59 @@
     
     <section>
         <article>
-            <pre class="prettyprint source"><code>if (typeof define !== "function") {
+            <pre class="prettyprint source"><code>if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/base/event_emitter"
+        "odin/core/renderer/render_target",
+        "odin/core/enums"
     ],
-    function(EventEmitter) {
+    function(RenderTarget, Enums) {
         "use strict";
 
         /**
-         * @class P2Equation
-         * @extends Class
-         * @brief 2d contact equation
+         * @class RenderTargetCube
+         * @extends RenderTarget
+         * @brief WebGL Render Target helper
          */
-        function P2Equation() {
 
-            EventEmitter.call(this);
+        function RenderTargetCube(opts) {
+            opts || (opts = {});
 
-            /**
-             * @property P2Body sj
-             * @memberof P2Equation
-             */
-            this.bi = undefined;
-
-            /**
-             * @property P2Body bj
-             * @memberof P2Equation
-             */
-            this.bj = undefined;
-
-            /**
-             * @property Number minForce
-             * @memberof P2Equation
-             */
-            this.minForce = -1e6;
-
-            /**
-             * @property Number maxForce
-             * @memberof P2Equation
-             */
-            this.maxForce = 1e6;
-
-            /**
-             * @property Number relaxation
-             * @brief number of timesteps it takesto stabilize the constraint
-             * @memberof P2Equation
-             */
-            this.relaxation = 3;
-
-            /**
-             * @property Number stiffness
-             * @brief spring constant
-             * @memberof P2Equation
-             */
-            this.stiffness = 1e7;
-
-            this.a = 0;
-            this.b = 0;
-            this.eps = 0;
-
-            this.lambda = 0;
-            this.B = 0;
-            this.invC = 0;
+            RenderTarget.call(this, opts);
         }
 
-        EventEmitter.extend(P2Equation);
+        RenderTarget.extend(RenderTargetCube);
 
 
-        P2Equation.prototype.updateConstants = function(h) {
-            var k = this.stiffness,
-                d = this.relaxation;
+        RenderTargetCube.prototype.clone = function() {
 
-            this.a = 4 / (h * (1 + 4 * d));
-            this.b = (4 * d) / (1 + 4 * d);
-            this.eps = 4 / (h * h * k * (1 + 4 * d))
+            return new RenderTargetCube().copy(this);
         };
 
 
-        return P2Equation;
+        RenderTargetCube.prototype.copy = function(other) {
+            RenderTarget.prototype.copy.call(this, other);
+
+            return this;
+        };
+
+
+        RenderTargetCube.prototype.toJSON = function(json, pack) {
+            json = RenderTarget.prototype.toJSON.call(this, json);
+
+            return json;
+        };
+
+
+        RenderTargetCube.prototype.fromJSON = function(json) {
+            RenderTarget.prototype.fromJSON.call(this, json);
+
+            return this;
+        };
+
+
+        return RenderTargetCube;
     }
 );
 </code></pre>

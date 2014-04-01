@@ -26,7 +26,7 @@ define([
                 "position: absolute;",
                 "top: 50%;",
                 "left: 50%;",
-                "padding:0px;",
+                "padding: 0px;",
                 "margin: 0px;"
             ].join("\n");
 
@@ -38,8 +38,7 @@ define([
          * @class Canvas
          * @extends EventEmitter
          * @brief canvas helper
-         * @param Number width
-         * @param Number height
+         * @param {Object} options
          */
 
         function Canvas(opts) {

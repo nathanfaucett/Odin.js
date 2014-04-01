@@ -684,9 +684,9 @@ define([
                 ay = uz * fx - ux * fz,
                 az = ux * fy - uy * fx,
 
-                d = (1 + ux * fx + uy * fy + uz * fz) * 2,
+                d = (1.0 + ux * fx + uy * fy + uz * fz) * 2.0,
                 dsq = d * d,
-                s = 1 / dsq;
+                s = 1.0 / dsq;
 
             this.x = ax * s;
             this.y = ay * s;
@@ -761,31 +761,31 @@ define([
                 s, invS;
 
             if (trace > 0.0) {
-                s = 0.5 / sqrt(trace + 1);
+                s = 0.5 / sqrt(trace + 1.0);
 
                 this.w = 0.25 / s;
                 this.x = (m32 - m23) * s;
                 this.y = (m13 - m31) * s;
                 this.z = (m21 - m12) * s;
             } else if (m11 > m22 && m11 > m33) {
-                s = 2 * sqrt(1 + m11 - m22 - m33);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m11 - m22 - m33);
+                invS = 1.0 / s;
 
                 this.w = (m32 - m23) * invS;
                 this.x = 0.25 * s;
                 this.y = (m12 + m21) * invS;
                 this.z = (m13 + m31) * invS;
             } else if (m22 > m33) {
-                s = 2 * sqrt(1 + m22 - m11 - m33);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m22 - m11 - m33);
+                invS = 1.0 / s;
 
                 this.w = (m13 - m31) * invS;
                 this.x = (m12 + m21) * invS;
                 this.y = 0.25 * s;
                 this.z = (m23 + m32) * invS;
             } else {
-                s = 2 * sqrt(1 + m33 - m11 - m22);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m33 - m11 - m22);
+                invS = 1.0 / s;
 
                 this.w = (m21 - m12) * invS;
                 this.x = (m13 + m31) * invS;
@@ -825,24 +825,24 @@ define([
                 this.y = (m13 - m31) * s;
                 this.z = (m21 - m12) * s;
             } else if (m11 > m22 && m11 > m33) {
-                s = 2 * sqrt(1 + m11 - m22 - m33);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m11 - m22 - m33);
+                invS = 1.0 / s;
 
                 this.w = (m32 - m23) * invS;
                 this.x = 0.25 * s;
                 this.y = (m12 + m21) * invS;
                 this.z = (m13 + m31) * invS;
             } else if (m22 > m33) {
-                s = 2 * sqrt(1 + m22 - m11 - m33);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m22 - m11 - m33);
+                invS = 1.0 / s;
 
                 this.w = (m13 - m31) * invS;
                 this.x = (m12 + m21) * invS;
                 this.y = 0.25 * s;
                 this.z = (m23 + m32) * invS;
             } else {
-                s = 2 * sqrt(1 + m33 - m11 - m22);
-                invS = 1 / s;
+                s = 2.0 * sqrt(1.0 + m33 - m11 - m22);
+                invS = 1.0 / s;
 
                 this.w = (m21 - m12) * invS;
                 this.x = (m13 + m31) * invS;

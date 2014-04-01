@@ -25,6 +25,7 @@ define([
             this.wrap = opts.wrap != undefined ? opts.wrap : Enums.TextureWrap.Repeat;
 
             this._webgl = undefined;
+            this._webglUsed = 0;
 
             this.needsUpdate = true;
         }

@@ -662,6 +662,23 @@ define([
         };
 
         /**
+         * @method fromRect
+         * @memberof Odin.Vec4
+         * sets values from Rect
+         * @param Vec3 v
+         * @return this
+         */
+        Vec4.prototype.fromRect = function(rect) {
+
+            this.x = rect.x;
+            this.y = rect.y;
+            this.z = rect.width;
+            this.w = rect.height;
+
+            return this;
+        };
+
+        /**
          * @method positionFromMat4
          * @memberof Odin.Vec4
          * sets position from Mat4

@@ -4,12 +4,13 @@ if (typeof define !== "function") {
 define([
         "odin/base/class",
         "odin/base/time",
+        "odin/core/game/log",
         "odin/core/components/component",
         "odin/core/components/particle_system/emitter",
         "odin/core/components/particle_system/emitter_2d",
         "odin/core/components/particle_system/tween"
     ],
-    function(Class, Time, Component, Emitter, Emitter2D, Tween) {
+    function(Class, Time, Log, Component, Emitter, Emitter2D, Tween) {
         "use strict";
 
 
@@ -52,12 +53,29 @@ define([
 
 
         ParticleSystem.prototype.copy = function(other) {
-            var otherEmitters = other.emitters,
-                i = otherEmitters.length;;
+            var emitters = this.emitters,
+                otherEmitters = other.emitters,
+                i = otherEmitters.length,
+                j = emitters.length,
+                emitter, otherEmitter;
 
-            this.clear();
+            while (i-- > j) this.removeEmitter(emitters[i]);
 
-            while (i--) this.addEmitter(otherEmitters[i].clone());
+            i = otherEmitters.length;
+            while (i--) {
+                otherEmitter = otherEmitters[i];
+
+                if ((emitter = emitters[i])) {
+                    if ((emitter._className === otherEmitter._className)) {
+                        otherEmitters[i].copy(other);
+                    } else {
+                        this.removeEmitter(emitter);
+                        this.addEmitter(otherEmitter.clone());
+                    }
+                } else {
+                    this.addEmitter(otherEmitter.clone());
+                }
+            }
             this.playing = other.playing;
 
             return this;
@@ -69,7 +87,7 @@ define([
             var emitters = this.emitters,
                 i = emitters.length;;
 
-            while (i--) this.removeEmitter(emitters[i]);
+            while (i--) emitters[i].clear();
             return this;
         };
 
@@ -135,7 +153,7 @@ define([
         };
 
 
-        ParticleSystem.prototype.findEmitterByServerId = function(id) {
+        ParticleSystem.prototype.findEmitterByJSONId = function(id) {
 
             return this._emitterJSONHash[id];
         };
@@ -198,7 +216,7 @@ define([
             while (i--) {
                 jsonEmitter = jsonEmitters[i];
 
-                if ((emitter = this.findEmitterById(jsonEmitter._id))) {
+                if ((emitter = this.findEmitterByJSONId(jsonEmitter._id))) {
                     emitter.fromJSON(jsonEmitter);
                 } else {
                     this.addEmitter(Class.fromJSON(jsonEmitter));

@@ -26,7 +26,7 @@ define([
             ShadowMapType: new Enum("BasicShadowMap PCFShadowMap PCFSoftShadowMap"),
 
             FilterMode: new Enum("None Linear"),
-            TextureFormat: new Enum("RGB RGBA LuminanceAlpha Luminance Alpha"),
+            TextureFormat: new Enum("RGB RGBA Luminance Alpha LuminanceAlpha"),
             TextureWrap: new Enum("Repeat Clamp MirrorRepeat"),
 
             WrapMode: new Enum("Once Loop PingPong Clamp")

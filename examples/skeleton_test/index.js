@@ -7,32 +7,6 @@ require({
 
         Odin.globalize();
 
-
-        function Test(opts) {
-
-            Component.call(this, opts);
-
-            this.camera = undefined;
-            this.finger = undefined;
-        }
-        Component.extend(Test);
-        Test.order = -2;
-
-
-        Test.prototype.start = function() {
-            var scene = this.gameObject.scene;
-
-            this.camera = scene.find("camera");
-            this.finger = scene.find("finger03");
-        };
-
-
-        Test.prototype.update = function() {
-
-            this.finger.transform.lookAt(this.camera.transform);
-        };
-
-
         Assets.addAssets(
             new ShaderLib.Unlit,
 
@@ -104,7 +78,6 @@ require({
                     mesh: Assets.get("mesh_finger"),
                     material: Assets.get("mat_wireframe")
                 }),
-                new Test,
                 new MeshAnimation
             ],
             tags: [
@@ -129,15 +102,47 @@ require({
         scene.addGameObjects(camera, sphere, finger);
         game.addScene(scene);
 
+        gui = new Odin.GUI({
+            name: "PlayGround"
+        });
+        guiObject = new Odin.GUIObject({
+            position: new Rect(0, 0, 64, 64),
+            components: [
+                new Odin.GUIContent({
+                    text: "Hey Stop That",
+                    style: {
+                        wordWrap: true,
+                        stretchWidth: false,
+
+                        padding: new RectOffset(8, 8, 8, 8),
+
+                        normal: {
+                            text: new Odin.Color()
+                        },
+                        hover: {
+                            text: new Odin.Color("red")
+                        },
+                        active: {
+                            text: new Odin.Color("blue")
+                        }
+                    }
+                })
+            ]
+        });
+
+        gui.addGUIObject(guiObject);
+        game.addGUI(gui);
+
         function start() {
             game.setScene("PlayGround");
+            game.setGUI("PlayGround");
             game.setCamera(game.scene.findByTagFirst("Camera"));
 
             var finger = game.scene.findByTagFirst("Mesh"),
                 sphere = game.scene.findByTagFirst("Sphere"),
                 camera = game.scene.findByTagFirst("Camera");
 
-            finger.meshAnimation.play("idle");
+            finger.meshAnimation.play("attack");
             finger.find("finger03").transform.addChild(sphere.transform);
             sphere.transform.position.y = 1;
 

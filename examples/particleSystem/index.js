@@ -15,7 +15,7 @@ require({
 
         function Rotator(opts) {
 
-            Component.call(this, opts);
+            Component.call(this, "Rotator", opts);
         }
         Component.extend(Rotator);
 

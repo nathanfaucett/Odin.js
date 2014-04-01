@@ -7,14 +7,13 @@ require({
     ],
     function(Odin, assets, sceneLevel) {
 
-
         var game = new Odin.Game({
             debug: true,
             width: 960,
             height: 640,
             renderer: {
                 autoClear: false,
-                disableDepth: false
+                disableDepth: true
             }
         });
 

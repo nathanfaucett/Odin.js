@@ -187,6 +187,9 @@ define(
             child.prototype = Object.create(parent.prototype);
             child.prototype.constructor = child;
 
+            (this._children || (this._children = {}))[child.name] = child;
+            child._parent = this;
+
             child.extend = parent.extend || this.extend;
 
             if (parent.onExtend) {

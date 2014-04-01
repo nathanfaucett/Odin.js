@@ -61,7 +61,8 @@ define([
 
         GUI.prototype.init = function() {
             var guiObjects = this.guiObjects,
-                i;
+                componentTypes = this._componentTypes,
+                i = componentTypes.length;
 
             i = guiObjects.length;
             while (i--) guiObjects[i].emit("init");
@@ -151,7 +152,7 @@ define([
                 i = components.length;
                 while (i--) this._addComponent(components[i]);
 
-                if ((transform = guiObject.transform || guiObject.transform2d)) {
+                if ((transform = guiObject.guiTransform)) {
                     i = (children = transform.children).length;
 
                     while (i--) {
@@ -191,12 +192,13 @@ define([
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
             types.push(component);
-            types.sort(component.sort);
 
             if (isNew) {
                 componentTypes.push(types);
                 componentTypes.sort(sortComponentTypes);
             }
+
+            types.sort(component.sort);
 
             this.emit("add" + type, component);
             this.emit("addComponent", component);
@@ -236,7 +238,7 @@ define([
                 i = components.length;
                 while (i--) this._removeComponent(components[i]);
 
-                if ((transform = guiObject.transform || guiObject.transform2d)) {
+                if ((transform = guiObject.guiTransform)) {
                     i = (children = transform.children).length;
 
                     while (i--) {
@@ -383,7 +385,7 @@ define([
             while (i--) {
                 if (!(jsonGUIObject = jsonGUIObjects[i])) continue;
 
-                if ((guiObject = this.findById(jsonGUIObject._id))) {
+                if ((guiObject = this.findByJSONId(jsonGUIObject._id))) {
                     guiObject.fromJSON(jsonGUIObject);
                 } else {
                     this.addGUIObject(Class.fromJSON(jsonGUIObject));

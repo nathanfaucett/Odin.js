@@ -61,12 +61,50 @@ define(
                 ""
             ].join("\n"),
 
+            composeMat4: [
+                "mat4 composeMat4(vec3 position, vec3 scale, vec4 rotation) {",
+                "	mat4 mat;",
+                "	float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w,",
+
+                "		x2 = x + x, y2 = y + y, z2 = z + z,",
+                "		xx = x * x2, xy = x * y2, xz = x * z2,",
+                "		yy = y * y2, yz = y * z2, zz = z * z2,",
+                "		wx = w * x2, wy = w * y2, wz = w * z2,",
+
+                "		sx = scale.x, sy = scale.y, sz = scale.z;",
+
+                "	mat[0][0] = (1.0 - (yy + zz)) * sx;",
+                "	mat[1][0] = (xy - wz) * sy;",
+                "	mat[2][0] = (xz + wy) * sz;",
+
+                "	mat[0][1] = (xy + wz) * sx;",
+                "	mat[1][1] = (1.0 - (xx + zz)) * sy;",
+                "	mat[2][1] = (yz - wx) * sz;",
+
+                "	mat[0][2] = (xz - wy) * sx;",
+                "	mat[1][2] = (yz + wx) * sy;",
+                "	mat[2][2] = (1.0 - (xx + yy)) * sz;",
+
+                "	mat[0][3] = 0.0;",
+                "	mat[1][3] = 0.0;",
+                "	mat[2][3] = 0.0;",
+
+                "	mat[3][0] = position.x;",
+                "	mat[3][1] = position.y;",
+                "	mat[3][2] = position.z;",
+                "	mat[3][3] = 1.0;",
+
+                "	return mat;",
+                "}",
+                ""
+            ].join("\n"),
+
             getBoneMatrix: [
                 "#ifdef USE_SKINNING",
-                "mat4 getBoneMatrix(){",
-                "	mat4 result = boneWeight.x * bones[ int( boneIndex.x ) ];",
-                "	result = result + boneWeight.y * bones[ int( boneIndex.y ) ];",
-                "	result = result + boneWeight.z * bones[ int( boneIndex.z ) ];",
+                "mat4 getBoneMatrix() {",
+                "	mat4 result = boneWeight.x * composeMat4(bonesPos[int(boneIndex.x)], bonesScl[int(boneIndex.x)], bonesRot[int(boneIndex.x)]);",
+                "	result = result + boneWeight.y * composeMat4(bonesPos[int(boneIndex.y)], bonesScl[int(boneIndex.y)], bonesRot[int(boneIndex.y)]);",
+                "	result = result + boneWeight.z * composeMat4(bonesPos[int(boneIndex.z)], bonesScl[int(boneIndex.z)], bonesRot[int(boneIndex.z)]);",
                 "	return result;",
                 "}",
                 "#endif",
@@ -150,7 +188,7 @@ define(
                 "	vec4 mvPosition = modelViewMatrix * vec4( morphed, 1.0 );",
                 "	#endif",
 
-                "	#if !defined( USE_SKINNING ) && ! defined( USE_MORPHTARGETS )",
+                "	#if !defined( USE_SKINNING ) && !defined( USE_MORPHTARGETS )",
                 "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
                 "	#endif",
                 ""

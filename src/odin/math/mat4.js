@@ -688,17 +688,17 @@ define([
                 sy = scale.y,
                 sz = scale.z;
 
-            te[0] = (1 - (yy + zz)) * sx;
+            te[0] = (1.0 - (yy + zz)) * sx;
             te[4] = (xy - wz) * sy;
             te[8] = (xz + wy) * sz;
 
             te[1] = (xy + wz) * sx;
-            te[5] = (1 - (xx + zz)) * sy;
+            te[5] = (1.0 - (xx + zz)) * sy;
             te[9] = (yz - wx) * sz;
 
             te[2] = (xz - wy) * sx;
             te[6] = (yz + wx) * sy;
-            te[10] = (1 - (xx + yy)) * sz;
+            te[10] = (1.0 - (xx + yy)) * sz;
 
             te[3] = 0.0;
             te[7] = 0.0;
@@ -707,7 +707,7 @@ define([
             te[12] = position.x;
             te[13] = position.y;
             te[14] = position.z;
-            te[15] = 1;
+            te[15] = 1.0;
 
             return this;
         };

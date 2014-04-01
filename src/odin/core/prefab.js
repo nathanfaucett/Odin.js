@@ -3,9 +3,10 @@ if (typeof define !== "function") {
 }
 define([
         "odin/base/class",
-        "odin/base/object_pool"
+        "odin/base/object_pool",
+        "odin/core/game/log"
     ],
-    function(Class, ObjectPool) {
+    function(Class, ObjectPool, Log) {
         "use strict";
 
 
@@ -23,12 +24,27 @@ define([
         Prefab.prototype.create = function() {
             var object = this.objectPool.create();
 
-            object.clear();
-
             object.fromJSON(this.object);
-            object.once("remove", onRemove, this);
+            object.on("remove", onRemove, this);
 
             return object;
+        };
+
+
+        Prefab.prototype.setObject = function(object) {
+
+            this.object = object.toJSON();
+            this.objectPool = new ObjectPool(object.constructor);
+
+            return this;
+        };
+
+
+        Prefab.prototype.empty = function() {
+
+            this.objectPool.empty();
+
+            return this;
         };
 
 
@@ -54,6 +70,7 @@ define([
         function onRemove(object) {
 
             this.objectPool.removeObject(object);
+            object.off("remove", onRemove, this);
         };
 
 

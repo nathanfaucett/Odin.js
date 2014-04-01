@@ -76,6 +76,14 @@ define(
         };
 
 
+        ObjectPool.prototype.empty = function() {
+
+            this.pooled.length = this.objects.length = 0;
+
+            return this;
+        };
+
+
         return ObjectPool;
     }
 );

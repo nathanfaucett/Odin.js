@@ -38,11 +38,11 @@ define([
 
             this.modelView = new Mat4;
             this.normalMatrix = new Mat3;
-            this._matricesViewNeedsUpdate = false;
+            this._matricesNeedsUpdate = false;
         }
 
         Component.extend(Transform);
-        Transform.order = -1;
+        Transform.order = -999999;
 
 
         Transform.prototype.copy = function(other) {
@@ -56,9 +56,10 @@ define([
             while (i--) this.addChild(children[i].gameObject.clone().transform);
             if (other.parent) other.parent.addChild(this);
 
+            this._matricesNeedsUpdate = true;
+
             return this;
         };
-
 
         Transform.prototype.clear = function() {
             Component.prototype.clear.call(this);
@@ -73,6 +74,8 @@ define([
 
             this.root = this;
             this.depth = 0;
+
+            this._matricesNeedsUpdate = true;
 
             return this;
         };
@@ -156,14 +159,14 @@ define([
         }();
 
 
-        Transform.prototype.addChild = function(child) {
+        Transform.prototype.addChild = function(child, others) {
             if (!(child instanceof Transform)) {
                 Log.error("Transform.add: can\'t add passed argument, it is not an instance of Transform");
                 return this;
             }
             var children = this.children,
                 index = children.indexOf(child),
-                root, depth;
+                root, depth, scene;
 
             if (index === -1) {
                 if (child.parent) child.parent.removeChild(child);
@@ -182,6 +185,11 @@ define([
                 this.root = root;
 
                 updateDepth(this, depth);
+                if (!others) {
+                    if (this.gameObject && (scene = this.gameObject.scene)) {
+                        scene.components.Transform.sort(this.sort);
+                    }
+                }
             } else {
                 Log.error("Transform.add: child is not a member of this Transform");
             }
@@ -191,17 +199,21 @@ define([
 
 
         Transform.prototype.addChildren = function() {
-            var i = arguments.length;
+            var i = arguments.length,
+                scene;
 
-            while (i--) this.addChild(arguments[i]);
+            while (i--) this.addChild(arguments[i], true);
+            if (this.gameObject && (scene = this.gameObject.scene)) {
+                scene.components.Transform.sort(this.sort);
+            }
             return this;
         };
 
 
-        Transform.prototype.removeChild = function(child) {
+        Transform.prototype.removeChild = function(child, others) {
             var children = this.children,
                 index = children.indexOf(child),
-                root, depth;
+                root, depth, scene;
 
             if (index !== -1) {
                 child.parent = undefined;
@@ -218,6 +230,11 @@ define([
                 this.root = root;
 
                 updateDepth(this, depth);
+                if (!others) {
+                    if (this.gameObject && (scene = this.gameObject.scene)) {
+                        scene.components.Transform.sort(this.sort);
+                    }
+                }
             } else {
                 Log.error("Transform.remove: child is not a member of this Transform");
             }
@@ -227,9 +244,13 @@ define([
 
 
         Transform.prototype.removeChildren = function() {
-            var i = arguments.length;
+            var i = arguments.length,
+                scene;
 
-            while (i--) this.removeChild(arguments[i]);
+            while (i--) this.removeChild(arguments[i], true);
+            if (this.gameObject && (scene = this.gameObject.scene)) {
+                scene.components.Transform.sort(this.sort);
+            }
             return this;
         };
 
@@ -293,16 +314,16 @@ define([
                 this.matrixWorld.copy(matrix);
             }
 
-            this._matricesViewNeedsUpdate = true;
+            this._matricesNeedsUpdate = true;
         };
 
 
         Transform.prototype.updateMatrices = function(viewMatrix) {
-            if (!this._matricesViewNeedsUpdate) return;
+            if (!this._matricesNeedsUpdate) return;
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
             this.normalMatrix.inverseMat4(this.modelView).transpose();
-            this._matricesViewNeedsUpdate = false;
+            this._matricesNeedsUpdate = false;
         };
 
 
@@ -332,11 +353,11 @@ define([
             Component.prototype.fromJSON.call(this, json);
             var children = json.children,
                 i = children.length,
-                child;
+                child, scene;
 
-            if (this.gameObject && this.gameObject.scene) {
+            if (this.gameObject && (scene = this.gameObject.scene)) {
                 while (i--) {
-                    child = this.gameObject.scene.findComponentByJSONId(children[i]);
+                    child = scene.findComponentByJSONId(children[i]);
 
                     if (!this.hasChild(child)) {
                         this.addChild(child);
@@ -344,8 +365,10 @@ define([
                 }
             } else {
                 this.once("start", function() {
+                    var scene = this.gameObject.scene;
+
                     while (i--) {
-                        child = this.gameObject.scene.findComponentByJSONId(children[i]);
+                        child = scene.findComponentByJSONId(children[i]);
 
                         if (!this.hasChild(child)) {
                             this.addChild(child);
@@ -357,6 +380,8 @@ define([
             this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
             this.rotation.fromJSON(json.rotation);
+
+            this._matricesNeedsUpdate = true;
 
             return this;
         };

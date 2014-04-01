@@ -65,9 +65,6 @@ def get_action_state( frame, action, bone, armatureObject ):
 	
 	bonePose = armatureObject.pose.bones[ bone.name ]
 	matrix_local = bonePose.matrix
-	pos =  mathutils.Vector((1.0, 1.0, 1.0))
-	rot = mathutils.Quaternion((0.0, 0.0, 0.0, 1.0))
-	scl = mathutils.Vector((1.0, 1.0, 1.0))
 	
 	if bone.parent != None:
 		matrix_local = bonePose.parent.matrix.inverted() * matrix_local
@@ -338,10 +335,18 @@ def get_mesh_string( obj ):
 		"animations": get_animation()
 	}
 
+def strip_file( string ):
+	lines = string.splitlines()
+	out = ""
+	
+	for line in lines:
+		out += line.strip()
+	
+	return out
+
 def export_mesh( obj, filepath ):
-	
-	write_file( filepath, get_mesh_string( obj ) )
-	
+
+	write_file( filepath, strip_file( get_mesh_string( obj ) ) )
 	print("writing", filepath, "done")
 
 

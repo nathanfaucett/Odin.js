@@ -55,24 +55,30 @@ define([
         };
 
 
-        Log.prototype.object = function(obj, values) {
+        Log.prototype.object = function(obj, values, tabs) {
             if (!Config.debug) return "";
             var str = "";
 
+            tabs || (tabs = "");
             values || (values = []);
 
             each(obj, function(value, i) {
                 if (~values.indexOf(value)) return;
 
-                var type = typeof(value);
+                var type = typeof(value),
+                    tmp;
 
                 if (type === "object") {
+                    tmp = tabs;
                     values.push(value);
-                    str += "\t" + i + " = " + this.object(value, values);
+                    tabs += "\t";
+                    str += tabs + i + " = " + this.object(value, values, tabs) + "\n";
+                    tabs = tmp;
                 } else if (type !== "function") {
-                    str += "\t" + i + " = " + value + "\n";
+                    str += tabs + i + " = " + value + "\n";
                 } else {
                     values.push(value);
+                    str += tabs + value + "\n";
                 }
             }, this);
 

@@ -112,19 +112,17 @@ define([
 
 
         function randomDoor(v) {
-            switch (randArg(0, 1, 2)) {
-                case 0:
-                    v.x = -8;
-                    v.y = 7.5;
-                    break;
-                case 1:
-                    v.x = 0;
-                    v.y = 7.5;
-                    break;
-                case 2:
-                    v.x = 8;
-                    v.y = 7.5;
-                    break;
+            var num = randArg(0, 1, 2);
+
+            if (num === 0) {
+                v.x = -8;
+                v.y = 7.5;
+            } else if (num === 1) {
+                v.x = 0;
+                v.y = 7.5;
+            } else {
+                v.x = 8;
+                v.y = 7.5;
             }
         }
 

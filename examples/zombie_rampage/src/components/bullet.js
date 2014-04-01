@@ -13,9 +13,9 @@ define([
             Odin.Component.call(this, "Bullet", opts);
 
             this._life = 0;
-            this.life = Infinity;
+            this.life = opts.life != undefined ? opts.life : Infinity;
             this.owner = undefined;
-            this.destoryOnFlesh = true;
+            this.destoryOnFlesh = opts.destoryOnFlesh != undefined ? !! opts.destoryOnFlesh : true;
         }
 
         Odin.Component.extend(Bullet);

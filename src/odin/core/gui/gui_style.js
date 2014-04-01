@@ -41,9 +41,10 @@ define([
             this.hover = new GUIStyleState(opts.hover);
 
             this.font = opts.font || "Arial";
+            this.bitmap = opts.bitmap != undefined ? opts.bitmap : false;
             this.fontSize = opts.fontSize || 16;
             this.fontStyle = opts.fontStyle || "normal";
-            this.lineHeight = opts.lineHeight || 0;
+            this.lineHeight = opts.lineHeight || 24;
             this.lineSpacing = opts.lineSpacing || 0;
 
             this.margin = opts.margin || new RectOffset;

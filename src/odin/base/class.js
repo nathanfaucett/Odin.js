@@ -109,6 +109,9 @@ define([
             child.extend = parent.extend;
             child.prototype._className = child._className = child.name;
 
+            (this._children || (this._children = {}))[child.name] = child;
+            child._parent = this;
+
             Class._classes[child.name] = child;
 
             if (parent.onExtend) {

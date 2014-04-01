@@ -2,10 +2,12 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/math/vec3",
+        "odin/math/quat",
         "odin/math/mat4",
         "odin/core/components/component",
     ],
-    function(Mat4, Component) {
+    function(Vec3, Quat, Mat4, Component) {
         "use strict";
 
 
@@ -30,7 +32,7 @@ define([
         }
 
         Component.extend(Bone);
-        Bone.order = Infinity;
+        Bone.order = 1000000;
 
 
         Bone.prototype.copy = function(other) {
@@ -49,13 +51,36 @@ define([
         };
 
 
+        var MAT = new Mat4,
+            POSITION = new Vec3,
+            SCALE = new Vec3,
+            ROTATION = new Quat;
         Bone.prototype.update = function() {
+            if (!this.skinned) return;
             var transform = this.transform,
                 uniform = this.uniform,
-                parent = transform.parent;
+                parent = transform.parent,
+                inheritPosition = this.inheritPosition,
+                inheritScale = this.inheritScale,
+                inheritRotation = this.inheritRotation;
 
             uniform.copy(transform.matrix);
-            if (this.parentIndex !== -1) uniform.mmul(parent.bone.uniform, uniform);
+
+            if (parent && this.parentIndex !== -1) {
+                MAT.copy(parent.bone.uniform);
+
+                if (!inheritPosition || !inheritScale || !inheritRotation) {
+                    MAT.decompose(POSITION, SCALE, ROTATION);
+
+                    if (!inheritPosition) POSITION.set(0.0, 0.0, 0.0);
+                    if (!inheritScale) SCALE.set(1.0, 1.0, 1.0);
+                    if (!inheritRotation) ROTATION.set(0.0, 0.0, 0.0, 1.0);
+
+                    MAT.compose(POSITION, SCALE, ROTATION);
+                }
+
+                uniform.mmul(MAT, uniform);
+            }
         };
 
 

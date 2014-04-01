@@ -92,7 +92,7 @@ define([
             });
 
             socket.on("server_setScene", function(scene_id) {
-                var scene = self.findByServerId(scene_id);
+                var scene = self.findByJSONId(scene_id);
 
                 self.setScene(scene);
             });
@@ -104,7 +104,7 @@ define([
                     Log.error("Socket:server_setCamera: can't set camera without an active scene, use ServerGame.setScene first");
                     return;
                 }
-                var camera = self.scene.findByServerId(camera_id),
+                var camera = self.scene.findByJSONId(camera_id),
                     canvas = self.canvas;
 
                 if (!camera) {
@@ -128,17 +128,17 @@ define([
             });
 
             socket.on("server_addGameObject", function(scene_id, gameObject) {
-                var scene = self.findByServerId(scene_id);
+                var scene = self.findByJSONId(scene_id);
                 if (!scene) return;
 
                 scene.addGameObject(new GameObject().fromServerJSON(gameObject));
             });
 
             socket.on("server_addComponent", function(scene_id, gameObject_id, component) {
-                var scene = self.findByServerId(scene_id);
+                var scene = self.findByJSONId(scene_id);
                 if (!scene) return;
 
-                var gameObject = scene.findByServerId(gameObject_id);
+                var gameObject = scene.findByJSONId(gameObject_id);
                 if (!gameObject) return;
 
                 gameObject.addComponent(new Component._types[component._type].fromServerJSON(component));
@@ -147,21 +147,21 @@ define([
 
             socket.on("server_removeScene", function(scene_id) {
 
-                self.removeScene(self.findByServerId(scene_id));
+                self.removeScene(self.findByJSONId(scene_id));
             });
 
             socket.on("server_removeGameObject", function(scene_id, gameObject_id) {
-                var scene = self.findByServerId(scene_id);
+                var scene = self.findByJSONId(scene_id);
                 if (!scene) return;
 
-                scene.removeGameObject(scene.findByServerId(gameObject_id));
+                scene.removeGameObject(scene.findByJSONId(gameObject_id));
             });
 
             socket.on("server_removeComponent", function(scene_id, gameObject_id, component_type) {
-                var scene = self.findByServerId(scene_id);
+                var scene = self.findByJSONId(scene_id);
                 if (!scene) return;
 
-                var gameObject = scene.findByServerId(gameObject_id);
+                var gameObject = scene.findByJSONId(gameObject_id);
                 if (!gameObject) return;
 
                 gameObject.removeComponent(gameObject.getComponent(component_type));

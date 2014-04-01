@@ -59,7 +59,8 @@ define([
 
         Scene.prototype.init = function() {
             var gameObjects = this.gameObjects,
-                i;
+                componentTypes = this._componentTypes,
+                i = componentTypes.length;
 
             this.world && this.world.init();
 
@@ -219,12 +220,13 @@ define([
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
             types.push(component);
-            types.sort(component.sort);
 
             if (isNew) {
                 componentTypes.push(types);
                 componentTypes.sort(sortComponentTypes);
             }
+
+            types.sort(component.sort);
 
             this.emit("add" + type, component);
             this.emit("addComponent", component);
@@ -262,7 +264,7 @@ define([
 
                 components = gameObject.components;
                 i = components.length;
-                while (i--) this._removeComponent(components[i]);
+                while (i--) this._removeComponent(components[i], clear);
 
                 if ((transform = gameObject.transform || gameObject.transform2d)) {
                     i = (children = transform.children).length;
@@ -293,7 +295,7 @@ define([
         };
 
 
-        Scene.prototype._removeComponent = function(component) {
+        Scene.prototype._removeComponent = function(component, clear) {
             if (!component) return;
             var type = component._type,
                 components = this.components,
@@ -309,7 +311,7 @@ define([
             this.emit("remove" + type, component);
             this.emit("removeComponent", component);
 
-            component.clear();
+            if (clear) component.clear();
         };
 
 
@@ -408,13 +410,17 @@ define([
                 i = jsonGameObjects.length;
 
             this.name = json.name;
-            this.world = Class.fromJSON(json.world);
-            this.world.scene = this;
+
+            if (this.world._className === json.world._className) {
+                this.world.fromJSON(json.world);
+            } else {
+                this.setWorld(Class.fromJSON(json.world));
+            }
 
             while (i--) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
 
-                if ((gameObject = this.findById(jsonGameObject._id))) {
+                if ((gameObject = this.findByJSONId(jsonGameObject._id))) {
                     gameObject.fromJSON(jsonGameObject);
                 } else {
                     this.addGameObject(Class.fromJSON(jsonGameObject));

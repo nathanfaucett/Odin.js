@@ -32,7 +32,7 @@ define([
             this.w = opts.w || 1;
             this.h = opts.h || 1;
 
-            this._webglMeshInitted = false;
+            this._webglInitted = false;
         }
 
         Component.extend(Sprite);
@@ -57,7 +57,7 @@ define([
             this.w = other.w;
             this.h = other.h;
 
-            this._webglMeshInitted = false;
+            this._webglInitted = false;
 
             return this;
         };
@@ -67,7 +67,7 @@ define([
             Component.prototype.clear.call(this);
 
             this.material = undefined;
-            this._webglMeshInitted = false;
+            this._webglInitted = false;
 
             return this;
         };
@@ -117,7 +117,7 @@ define([
             this.w = json.w;
             this.h = json.h;
 
-            this._webglMeshInitted = false;
+            this._webglInitted = false;
 
             return this;
         };

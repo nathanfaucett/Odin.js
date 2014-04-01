@@ -9,7 +9,6 @@ define([
     function(Class, Component, Log) {
         "use strict";
 
-
         /**
          * @class GameObject
          * @extends Class
@@ -43,13 +42,20 @@ define([
 
 
         GameObject.prototype.copy = function(other) {
-            var components = other.components,
+            var components = this.components,
+                otherComponents = other.components,
                 tags = other.tags,
                 otherComponent, component,
                 i = components.length;
 
             while (i--) {
-                otherComponent = components[i];
+                component = components[i];
+                if (!other.hasComponent(component._className)) this.removeComponent(component);
+            }
+
+            i = otherComponents.length;
+            while (i--) {
+                otherComponent = otherComponents[i];
 
                 if ((component = this.getComponent(otherComponent._type))) {
                     component.copy(otherComponent);
@@ -170,7 +176,7 @@ define([
                 components.push(component);
                 this._componentType[component._type] = component;
                 this._componentHash[component._id] = component;
-                if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component._jsonId;
+                if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
                 component.gameObject = this;
                 this[name] = component;
@@ -308,7 +314,7 @@ define([
 
         GameObject.prototype.getComponent = function(type) {
 
-            return this._componentType[type] || this[type] || this[type.toLowerCase()];
+            return this._componentType[type];
         };
 
 
@@ -379,16 +385,33 @@ define([
 
         GameObject.prototype.fromJSON = function(json) {
             Class.prototype.fromJSON.call(this, json);
-            var jsonComponents = json.components || (json.components = []),
+            var components = this.components,
+                jsonComponents = json.components || (json.components = []),
                 component, jsonComponent, tag,
                 tags = this.tags,
                 jsonTags = json.tags || (json.tags = []),
-                i = jsonComponents.length;
+                i = components.length,
+                has, type, j;
 
+            while (i--) {
+                component = components[i];
+                type = component._type;
+                has = false;
+
+                j = jsonComponents.length;
+                while (j--) {
+                    jsonComponent = jsonComponents[i];
+                    if (type === jsonComponent._type) has = true;
+                }
+
+                if (!has) this.removeComponent(component);
+            }
+
+            i = jsonComponents.length;
             while (i--) {
                 if (!(jsonComponent = jsonComponents[i])) continue;
 
-                if ((component = this.findComponentById(jsonComponent._id)) || (component = this.getComponent(jsonComponent._type))) {
+                if ((component = this.findComponentByJSONId(jsonComponent._id)) || (component = this.getComponent(jsonComponent._type))) {
                     component.fromJSON(jsonComponent);
                 } else {
                     this.addComponent(Class.fromJSON(jsonComponent));
