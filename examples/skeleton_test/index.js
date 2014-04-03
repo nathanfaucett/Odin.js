@@ -15,6 +15,12 @@ require({
                 src: "../content/images/marine_spec.jpg"
             })
         );
+
+        renderTarget = new RenderTarget({
+            generateMipmap: false,
+            width: 512,
+            height: 512
+        });
         Assets.addAssets(
             new Mesh({
                 name: "mesh_finger",
@@ -22,6 +28,11 @@ require({
             }),
             Mesh.Sphere({
                 name: "mesh_sphere"
+            }),
+            Mesh.Plane({
+                name: "mesh_plane",
+                width: 10,
+                height: 10
             }),
             Mesh.Sphere({
                 name: "mesh_smallSphere",
@@ -46,6 +57,15 @@ require({
                 },
 
                 shader: Assets.get("shader_unlit")
+            }),
+            new Material({
+                name: "mat_tv",
+
+                uniforms: {
+                    diffuseMap: renderTarget
+                },
+
+                shader: Assets.get("shader_unlit")
             })
         );
 
@@ -57,7 +77,7 @@ require({
             name: "PlayGround"
         });
 
-        var camera = new GameObject({
+        camera = new GameObject({
             name: "camera",
             components: [
                 new Transform({
@@ -67,6 +87,21 @@ require({
                 new OrbitControl
             ],
             tag: "Camera"
+        });
+        camera2 = new GameObject({
+            name: "camera2",
+            components: [
+                new Transform({
+                    position: new Vec3(-1.275, -4.4, -20),
+                    rotation: new Quat().rotate(Math.PI, 0, Math.PI * -0.5)
+                }),
+                new Camera({
+                    width: 512,
+                    height: 512,
+                    autoResize: false
+                })
+            ],
+            tag: "Camera2"
         });
         finger = new GameObject({
             name: "finger",
@@ -98,9 +133,50 @@ require({
                 "Sphere"
             ]
         });
+        sphere2 = new GameObject({
+            name: "sphere2",
+            components: [
+                new Transform({
+                    position: new Vec3(0, 0, 8)
+                }),
+                new MeshFilter({
+                    mesh: Assets.get("mesh_sphere"),
+                    material: Assets.get("mat_default")
+                })
+            ],
+            tags: [
+                "Sphere2"
+            ]
+        });
+        plane = new GameObject({
+            components: [
+                new Transform({
+                    position: new Vec3(0, 0, 0)
+                }),
+                new MeshFilter({
+                    mesh: Assets.get("mesh_plane"),
+                    material: Assets.get("mat_tv")
+                })
+            ],
+            tags: [
+                "Plane"
+            ]
+        });
 
-        scene.addGameObjects(camera, sphere, finger);
+        scene.addGameObjects(camera, camera2, sphere, sphere2, plane, finger);
         game.addScene(scene);
+
+        game.on("lateUpdate", function() {
+            camera2 = this.scene.find("camera2");
+            camera2.camera.update(true);
+
+            var position = this.scene.find("sphere2").transform.position;
+
+            position.x = Math.sin(Time.time) * 3;
+            position.y = Math.cos(Time.time) * 3;
+
+            this.renderer.render(camera2.camera, this.scene, null, renderTarget);
+        });
 
         gui = new Odin.GUI({
             name: "PlayGround"

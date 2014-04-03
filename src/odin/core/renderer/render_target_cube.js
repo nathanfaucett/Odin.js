@@ -18,6 +18,8 @@ define([
             opts || (opts = {});
 
             RenderTarget.call(this, opts);
+
+            this.activeCubeFace = 0;
         }
 
         RenderTarget.extend(RenderTargetCube);

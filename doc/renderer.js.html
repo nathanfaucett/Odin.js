@@ -141,9 +141,20 @@ define([
                 _canvas2d = undefined,
                 _ctx = undefined;
 
-            this.preRender = function(gui, scene, camera) {
-                if (!_context) return;
-                var background = camera.background;
+            /**
+             * @method render
+             * @memberof Renderer
+             * @brief renderers scene from camera's perspective
+             * @param Scene scene
+             * @param Camera camera
+             */
+            function render(camera, scene, gui, renderTarget) {
+                if (!_context || !camera) return;
+                var lineWidth, blending, cullFace,
+                    background = camera.background,
+                    i;
+
+                setRenderTarget(renderTarget);
 
                 if (_lastClearColor.r !== background.r || _lastClearColor.g !== background.g || _lastClearColor.b !== background.b) {
                     _lastClearColor.copy(background);
@@ -151,23 +162,29 @@ define([
                     if (!this.autoClear) clearCanvas(true, this.autoClearDepth, this.autoClearStencil);
                 }
                 if (_lastCamera !== camera) {
-                    var w = _canvas.pixelWidth,
-                        h = _canvas.pixelHeight;
 
-                    camera.set(w, h);
-                    setViewport(0, 0, w, h);
-
-                    if (_lastResizeFn) _canvas.off("resize", _lastResizeFn);
-
-                    _lastResizeFn = function() {
-                        var w = this.pixelWidth,
-                            h = this.pixelHeight;
+                    if (camera.autoResize) {
+                        var w = _canvas.pixelWidth,
+                            h = _canvas.pixelHeight;
 
                         camera.set(w, h);
                         setViewport(0, 0, w, h);
-                    };
 
-                    _canvas.on("resize", _lastResizeFn);
+                        if (_lastResizeFn) _canvas.off("resize", _lastResizeFn);
+
+                        _lastResizeFn = function() {
+                            var w = this.pixelWidth,
+                                h = this.pixelHeight;
+
+                            camera.set(w, h);
+                            setViewport(0, 0, w, h);
+                        };
+
+                        _canvas.on("resize", _lastResizeFn);
+                    } else {
+                        setViewport(0, 0, camera.width, camera.height);
+                    }
+
                     _lastCamera = camera;
                 }
                 if (scene && _lastScene !== scene) {
@@ -185,48 +202,88 @@ define([
 
                 _projScreenMatrix.mmul(camera.projection, camera.view);
                 if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
-            };
 
-            /**
-             * @method renderGUI
-             * @memberof Renderer
-             * @brief renderers gui within camera's viewport
-             * @param GUI gui
-             * @param Camera camera
-             */
-            function renderGUI(gui, camera, renderTarget) {
-                if (!_context) return;
-                var lineWidth = _lastLineWidth,
-                    blending = _lastBlending,
-                    cullFace = _lastCullFace,
+                if (scene) {
+                    var components = scene.components,
+                        ambient = scene.world.ambient,
+                        lights = components.Light || EMPTY_ARRAY,
+                        meshFilters = components.MeshFilter || EMPTY_ARRAY,
+                        sprites = components.Sprite || EMPTY_ARRAY,
+                        particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                        meshFilter, particleSystem, sprite, transform;
 
-                    components = gui.components,
-                    guiContents = components.GUIContent || EMPTY_ARRAY,
-                    guiContent, transform,
-                    i;
+                    lineWidth = _lastLineWidth;
+                    blending = _lastBlending;
+                    cullFace = _lastCullFace;
 
-                setRenderTarget(renderTarget);
+                    i = meshFilters.length;
+                    while (i--) {
+                        meshFilter = meshFilters[i];
+                        transform = meshFilter.transform || meshFilter.transform2d;
 
-                useDepth && setDepthTest(false);
-                setCullFace(CullFace.Back);
+                        if (!transform) continue;
 
-                i = guiContents.length;
-                while (i--) {
-                    guiContent = guiContents[i];
-                    transform = guiContent.guiTransform;
+                        transform.updateMatrices(camera.view);
+                        renderMeshFilter(camera, lights, ambient, transform, meshFilter);
+                    }
 
-                    if (!transform) continue;
+                    i = sprites.length;
+                    while (i--) {
+                        sprite = sprites[i];
+                        transform = sprite.transform || sprite.transform2d;
 
-                    transform.updateMatrices(camera.guiProjection);
-                    renderGUIContent(camera, transform, guiContent);
+                        if (!transform) continue;
+
+                        transform.updateMatrices(camera.view);
+                        renderSprite(camera, lights, ambient, transform, sprite);
+                    }
+
+                    i = particleSystems.length;
+                    while (i--) {
+                        particleSystem = particleSystems[i];
+                        transform = particleSystem.transform || sprite.transform2d;
+
+                        if (!transform) continue;
+
+                        transform.updateMatrices(camera.view);
+                        renderParticleSystem(camera, lights, ambient, transform, particleSystem);
+                    }
+
+                    setCullFace(cullFace);
+                    setBlending(blending);
+                    setLineWidth(lineWidth);
                 }
+                if (gui) {
+                    var components = gui.components,
+                        guiContents = components.GUIContent || EMPTY_ARRAY,
+                        guiContent, transform,
+                        i;
 
-                setBlending(blending);
-                setLineWidth(lineWidth);
-                setCullFace(cullFace);
-                useDepth && setDepthTest(true);
-            }
-            this.renderGUI = renderGUI;
+                    lineWidth = _lastLineWidth;
+                    blending = _lastBlending;
+                    cullFace = _lastCullFace;
+
+                    useDepth && setDepthTest(false);
+                    setCullFace(CullFace.Back);
+
+                    i = guiContents.length;
+                    while (i--) {
+                        guiContent = guiContents[i];
+                        transform = guiContent.guiTransform;
+
+                        if (!transform) continue;
+
+                        transform.updateMatrices(camera.guiProjection);
+                        renderGUIContent(camera, transform, guiContent);
+                    }
+
+                    setBlending(blending);
+                    setLineWidth(lineWidth);
+                    setCullFace(cullFace);
+                    useDepth && setDepthTest(true);
+                }
+            };
+            this.render = render;
 
 
             var _guiBuffers = undefined,
@@ -344,7 +401,7 @@ define([
                 texture.width = innerRect.width = width;
                 texture.height = innerRect.height = height;
 
-                texture._webgl = texture._webgl || (texture._webglTexture = _gl.createTexture());
+                texture._webgl = texture._webgl || (texture._webgl = _gl.createTexture());
 
                 _gl.bindTexture(TEXTURE_2D, texture._webgl);
 
@@ -423,69 +480,6 @@ define([
 
                 return result;
             }
-
-            /**
-             * @method render
-             * @memberof Renderer
-             * @brief renderers scene from camera's perspective
-             * @param Scene scene
-             * @param Camera camera
-             */
-            function render(scene, camera, renderTarget) {
-                if (!_context) return;
-                var lineWidth = _lastLineWidth,
-                    blending = _lastBlending,
-                    cullFace = _lastCullFace,
-
-                    components = scene.components,
-                    ambient = scene.world.ambient,
-                    lights = components.Light || EMPTY_ARRAY,
-                    meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                    sprites = components.Sprite || EMPTY_ARRAY,
-                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                    meshFilter, particleSystem, sprite, transform,
-                    i;
-
-                setRenderTarget(renderTarget);
-
-                i = meshFilters.length;
-                while (i--) {
-                    meshFilter = meshFilters[i];
-                    transform = meshFilter.transform || meshFilter.transform2d;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderMeshFilter(camera, lights, ambient, transform, meshFilter);
-                }
-
-                i = sprites.length;
-                while (i--) {
-                    sprite = sprites[i];
-                    transform = sprite.transform || sprite.transform2d;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderSprite(camera, lights, ambient, transform, sprite);
-                }
-
-                i = particleSystems.length;
-                while (i--) {
-                    particleSystem = particleSystems[i];
-                    transform = particleSystem.transform || sprite.transform2d;
-
-                    if (!transform) continue;
-
-                    transform.updateMatrices(camera.view);
-                    renderParticleSystem(camera, lights, ambient, transform, particleSystem);
-                }
-
-                setCullFace(cullFace);
-                setBlending(blending);
-                setLineWidth(lineWidth);
-            };
-            this.render = render;
 
 
             function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
@@ -2201,14 +2195,14 @@ define([
 
 
             function setTexture(location, texture) {
-                if (!texture || !texture.raw) return;
+                if (!texture) return;
                 var index, glTexture;
 
                 if (_textureIndex >= _maxTextures) {
                     Log.warn("Renderer setTexure: using " + _textureIndex + " texture units, GPU only supports " + _maxTextures);
                 }
 
-                if (!texture.needsUpdate && (glTexture = texture._webgl)) {
+                if ((!texture.needsUpdate || texture instanceof RenderTarget) && (glTexture = texture._webgl)) {
                     index = _textureIndex++;
 
                     _gl.activeTexture(_gl.TEXTURE0 + index);
@@ -2217,6 +2211,8 @@ define([
 
                     return;
                 }
+
+                if (!texture.raw) return;
 
                 glTexture = texture._webgl || (texture._webgl = _gl.createTexture());
                 index = _textureIndex++;
@@ -2417,19 +2413,26 @@ define([
                     width, height, vx, vy;
 
                 if (isRenderTarget && !renderTarget._webglFramebuffer) {
-                    renderTarget._webglTexture = _gl.createTexture();
+                    width = renderTarget.width;
+                    height = renderTarget.height;
+                    renderTarget._webgl = _gl.createTexture();
 
                     var TFA = _extensions.EXT_texture_filter_anisotropic,
-                        isPOT = isPowerOfTwo(renderTarget.width) && isPowerOfTwo(renderTarget.height),
+                        isPOT = isPowerOfTwo(width) && isPowerOfTwo(height),
                         anisotropy = clamp(renderTarget.anisotropy || 1, 1, _maxAnisotropy),
 
-                        GL_TEXTURE_TYPE = isCube ? _gl.TEXTURE_2D : _gl.TEXTURE_CUBE_MAP,
+                        GL_TEXTURE_TYPE = isCube ? _gl.TEXTURE_CUBE_MAP : _gl.TEXTURE_2D,
+                        UNSIGNED_BYTE = _gl.UNSIGNED_BYTE,
+                        UNSIGNED_SHORT = _gl.UNSIGNED_SHORT,
+                        DEPTH_COMPONENT = _gl.DEPTH_COMPONENT,
+
                         generateMipmap = renderTarget.generateMipmap,
                         filter = renderTarget.filter,
                         format = renderTarget.format,
                         wrap = renderTarget.wrap,
                         WRAP, MAG_FILTER, MIN_FILTER, FORMAT,
-                        webglFramebuffer, webglRenderbuffer;
+                        webglFramebuffer, webglRenderbuffer, depthOnly = renderTarget.depthOnly,
+                        i;
 
                     if (filter === FilterMode.None) {
                         MAG_FILTER = _gl.NEAREST;
@@ -2467,19 +2470,72 @@ define([
                         WRAP = isPOT ? _gl.REPEAT : _gl.CLAMP_TO_EDGE;
                     }
 
+                    _gl.bindTexture(GL_TEXTURE_TYPE, renderTarget._webgl);
+
+                    _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, renderTarget.flipY ? 1 : 0);
+                    _gl.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, renderTarget.premultiplyAlpha ? 1 : 0);
+
                     if (isCube) {
                         webglFramebuffer = renderTarget._webglFramebuffer = [];
                         webglRenderbuffer = renderTarget._webglRenderbuffer = [];
+
+                        if (renderTarget.depthOnly) {
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_BYTE, null);
+                        } else {
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                            _gl.texImage2D(_gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                        }
+
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_MAG_FILTER, MAG_FILTER);
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_MIN_FILTER, MIN_FILTER);
+
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_WRAP_S, WRAP);
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_WRAP_T, WRAP);
+
+                        i = 6;
+                        while (i--) {
+                            webglFramebuffer[i] = _gl.createFramebuffer();
+                            webglRenderbuffer[i] = _gl.createRenderbuffer();
+
+                            setupFrameBuffer(webglFramebuffer[i], renderTarget, _gl.TEXTURE_CUBE_MAP_POSITIVE_X + i);
+                            setupRenderBuffer(webglRenderbuffer[i], renderTarget);
+                        }
                     } else {
                         renderTarget._webglFramebuffer = _gl.createFramebuffer();
                         renderTarget._webglRenderbuffer = _gl.createRenderbuffer();
 
-                        _gl.bindTexture(GL_TEXTURE_TYPE, renderTarget._webglTexture);
-                        _gl.texImage2D(GL_TEXTURE_TYPE, 0, FORMAT, renderTarget.width, renderTarget.height, 0, FORMAT, _gl.UNSIGNED_BYTE, null);
+                        if (renderTarget.depthOnly) {
+                            _gl.texImage2D(GL_TEXTURE_TYPE, 0, DEPTH_COMPONENT, width, height, 0, DEPTH_COMPONENT, UNSIGNED_SHORT, null);
+                        } else {
+                            _gl.texImage2D(GL_TEXTURE_TYPE, 0, FORMAT, width, height, 0, FORMAT, UNSIGNED_BYTE, null);
+                        }
+
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_MAG_FILTER, MAG_FILTER);
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_MIN_FILTER, MIN_FILTER);
+
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_WRAP_S, WRAP);
+                        _gl.texParameteri(GL_TEXTURE_TYPE, _gl.TEXTURE_WRAP_T, WRAP);
+
+                        setupFrameBuffer(renderTarget._webglFramebuffer, renderTarget, GL_TEXTURE_TYPE);
+                        setupRenderBuffer(renderTarget._webglRenderbuffer, renderTarget);
                     }
 
                     if (TFA) _gl.texParameterf(GL_TEXTURE_TYPE, TFA.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
                     if (generateMipmap && isPOT) _gl.generateMipmap(GL_TEXTURE_TYPE);
+
+                    _gl.bindTexture(GL_TEXTURE_TYPE, null);
+
+                    _gl.bindRenderbuffer(_gl.RENDERBUFFER, null);
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
                 }
 
                 if (isRenderTarget) {
@@ -2510,6 +2566,35 @@ define([
                 _currentWidth = width;
                 _currentHeight = height;
             }
+            this.setRenderTarget = setRenderTarget;
+
+
+            function setupFrameBuffer(framebuffer, renderTarget, textureTarget) {
+                _gl.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+                _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, textureTarget, renderTarget._webgl, 0);
+            }
+
+
+            function setupRenderBuffer(renderbuffer, renderTarget) {
+
+                _gl.bindRenderbuffer(_gl.RENDERBUFFER, renderbuffer);
+
+                if (renderTarget.depthBuffer && !renderTarget.stencilBuffer) {
+
+                    _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.DEPTH_COMPONENT16, renderTarget.width, renderTarget.height);
+                    _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.DEPTH_ATTACHMENT, _gl.RENDERBUFFER, renderbuffer);
+                } else if (!renderTarget.depthBuffer && renderTarget.stencilBuffer) {
+
+                    _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.STENCIL_INDEX8, renderTarget.width, renderTarget.height);
+                    _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.STENCIL_ATTACHMENT, _gl.RENDERBUFFER, renderbuffer);
+                } else if (renderTarget.depthBuffer && renderTarget.stencilBuffer) {
+
+                    _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.DEPTH_STENCIL, renderTarget.width, renderTarget.height);
+                    _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.DEPTH_STENCIL_ATTACHMENT, _gl.RENDERBUFFER, renderbuffer);
+                } else {
+                    _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.RGBA4, renderTarget.width, renderTarget.height);
+                }
+            };
 
 
             function handleWebGLContextLost(e) {
@@ -2989,7 +3074,7 @@ define([
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Apr 01 2014 10:36:17 GMT-0500 (CDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Apr 03 2014 10:42:47 GMT-0500 (CDT)
 </footer>
 
 <script> prettyPrint(); </script>

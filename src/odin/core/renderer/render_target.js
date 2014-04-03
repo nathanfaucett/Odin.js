@@ -25,6 +25,7 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.depthOnly = opts.depthOnly != undefined ? !! opts.depthOnly : false;
             this.depthBuffer = opts.depthBuffer != undefined ? !! opts.depthBuffer : true;
             this.stencilBuffer = opts.stencilBuffer != undefined ? !! opts.stencilBuffer : true;
 
@@ -39,7 +40,7 @@ define([
             this.wrap = opts.wrap != undefined ? opts.wrap : Enums.TextureWrap.Repeat;
 
             this._webglUsed = 0;
-            this._webglTexture = undefined;
+            this._webgl = undefined;
             this._webglFramebuffer = undefined;
             this._webglRenderbuffer = undefined;
         }

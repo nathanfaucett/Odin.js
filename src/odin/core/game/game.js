@@ -169,16 +169,11 @@ define([
             Time.update();
             Input.update();
 
-            this.emit("update", Time.sinceStart);
-
             if (renderer && camera) {
-                renderer.preRender(gui, scene, camera);
 
                 if (scene) {
                     scene.update();
                     scene.emit("update");
-
-                    renderer.render(scene, camera);
                 }
                 if (gui) {
                     gui.aspect = camera.aspect;
@@ -189,9 +184,11 @@ define([
 
                     gui.update();
                     gui.emit("update");
-
-                    renderer.renderGUI(gui, camera);
                 }
+
+                this.emit("update", Time.sinceStart);
+                renderer.render(camera, scene, gui);
+                this.emit("lateUpdate", Time.sinceStart);
             }
         }
 

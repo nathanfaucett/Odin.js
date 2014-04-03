@@ -27,6 +27,7 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.autoResize = opts.autoResize != undefined ? !! opts.autoResize : true;
             this.background = opts.background != undefined ? opts.background : new Color(0.5, 0.5, 0.5);
 
             this.aspect = this.width / this.height;
@@ -58,6 +59,7 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.autoResize = other.autoResize;
             this.background.copy(other.background);
 
             this.orthographicSize = other.orthographicSize;
@@ -171,6 +173,7 @@ define([
             json.width = this.width;
             json.height = this.height;
 
+            json.autoResize = this.autoResize;
             json.background = this.background.toJSON(json.background);
 
             json.orthographicSize = this.orthographicSize;
@@ -187,6 +190,7 @@ define([
             this.width = json.width;
             this.height = json.height;
 
+            this.autoResize = json.autoResize;
             this.background.fromJSON(json.background);
 
             this.orthographicSize = json.orthographicSize;

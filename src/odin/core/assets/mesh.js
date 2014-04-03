@@ -638,7 +638,7 @@ define([
                 hs = (opts.heightSegments || 1),
                 mesh = new Mesh(opts);
 
-            buildPlane(mesh, "x", "y", 1, 1, w, ws, h, hs, 0, 0);
+            buildPlane(mesh, "x", "y", 1, -1, w, ws, h, hs, 0, 0);
 
             mesh.calculateAABB();
             mesh.load = false;

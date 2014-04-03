@@ -38,7 +38,6 @@ define([
 
             this.modelView = new Mat4;
             this.normalMatrix = new Mat3;
-            this._matricesNeedsUpdate = false;
         }
 
         Component.extend(Transform);
@@ -56,8 +55,6 @@ define([
             while (i--) this.addChild(children[i].gameObject.clone().transform);
             if (other.parent) other.parent.addChild(this);
 
-            this._matricesNeedsUpdate = true;
-
             return this;
         };
 
@@ -74,8 +71,6 @@ define([
 
             this.root = this;
             this.depth = 0;
-
-            this._matricesNeedsUpdate = true;
 
             return this;
         };
@@ -313,17 +308,13 @@ define([
             } else {
                 this.matrixWorld.copy(matrix);
             }
-
-            this._matricesNeedsUpdate = true;
         };
 
 
         Transform.prototype.updateMatrices = function(viewMatrix) {
-            if (!this._matricesNeedsUpdate) return;
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
             this.normalMatrix.inverseMat4(this.modelView).transpose();
-            this._matricesNeedsUpdate = false;
         };
 
 
@@ -380,8 +371,6 @@ define([
             this.position.fromJSON(json.position);
             this.scale.fromJSON(json.scale);
             this.rotation.fromJSON(json.rotation);
-
-            this._matricesNeedsUpdate = true;
 
             return this;
         };

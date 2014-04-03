@@ -1,0 +1,551 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@1.4.3
+3 info using node@v0.10.26
+4 verbose publish [ '.' ]
+5 verbose cache add [ '.', null ]
+6 verbose cache add name=undefined spec="." args=[".",null]
+7 verbose parsed url { protocol: null,
+7 verbose parsed url   slashes: null,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: null,
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: null,
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: '.',
+7 verbose parsed url   path: '.',
+7 verbose parsed url   href: '.' }
+8 silly lockFile 3a52ce78- .
+9 verbose lock . /home/nathan/.npm/3a52ce78-.lock
+10 verbose tar pack [ '/home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz',
+10 verbose tar pack   '.' ]
+11 verbose tarball /home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+12 verbose folder .
+13 info prepublish odin@0.0.12
+14 silly lockFile 1f1177db-tar tar://.
+15 verbose lock tar://. /home/nathan/.npm/1f1177db-tar.lock
+16 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+17 verbose lock tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz /home/nathan/.npm/5f948b74-76928-0-0856005446985364-tmp-tgz.lock
+18 silly lockFile 1f1177db-tar tar://.
+19 silly lockFile 1f1177db-tar tar://.
+20 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+21 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+22 verbose tar unpack /home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+23 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+24 verbose lock tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package /home/nathan/.npm/555936ae-76928-0-0856005446985364-package.lock
+25 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+26 verbose lock tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz /home/nathan/.npm/5f948b74-76928-0-0856005446985364-tmp-tgz.lock
+27 silly gunzTarPerm modes [ '755', '644' ]
+28 silly gunzTarPerm extractEntry package.json
+29 silly gunzTarPerm extractEntry README.md
+30 silly gunzTarPerm extractEntry Gruntfile.js
+31 silly gunzTarPerm extractEntry build/odin.js
+32 silly gunzTarPerm extractEntry build/odin.js.src.js
+33 silly gunzTarPerm extractEntry build/odin.js.map
+34 silly gunzTarPerm extractEntry doc/canvas.js__.html
+35 silly gunzTarPerm extractEntry doc/AABB2.html
+36 silly gunzTarPerm extractEntry doc/Canvas.html
+37 silly gunzTarPerm extractEntry doc/Color.html
+38 silly gunzTarPerm extractEntry doc/GUIObject.html
+39 silly gunzTarPerm extractEntry doc/Mat2.html
+40 silly gunzTarPerm extractEntry doc/Mat3.html
+41 silly gunzTarPerm extractEntry doc/Mat32.html
+42 silly gunzTarPerm extractEntry doc/Mat4.html
+43 silly gunzTarPerm extractEntry doc/Mathf.html
+44 silly gunzTarPerm extractEntry doc/MeshFilter.html
+45 silly gunzTarPerm extractEntry doc/Odin.Class.html
+46 silly gunzTarPerm extractEntry doc/Odin.EventEmitter.html
+47 silly gunzTarPerm extractEntry doc/Odin.GUI.html
+48 silly gunzTarPerm extractEntry doc/Odin.GUIObject.html
+49 silly gunzTarPerm extractEntry doc/Odin.GameObject.html
+50 silly gunzTarPerm extractEntry doc/Odin.Renderer.html
+51 silly gunzTarPerm extractEntry doc/Odin.Scene.html
+52 silly gunzTarPerm extractEntry doc/Odin.html
+53 silly gunzTarPerm extractEntry doc/P2Contact.html
+54 silly gunzTarPerm extractEntry doc/P2Equation.html
+55 silly gunzTarPerm extractEntry doc/P2Friction.html
+56 silly gunzTarPerm extractEntry doc/P2Solver.html
+57 silly gunzTarPerm extractEntry doc/ParticleSystem.html
+58 silly gunzTarPerm extractEntry doc/Quat.html
+59 silly gunzTarPerm extractEntry doc/RenderTarget.html
+60 silly gunzTarPerm extractEntry doc/RenderTargetCube.html
+61 silly gunzTarPerm extractEntry doc/Renderer.html
+62 silly gunzTarPerm extractEntry doc/SpriteAnimation.html
+63 silly gunzTarPerm extractEntry doc/Vec2.html
+64 silly gunzTarPerm extractEntry doc/Vec3.html
+65 silly gunzTarPerm extractEntry doc/Vec4.html
+66 silly gunzTarPerm extractEntry doc/WebGLRenderer.html
+67 silly gunzTarPerm extractEntry doc/WebGLRenderer2D.html
+68 silly gunzTarPerm extractEntry doc/aabb2.js.html
+69 silly gunzTarPerm extractEntry doc/aabb3.js.html
+70 silly gunzTarPerm extractEntry doc/canvas.js.html
+71 silly gunzTarPerm extractEntry doc/canvas.js_.html
+72 silly gunzTarPerm extractEntry doc/AABB3.html
+73 silly gunzTarPerm extractEntry doc/class.js.html
+74 silly gunzTarPerm extractEntry doc/color.js.html
+75 silly gunzTarPerm extractEntry doc/event_emitter.js.html
+76 silly gunzTarPerm extractEntry doc/game_object.js.html
+77 silly gunzTarPerm extractEntry doc/gui.js.html
+78 silly gunzTarPerm extractEntry doc/gui_object.js.html
+79 silly gunzTarPerm extractEntry doc/index.html
+80 silly gunzTarPerm extractEntry doc/mat2.js.html
+81 silly gunzTarPerm extractEntry doc/mat3.js.html
+82 silly gunzTarPerm extractEntry doc/mat32.js.html
+83 silly gunzTarPerm extractEntry doc/mat4.js.html
+84 silly gunzTarPerm extractEntry doc/mathf.js.html
+85 silly gunzTarPerm extractEntry doc/mesh_filter.js.html
+86 silly gunzTarPerm extractEntry doc/odin.js.html
+87 silly gunzTarPerm extractEntry doc/odin_server.js.html
+88 silly gunzTarPerm extractEntry doc/p2contact.js.html
+89 silly gunzTarPerm extractEntry doc/p2equation.js.html
+90 silly gunzTarPerm extractEntry doc/p2friction.js.html
+91 silly gunzTarPerm extractEntry doc/p2solver.js.html
+92 silly gunzTarPerm extractEntry doc/particle_system.js.html
+93 silly gunzTarPerm extractEntry doc/quat.js.html
+94 silly gunzTarPerm extractEntry doc/render_target.js.html
+95 silly gunzTarPerm extractEntry doc/render_target_cube.js.html
+96 silly gunzTarPerm extractEntry doc/renderer.js.html
+97 silly gunzTarPerm extractEntry doc/renderer.js_.html
+98 silly gunzTarPerm extractEntry doc/renderer.js__.html
+99 silly gunzTarPerm extractEntry doc/renderer_2d.js.html
+100 silly gunzTarPerm extractEntry doc/renderer_2d.js_.html
+101 silly gunzTarPerm extractEntry doc/renderer_old.js.html
+102 silly gunzTarPerm extractEntry doc/scene.js.html
+103 silly gunzTarPerm extractEntry doc/scripts/linenumber.js
+104 silly gunzTarPerm extractEntry doc/scripts/prettify/lang-css.js
+105 silly gunzTarPerm extractEntry doc/scripts/prettify/prettify.js
+106 silly gunzTarPerm extractEntry doc/scripts/prettify/Apache-License-2.0.txt
+107 silly gunzTarPerm extractEntry doc/sprite_animation.js.html
+108 silly gunzTarPerm extractEntry doc/styles/jsdoc-default.css
+109 silly gunzTarPerm extractEntry doc/styles/prettify-jsdoc.css
+110 silly gunzTarPerm extractEntry doc/styles/prettify-tomorrow.css
+111 silly gunzTarPerm extractEntry doc/vec2.js.html
+112 silly gunzTarPerm extractEntry doc/vec3.js.html
+113 silly gunzTarPerm extractEntry doc/vec4.js.html
+114 silly gunzTarPerm extractEntry doc/webgl_renderer.js.html
+115 silly gunzTarPerm extractEntry doc/webgl_renderer_2d.js.html
+116 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__init__.py
+117 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__init__.py~
+118 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__pycache__/__init__.cpython-33.pyc
+119 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__pycache__/export_json.cpython-33.pyc
+120 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/export_json.py
+121 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/import_json.py
+122 silly gunzTarPerm extractEntry src/odin/odin.js
+123 silly gunzTarPerm extractEntry src/odin/odin_server.js
+124 silly gunzTarPerm extractEntry src/odin/base/audio_ctx.js
+125 silly gunzTarPerm extractEntry src/odin/base/device.js
+126 silly gunzTarPerm extractEntry src/odin/base/dom.js
+127 silly gunzTarPerm extractEntry src/odin/base/enum.js
+128 silly gunzTarPerm extractEntry src/odin/base/class.js
+129 silly gunzTarPerm extractEntry src/odin/base/object_pool.js
+130 silly gunzTarPerm extractEntry src/odin/base/request_animation_frame.js
+131 silly gunzTarPerm extractEntry src/odin/base/socket.io.js
+132 silly gunzTarPerm extractEntry src/odin/base/time.js
+133 silly gunzTarPerm extractEntry src/odin/base/util.js
+134 silly gunzTarPerm extractEntry src/odin/base/event_emitter.js
+135 silly gunzTarPerm extractEntry src/odin/core/enums.js
+136 silly gunzTarPerm extractEntry src/odin/core/game_object.js
+137 silly gunzTarPerm extractEntry src/odin/core/prefab.js
+138 silly gunzTarPerm extractEntry src/odin/core/scene.js
+139 silly gunzTarPerm extractEntry src/odin/core/gui/gui.js
+140 silly gunzTarPerm extractEntry src/odin/core/gui/gui_object.js
+141 silly gunzTarPerm extractEntry src/odin/core/gui/gui_style.js
+142 silly gunzTarPerm extractEntry src/odin/core/gui/gui_style_state.js
+143 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_component.js
+144 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_content.js
+145 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_transform.js
+146 silly gunzTarPerm extractEntry src/odin/core/components/audio_source.js
+147 silly gunzTarPerm extractEntry src/odin/core/components/gui_element.js
+148 silly gunzTarPerm extractEntry src/odin/core/components/gui_text.js
+149 silly gunzTarPerm extractEntry src/odin/core/components/gui_texture.js
+150 silly gunzTarPerm extractEntry src/odin/core/components/component.js
+151 silly gunzTarPerm extractEntry src/odin/core/components/bone.js
+152 silly gunzTarPerm extractEntry src/odin/core/components/mesh_filter.js
+153 silly gunzTarPerm extractEntry src/odin/core/components/orbit_control.js
+154 silly gunzTarPerm extractEntry src/odin/core/components/transform.js
+155 silly gunzTarPerm extractEntry src/odin/core/components/rigid_body_2d.js
+156 silly gunzTarPerm extractEntry src/odin/core/components/camera_2d.js
+157 silly gunzTarPerm extractEntry src/odin/core/components/sprite.js
+158 silly gunzTarPerm extractEntry src/odin/core/components/camera.js
+159 silly gunzTarPerm extractEntry src/odin/core/components/sprite_animation.js
+160 silly gunzTarPerm extractEntry src/odin/core/components/light.js
+161 silly gunzTarPerm extractEntry src/odin/core/components/transform_2d.js
+162 silly gunzTarPerm extractEntry src/odin/core/components/mesh_animation.js
+163 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/emitter.js
+164 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/emitter_2d.js
+165 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle.js
+166 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle_2d.js
+167 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle_system.js
+168 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/tween.js
+169 silly gunzTarPerm extractEntry src/odin/core/input/axes.js
+170 silly gunzTarPerm extractEntry src/odin/core/input/axis.js
+171 silly gunzTarPerm extractEntry src/odin/core/input/button.js
+172 silly gunzTarPerm extractEntry src/odin/core/input/buttons.js
+173 silly gunzTarPerm extractEntry src/odin/core/input/handler.js
+174 silly gunzTarPerm extractEntry src/odin/core/input/input.js
+175 silly gunzTarPerm extractEntry src/odin/core/input/touch.js
+176 silly gunzTarPerm extractEntry src/odin/core/input/touches.js
+177 silly gunzTarPerm extractEntry src/odin/core/game/base_game.js
+178 silly gunzTarPerm extractEntry src/odin/core/game/client.js
+179 silly gunzTarPerm extractEntry src/odin/core/game/client_game.js
+180 silly gunzTarPerm extractEntry src/odin/core/game/config.js
+181 silly gunzTarPerm extractEntry src/odin/core/game/game.js
+182 silly gunzTarPerm extractEntry src/odin/core/game/log.js
+183 silly gunzTarPerm extractEntry src/odin/core/game/loop.js
+184 silly gunzTarPerm extractEntry src/odin/core/game/server_game.js
+185 silly gunzTarPerm extractEntry src/odin/core/renderer/canvas.js
+186 silly gunzTarPerm extractEntry src/odin/core/renderer/render_target.js
+187 silly gunzTarPerm extractEntry src/odin/core/renderer/render_target_cube.js
+188 silly gunzTarPerm extractEntry src/odin/core/renderer/renderer.js
+189 silly gunzTarPerm extractEntry src/odin/core/renderer/shader_chunks.js
+190 silly gunzTarPerm extractEntry src/odin/core/assets/asset.js
+191 silly gunzTarPerm extractEntry src/odin/core/assets/assets.js
+192 silly gunzTarPerm extractEntry src/odin/core/assets/audio_clip.js
+193 silly gunzTarPerm extractEntry src/odin/core/assets/material.js
+194 silly gunzTarPerm extractEntry src/odin/core/assets/mesh.js
+195 silly gunzTarPerm extractEntry src/odin/core/assets/asset_loader.js
+196 silly gunzTarPerm extractEntry src/odin/core/assets/mesh_bone.js
+197 silly gunzTarPerm extractEntry src/odin/core/assets/texture.js
+198 silly gunzTarPerm extractEntry src/odin/core/assets/sprite_sheet.js
+199 silly gunzTarPerm extractEntry src/odin/core/assets/texture_cube.js
+200 silly gunzTarPerm extractEntry src/odin/core/assets/mesh_animations.js
+201 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/shader.js
+202 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/shader_lib.js
+203 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/diffuse.js
+204 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/normal_diffuse.js
+205 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/normal_specular.js
+206 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/parallax_diffuse.js
+207 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/specular.js
+208 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/unlit.js
+209 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/vertex_lit.js
+210 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/particle/unlit.js
+211 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/reflective/reflective_vertex_lit.js
+212 silly gunzTarPerm extractEntry src/odin/core/world/world.js
+213 silly gunzTarPerm extractEntry src/odin/core/world/world_2d.js
+214 silly gunzTarPerm extractEntry src/odin/math/aabb2.js
+215 silly gunzTarPerm extractEntry src/odin/math/mat2.js
+216 silly gunzTarPerm extractEntry src/odin/math/mat3.js
+217 silly gunzTarPerm extractEntry src/odin/math/mat32.js
+218 silly gunzTarPerm extractEntry src/odin/math/mat4.js
+219 silly gunzTarPerm extractEntry src/odin/math/color.js
+220 silly gunzTarPerm extractEntry src/odin/math/quat.js
+221 silly gunzTarPerm extractEntry src/odin/math/rect.js
+222 silly gunzTarPerm extractEntry src/odin/math/rect_offset.js
+223 silly gunzTarPerm extractEntry src/odin/math/vec2.js
+224 silly gunzTarPerm extractEntry src/odin/math/vec3.js
+225 silly gunzTarPerm extractEntry src/odin/math/aabb3.js
+226 silly gunzTarPerm extractEntry src/odin/math/vec4.js
+227 silly gunzTarPerm extractEntry src/odin/math/mathf.js
+228 silly gunzTarPerm extractEntry src/odin/phys2d/p2enums.js
+229 silly gunzTarPerm extractEntry src/odin/phys2d/p2solver.js
+230 silly gunzTarPerm extractEntry src/odin/phys2d/p2space.js
+231 silly gunzTarPerm extractEntry src/odin/phys2d/phys2d.js
+232 silly gunzTarPerm extractEntry src/odin/phys2d/collision/p2broadphase.js
+233 silly gunzTarPerm extractEntry src/odin/phys2d/collision/p2nearphase.js
+234 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2contact.js
+235 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2equation.js
+236 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2friction.js
+237 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2circle.js
+238 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2convex.js
+239 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2particle.js
+240 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2rect.js
+241 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2rigidbody.js
+242 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2segment.js
+243 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2shape.js
+244 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+245 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+246 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+247 silly lockFile 5f948b74-76928-0-0856005446985364-tmp-tgz tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/tmp.tgz
+248 verbose tar pack [ '/home/nathan/.npm/odin/0.0.12/package.tgz',
+248 verbose tar pack   '/home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package' ]
+249 verbose tarball /home/nathan/.npm/odin/0.0.12/package.tgz
+250 verbose folder /home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+251 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+252 verbose lock tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package /home/nathan/.npm/555936ae-76928-0-0856005446985364-package.lock
+253 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+254 verbose lock tar:///home/nathan/.npm/odin/0.0.12/package.tgz /home/nathan/.npm/fd1f36b2-than-npm-odin-0-0-12-package-tgz.lock
+255 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+256 silly lockFile 555936ae-76928-0-0856005446985364-package tar:///home/nathan/tmp/npm-15770-clJ7ZCdt/1396456976928-0.0856005446985364/package
+257 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+258 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+259 silly lockFile 93c6ccba-e-nathan-npm-odin-0-0-12-package /home/nathan/.npm/odin/0.0.12/package
+260 verbose lock /home/nathan/.npm/odin/0.0.12/package /home/nathan/.npm/93c6ccba-e-nathan-npm-odin-0-0-12-package.lock
+261 silly lockFile 93c6ccba-e-nathan-npm-odin-0-0-12-package /home/nathan/.npm/odin/0.0.12/package
+262 silly lockFile 93c6ccba-e-nathan-npm-odin-0-0-12-package /home/nathan/.npm/odin/0.0.12/package
+263 verbose tar unpack /home/nathan/.npm/odin/0.0.12/package.tgz
+264 silly lockFile de457a83-e-nathan-npm-odin-0-0-12-package tar:///home/nathan/.npm/odin/0.0.12/package
+265 verbose lock tar:///home/nathan/.npm/odin/0.0.12/package /home/nathan/.npm/de457a83-e-nathan-npm-odin-0-0-12-package.lock
+266 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+267 verbose lock tar:///home/nathan/.npm/odin/0.0.12/package.tgz /home/nathan/.npm/fd1f36b2-than-npm-odin-0-0-12-package-tgz.lock
+268 silly gunzTarPerm modes [ '755', '644' ]
+269 silly gunzTarPerm extractEntry package.json
+270 silly gunzTarPerm extractEntry README.md
+271 silly gunzTarPerm extractEntry Gruntfile.js
+272 silly gunzTarPerm extractEntry build/odin.js
+273 silly gunzTarPerm extractEntry build/odin.js.src.js
+274 silly gunzTarPerm extractEntry build/odin.js.map
+275 silly gunzTarPerm extractEntry doc/canvas.js__.html
+276 silly gunzTarPerm extractEntry doc/AABB2.html
+277 silly gunzTarPerm extractEntry doc/Canvas.html
+278 silly gunzTarPerm extractEntry doc/Color.html
+279 silly gunzTarPerm extractEntry doc/GUIObject.html
+280 silly gunzTarPerm extractEntry doc/Mat2.html
+281 silly gunzTarPerm extractEntry doc/Mat3.html
+282 silly gunzTarPerm extractEntry doc/Mat32.html
+283 silly gunzTarPerm extractEntry doc/Mat4.html
+284 silly gunzTarPerm extractEntry doc/Mathf.html
+285 silly gunzTarPerm extractEntry doc/MeshFilter.html
+286 silly gunzTarPerm extractEntry doc/Odin.Class.html
+287 silly gunzTarPerm extractEntry doc/Odin.EventEmitter.html
+288 silly gunzTarPerm extractEntry doc/Odin.GUI.html
+289 silly gunzTarPerm extractEntry doc/Odin.GUIObject.html
+290 silly gunzTarPerm extractEntry doc/Odin.GameObject.html
+291 silly gunzTarPerm extractEntry doc/Odin.Renderer.html
+292 silly gunzTarPerm extractEntry doc/Odin.Scene.html
+293 silly gunzTarPerm extractEntry doc/Odin.html
+294 silly gunzTarPerm extractEntry doc/P2Contact.html
+295 silly gunzTarPerm extractEntry doc/P2Equation.html
+296 silly gunzTarPerm extractEntry doc/P2Friction.html
+297 silly gunzTarPerm extractEntry doc/P2Solver.html
+298 silly gunzTarPerm extractEntry doc/ParticleSystem.html
+299 silly gunzTarPerm extractEntry doc/Quat.html
+300 silly gunzTarPerm extractEntry doc/RenderTarget.html
+301 silly gunzTarPerm extractEntry doc/RenderTargetCube.html
+302 silly gunzTarPerm extractEntry doc/Renderer.html
+303 silly gunzTarPerm extractEntry doc/SpriteAnimation.html
+304 silly gunzTarPerm extractEntry doc/Vec2.html
+305 silly gunzTarPerm extractEntry doc/Vec3.html
+306 silly gunzTarPerm extractEntry doc/Vec4.html
+307 silly gunzTarPerm extractEntry doc/WebGLRenderer.html
+308 silly gunzTarPerm extractEntry doc/WebGLRenderer2D.html
+309 silly gunzTarPerm extractEntry doc/aabb2.js.html
+310 silly gunzTarPerm extractEntry doc/aabb3.js.html
+311 silly gunzTarPerm extractEntry doc/canvas.js.html
+312 silly gunzTarPerm extractEntry doc/canvas.js_.html
+313 silly gunzTarPerm extractEntry doc/AABB3.html
+314 silly gunzTarPerm extractEntry doc/class.js.html
+315 silly gunzTarPerm extractEntry doc/color.js.html
+316 silly gunzTarPerm extractEntry doc/event_emitter.js.html
+317 silly gunzTarPerm extractEntry doc/game_object.js.html
+318 silly gunzTarPerm extractEntry doc/gui.js.html
+319 silly gunzTarPerm extractEntry doc/gui_object.js.html
+320 silly gunzTarPerm extractEntry doc/index.html
+321 silly gunzTarPerm extractEntry doc/mat2.js.html
+322 silly gunzTarPerm extractEntry doc/mat3.js.html
+323 silly gunzTarPerm extractEntry doc/mat32.js.html
+324 silly gunzTarPerm extractEntry doc/mat4.js.html
+325 silly gunzTarPerm extractEntry doc/mathf.js.html
+326 silly gunzTarPerm extractEntry doc/mesh_filter.js.html
+327 silly gunzTarPerm extractEntry doc/odin.js.html
+328 silly gunzTarPerm extractEntry doc/odin_server.js.html
+329 silly gunzTarPerm extractEntry doc/p2contact.js.html
+330 silly gunzTarPerm extractEntry doc/p2equation.js.html
+331 silly gunzTarPerm extractEntry doc/p2friction.js.html
+332 silly gunzTarPerm extractEntry doc/p2solver.js.html
+333 silly gunzTarPerm extractEntry doc/particle_system.js.html
+334 silly gunzTarPerm extractEntry doc/quat.js.html
+335 silly gunzTarPerm extractEntry doc/render_target.js.html
+336 silly gunzTarPerm extractEntry doc/render_target_cube.js.html
+337 silly gunzTarPerm extractEntry doc/renderer.js.html
+338 silly gunzTarPerm extractEntry doc/renderer.js_.html
+339 silly gunzTarPerm extractEntry doc/renderer.js__.html
+340 silly gunzTarPerm extractEntry doc/renderer_2d.js.html
+341 silly gunzTarPerm extractEntry doc/renderer_2d.js_.html
+342 silly gunzTarPerm extractEntry doc/renderer_old.js.html
+343 silly gunzTarPerm extractEntry doc/scene.js.html
+344 silly gunzTarPerm extractEntry doc/scripts/linenumber.js
+345 silly gunzTarPerm extractEntry doc/scripts/prettify/lang-css.js
+346 silly gunzTarPerm extractEntry doc/scripts/prettify/prettify.js
+347 silly gunzTarPerm extractEntry doc/scripts/prettify/Apache-License-2.0.txt
+348 silly gunzTarPerm extractEntry doc/sprite_animation.js.html
+349 silly gunzTarPerm extractEntry doc/styles/jsdoc-default.css
+350 silly gunzTarPerm extractEntry doc/styles/prettify-jsdoc.css
+351 silly gunzTarPerm extractEntry doc/styles/prettify-tomorrow.css
+352 silly gunzTarPerm extractEntry doc/vec2.js.html
+353 silly gunzTarPerm extractEntry doc/vec3.js.html
+354 silly gunzTarPerm extractEntry doc/vec4.js.html
+355 silly gunzTarPerm extractEntry doc/webgl_renderer.js.html
+356 silly gunzTarPerm extractEntry doc/webgl_renderer_2d.js.html
+357 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__init__.py
+358 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__init__.py~
+359 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__pycache__/__init__.cpython-33.pyc
+360 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/__pycache__/export_json.cpython-33.pyc
+361 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/export_json.py
+362 silly gunzTarPerm extractEntry exporter/blender/io_mesh_json/import_json.py
+363 silly gunzTarPerm extractEntry src/odin/odin.js
+364 silly gunzTarPerm extractEntry src/odin/odin_server.js
+365 silly gunzTarPerm extractEntry src/odin/base/audio_ctx.js
+366 silly gunzTarPerm extractEntry src/odin/base/device.js
+367 silly gunzTarPerm extractEntry src/odin/base/dom.js
+368 silly gunzTarPerm extractEntry src/odin/base/enum.js
+369 silly gunzTarPerm extractEntry src/odin/base/class.js
+370 silly gunzTarPerm extractEntry src/odin/base/object_pool.js
+371 silly gunzTarPerm extractEntry src/odin/base/request_animation_frame.js
+372 silly gunzTarPerm extractEntry src/odin/base/socket.io.js
+373 silly gunzTarPerm extractEntry src/odin/base/time.js
+374 silly gunzTarPerm extractEntry src/odin/base/util.js
+375 silly gunzTarPerm extractEntry src/odin/base/event_emitter.js
+376 silly gunzTarPerm extractEntry src/odin/core/enums.js
+377 silly gunzTarPerm extractEntry src/odin/core/game_object.js
+378 silly gunzTarPerm extractEntry src/odin/core/prefab.js
+379 silly gunzTarPerm extractEntry src/odin/core/scene.js
+380 silly gunzTarPerm extractEntry src/odin/core/gui/gui.js
+381 silly gunzTarPerm extractEntry src/odin/core/gui/gui_object.js
+382 silly gunzTarPerm extractEntry src/odin/core/gui/gui_style.js
+383 silly gunzTarPerm extractEntry src/odin/core/gui/gui_style_state.js
+384 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_component.js
+385 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_content.js
+386 silly gunzTarPerm extractEntry src/odin/core/gui/components/gui_transform.js
+387 silly gunzTarPerm extractEntry src/odin/core/components/audio_source.js
+388 silly gunzTarPerm extractEntry src/odin/core/components/gui_element.js
+389 silly gunzTarPerm extractEntry src/odin/core/components/gui_text.js
+390 silly gunzTarPerm extractEntry src/odin/core/components/gui_texture.js
+391 silly gunzTarPerm extractEntry src/odin/core/components/component.js
+392 silly gunzTarPerm extractEntry src/odin/core/components/bone.js
+393 silly gunzTarPerm extractEntry src/odin/core/components/mesh_filter.js
+394 silly gunzTarPerm extractEntry src/odin/core/components/orbit_control.js
+395 silly gunzTarPerm extractEntry src/odin/core/components/transform.js
+396 silly gunzTarPerm extractEntry src/odin/core/components/rigid_body_2d.js
+397 silly gunzTarPerm extractEntry src/odin/core/components/camera_2d.js
+398 silly gunzTarPerm extractEntry src/odin/core/components/sprite.js
+399 silly gunzTarPerm extractEntry src/odin/core/components/camera.js
+400 silly gunzTarPerm extractEntry src/odin/core/components/sprite_animation.js
+401 silly gunzTarPerm extractEntry src/odin/core/components/light.js
+402 silly gunzTarPerm extractEntry src/odin/core/components/transform_2d.js
+403 silly gunzTarPerm extractEntry src/odin/core/components/mesh_animation.js
+404 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/emitter.js
+405 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/emitter_2d.js
+406 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle.js
+407 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle_2d.js
+408 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/particle_system.js
+409 silly gunzTarPerm extractEntry src/odin/core/components/particle_system/tween.js
+410 silly gunzTarPerm extractEntry src/odin/core/input/axes.js
+411 silly gunzTarPerm extractEntry src/odin/core/input/axis.js
+412 silly gunzTarPerm extractEntry src/odin/core/input/button.js
+413 silly gunzTarPerm extractEntry src/odin/core/input/buttons.js
+414 silly gunzTarPerm extractEntry src/odin/core/input/handler.js
+415 silly gunzTarPerm extractEntry src/odin/core/input/input.js
+416 silly gunzTarPerm extractEntry src/odin/core/input/touch.js
+417 silly gunzTarPerm extractEntry src/odin/core/input/touches.js
+418 silly gunzTarPerm extractEntry src/odin/core/game/base_game.js
+419 silly gunzTarPerm extractEntry src/odin/core/game/client.js
+420 silly gunzTarPerm extractEntry src/odin/core/game/client_game.js
+421 silly gunzTarPerm extractEntry src/odin/core/game/config.js
+422 silly gunzTarPerm extractEntry src/odin/core/game/game.js
+423 silly gunzTarPerm extractEntry src/odin/core/game/log.js
+424 silly gunzTarPerm extractEntry src/odin/core/game/loop.js
+425 silly gunzTarPerm extractEntry src/odin/core/game/server_game.js
+426 silly gunzTarPerm extractEntry src/odin/core/renderer/canvas.js
+427 silly gunzTarPerm extractEntry src/odin/core/renderer/render_target.js
+428 silly gunzTarPerm extractEntry src/odin/core/renderer/render_target_cube.js
+429 silly gunzTarPerm extractEntry src/odin/core/renderer/renderer.js
+430 silly gunzTarPerm extractEntry src/odin/core/renderer/shader_chunks.js
+431 silly gunzTarPerm extractEntry src/odin/core/assets/asset.js
+432 silly gunzTarPerm extractEntry src/odin/core/assets/assets.js
+433 silly gunzTarPerm extractEntry src/odin/core/assets/audio_clip.js
+434 silly gunzTarPerm extractEntry src/odin/core/assets/material.js
+435 silly gunzTarPerm extractEntry src/odin/core/assets/mesh.js
+436 silly gunzTarPerm extractEntry src/odin/core/assets/asset_loader.js
+437 silly gunzTarPerm extractEntry src/odin/core/assets/mesh_bone.js
+438 silly gunzTarPerm extractEntry src/odin/core/assets/texture.js
+439 silly gunzTarPerm extractEntry src/odin/core/assets/sprite_sheet.js
+440 silly gunzTarPerm extractEntry src/odin/core/assets/texture_cube.js
+441 silly gunzTarPerm extractEntry src/odin/core/assets/mesh_animations.js
+442 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/shader.js
+443 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/shader_lib.js
+444 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/diffuse.js
+445 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/normal_diffuse.js
+446 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/normal_specular.js
+447 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/parallax_diffuse.js
+448 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/specular.js
+449 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/unlit.js
+450 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/normal/vertex_lit.js
+451 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/particle/unlit.js
+452 silly gunzTarPerm extractEntry src/odin/core/assets/shaders/reflective/reflective_vertex_lit.js
+453 silly gunzTarPerm extractEntry src/odin/core/world/world.js
+454 silly gunzTarPerm extractEntry src/odin/core/world/world_2d.js
+455 silly gunzTarPerm extractEntry src/odin/math/aabb2.js
+456 silly gunzTarPerm extractEntry src/odin/math/mat2.js
+457 silly gunzTarPerm extractEntry src/odin/math/mat3.js
+458 silly gunzTarPerm extractEntry src/odin/math/mat32.js
+459 silly gunzTarPerm extractEntry src/odin/math/mat4.js
+460 silly gunzTarPerm extractEntry src/odin/math/color.js
+461 silly gunzTarPerm extractEntry src/odin/math/quat.js
+462 silly gunzTarPerm extractEntry src/odin/math/rect.js
+463 silly gunzTarPerm extractEntry src/odin/math/rect_offset.js
+464 silly gunzTarPerm extractEntry src/odin/math/vec2.js
+465 silly gunzTarPerm extractEntry src/odin/math/vec3.js
+466 silly gunzTarPerm extractEntry src/odin/math/aabb3.js
+467 silly gunzTarPerm extractEntry src/odin/math/vec4.js
+468 silly gunzTarPerm extractEntry src/odin/math/mathf.js
+469 silly gunzTarPerm extractEntry src/odin/phys2d/p2enums.js
+470 silly gunzTarPerm extractEntry src/odin/phys2d/p2solver.js
+471 silly gunzTarPerm extractEntry src/odin/phys2d/p2space.js
+472 silly gunzTarPerm extractEntry src/odin/phys2d/phys2d.js
+473 silly gunzTarPerm extractEntry src/odin/phys2d/collision/p2broadphase.js
+474 silly gunzTarPerm extractEntry src/odin/phys2d/collision/p2nearphase.js
+475 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2contact.js
+476 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2equation.js
+477 silly gunzTarPerm extractEntry src/odin/phys2d/constraints/p2friction.js
+478 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2circle.js
+479 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2convex.js
+480 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2particle.js
+481 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2rect.js
+482 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2rigidbody.js
+483 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2segment.js
+484 silly gunzTarPerm extractEntry src/odin/phys2d/objects/p2shape.js
+485 silly lockFile de457a83-e-nathan-npm-odin-0-0-12-package tar:///home/nathan/.npm/odin/0.0.12/package
+486 silly lockFile de457a83-e-nathan-npm-odin-0-0-12-package tar:///home/nathan/.npm/odin/0.0.12/package
+487 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+488 silly lockFile fd1f36b2-than-npm-odin-0-0-12-package-tgz tar:///home/nathan/.npm/odin/0.0.12/package.tgz
+489 verbose chmod /home/nathan/.npm/odin/0.0.12/package.tgz 644
+490 verbose chown /home/nathan/.npm/odin/0.0.12/package.tgz [ 1000, 1000 ]
+491 silly lockFile 3a52ce78- .
+492 silly lockFile 3a52ce78- .
+493 silly publish { name: 'odin',
+493 silly publish   version: '0.0.12',
+493 silly publish   description: 'Node.js Canvas/WebGL Javascript Game Framework',
+493 silly publish   repository:
+493 silly publish    { type: 'git',
+493 silly publish      url: 'https://github.com/nathanfaucett/Odin.js.git' },
+493 silly publish   main: 'src/odin_server.js',
+493 silly publish   keywords: [ 'odin.js', 'odin', 'application', 'framework', 'game', 'engine' ],
+493 silly publish   author: { name: 'Nathan Faucett' },
+493 silly publish   license: 'BSD-2-Clause',
+493 silly publish   dependencies: { 'socket.io': '', requirejs: '', amdefine: '' },
+493 silly publish   devDependencies:
+493 silly publish    { grunt: '',
+493 silly publish      'grunt-contrib-requirejs': '',
+493 silly publish      'grunt-contrib-watch': '',
+493 silly publish      'grunt-jsbeautifier': '',
+493 silly publish      'grunt-jsdoc': '~0.5.1' },
+493 silly publish   readme: 'Odin\n=======\n\nNode.js Canvas/WebGL Javascript Game Framework\n\n[Examples](http://nathanfaucett.github.io/Odin.js) - [Documentation](http://nathanfaucett.github.io/Odin.js/doc)\n\n\n## How to install with npm\n```\n// install the odin.js package\n// npm package is not updated as much as the github repository\n// right now it is better to download from github\n$ npm install odin -g\n```\n\n\n### Game\na instance of ClientGame or ServerGame is the base of your app\n```\n// on the client\nvar MyGame = new ClientGame({ /*options*/ }); // options effect Config.js\n\n// if running with server, you need to call the client\'s connect method\nMyGame.connect(/* optional callback */);\n// or attach a listener to the on connect event\nMyGame.on("connect", function(socket) {});\n\n\n// on the server\nvar MyGame = new ServerGame({ /*options*/ });\n\n// to renderer a game we need an active scene and a camera component that is within the scene\nvar camera = new GameObject({\n    components: [\n        new Transform2D,\n        new Camera2D\n    ]\n});\nvar scene = new Scene;\n\n//add camera to scene\nscene.addGameObject(camera);\n\n// then set Game\'s scene and camera\n// set scene first, because Game.setCamera needs an active scene\nMyGame.setScene(scene);\nMyGame.setCamera(camera);\n\n// to start the game call it\'s init function\nMyGame.init();\n```\n\n### Scenes\nScenes hold and manage GameObjects and their Components\n```\nvar scene = new Scene({ /*options*/ });\n\n//Scenes must be added to game and set as the active scene to be able to render\ngame.addScene(scene);\n\n//other options are\ngame.addScenes(scene1, scene2, scene3...);\n\n//same as above\ngame.add(scene1, scene2, scene3...);\n\n//then set game\'s active scene with Game.setScene\ngame.setScene(scene);\n```\n\n\n### GameObjects\nGameObjects are containers that hold Components\n```\nvar player = new GameObject({\n    components: [\n        // every GameObject needs a Transform\n        new Transform2D({\n            position: new Vec2(0, 5),\n            rotation: Math.PI*0.5,\n\t\t\t\n\t\t\t// every component can be synced with the client and the server\n\t\t\t// by default transforms, are the only ones synced\n\t\t\t// only affects if created on the server\n\t\t\tsync: true,\n\t\t\t\n\t\t\t// every component can has a boolean weather or not to send to the client with the client and the server\n\t\t\t// by default all components will be sent to the client\n\t\t\t// only affects if created on the server\n\t\t\tjson: true\n        })\n    ],\n    tags: [\n        "player"\n    ]\n});\n\n//add to scene\nscene.addGameObject(player);\n\n//other options are\nscene.addGameObjects(gameObject1, gameObject2, gameObject3...);\n\n//same as above\nscene.add(gameObject1, gameObject2, gameObject3...);\n```',
+493 silly publish   readmeFilename: 'README.md',
+493 silly publish   bugs: { url: 'https://github.com/nathanfaucett/Odin.js/issues' },
+493 silly publish   homepage: 'https://github.com/nathanfaucett/Odin.js',
+493 silly publish   _id: 'odin@0.0.12',
+493 silly publish   dist: { shasum: '4efc9fe763843f90f855bec69f5dc1ad395a88d4' },
+493 silly publish   _from: '.' }
+494 error Error: forbidden cannot modify pre-existing version: 0.0.12
+494 error old={"name":"odin","version":"0.0.12","description":"2D HTML5 Canvas/WebGL Javascript Game Engine","main":"./src/odinserver.js","bin":{"odin":"./bin/odin"},"repository":{"type":"git","url":"https://github.com/lonewolfgames/Odin.js.git"},"keywords":["odin.js","odin","Odin.js","Odin","webgl","2d","canvas","game","engine","game engine"],"author":{"name":"Nathan Faucett"},"license":"BSD","gitHead":"b8a2024b472bbfee373b69b6a3659536570bc4b0","dependencies":{"requirejs":"~2.1.5","amdefine":"0.0.4","socket.io":"~0.9.14","commander":"~1.1.1","mkdirp":"~0.3.5"},"bugs":{"url":"https://github.com/lonewolfgames/Odin.js/issues"},"_id":"odin@0.0.12","dist":{"shasum":"06094b47663e33fc6356ae9bb856b29cb7516e60","tarball":"http://registry.npmjs.org/odin/-/odin-0.0.12.tgz"},"_from":".","_npmVersion":"1.2.19","_npmUser":{"name":"nathanfaucett","email":"nathanfaucett@gmail.com"},"maintainers":[{"name":"nathanfaucett","email":"nathanfaucett@gmail.com"}],"directories":{}}
+494 error new={"name":"odin","version":"0.0.12","description":"Node.js Canvas/WebGL Javascript Game Framework","repository":{"type":"git","url":"https://github.com/nathanfaucett/Odin.js.git"},"main":"src/odin_server.js","keywords":["odin.js","odin","application","framework","game","engine"],"author":{"name":"Nathan Faucett"},"license":"BSD-2-Clause","dependencies":{"socket.io":"","requirejs":"","amdefine":""},"devDependencies":{"grunt":"","grunt-contrib-requirejs":"","grunt-contrib-watch":"","grunt-jsbeautifier":"","grunt-jsdoc":"~0.5.1"},"readme":"Odin\u000a=======\u000a\u000aNode.js Canvas/WebGL Javascript Game Framework\u000a\u000a[Examples](http://nathanfaucett.github.io/Odin.js) - [Documentation](http://nathanfaucett.github.io/Odin.js/doc)\u000a\u000a\u000a## How to install with npm\u000a```\u000a// install the odin.js package\u000a// npm package is not updated as much as the github repository\u000a// right now it is better to download from github\u000a$ npm install odin -g\u000a```\u000a\u000a\u000a### Game\u000aa instance of ClientGame or ServerGame is the base of your app\u000a```\u000a// on the client\u000avar MyGame = new ClientGame({ /*options*/ }); // options effect Config.js\u000a\u000a// if running with server, you need to call the client's connect method\u000aMyGame.connect(/* optional callback */);\u000a// or attach a listener to the on connect event\u000aMyGame.on(\"connect\", function(socket) {});\u000a\u000a\u000a// on the server\u000avar MyGame = new ServerGame({ /*options*/ });\u000a\u000a// to renderer a game we need an active scene and a camera component that is within the scene\u000avar camera = new GameObject({\u000a    components: [\u000a        new Transform2D,\u000a        new Camera2D\u000a    ]\u000a});\u000avar scene = new Scene;\u000a\u000a//add camera to scene\u000ascene.addGameObject(camera);\u000a\u000a// then set Game's scene and camera\u000a// set scene first, because Game.setCamera needs an active scene\u000aMyGame.setScene(scene);\u000aMyGame.setCamera(camera);\u000a\u000a// to start the game call it's init function\u000aMyGame.init();\u000a```\u000a\u000a### Scenes\u000aScenes hold and manage GameObjects and their Components\u000a```\u000avar scene = new Scene({ /*options*/ });\u000a\u000a//Scenes must be added to game and set as the active scene to be able to render\u000agame.addScene(scene);\u000a\u000a//other options are\u000agame.addScenes(scene1, scene2, scene3...);\u000a\u000a//same as above\u000agame.add(scene1, scene2, scene3...);\u000a\u000a//then set game's active scene with Game.setScene\u000agame.setScene(scene);\u000a```\u000a\u000a\u000a### GameObjects\u000aGameObjects are containers that hold Components\u000a```\u000avar player = new GameObject({\u000a    components: [\u000a        // every GameObject needs a Transform\u000a        new Transform2D({\u000a            position: new Vec2(0, 5),\u000a            rotation: Math.PI*0.5,\u000a\u0009\u0009\u0009\u000a\u0009\u0009\u0009// every component can be synced with the client and the server\u000a\u0009\u0009\u0009// by default transforms, are the only ones synced\u000a\u0009\u0009\u0009// only affects if created on the server\u000a\u0009\u0009\u0009sync: true,\u000a\u0009\u0009\u0009\u000a\u0009\u0009\u0009// every component can has a boolean weather or not to send to the client with the client and the server\u000a\u0009\u0009\u0009// by default all components will be sent to the client\u000a\u0009\u0009\u0009// only affects if created on the server\u000a\u0009\u0009\u0009json: true\u000a        })\u000a    ],\u000a    tags: [\u000a        \"player\"\u000a    ]\u000a});\u000a\u000a//add to scene\u000ascene.addGameObject(player);\u000a\u000a//other options are\u000ascene.addGameObjects(gameObject1, gameObject2, gameObject3...);\u000a\u000a//same as above\u000ascene.add(gameObject1, gameObject2, gameObject3...);\u000a```","readmeFilename":"README.md","bugs":{"url":"https://github.com/nathanfaucett/Odin.js/issues"},"homepage":"https://github.com/nathanfaucett/Odin.js","_id":"odin@0.0.12","dist":{"shasum":"4efc9fe763843f90f855bec69f5dc1ad395a88d4","tarball":"http://registry.npmjs.org/odin/-/odin-0.0.12.tgz"},"_from":".","_npmVersion":"1.4.3","_npmUser":{"name":"nathanfaucett","email":"nathanfaucett@gmail.com"},"maintainers":[{"name":"nathanfaucett","email":"nathanfaucett@gmail.com"}]}: odin
+494 error     at RegClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:237:14)
+494 error     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/node_modules/request/request.js:121:22)
+494 error     at Request.EventEmitter.emit (events.js:98:17)
+494 error     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/node_modules/request/request.js:978:14)
+494 error     at Request.EventEmitter.emit (events.js:117:20)
+494 error     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/node_modules/request/request.js:929:12)
+494 error     at IncomingMessage.EventEmitter.emit (events.js:117:20)
+494 error     at _stream_readable.js:920:16
+494 error     at process._tickCallback (node.js:415:13)
+495 error If you need help, you may report this *entire* log,
+495 error including the npm and node versions, at:
+495 error     <http://github.com/npm/npm/issues>
+496 error System Linux 3.5.0-18-generic
+497 error command "/usr/local/bin/node" "/usr/local/bin/npm" "publish"
+498 error cwd /var/www/html5/node/odin
+499 error node -v v0.10.26
+500 error npm -v 1.4.3
+501 verbose exit [ 1, true ]

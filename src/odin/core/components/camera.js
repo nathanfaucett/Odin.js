@@ -27,6 +27,7 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.autoResize = opts.autoResize != undefined ? !! opts.autoResize : true;
             this.background = opts.background != undefined ? opts.background : new Color(0.5, 0.5, 0.5);
 
             this.aspect = this.width / this.height;
@@ -61,6 +62,7 @@ define([
             this.invWidth = 1 / this.width;
             this.invHeight = 1 / this.height;
 
+            this.autoResize = other.autoResize;
             this.background.copy(other.background);
 
             this.far = other.far;
@@ -183,8 +185,8 @@ define([
         };
 
 
-        Camera.prototype.update = function() {
-            if (!this._active) return;
+        Camera.prototype.update = function(force) {
+            if (!force && !this._active) return;
 
             if (this.needsUpdate) {
 
@@ -224,6 +226,7 @@ define([
             json.height = this.height;
             json.aspect = this.aspect;
 
+            json.autoResize = this.autoResize;
             json.background = this.background.toJSON(json.background);
 
             json.far = this.far;
@@ -246,6 +249,7 @@ define([
             this.height = json.height;
             this.aspect = json.aspect;
 
+            this.autoResize = json.autoResize;
             this.background.fromJSON(json.background);
 
             this.far = json.far;
