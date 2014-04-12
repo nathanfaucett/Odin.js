@@ -41,7 +41,6 @@ define([
         }
 
         Component.extend(Transform);
-        Transform.order = -999999;
 
 
         Transform.prototype.copy = function(other) {
@@ -182,7 +181,7 @@ define([
                 updateDepth(this, depth);
                 if (!others) {
                     if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.Transform.sort(this.sort);
+                        scene.componentManagers.Transform.sort();
                     }
                 }
             } else {
@@ -194,12 +193,11 @@ define([
 
 
         Transform.prototype.addChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, scene;
 
-            while (i--) this.addChild(arguments[i], true);
+            for (i = 0, il = arguments.length; i < il; i++) this.addChild(arguments[i], true);
             if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.Transform.sort(this.sort);
+                scene.componentManagers.Transform.sort();
             }
             return this;
         };
@@ -227,7 +225,7 @@ define([
                 updateDepth(this, depth);
                 if (!others) {
                     if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.Transform.sort(this.sort);
+                        scene.componentManagers.Transform.sort();
                     }
                 }
             } else {
@@ -239,12 +237,11 @@ define([
 
 
         Transform.prototype.removeChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, scene;
 
-            while (i--) this.removeChild(arguments[i], true);
+            for (i = 0, il = arguments.length; i < il; i++) this.removeChild(arguments[i], true);
             if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.Transform.sort(this.sort);
+                scene.componentManagers.Transform.sort();
             }
             return this;
         };
@@ -315,12 +312,6 @@ define([
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
             this.normalMatrix.inverseMat4(this.modelView).transpose();
-        };
-
-
-        Transform.prototype.sort = function(a, b) {
-
-            return b.depth - a.depth;
         };
 
 

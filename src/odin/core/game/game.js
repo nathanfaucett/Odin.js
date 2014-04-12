@@ -169,6 +169,7 @@ define([
             Time.update();
             Input.update();
 
+            this.emit("update", Time.sinceStart);
             if (renderer && camera) {
 
                 if (scene) {
@@ -186,10 +187,9 @@ define([
                     gui.emit("update");
                 }
 
-                this.emit("update", Time.sinceStart);
                 renderer.render(camera, scene, gui);
-                this.emit("lateUpdate", Time.sinceStart);
             }
+            this.emit("lateUpdate", Time.sinceStart);
         }
 
 

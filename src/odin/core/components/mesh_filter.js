@@ -110,12 +110,6 @@ define([
         };
 
 
-        MeshFilter.prototype.sort = function(a, b) {
-
-            return a.mesh === b.mesh ? -1 : 1;
-        };
-
-
         MeshFilter.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 

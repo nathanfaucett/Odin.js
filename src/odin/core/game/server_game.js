@@ -67,32 +67,32 @@ define([
 
 
         ServerGame.prototype.init = function() {
-            var self = this,
+            var _this = this,
                 socket_io = this.io;
 
             socket_io.set("log level", (Config.debug ? 2 : 0));
 
             socket_io.on("connection", function(socket) {
                 var id = socket.id,
-                    client = self.createClient(socket);
+                    client = _this.createClient(socket);
 
                 socket.on("disconnect", function() {
 
-                    client = self.removeClient(socket);
+                    client = _this.removeClient(socket);
                     client.emit("disconnect");
-                    self.emit("disconnect", client);
+                    _this.emit("disconnect", client);
                 });
 
                 socket.on("client_device", function(device) {
 
                     client.device = device;
                     Log.log("ServerGame: New Client\n", Log.object(device));
-                    socket.emit("server_ready", self.toJSON(), Assets.toJSON());
+                    socket.emit("server_ready", _this.toJSON(), Assets.toJSON());
                 });
 
                 socket.on("client_ready", function() {
 
-                    self.emit("connection", client);
+                    _this.emit("connection", client);
                 });
 
                 socket.on("client_sync_input", function(json, timeStamp) {

@@ -18,6 +18,7 @@ define([
                         h: 32,
                         width: 1,
                         height: 1,
+                        layer: 1
                     }),
                     new Odin.SpriteAnimation({
                         sheet: Odin.Assets.get("ss_fire"),

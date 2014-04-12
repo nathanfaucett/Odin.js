@@ -430,8 +430,8 @@ define([
 
             this.x = -other.x;
             this.y = -other.y;
-            this.z = -other.z;
-            this.w = -other.w;
+            this.z = -(other.z || 0);
+            this.w = -(other.w || 0);
 
             return this;
         };

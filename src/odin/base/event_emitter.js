@@ -45,11 +45,11 @@ define(
          * @return this
          */
         EventEmitter.prototype.once = function(type, listener, ctx) {
-            var self = this;
+            var _this = this;
             ctx = ctx || this;
 
             function once() {
-                self.off(type, once, ctx);
+                _this.off(type, once, ctx);
                 listener.apply(ctx, arguments);
             }
 
@@ -132,20 +132,20 @@ define(
             if (length === 1) {
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.call(event.ctx);
+                    (event = events[i]).listener.call(event.ctx);
                 }
             } else if (length === 2) {
                 a1 = arguments[1];
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.call(event.ctx, a1);
+                    (event = events[i]).listener.call(event.ctx, a1);
                 }
             } else if (length === 3) {
                 a1 = arguments[1];
                 a2 = arguments[2];
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2);
+                    (event = events[i]).listener.call(event.ctx, a1, a2);
                 }
             } else if (length === 4) {
                 a1 = arguments[1];
@@ -153,7 +153,7 @@ define(
                 a3 = arguments[3];
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3);
+                    (event = events[i]).listener.call(event.ctx, a1, a2, a3);
                 }
             } else if (length === 5) {
                 a1 = arguments[1];
@@ -162,13 +162,13 @@ define(
                 a4 = arguments[4];
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.call(event.ctx, a1, a2, a3, a4);
+                    (event = events[i]).listener.call(event.ctx, a1, a2, a3, a4);
                 }
             } else {
                 shift.apply(arguments);
                 i = events.length;
                 while (i--) {
-                    if ((event = events[i])) event.listener.apply(event.ctx, arguments);
+                    (event = events[i]).listener.apply(event.ctx, arguments);
                 }
             }
 

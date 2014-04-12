@@ -349,7 +349,10 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det !== 0.0 ? 1.0 / det : 1.0;
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;
@@ -392,7 +395,10 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det === 0.0 ? 0.0 : 1.0 / det;
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;
@@ -435,7 +441,10 @@ define([
 
                 det = m11 * m0 + m21 * m3 + m31 * m6;
 
-            det = det === 0.0 ? 0.0 : 1.0 / det;
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = m0 * det;
             te[1] = (m23 * m31 - m21 * m33) * det;

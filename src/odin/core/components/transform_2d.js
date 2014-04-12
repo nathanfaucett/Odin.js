@@ -42,7 +42,6 @@ define([
         }
 
         Component.extend(Transform2D);
-        Transform2D.order = -999999;
 
 
         Transform2D.prototype.copy = function(other) {
@@ -177,7 +176,7 @@ define([
                 updateDepth(this, depth);
                 if (!others) {
                     if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.Transform2D.sort(this.sort);
+                        scene.componentManagers.Transform2D.sort();
                     }
                 }
             } else {
@@ -189,12 +188,11 @@ define([
 
 
         Transform2D.prototype.addChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, scene;
 
-            while (i--) this.addChild(arguments[i], true);
+            for (i = 0, il = arguments.length; i < il; i++) this.addChild(arguments[i], true);
             if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.Transform2D.sort(this.sort);
+                scene.componentManagers.Transform2D.sort();
             }
             return this;
         };
@@ -222,7 +220,7 @@ define([
                 updateDepth(this, depth);
                 if (!others) {
                     if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.Transform2D.sort(this.sort);
+                        scene.componentManagers.Transform2D.sort();
                     }
                 }
             } else {
@@ -234,12 +232,11 @@ define([
 
 
         Transform2D.prototype.removeChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, scene;
 
-            while (i--) this.removeChild(arguments[i], true);
+            for (i = 0, il = arguments.length; i < il; i++) this.removeChild(arguments[i], true);
             if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.Transform2D.sort(this.sort);
+                scene.componentManagers.Transform2D.sort();
             }
             return this;
         };
@@ -313,12 +310,6 @@ define([
 
             this.modelView.mmul(viewMatrix, this.matrixWorld);
             this.normalMatrix.inverseMat4(this.modelView).transpose();
-        };
-
-
-        Transform2D.prototype.sort = function(a, b) {
-
-            return b.depth - a.depth;
         };
 
 

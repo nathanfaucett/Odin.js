@@ -118,14 +118,16 @@ define([
              * @method render
              * @memberof Renderer
              * @brief renderers scene from camera's perspective
-             * @param Scene scene
              * @param Camera camera
+             * @param Scene scene
+             * @param GUI gui
+             * @param RenderTarget renderTarget
              */
             function render(camera, scene, gui, renderTarget) {
                 if (!_context || !camera) return;
                 var lineWidth, blending, cullFace,
                     background = camera.background,
-                    i;
+                    i, il;
 
                 setRenderTarget(renderTarget);
 
@@ -176,71 +178,34 @@ define([
                 _projScreenMatrix.mmul(camera.projection, camera.view);
                 if (this.autoClear) clearCanvas(this.autoClearColor, this.autoClearDepth, this.autoClearStencil);
 
+                lineWidth = _lastLineWidth;
+                blending = _lastBlending;
+                cullFace = _lastCullFace;
+
                 if (scene) {
-                    var components = scene.components,
+                    var componentManagers = scene.componentManagers,
                         ambient = scene.world.ambient,
-                        lights = components.Light || EMPTY_ARRAY,
-                        meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                        sprites = components.Sprite || EMPTY_ARRAY,
-                        particleSystems = components.ParticleSystem || EMPTY_ARRAY,
-                        meshFilter, particleSystem, sprite, transform;
+                        lights = componentManagers.Light,
+                        meshFilters = componentManagers.MeshFilter,
+                        sprites = componentManagers.Sprite,
+                        particleSystems = componentManagers.ParticleSystem;
 
-                    lineWidth = _lastLineWidth;
-                    blending = _lastBlending;
-                    cullFace = _lastCullFace;
+                    lights = lights ? lights.components : EMPTY_ARRAY;
 
-                    i = meshFilters.length;
-                    while (i--) {
-                        meshFilter = meshFilters[i];
-                        transform = meshFilter.transform || meshFilter.transform2d;
-
-                        if (!transform) continue;
-
-                        transform.updateMatrices(camera.view);
-                        renderMeshFilter(camera, lights, ambient, transform, meshFilter);
-                    }
-
-                    i = sprites.length;
-                    while (i--) {
-                        sprite = sprites[i];
-                        transform = sprite.transform || sprite.transform2d;
-
-                        if (!transform) continue;
-
-                        transform.updateMatrices(camera.view);
-                        renderSprite(camera, lights, ambient, transform, sprite);
-                    }
-
-                    i = particleSystems.length;
-                    while (i--) {
-                        particleSystem = particleSystems[i];
-                        transform = particleSystem.transform || sprite.transform2d;
-
-                        if (!transform) continue;
-
-                        transform.updateMatrices(camera.view);
-                        renderParticleSystem(camera, lights, ambient, transform, particleSystem);
-                    }
-
-                    setCullFace(cullFace);
-                    setBlending(blending);
-                    setLineWidth(lineWidth);
+                    if (meshFilters) renderMeshFilters(camera, lights, ambient, meshFilters);
+                    if (sprites) renderSprites(camera, lights, ambient, sprites);
+                    if (particleSystems) renderParticleSystems(camera, lights, ambient, particleSystems);
                 }
                 if (gui) {
-                    var components = gui.components,
-                        guiContents = components.GUIContent || EMPTY_ARRAY,
-                        guiContent, transform,
-                        i;
-
-                    lineWidth = _lastLineWidth;
-                    blending = _lastBlending;
-                    cullFace = _lastCullFace;
+                    var componentManagers = gui.componentManagers,
+                        guiContents = componentManagers.GUIContent,
+                        guiContent, transform;
 
                     useDepth && setDepthTest(false);
-                    setCullFace(CullFace.Back);
 
-                    i = guiContents.length;
-                    while (i--) {
+                    guiContents = guiContents ? guiContents.components : EMPTY_ARRAY;
+
+                    for (i = 0, il = guiContents.length; i < il; i++) {
                         guiContent = guiContents[i];
                         transform = guiContent.guiTransform;
 
@@ -250,11 +215,12 @@ define([
                         renderGUIContent(camera, transform, guiContent);
                     }
 
-                    setBlending(blending);
-                    setLineWidth(lineWidth);
-                    setCullFace(cullFace);
                     useDepth && setDepthTest(true);
                 }
+
+                setCullFace(cullFace);
+                setBlending(blending);
+                setLineWidth(lineWidth);
             };
             this.render = render;
 
@@ -455,6 +421,21 @@ define([
             }
 
 
+            function renderMeshFilters(camera, lights, ambient, meshFilters) {
+                var components = meshFilters.components,
+                    meshFilter, transform, i, il;
+
+                for (i = 0, il = components.length; i < il; i++) {
+                    meshFilter = components[i];
+                    transform = meshFilter.transform || meshFilter.transform2d;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderMeshFilter(camera, lights, ambient, transform, meshFilter);
+                }
+            }
+
             function renderMeshFilter(camera, lights, ambient, transform, meshFilter) {
                 var mesh = meshFilter.mesh,
                     material = meshFilter.material,
@@ -475,7 +456,7 @@ define([
 
                 createMeshBuffers(mesh);
                 shader = createShader(mesh, material, lights);
-                shader.bind(meshFilter, mesh, material, transform, camera, lights, ambient);
+                shader.bindMaterial(meshFilter, mesh, material, transform, camera, lights, ambient);
 
                 if (!meshFilter._webglMeshInitted) {
                     mesh._webglUsed += 1;
@@ -491,6 +472,26 @@ define([
                 }
             }
 
+
+            function renderSprites(camera, lights, ambient, sprites) {
+                var layers = sprites.layers,
+                    sprite, transform, components, i, il, j, jl;
+
+                for (i = 0, il = layers.length; i < il; i++) {
+                    components = layers[i];
+                    if (!components) continue;
+
+                    for (j = 0, jl = components.length; j < jl; j++) {
+                        sprite = components[j];
+                        transform = sprite.transform || sprite.transform2d;
+
+                        if (!transform) continue;
+
+                        transform.updateMatrices(camera.view);
+                        renderSprite(camera, lights, ambient, transform, sprite);
+                    }
+                }
+            }
 
             function renderSprite(camera, lights, ambient, transform, sprite) {
                 var material = sprite.material,
@@ -517,7 +518,7 @@ define([
                     sprite._webglInitted = true;
                 }
 
-                shader.bind(sprite, sprite, material, transform, camera, lights, ambient);
+                shader.bindMaterial(sprite, sprite, material, transform, camera, lights, ambient);
 
                 if (material.wireframe) {
                     setLineWidth(material.wireframeLineWidth);
@@ -527,6 +528,21 @@ define([
                 }
             }
 
+
+            function renderParticleSystems(camera, lights, ambient, particleSystems) {
+                var components = particleSystems.components,
+                    particleSystem, transform, i, il;
+
+                for (i = 0, il = components.length; i < il; i++) {
+                    particleSystem = components[i];
+                    transform = particleSystem.transform || particleSystem.transform2d;
+
+                    if (!transform) continue;
+
+                    transform.updateMatrices(camera.view);
+                    renderParticleSystem(camera, lights, ambient, transform, particleSystem);
+                }
+            }
 
             function renderParticleSystem(camera, lights, ambient, transform, particleSystem) {
                 var emitters = particleSystem.emitters,
@@ -548,7 +564,7 @@ define([
 
                         createEmitterBuffers(emitter, transform);
                         shader = createShader(emitter, material, lights);
-                        shader.bind(particleSystem, emitter, material, transform, camera, lights, ambient);
+                        shader.bindMaterial(particleSystem, emitter, material, transform, camera, lights, ambient);
 
                         if (!emitter._webglInitted) {
                             shader.markAsUsed(material);
@@ -565,7 +581,7 @@ define([
 
                         createEmitter2DBuffers(emitter, transform);
                         shader = createShader(emitter, material, lights);
-                        shader.bind(particleSystem, emitter, material, transform, camera, lights, ambient);
+                        shader.bindMaterial(particleSystem, emitter, material, transform, camera, lights, ambient);
 
                         if (!emitter._webglInitted) {
                             shader.markAsUsed(material);
@@ -578,20 +594,15 @@ define([
             }
 
             function addSceneEvents(scene) {
-                var components = scene.components,
-                    meshFilters = components.MeshFilter || EMPTY_ARRAY,
-                    sprites = components.Sprite || EMPTY_ARRAY,
-                    particleSystems = components.ParticleSystem || EMPTY_ARRAY,
+                var componentManagers = scene.componentManagers,
+                    meshFilters = componentManagers.MeshFilter || EMPTY_ARRAY,
+                    sprites = componentManagers.Sprite || EMPTY_ARRAY,
+                    particleSystems = componentManagers.ParticleSystem || EMPTY_ARRAY,
                     i;
 
-                i = meshFilters.length;
-                while (i--) meshFilters[i].on("remove", onMeshFilterRemove);
-
-                i = sprites.length;
-                while (i--) sprites[i].on("remove", onSpriteRemove);
-
-                i = particleSystems.length;
-                while (i--) particleSystems[i].on("remove", onParticleSystemRemove);
+                meshFilters.forEach(onMeshFilterAdd);
+                sprites.forEach(onSpriteAdd);
+                particleSystems.forEach(onParticleSystemAdd);
 
                 scene.on("addMeshFilter", onMeshFilterAdd);
                 scene.on("addSprite", onSpriteAdd);
@@ -697,13 +708,10 @@ define([
             }
 
             function addGUIEvents(gui) {
-                var components = gui.components,
-                    guiContents = components.GUIContent || EMPTY_ARRAY,
-                    i;
+                var componentManagers = gui.componentManagers,
+                    guiContents = componentManagers.GUIContent;
 
-                i = guiContents.length;
-                while (i--) guiContents[i].on("remove", onGUIContentRemove);
-
+                if (guiContents) guiContents.forEach(onGUIContentAdd);
                 gui.on("addGUIContent", onGUIContentAdd);
             }
 
@@ -1326,7 +1334,7 @@ define([
                 }
             }
 
-            Shader.prototype.bind = function(component, obj, material, transform, camera, lights, ambient) {
+            Shader.prototype.bindMaterial = function(component, obj, material, transform, camera, lights, ambient) {
                 var program = this.program,
                     parameters = this.parameters,
                     uniforms = this.uniforms,
@@ -2531,7 +2539,7 @@ define([
 
                 if (framebuffer !== _currentFramebuffer) {
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
-                    _gl.viewport(vx, vy, width, height);
+                    setViewport(vx, vy, width, height);
 
                     _currentFramebuffer = framebuffer;
                 }

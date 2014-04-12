@@ -4,10 +4,11 @@ if (typeof(define) !== "function") {
 define([
         "odin/base/class",
         "odin/core/game_object",
+        "odin/core/component_managers/component_manager",
         "odin/core/world/world",
         "odin/core/game/log"
     ],
-    function(Class, GameObject, World, Log) {
+    function(Class, GameObject, ComponentManager, World, Log) {
         "use strict";
 
 
@@ -32,8 +33,8 @@ define([
             this._gameObjectHash = {};
             this._gameObjectJSONHash = {};
 
-            this.components = {};
-            this._componentTypes = [];
+            this.componentManagers = {};
+            this._componentManagerTypes = [];
             this._componentHash = {};
             this._componentJSONHash = {};
 
@@ -59,56 +60,35 @@ define([
 
         Scene.prototype.init = function() {
             var gameObjects = this.gameObjects,
-                componentTypes = this._componentTypes,
-                i = componentTypes.length;
+                i, il;
 
             this.world && this.world.init();
 
-            i = gameObjects.length;
-            while (i--) gameObjects[i].emit("init");
+            for (i = 0, il = gameObjects.length; i < il; i++) gameObjects[i].emit("init");
         };
 
 
         Scene.prototype.start = function() {
-            var types = this._componentTypes,
+            var componentManagerTypes = this._componentManagerTypes,
                 gameObjects = this.gameObjects,
-                components, component, i, j;
+                i, il;
 
             this.world && this.world.start();
 
-            i = types.length;
-            while (i--) {
-                components = types[i];
-                j = components.length;
-                while (j--) {
-                    component = components[j];
-
-                    component.start();
-                    component.emit("start");
-                }
-            }
-
-            i = gameObjects.length;
-            while (i--) gameObjects[i].emit("start");
+            for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].start();
+            for (i = 0, il = gameObjects.length; i < il; i++) gameObjects[i].emit("start");
         };
 
 
         Scene.prototype.update = function() {
-            var types = this._componentTypes,
+            var componentManagerTypes = this._componentManagerTypes,
                 gameObjects = this.gameObjects,
-                components, i, j;
+                i, il;
 
             this.world && this.world.update();
 
-            i = types.length;
-            while (i--) {
-                components = types[i];
-                j = components.length;
-                while (j--) components[j].update();
-            }
-
-            i = gameObjects.length;
-            while (i--) gameObjects[i].emit("update");
+            for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
+            for (i = 0, il = gameObjects.length; i < il; i++) gameObjects[i].emit("update");
         };
 
 
@@ -116,7 +96,7 @@ define([
             var gameObjects = this.gameObjects,
                 i = gameObjects.length;
 
-            this.world = undefined;
+            this.removeWorld();
             while (i--) this.removeGameObject(gameObjects[i], true);
 
             this.off();
@@ -201,9 +181,10 @@ define([
 
 
         Scene.prototype.addGameObjects = function() {
-            var i = arguments.length;
+            var i = 0,
+                il = arguments.length;
 
-            while (i--) this.addGameObject(arguments[i]);
+            for (; i < il; i++) this.addGameObject(arguments[i]);
             return this;
         };
 
@@ -211,22 +192,23 @@ define([
         Scene.prototype._addComponent = function(component) {
             if (!component) return;
             var type = component._type,
-                components = this.components,
-                isNew = !components[type],
-                types = components[type] || (components[type] = []),
-                componentTypes = this._componentTypes;
+                componentManagers = this.componentManagers,
+                componentManager = componentManagers[type],
+                componentManagerTypes = this._componentManagerTypes,
+                isNew = !componentManager;
+
+            if (isNew) {
+                componentManager = componentManagers[type] = new(Class._classes[type + "ComponentManager"] || ComponentManager);
+                componentManagerTypes.push(componentManager);
+                componentManagerTypes.sort(sortComponentManagerTypes);
+                componentManager.scene = this;
+            }
+
+            componentManager.add(component);
+            componentManager.sort();
 
             this._componentHash[component._id] = component;
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
-
-            types.push(component);
-
-            if (isNew) {
-                componentTypes.push(types);
-                componentTypes.sort(sortComponentTypes);
-            }
-
-            types.sort(component.sort);
 
             this.emit("add" + type, component);
             this.emit("addComponent", component);
@@ -238,9 +220,9 @@ define([
         };
 
 
-        function sortComponentTypes(a, b) {
+        function sortComponentManagerTypes(a, b) {
 
-            return (b[0].constructor.order || 0) - (a[0].constructor.order || 0);
+            return a.order - b.order;
         }
 
 
@@ -288,9 +270,10 @@ define([
 
 
         Scene.prototype.removeGameObjects = function() {
-            var i = arguments.length;
+            var i = 0,
+                il = arguments.length;
 
-            while (i--) this.removeGameObject(arguments[i]);
+            for (; i < il; i++) this.removeGameObject(arguments[i]);
             return this;
         };
 
@@ -298,15 +281,19 @@ define([
         Scene.prototype._removeComponent = function(component, clear) {
             if (!component) return;
             var type = component._type,
-                components = this.components,
-                types = components[type],
-                index = types.indexOf(component);
+                componentManagers = this.componentManagers,
+                componentManager = componentManagers[type],
+                componentManagerTypes = this._componentManagerTypes;
 
+            componentManager.remove(component);
             this._componentHash[component._id] = undefined;
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
-            types.splice(index, 1);
-            types.sort(component.sort);
+            if (componentManager.empty()) {
+                componentManagers[type] = undefined;
+                componentManagerTypes.splice(componentManagerTypes.indexOf(componentManager), 1);
+                componentManager.scene = undefined;
+            }
 
             this.emit("remove" + type, component);
             this.emit("removeComponent", component);
@@ -420,7 +407,7 @@ define([
             while (i--) {
                 if (!(jsonGameObject = jsonGameObjects[i])) continue;
 
-                if ((gameObject = this.findByJSONId(jsonGameObject._id))) {
+                if ((gameObject = this._gameObjectJSONHash[jsonGameObject._id])) {
                     gameObject.fromJSON(jsonGameObject);
                 } else {
                     this.addGameObject(Class.fromJSON(jsonGameObject));

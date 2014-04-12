@@ -7,6 +7,8 @@ require({
     ],
     function(Odin, assets, sceneLevel) {
 
+        Odin.globalize();
+
         var game = new Odin.Game({
             debug: true,
             width: 960,
@@ -16,6 +18,7 @@ require({
                 disableDepth: true
             }
         });
+        window.game = game;
 
         game.addScene(sceneLevel);
 
@@ -23,20 +26,6 @@ require({
         function startLevel() {
             game.setScene("Level");
             game.setCamera(game.scene.findByTagFirst("Camera"));
-            var scene = game.scene,
-                level = scene.findByTagFirst("Level").sprite;
-
-            scene.on("update", function() {
-                var sprites = game.scene.components.Sprite;
-
-                sprites.sort(function(a, b) {
-
-                    return a.transform2d.position.y - b.transform2d.position.y;
-                });
-
-                sprites.splice(sprites.indexOf(level), 1);
-                sprites.push(level);
-            });
         }
 
 

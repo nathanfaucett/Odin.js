@@ -120,13 +120,13 @@ require({
                     y: 0,
                     w: 64,
                     h: 64,
-                    width: 0.5,
-                    height: 0.5
+                    width: 1,
+                    height: 1
                 }),
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
                     shape: new Phys2D.P2Circle({
-                        radius: 0.25
+                        radius: 0.5
                     })
                 })
             ]
@@ -140,13 +140,13 @@ require({
                     y: 0,
                     w: 64,
                     h: 64,
-                    width: 0.5,
-                    height: 0.5
+                    width: 1,
+                    height: 1
                 }),
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
                     shape: new Phys2D.P2Rect({
-                        extents: new Vec2(0.25, 0.25)
+                        extents: new Vec2(0.5, 0.5)
                     })
                 })
             ]

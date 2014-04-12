@@ -47,6 +47,16 @@ define(
             this.Texture = require("odin/core/assets/texture");
             this.TextureCube = require("odin/core/assets/texture_cube");
 
+            this.BoneComponentManager = require("odin/core/component_managers/bone_component_manager");
+            this.Camera2DComponentManager = require("odin/core/component_managers/camera_2d_component_manager");
+            this.CameraComponentManager = require("odin/core/component_managers/camera_component_manager");
+            this.ComponentManager = require("odin/core/component_managers/component_manager");
+            this.MeshAnimationComponentManager = require("odin/core/component_managers/mesh_animation_component_manager");
+            this.MeshFilterComponentManager = require("odin/core/component_managers/mesh_filter_component_manager");
+            this.SpriteComponentManager = require("odin/core/component_managers/sprite_component_manager");
+            this.Transform2DComponentManager = require("odin/core/component_managers/transform_2d_component_manager");
+            this.TransformComponentManager = require("odin/core/component_managers/transform_component_manager");
+
             this.ParticleSystem = require("odin/core/components/particle_system/particle_system");
             this.AudioSource = require("odin/core/components/audio_source");
             this.Camera = require("odin/core/components/camera");
@@ -162,6 +172,6 @@ define(
         };
 
 
-        return new Odin;
+        return new Odin();
     }
 );

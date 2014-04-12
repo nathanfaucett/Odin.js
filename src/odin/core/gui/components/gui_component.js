@@ -15,6 +15,8 @@ define([
 
         function GUIComponent(type, opts) {
             opts || (opts = {});
+            if (!type) Log.error("GUIComponent defined without a type, use GUIComponent.call(this, \"GUIComponentName\", { sync: Boolean, json: Boolean })");
+
 
             Class.call(this);
 
@@ -74,12 +76,6 @@ define([
 
             this.guiObject.removeGUIComponent(this, true);
             return this;
-        };
-
-
-        GUIComponent.prototype.sort = function(a, b) {
-
-            return a === b ? -1 : 1;
         };
 
 

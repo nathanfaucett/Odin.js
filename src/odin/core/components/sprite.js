@@ -18,6 +18,7 @@ define([
             this.visible = opts.visible != undefined ? !! opts.visible : true;
             this.blending = opts.blending != undefined ? opts.blending : Enums.Blending.Default;
 
+            this.layer = opts.layer != undefined ? opts.layer : 0;
             this.z = opts.z != undefined ? opts.z : 0;
 
             this.alpha = opts.alpha != undefined ? opts.alpha : 1;
@@ -43,6 +44,7 @@ define([
             this.visible = other.visible;
             this.blending = other.blending;
 
+            this.layer = other.layer;
             this.z = other.z;
 
             this.alpha = other.alpha;
@@ -79,6 +81,7 @@ define([
             json.visible = this.visible;
             json.blending = this.blending;
 
+            json.layer = this.layer;
             json.z = this.z;
 
             json.alpha = this.alpha;
@@ -103,6 +106,7 @@ define([
             this.visible = json.visible;
             this.blending = json.blending;
 
+            this.layer = json.layer;
             this.z = json.z;
 
             this.alpha = json.alpha;
@@ -120,12 +124,6 @@ define([
             this._webglInitted = false;
 
             return this;
-        };
-
-
-        Sprite.prototype.sort = function(a, b) {
-
-            return b.z - a.z;
         };
 
 

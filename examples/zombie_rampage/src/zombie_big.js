@@ -27,7 +27,8 @@ define([
                         w: 32,
                         h: 32,
                         width: 2,
-                        height: 2
+                        height: 2,
+                        layer: 1
                     }),
                     new Odin.SpriteAnimation({
                         sheet: Odin.Assets.get("ss_mid"),

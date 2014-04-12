@@ -163,8 +163,8 @@ define([
         Camera.prototype.toWorld = function(v, out) {
             out || (out = new Vec3);
 
-            out.x = 2 * (v.x * this.invWidth) - 1;
-            out.y = -2 * (v.y * this.invHeight) + 1;
+            out.x = 2.0 * (v.x * this.invWidth) - 1.0;
+            out.y = -2.0 * (v.y * this.invHeight) + 1.0;
             out.transformMat4(MAT4.mmul(this.projection, this.view).inverse());
             out.z = this.near;
 
@@ -178,8 +178,8 @@ define([
             VEC3.copy(v);
             VEC3.transformMat4(MAT4.mmul(this.projection, this.view));
 
-            out.x = ((VEC3.x + 1) * 0.5) * this.width;
-            out.y = ((1 - VEC3.y) * 0.5) * this.height;
+            out.x = ((VEC3.x + 1.0) * 0.5) * this.width;
+            out.y = ((1.0 - VEC3.y) * 0.5) * this.height;
 
             return v;
         };
@@ -210,12 +210,6 @@ define([
             }
 
             this.view.inverseMat((this.transform || this.transform2d).matrixWorld);
-        };
-
-
-        Camera.prototype.sort = function(a, b) {
-
-            return a._active ? -1 : b._active ? 1 : -1;
         };
 
 

@@ -65,12 +65,6 @@ define([
         };
 
 
-        GUIContent.prototype.sort = function(a, b) {
-
-            return b.style.z - a.style.z;
-        };
-
-
         GUIContent.prototype.toJSON = function(json) {
             json = GUIComponent.prototype.toJSON.call(this, json);
 

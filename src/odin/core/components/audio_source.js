@@ -52,11 +52,11 @@ define([
 
             this._startTime = 0;
 
-            var self = this;
+            var _this = this;
             this._onended = function() {
 
-                self.playing = false;
-                self.time = 0;
+                _this.playing = false;
+                _this.time = 0;
             };
         }
 

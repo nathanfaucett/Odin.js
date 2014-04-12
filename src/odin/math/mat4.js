@@ -479,7 +479,10 @@ define([
 
                 det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            if (det === 0.0) return this.identity();
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = me0 * det;
             te[4] = me4 * det;
@@ -536,7 +539,10 @@ define([
 
                 det = m11 * me0 + m21 * me4 + m31 * me8 + m41 * me12;
 
-            if (det === 0.0) return this.identity();
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = me0 * det;
             te[4] = me4 * det;

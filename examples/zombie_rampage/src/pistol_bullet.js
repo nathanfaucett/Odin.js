@@ -17,7 +17,8 @@ define([
                         w: 6,
                         h: 16,
                         width: 0.375,
-                        height: 1
+                        height: 1,
+                        layer: 1
                     }),
                     new Odin.RigidBody2D({
                         motionState: Odin.Phys2D.P2Enums.MotionState.Dynamic,

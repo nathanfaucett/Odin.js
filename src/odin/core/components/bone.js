@@ -32,7 +32,6 @@ define([
         }
 
         Component.extend(Bone);
-        Bone.order = 1000000;
 
 
         Bone.prototype.copy = function(other) {
@@ -115,12 +114,6 @@ define([
             this.inheritScale = json.inheritScale;
 
             return this;
-        };
-
-
-        Bone.prototype.sort = function(a, b) {
-
-            return b.parentIndex - a.parentIndex;
         };
 
 

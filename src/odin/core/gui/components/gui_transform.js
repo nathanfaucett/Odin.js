@@ -9,10 +9,9 @@ define([
         "odin/math/mat3",
         "odin/math/mat4",
         "odin/core/gui/components/gui_component",
-        "odin/core/game/config",
         "odin/core/game/log"
     ],
-    function(Mathf, Rect, Vec2, Mat32, Mat3, Mat4, GUIComponent, Config, Log) {
+    function(Mathf, Rect, Vec2, Mat32, Mat3, Mat4, GUIComponent, Log) {
         "use strict";
 
 
@@ -43,7 +42,6 @@ define([
         }
 
         GUIComponent.extend(GUITransform);
-        GUITransform.order = -999999;
 
 
         GUITransform.prototype.copy = function(other) {
@@ -54,7 +52,7 @@ define([
             this.scale.copy(other.scale);
             this.rotation = other.rotation;
 
-            while (i--) this.addChild(children[i].gameObject.clone().transform);
+            while (i--) this.addChild(children[i].guiObject.clone().transform);
             if (other.parent) other.parent.addChild(this);
 
             this._matricesNeedsUpdate = true;
@@ -170,7 +168,7 @@ define([
             }
             var children = this.children,
                 index = children.indexOf(child),
-                root, depth, scene;
+                root, depth, gui;
 
             if (index === -1) {
                 if (child.parent) child.parent.remove(child);
@@ -190,8 +188,8 @@ define([
 
                 updateDepth(this, depth);
                 if (!others) {
-                    if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.GUITransform.sort(this.sort);
+                    if (this.guiObject && (gui = this.guiObject.gui)) {
+                        gui.componentManagers.GUITransform.sort(this.sort);
                     }
                 }
             } else {
@@ -203,12 +201,11 @@ define([
 
 
         GUITransform.prototype.addChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, gui;
 
-            while (i--) this.addChild(arguments[i], true);
-            if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.GUITransform.sort(this.sort);
+            for (i = 0, il = arguments.length; i < il; i++) this.addChild(arguments[i], true);
+            if (this.guiObject && (gui = this.guiObject.gui)) {
+                gui.componentManagers.GUITransform.sort(this.sort);
             }
             return this;
         };
@@ -217,7 +214,7 @@ define([
         GUITransform.prototype.removeChild = function(child, others) {
             var children = this.children,
                 index = children.indexOf(child),
-                root, depth, scene;
+                root, depth, gui;
 
             if (index !== -1) {
                 child.parent = undefined;
@@ -235,8 +232,8 @@ define([
 
                 updateDepth(this, depth);
                 if (!others) {
-                    if (this.gameObject && (scene = this.gameObject.scene)) {
-                        scene.components.GUITransform.sort(this.sort);
+                    if (this.guiObject && (gui = this.guiObject.gui)) {
+                        gui.componentManagers.GUITransform.sort(this.sort);
                     }
                 }
             } else {
@@ -248,12 +245,11 @@ define([
 
 
         GUITransform.prototype.removeChildren = function() {
-            var i = arguments.length,
-                scene;
+            var i, il, gui;
 
-            while (i--) this.removeChild(arguments[i], true);
-            if (this.gameObject && (scene = this.gameObject.scene)) {
-                scene.components.GUITransform.sort(this.sort);
+            for (i = 0, il = arguments.length; i < il; i++) this.removeChild(arguments[i], true);
+            if (this.guiObject && (gui = this.guiObject.gui)) {
+                gui.componentManagers.GUITransform.sort(this.sort);
             }
             return this;
         };
@@ -281,7 +277,7 @@ define([
             while (i--) {
                 child = children[i];
 
-                if (child.gameObject.name === name) return child;
+                if (child.guiObject.name === name) return child;
                 if ((child = child.find(name))) return child;
             }
 
@@ -333,12 +329,6 @@ define([
         }();
 
 
-        GUITransform.prototype.sort = function(a, b) {
-
-            return b.depth - a.depth;
-        };
-
-
         GUITransform.prototype.toJSON = function(json) {
             json = GUIComponent.prototype.toJSON.call(this, json);
             var children = this.children,
@@ -359,11 +349,11 @@ define([
             GUIComponent.prototype.fromJSON.call(this, json);
             var children = json.children,
                 i = children.length,
-                child, scene;
+                child, gui;
 
-            if (this.guiObject && (scene = this.guiObject.scene)) {
+            if (this.guiObject && (gui = this.guiObject.gui)) {
                 while (i--) {
-                    child = scene.findGUIComponentByJSONId(children[i]);
+                    child = gui.findGUIComponentByJSONId(children[i]);
 
                     if (!this.hasChild(child)) {
                         this.addChild(child);
@@ -371,10 +361,10 @@ define([
                 }
             } else {
                 this.once("start", function() {
-                    var scene = this.guiObject.scene;
+                    var gui = this.guiObject.gui;
 
                     while (i--) {
-                        child = scene.findGUIComponentByJSONId(children[i]);
+                        child = gui.findGUIComponentByJSONId(children[i]);
 
                         if (!this.hasChild(child)) {
                             this.addChild(child);

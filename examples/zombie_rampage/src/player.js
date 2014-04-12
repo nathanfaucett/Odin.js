@@ -17,7 +17,8 @@ define([
                         x: 0,
                         y: 0,
                         w: 16,
-                        h: 16
+                        h: 16,
+                        layer: 1
                     }),
                     new Odin.SpriteAnimation({
                         sheet: Odin.Assets.get("ss_small"),

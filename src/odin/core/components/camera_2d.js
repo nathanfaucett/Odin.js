@@ -161,12 +161,6 @@ define([
         };
 
 
-        Camera2D.prototype.sort = function(a, b) {
-
-            return a._active ? -1 : b._active ? 1 : -1;
-        };
-
-
         Camera2D.prototype.toJSON = function(json) {
             json = Component.prototype.toJSON.call(this, json);
 

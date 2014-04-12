@@ -4,14 +4,15 @@ if (typeof(define) !== "function") {
 define([
         "odin/base/class",
         "odin/core/gui/gui_object",
+        "odin/core/gui/component_managers/gui_component_manager",
         "odin/core/game/log"
     ],
-    function(Class, GUIObject, Log) {
+    function(Class, GUIObject, GUIComponentManager, World, Log) {
         "use strict";
 
 
         /**
-         * GUIs manage GUIObjects and their Components
+         * GUIs manage GUIObjects and their GUIComponents
          * @class Odin.GUI
          * @extends Odin.Class
          * @param Object options
@@ -35,8 +36,8 @@ define([
             this._guiObjectHash = {};
             this._guiObjectJSONHash = {};
 
-            this.components = {};
-            this._componentTypes = [];
+            this.componentManagers = {};
+            this._componentManagerTypes = [];
             this._componentHash = {};
             this._componentJSONHash = {};
 
@@ -61,50 +62,29 @@ define([
 
         GUI.prototype.init = function() {
             var guiObjects = this.guiObjects,
-                componentTypes = this._componentTypes,
-                i = componentTypes.length;
+                i, il;
 
-            i = guiObjects.length;
-            while (i--) guiObjects[i].emit("init");
+            for (i = 0, il = guiObjects.length; i < il; i++) guiObjects[i].emit("init");
         };
 
 
         GUI.prototype.start = function() {
-            var types = this._componentTypes,
+            var componentManagerTypes = this._componentManagerTypes,
                 guiObjects = this.guiObjects,
-                components, component, i, j;
+                i, il;
 
-            i = types.length;
-            while (i--) {
-                components = types[i];
-                j = components.length;
-                while (j--) {
-                    component = components[j];
-
-                    component.start();
-                    component.emit("start");
-                }
-            }
-
-            i = guiObjects.length;
-            while (i--) guiObjects[i].emit("start");
+            for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].start();
+            for (i = 0, il = guiObjects.length; i < il; i++) guiObjects[i].emit("start");
         };
 
 
         GUI.prototype.update = function() {
-            var types = this._componentTypes,
+            var componentManagerTypes = this._componentManagerTypes,
                 guiObjects = this.guiObjects,
-                components, i, j;
+                i, il;
 
-            i = types.length;
-            while (i--) {
-                components = types[i];
-                j = components.length;
-                while (j--) components[j].update();
-            }
-
-            i = guiObjects.length;
-            while (i--) guiObjects[i].emit("update");
+            for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
+            for (i = 0, il = guiObjects.length; i < il; i++) guiObjects[i].emit("update");
         };
 
 
@@ -150,9 +130,9 @@ define([
 
                 components = guiObject.components;
                 i = components.length;
-                while (i--) this._addComponent(components[i]);
+                while (i--) this._addGUIComponent(components[i]);
 
-                if ((transform = guiObject.guiTransform)) {
+                if ((transform = guiObject.transform || guiObject.transform2d)) {
                     i = (children = transform.children).length;
 
                     while (i--) {
@@ -173,35 +153,37 @@ define([
 
 
         GUI.prototype.addGUIObjects = function() {
-            var i = arguments.length;
+            var i = 0,
+                il = arguments.length;
 
-            while (i--) this.addGUIObject(arguments[i]);
+            for (; i < il; i++) this.addGUIObject(arguments[i]);
             return this;
         };
 
 
-        GUI.prototype._addComponent = function(component) {
+        GUI.prototype._addGUIComponent = function(component) {
             if (!component) return;
             var type = component._type,
-                components = this.components,
-                isNew = !components[type],
-                types = components[type] || (components[type] = []),
-                componentTypes = this._componentTypes;
+                componentManagers = this.componentManagers,
+                componentManager = componentManagers[type],
+                componentManagerTypes = this._componentManagerTypes,
+                isNew = !componentManager;
+
+            if (isNew) {
+                componentManager = componentManagers[type] = new(Class._classes[type + "GUIComponentManager"] || GUIComponentManager);
+                componentManagerTypes.push(componentManager);
+                componentManagerTypes.sort(sortGUIComponentManagerTypes);
+                componentManager.gui = this;
+            }
+
+            componentManager.add(component);
+            componentManager.sort();
 
             this._componentHash[component._id] = component;
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = component;
 
-            types.push(component);
-
-            if (isNew) {
-                componentTypes.push(types);
-                componentTypes.sort(sortComponentTypes);
-            }
-
-            types.sort(component.sort);
-
             this.emit("add" + type, component);
-            this.emit("addComponent", component);
+            this.emit("addGUIComponent", component);
 
             if (this.game) {
                 component.start();
@@ -210,9 +192,9 @@ define([
         };
 
 
-        function sortComponentTypes(a, b) {
+        function sortGUIComponentManagerTypes(a, b) {
 
-            return (b[0].constructor.order || 0) - (a[0].constructor.order || 0);
+            return a.order - b.order;
         }
 
 
@@ -236,9 +218,9 @@ define([
 
                 components = guiObject.components;
                 i = components.length;
-                while (i--) this._removeComponent(components[i]);
+                while (i--) this._removeGUIComponent(components[i], clear);
 
-                if ((transform = guiObject.guiTransform)) {
+                if ((transform = guiObject.transform || guiObject.transform2d)) {
                     i = (children = transform.children).length;
 
                     while (i--) {
@@ -260,30 +242,35 @@ define([
 
 
         GUI.prototype.removeGUIObjects = function() {
-            var i = arguments.length;
+            var i = 0,
+                il = arguments.length;
 
-            while (i--) this.removeGUIObject(arguments[i]);
+            for (; i < il; i++) this.removeGUIObject(arguments[i]);
             return this;
         };
 
 
-        GUI.prototype._removeComponent = function(component) {
+        GUI.prototype._removeGUIComponent = function(component, clear) {
             if (!component) return;
             var type = component._type,
-                components = this.components,
-                types = components[type],
-                index = types.indexOf(component);
+                componentManagers = this.componentManagers,
+                componentManager = componentManagers[type],
+                componentManagerTypes = this._componentManagerTypes;
 
+            componentManager.remove(component);
             this._componentHash[component._id] = undefined;
             if (component._jsonId !== -1) this._componentJSONHash[component._jsonId] = undefined;
 
-            types.splice(index, 1);
-            types.sort(component.sort);
+            if (componentManager.empty()) {
+                componentManagers[type] = undefined;
+                componentManagerTypes.splice(componentManagerTypes.indexOf(componentManager), 1);
+                componentManager.gui = undefined;
+            }
 
             this.emit("remove" + type, component);
-            this.emit("removeComponent", component);
+            this.emit("removeGUIComponent", component);
 
-            component.clear();
+            if (clear) component.clear();
         };
 
 
@@ -330,13 +317,13 @@ define([
         };
 
 
-        GUI.prototype.findComponentById = function(id) {
+        GUI.prototype.findGUIComponentById = function(id) {
 
             return this._componentHash[id];
         };
 
 
-        GUI.prototype.findComponentByJSONId = function(id) {
+        GUI.prototype.findGUIComponentByJSONId = function(id) {
 
             return this._componentJSONHash[id];
         };
@@ -385,7 +372,7 @@ define([
             while (i--) {
                 if (!(jsonGUIObject = jsonGUIObjects[i])) continue;
 
-                if ((guiObject = this.findByJSONId(jsonGUIObject._id))) {
+                if ((guiObject = this._guiObjectJSONHash[jsonGUIObject._id])) {
                     guiObject.fromJSON(jsonGUIObject);
                 } else {
                     this.addGUIObject(Class.fromJSON(jsonGUIObject));

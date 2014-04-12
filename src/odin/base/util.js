@@ -36,7 +36,6 @@ define(
             UNDERSCORE = /([a-z])([A-Z])/g,
             FORMAT_REGEX = /%[sdj%]/g;
 
-
         function isObject(obj) {
 
             return obj === Object(obj);

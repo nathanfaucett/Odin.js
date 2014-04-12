@@ -398,7 +398,7 @@ define([
 
             this.x = -other.x;
             this.y = -other.y;
-            this.z = -other.z;
+            this.z = -(other.z || 0);
 
             return this;
         };

@@ -15,6 +15,7 @@ define([
 
         function Component(type, opts) {
             opts || (opts = {});
+            if (!type) Log.error("Component defined without a type, use Component.call(this, \"ComponentName\", { sync: Boolean, json: Boolean })");
 
             Class.call(this);
 
@@ -87,12 +88,6 @@ define([
 
             this.gameObject.removeComponent(this, true);
             return this;
-        };
-
-
-        Component.prototype.sort = function() {
-
-            return 0;
         };
 
 

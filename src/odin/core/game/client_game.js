@@ -43,13 +43,13 @@ define([
 
 
         ClientGame.prototype.connect = function(handler) {
-            var self = this,
+            var _this = this,
                 socket = this.io = io.connect(Config.host + ":" + Config.port);
 
 
             socket.on("connect", function() {
-                if (!self._sessionid) self._sessionid = this.socket.sessionid;
-                if (self._sessionid !== this.socket.sessionid) location.reload();
+                if (!_this._sessionid) _this._sessionid = this.socket.sessionid;
+                if (_this._sessionid !== this.socket.sessionid) location.reload();
 
                 socket.emit("client_device", Device);
             });
@@ -58,24 +58,24 @@ define([
                 Assets.fromServerJSON(assets);
 
                 AssetLoader.load(function() {
-                    self.fromServerJSON(game);
+                    _this.fromServerJSON(game);
 
                     socket.emit("client_ready");
 
-                    self.emit("connect", socket);
-                    if (handler) handler.call(self, socket);
+                    _this.emit("connect", socket);
+                    if (handler) handler.call(_this, socket);
                 });
             });
 
             socket.on("server_sync_input", function(timeStamp) {
 
-                self._inputStamp = timeStamp - (Config.FAKE_LAG * 2);
+                _this._inputStamp = timeStamp - (Config.FAKE_LAG * 2);
                 socket.emit("client_sync_input", Input.toSYNC(), stamp());
             });
 
             var lastState = 0;
             socket.on("server_sync_scene", function(jsonScene, serverTimeStamp) {
-                var scene = self.scene,
+                var scene = _this.scene,
                     timeStamp, lag;
 
                 if (!scene) return;
@@ -83,36 +83,36 @@ define([
                 timeStamp = stamp();
                 lag = timeStamp - serverTimeStamp + Config.FAKE_LAG;
 
-                self._lag = lag;
-                self._deltaState = timeStamp - (lastState || (timeStamp - Config.SCENE_SYNC_RATE - lag));
+                _this._lag = lag;
+                _this._deltaState = timeStamp - (lastState || (timeStamp - Config.SCENE_SYNC_RATE - lag));
                 lastState = timeStamp - lag;
 
-                self.emit("serverSyncScene", jsonScene);
+                _this.emit("serverSyncScene", jsonScene);
                 if (Config.SYNC_SERVER_SCENE) scene.fromSYNC(jsonScene);
             });
 
             socket.on("server_setScene", function(scene_id) {
-                var scene = self.findByJSONId(scene_id);
+                var scene = _this.findByJSONId(scene_id);
 
-                self.setScene(scene);
+                _this.setScene(scene);
             });
 
 
             var canvasOnResize;
             socket.on("server_setCamera", function(camera_id) {
-                if (!self.scene) {
+                if (!_this.scene) {
                     Log.error("Socket:server_setCamera: can't set camera without an active scene, use ServerGame.setScene first");
                     return;
                 }
-                var camera = self.scene.findByJSONId(camera_id),
-                    canvas = self.canvas;
+                var camera = _this.scene.findByJSONId(camera_id),
+                    canvas = _this.canvas;
 
                 if (!camera) {
                     Log.error("Socket:server_setCamera: can't find camera in active scene");
                     return;
                 }
 
-                self.setCamera(camera);
+                _this.setCamera(camera);
 
                 if (canvasOnResize) canvas.off("resize", canvasOnResize);
                 canvas.on("resize", (canvasOnResize = function() {
@@ -124,18 +124,18 @@ define([
 
             socket.on("server_addScene", function(scene) {
 
-                self.addScene(new Scene().fromServerJSON(scene));
+                _this.addScene(new Scene().fromServerJSON(scene));
             });
 
             socket.on("server_addGameObject", function(scene_id, gameObject) {
-                var scene = self.findByJSONId(scene_id);
+                var scene = _this.findByJSONId(scene_id);
                 if (!scene) return;
 
                 scene.addGameObject(new GameObject().fromServerJSON(gameObject));
             });
 
             socket.on("server_addComponent", function(scene_id, gameObject_id, component) {
-                var scene = self.findByJSONId(scene_id);
+                var scene = _this.findByJSONId(scene_id);
                 if (!scene) return;
 
                 var gameObject = scene.findByJSONId(gameObject_id);
@@ -147,18 +147,18 @@ define([
 
             socket.on("server_removeScene", function(scene_id) {
 
-                self.removeScene(self.findByJSONId(scene_id));
+                _this.removeScene(_this.findByJSONId(scene_id));
             });
 
             socket.on("server_removeGameObject", function(scene_id, gameObject_id) {
-                var scene = self.findByJSONId(scene_id);
+                var scene = _this.findByJSONId(scene_id);
                 if (!scene) return;
 
                 scene.removeGameObject(scene.findByJSONId(gameObject_id));
             });
 
             socket.on("server_removeComponent", function(scene_id, gameObject_id, component_type) {
-                var scene = self.findByJSONId(scene_id);
+                var scene = _this.findByJSONId(scene_id);
                 if (!scene) return;
 
                 var gameObject = scene.findByJSONId(gameObject_id);
@@ -176,7 +176,7 @@ define([
 
             socket.disconnect();
             socket.removeAllListeners();
-            this._sessionid = undefined;
+            this.io = this._sessionid = undefined;
 
             return this;
         };

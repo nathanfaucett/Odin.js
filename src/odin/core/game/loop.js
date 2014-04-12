@@ -17,13 +17,13 @@ define([
             this.callback = callback;
             this.ctx = ctx || this;
 
-            var self = this;
+            var _this = this;
             this._run = function(ms) {
 
-                if (self.callback) {
-                    self.callback.call(ctx, ms);
+                if (_this.callback) {
+                    _this.callback.call(ctx, ms);
 
-                    if (!self.paused) self._pump();
+                    if (!_this.paused) _this._pump();
                 }
             }
         }

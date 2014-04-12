@@ -25,17 +25,18 @@ define([
         World2D.prototype.init = function() {
             var space = this.space,
                 scene = this.scene,
-                RigidBodies = scene.components.RigidBody2D,
+                RigidBodies = scene.componentManagers.RigidBody2D,
                 i = RigidBodies.length;
 
-            while (i--) space.addBody(RigidBodies[i].body);
-
-            scene.on("addRigidBody2D", function(component) {
+            function addBody(component) {
 
                 space.addBody(component.body);
-            });
-            scene.on("removeRigidBody2D", function(component) {
+            }
 
+            if (RigidBodies) RigidBodies.forEach(addBody);
+            scene.on("addRigidBody2D", addBody);
+
+            scene.on("removeRigidBody2D", function(component) {
                 space.removeBody(component.body);
             });
         };

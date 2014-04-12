@@ -16,6 +16,27 @@ require({
             })
         );
 
+        function ReflectiveControl(opts) {
+
+            Component.call(this, "ReflectiveControl", opts);
+
+            this.gameCamera = undefined;
+        }
+        Component.extend(ReflectiveControl);
+
+        ReflectiveControl.prototype.update = function() {
+            var camera = this.gameCamera || (this.gameCamera = this.gameObject.scene.game.camera),
+                transform, cameraTransform;
+
+            if (!camera) return;
+
+            transform = this.transform,
+            cameraTransform = camera.transform
+
+            transform.position.inverseVec(cameraTransform.position);
+            transform.lookAt(cameraTransform);
+        };
+
         renderTarget = new RenderTarget({
             generateMipmap: false,
             width: 512,
@@ -32,7 +53,9 @@ require({
             Mesh.Plane({
                 name: "mesh_plane",
                 width: 10,
-                height: 10
+                height: 10,
+                widthSegments: 2,
+                heightSegments: 2
             }),
             Mesh.Sphere({
                 name: "mesh_smallSphere",
@@ -61,6 +84,8 @@ require({
             new Material({
                 name: "mat_tv",
 
+                wireframe: false,
+
                 uniforms: {
                     diffuseMap: renderTarget
                 },
@@ -81,7 +106,7 @@ require({
             name: "camera",
             components: [
                 new Transform({
-                    position: new Vec3(10, 10, 10)
+                    position: new Vec3(0, 0, 10)
                 }),
                 new Camera,
                 new OrbitControl
@@ -92,14 +117,15 @@ require({
             name: "camera2",
             components: [
                 new Transform({
-                    position: new Vec3(-1.275, -4.4, -20),
+                    position: new Vec3(0, 0, -19),
                     rotation: new Quat().rotate(Math.PI, 0, Math.PI * -0.5)
                 }),
                 new Camera({
                     width: 512,
                     height: 512,
                     autoResize: false
-                })
+                }),
+                new ReflectiveControl
             ],
             tag: "Camera2"
         });
@@ -156,6 +182,20 @@ require({
                 new MeshFilter({
                     mesh: Assets.get("mesh_plane"),
                     material: Assets.get("mat_tv")
+                })
+            ],
+            tags: [
+                "Plane"
+            ]
+        });
+        plane2 = new GameObject({
+            components: [
+                new Transform({
+                    position: new Vec3(0, 0, 0)
+                }),
+                new MeshFilter({
+                    mesh: Assets.get("mesh_plane"),
+                    material: Assets.get("mat_default")
                 })
             ],
             tags: [

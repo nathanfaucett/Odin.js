@@ -87,6 +87,8 @@ define([
                 spd = this.spd,
                 dt = Time.delta;
 
+            this.sprite.z = this.transform2d.position.y;
+
             if (this.dead) {
                 if (this.deadTimer(dt)) return;
 

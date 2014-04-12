@@ -289,7 +289,10 @@ define([
 
                 det = m11 * m22 - m12 * m21;
 
-            det = det === 0.0 ? 0.0 : 1.0 / det;
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = m22 * det;
             te[1] = -m12 * det;
@@ -322,7 +325,10 @@ define([
 
                 det = m11 * m22 - m12 * m21;
 
-            det = det === 0.0 ? 0.0 : 1.0 / det;
+            if (det === 0.0) {
+                return this.identity();
+            }
+            det = 1.0 / det;
 
             te[0] = m22 * det;
             te[1] = -m12 * det;

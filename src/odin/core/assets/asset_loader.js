@@ -33,23 +33,23 @@ define([
 
 
         AssetLoader.prototype.load = function(reload) {
-            var self = this,
+            var _this = this,
                 count = Assets.length,
                 i = count,
                 fn = function(err) {
                     if (err) Log.error(err);
 
                     count--;
-                    if (count <= 0) self.emit("load");
+                    if (count <= 0) _this.emit("load");
                 };
 
-            if (!count) self.emit("load");
+            if (!count) _this.emit("load");
             while (i--) this.loadAsset(Assets[i], fn, reload, true);
         };
 
 
         AssetLoader.prototype.loadAsset = function(asset, callback, reload, known) {
-            var self = this,
+            var _this = this,
                 src = asset.src;
 
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
@@ -82,7 +82,7 @@ define([
                             asset._loaded = true;
                             asset.parse(raw);
                             asset.emit("load", raw);
-                            self.emit("loadAsset", asset);
+                            _this.emit("loadAsset", asset);
                             callback && callback();
                         }
                     });
@@ -106,7 +106,7 @@ define([
                     asset._loaded = true;
                     asset.parse(raw);
                     asset.emit("load", raw);
-                    self.emit("loadAsset", asset);
+                    _this.emit("loadAsset", asset);
                     callback && callback();
                 });
             }

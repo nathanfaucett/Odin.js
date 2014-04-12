@@ -37,7 +37,8 @@ define([
                     w: 480,
                     h: 320,
                     width: 30,
-                    height: 20
+                    height: 20,
+                    layer: 0
                 }),
                 new Odin.AudioSource({
                     playOnInit: true,

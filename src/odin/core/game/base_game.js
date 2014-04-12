@@ -89,8 +89,9 @@ define([
 
 
         BaseGame.prototype.addScenes = function() {
+            var i, il;
 
-            for (var i = arguments.length; i--;) this.addScene(arguments[i]);
+            for (i = 0, il = arguments.length; i < il; i++) this.addScene(arguments[i]);
             return this;
         };
 
@@ -126,9 +127,9 @@ define([
 
 
         BaseGame.prototype.removeScenes = function() {
-            var i = arguments.length;
+            var i, il;
 
-            while (i--) this.removeScene(arguments[i]);
+            for (i = 0, il = arguments.length; i < il; i++) this.removeScene(arguments[i]);
             return this;
         };
 

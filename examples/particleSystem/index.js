@@ -146,7 +146,7 @@ require({
         });
         mesh.transform.addChild(particles.transform);
 
-        scene.addGameObjects(camera, mesh, particles);
+        scene.addGameObjects(camera, mesh);
         game.addScene(scene);
 
         function start() {

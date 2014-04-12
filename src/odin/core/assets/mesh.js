@@ -615,12 +615,12 @@ define([
                 ds = (opts.depthSegments || 1),
                 mesh = new Mesh(opts);
 
-            buildPlane(mesh, "z", "y", -1, -1, d, ds, h, hs, hw, ws);
-            buildPlane(mesh, "z", "y", 1, -1, d, ds, h, hs, -hw, ws);
-            buildPlane(mesh, "x", "z", 1, 1, w, ws, d, ds, hh, hs);
-            buildPlane(mesh, "x", "z", 1, -1, w, ws, d, ds, -hh, hs);
-            buildPlane(mesh, "x", "y", 1, -1, w, ws, h, hs, hd, ds);
-            buildPlane(mesh, "x", "y", -1, -1, w, ws, h, hs, -hd, ds);
+            buildPlane(mesh, "z", "y", -1, 1, d, ds, h, hs, hw, ws);
+            buildPlane(mesh, "z", "y", 1, 1, d, ds, h, hs, -hw, ws);
+            buildPlane(mesh, "x", "z", 1, -1, w, ws, d, ds, hh, hs);
+            buildPlane(mesh, "x", "z", 1, 1, w, ws, d, ds, -hh, hs);
+            buildPlane(mesh, "x", "y", 1, 1, w, ws, h, hs, hd, ds);
+            buildPlane(mesh, "x", "y", -1, 1, w, ws, h, hs, -hd, ds);
 
             mesh.calculateAABB();
             mesh.load = false;
@@ -638,7 +638,7 @@ define([
                 hs = (opts.heightSegments || 1),
                 mesh = new Mesh(opts);
 
-            buildPlane(mesh, "x", "y", 1, -1, w, ws, h, hs, 0, 0);
+            buildPlane(mesh, "x", "y", 1, 1, w, ws, h, hs, 0, 0);
 
             mesh.calculateAABB();
             mesh.load = false;
@@ -660,12 +660,12 @@ define([
                 offset = vertices.length,
                 w, ix, iy;
 
-            if ((u === "x" && v === "y") || (u === "y" && v === "x")) {
-                w = "z";
-            } else if ((u === "x" && v === "z") || (u === "z" && v === "x")) {
+            if ((u === "x" && v === "z") || (u === "z" && v === "x")) {
                 w = "y";
                 gridY = ds;
-            } else if ((u === "z" && v === "y") || (u === "y" && v === "z")) {
+            } else if ((u === "x" && v === "y") || (u === "y" && v === "x")) {
+                w = "z";
+            } else if ((u === "y" && v === "z") || (u === "z" && v === "y")) {
                 w = "x";
                 gridX = ds;
             }
@@ -674,40 +674,51 @@ define([
                 gridY1 = gridY + 1,
                 segment_width = width / gridX,
                 segment_height = height / gridY,
-                normal = new Vec3();
+                normal = new Vec3(),
+                vertexCount = offset;
 
             normal[w] = depth > 0 ? 1 : -1;
 
-            for (iy = 0; iy < gridY1; iy++) {
-                for (ix = 0; ix < gridX1; ix++) {
-                    var vector = new Vec3();
-
-                    vector[u] = (ix * segment_width - width_half) * udir;
-                    vector[v] = (iy * segment_height - height_half) * vdir;
-                    vector[w] = depth;
-
-                    vertices.push(vector);
-                }
+            function addVertex(x, y, z) {
+                var vector = new Vec3();
+                vector[u] = x;
+                vector[v] = y;
+                vector[w] = z;
+                vertices.push(vector);
             }
 
             for (iy = 0; iy < gridY; iy++) {
                 for (ix = 0; ix < gridX; ix++) {
-                    var a = offset + (ix + gridX1 * iy),
-                        b = offset + (ix + gridX1 * (iy + 1)),
-                        c = offset + ((ix + 1) + gridX1 * (iy + 1)),
-                        d = offset + ((ix + 1) + gridX1 * iy),
-
-                        uva = new Vec2(ix / gridX, 1 - iy / gridY),
-                        uvb = new Vec2(ix / gridX, 1 - (iy + 1) / gridY),
-                        uvc = new Vec2((ix + 1) / gridX, 1 - iy / gridY),
-                        uvd = new Vec2((ix + 1) / gridX, 1 - (iy + 1) / gridY);
-
-                    normals.push(normal.clone(), normal.clone(), normal.clone(), normal.clone());
-                    uvs.push(uva, uvb, uvc, uvd);
-                    indices.push(
-                        a, b, c,
-                        a, c, d
+                    addVertex(
+                        ((ix + 1) * segment_width - width_half) * udir, ((iy + 1) * segment_height - height_half) * vdir,
+                        depth
                     );
+                    uvs.push(new Vec2((ix + 1) / gridX, 1 - (iy + 1) / gridY));
+
+                    addVertex(
+                        (ix * segment_width - width_half) * udir, ((iy + 1) * segment_height - height_half) * vdir,
+                        depth
+                    );
+                    uvs.push(new Vec2(ix / gridX, 1 - (iy + 1) / gridY));
+
+                    addVertex(
+                        (ix * segment_width - width_half) * udir, (iy * segment_height - height_half) * vdir,
+                        depth
+                    );
+                    uvs.push(new Vec2(ix / gridX, 1 - iy / gridY));
+
+                    addVertex(
+                        ((ix + 1) * segment_width - width_half) * udir, (iy * segment_height - height_half) * vdir,
+                        depth
+                    );
+                    uvs.push(new Vec2((ix + 1) / gridX, 1 - iy / gridY));
+
+                    indices.push(
+                        vertexCount, vertexCount + 1, vertexCount + 2,
+                        vertexCount, vertexCount + 2, vertexCount + 3
+                    );
+                    normals.push(normal.clone(), normal.clone(), normal.clone(), normal.clone());
+                    vertexCount += 4;
                 }
             }
         }

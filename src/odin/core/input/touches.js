@@ -23,6 +23,7 @@ define([
         Touches.prototype.constructor = Touches;
         Touches.TOUCH_POOL = TOUCH_POOL;
 
+
         Touches.prototype.start = function(index, targetTouch) {
             var touch = TOUCH_POOL.create();
 
