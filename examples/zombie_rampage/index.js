@@ -7,18 +7,19 @@ require({
     ],
     function(Odin, assets, sceneLevel) {
 
-        Odin.globalize();
+        Odin.Phys2D.P2Space.DefaultBroadPhase = Odin.Phys2D.P2BroadphaseSpatialHash;
 
-        var game = new Odin.Game({
+        game = new Odin.Game({
             debug: true,
-            width: 960,
-            height: 640,
+            canvas: {
+                width: 960,
+                height: 640
+            },
             renderer: {
                 autoClear: false,
                 disableDepth: true
             }
         });
-        window.game = game;
 
         game.addScene(sceneLevel);
 
@@ -26,6 +27,11 @@ require({
         function startLevel() {
             game.setScene("Level");
             game.setCamera(game.scene.findByTagFirst("Camera"));
+
+            game.on("update", function() {
+
+                this.scene.componentManagers.Sprite.sort();
+            });
         }
 
 

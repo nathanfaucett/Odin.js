@@ -22,7 +22,7 @@ define(
             this.MAX_SCENE_STATES = 5;
 
             this.MIN_DELTA = 0.000001;
-            this.MAX_DELTA = 1;
+            this.MAX_DELTA = 0.25;
         }
 
 

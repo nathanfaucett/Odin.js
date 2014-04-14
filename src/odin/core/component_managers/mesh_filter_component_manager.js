@@ -22,6 +22,11 @@ define([
         };
 
 
+        MeshFilterComponentManager.prototype.update = function() {
+			
+        };
+
+
         return MeshFilterComponentManager;
     }
 );

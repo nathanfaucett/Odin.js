@@ -373,6 +373,23 @@ define([
         };
 
         /**
+         * @method orthoNormalize
+         * @memberof Odin.Vec3
+         * returns makes vectors normalized and orthogonal to each other
+         * @param Vec3 a
+         * @param Vec3 b
+         * @param Vec3 c
+         * @return this
+         */
+        Vec3.prototype.orthoNormalize = function(a, b, c) {
+            if (a.lengthSq() !== 1.0) a.normalize();
+            c.vcross(a, b);
+            if (a.lengthSq() === 0.0) return;
+            c.normalize();
+            b.vcross(c, a);
+        };
+
+        /**
          * @method inverse
          * @memberof Odin.Vec3
          * returns the inverse of this

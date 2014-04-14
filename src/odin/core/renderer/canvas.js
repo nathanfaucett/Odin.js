@@ -10,7 +10,6 @@ define([
     function(EventEmitter, Device, Dom, Config) {
         "use strict";
 
-
         var addEvent = Dom.addEvent,
             removeEvent = Dom.removeEvent,
             addMeta = Dom.addMeta,
@@ -18,21 +17,34 @@ define([
 
             CANVAS_ID = 0,
             SCALE_REG = /-scale\s *=\s*[.0-9]+/g,
-            VIEWPORT = "viewport",
-            VIEWPORT_WIDTH = "viewport-width",
-            VIEWPORT_HEIGHT = "viewport-height",
             CANVAS_STYLE = [
                 "background: #000000;",
-                "position: absolute;",
+                "position: fixed;",
                 "top: 50%;",
                 "left: 50%;",
                 "padding: 0px;",
                 "margin: 0px;"
-            ].join("\n");
+            ].join("\n"),
+            VIEWPORT, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, VIEWPORT_SCALE;
 
-        addMeta(VIEWPORT, "viewport", "initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no");
-        addMeta(VIEWPORT_WIDTH, "viewport", "width=device-width");
-        addMeta(VIEWPORT_HEIGHT, "viewport", "height=device-height");
+        addMeta("viewport", "viewport", "initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no");
+        addMeta("viewport-width", "viewport", "width=device-width");
+        addMeta("viewport-height", "viewport", "height=device-height");
+
+        VIEWPORT = document.getElementById("viewport");
+        VIEWPORT_WIDTH = document.getElementById("viewport-width");
+        VIEWPORT_HEIGHT = document.getElementById("viewport-height");
+        VIEWPORT_SCALE = VIEWPORT.getAttribute("content");
+
+        function windowOnResize(e) {
+            VIEWPORT.setAttribute("content", VIEWPORT_SCALE.replace(SCALE_REG, "-scale=" + Device.invPixelRatio));
+            VIEWPORT_WIDTH.setAttribute("content", "width=" + window.innerWidth);
+            VIEWPORT_HEIGHT.setAttribute("content", "height=" + window.innerHeight);
+            window.scrollTo(0, 1);
+        }
+
+        addEvent(window, "resize orientationchange", windowOnResize);
+        windowOnResize();
 
         /**
          * @class Canvas
@@ -248,8 +260,7 @@ define([
 
 
         Canvas.prototype.handleResize = function() {
-            var viewportScale = document.getElementById(VIEWPORT).getAttribute("content"),
-                w = window.innerWidth,
+            var w = window.innerWidth,
                 h = window.innerHeight,
                 aspect = w / h,
                 element = this.element,
@@ -280,11 +291,6 @@ define([
 
             style.width = floor(width) + "px";
             style.height = floor(height) + "px";
-
-            document.getElementById(VIEWPORT).setAttribute("content", viewportScale.replace(SCALE_REG, "-scale=" + Device.invPixelRatio));
-            document.getElementById(VIEWPORT_WIDTH).setAttribute("content", "width=" + w);
-            document.getElementById(VIEWPORT_HEIGHT).setAttribute("content", "height=" + h);
-            window.scrollTo(1, 1);
 
             this.emit("resize");
         };

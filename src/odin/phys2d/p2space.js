@@ -33,10 +33,10 @@ define([
 
             this.time = 0.0;
 
-            this.broadphase = new P2Broadphase;
-            this.nearphase = new P2Nearphase;
+            this.broadphase = new P2Space.DefaultBroadPhase(opts.broadphase);
+            this.nearphase = new P2Space.DefaultNearPhase(opts.nearphase);
 
-            this.solver = new P2Solver;
+            this.solver = new P2Space.DefaultSolver(opts.solver);
 
             this.bodies = [];
             this._bodyHash = {};
@@ -62,6 +62,9 @@ define([
         Class.extend(P2Space);
 
 
+        P2Space.DefaultBroadPhase = P2Broadphase;
+        P2Space.DefaultNearPhase = P2Nearphase;
+        P2Space.DefaultSolver = P2Solver;
         P2Space.FRICTION_POOL = FRICTION_POOL;
 
 

@@ -404,6 +404,23 @@ define([
         };
 
         /**
+         * @method orthoNormalize
+         * @memberof Odin.Vec4
+         * returns makes vectors normalized and orthogonal to each other
+         * @param Vec4 a
+         * @param Vec4 b
+         * @param Vec4 c
+         * @return this
+         */
+        Vec4.prototype.orthoNormalize = function(a, b, c) {
+            if (a.lengthSq() !== 1.0) a.normalize();
+            c.vcross(a, b);
+            if (a.lengthSq() === 0.0) return;
+            c.normalize();
+            b.vcross(c, a);
+        };
+
+        /**
          * @method inverse
          * @memberof Odin.Vec4
          * returns the inverse of this

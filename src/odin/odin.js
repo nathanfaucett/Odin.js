@@ -80,6 +80,8 @@ define(
             this.Config = require("odin/core/game/config");
             this.Log = require("odin/core/game/log");
 
+            this.GUIComponentManager = require("odin/core/gui/component_managers/gui_component_manager");
+
             this.GUIComponent = require("odin/core/gui/components/gui_component");
             this.GUIContent = require("odin/core/gui/components/gui_content");
             this.GUITransform = require("odin/core/gui/components/gui_transform");

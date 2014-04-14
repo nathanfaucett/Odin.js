@@ -88,7 +88,6 @@ define([
             this.world && this.world.update();
 
             for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
-            for (i = 0, il = gameObjects.length; i < il; i++) gameObjects[i].emit("update");
         };
 
 

@@ -164,16 +164,8 @@ define([
             return this._clientHash[id];
         };
 
-
-        var frameCount = 0,
-            last = -1 / 60,
-            time = 0,
-            delta = 1 / 60,
-            fpsFrame = 0,
-            fpsLast = 0,
-            fpsTime = 0,
-            lastUpdate = 0;
-
+		
+		var lastUpdate = 0;
         ServerGame.prototype.loop = function() {
             var clients = this.clients,
                 scenes = this.scenes,
@@ -182,29 +174,10 @@ define([
                 MIN_DELTA = Config.MIN_DELTA,
                 MAX_DELTA = Config.MAX_DELTA,
                 i;
+			
+			Time.update();
 
-            Time.frameCount = frameCount++;
-
-            last = time;
-            time = now();
-            Time.sinceStart = time;
-
-            fpsTime = time;
-            fpsFrame++;
-
-            if (fpsLast + 1 < fpsTime) {
-                Time.fps = fpsFrame / (fpsTime - fpsLast);
-
-                fpsLast = fpsTime;
-                fpsFrame = 0;
-            }
-
-            delta = (time - last) * Time.scale;
-            Time.delta = delta = delta < MIN_DELTA ? MIN_DELTA : delta > MAX_DELTA ? MAX_DELTA : delta;
-
-            Time.time = time * Time.scale;
-
-            lastUpdate += delta;
+            lastUpdate += Time.delta;
             if (lastUpdate > Config.SCENE_SYNC_RATE) {
                 lastUpdate = 0;
                 needsUpdate = true;

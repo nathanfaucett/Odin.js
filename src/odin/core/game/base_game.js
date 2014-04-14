@@ -240,9 +240,9 @@ define([
         };
 
 
-        BaseGame.prototype.loop = function(ms) {
+        BaseGame.prototype.loop = function() {
 
-            this.emit("update", ms);
+            this.emit("update", Time.sinceStart);
         };
 
 

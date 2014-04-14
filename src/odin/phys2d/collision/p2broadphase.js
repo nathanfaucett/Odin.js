@@ -12,7 +12,9 @@ define([
             SleepState = P2Enums.SleepState;
 
 
-        function P2Broadphase() {}
+        function P2Broadphase(opts) {
+
+        }
 
 
         P2Broadphase.prototype.collisions = function(bodies, pairsi, pairsj) {

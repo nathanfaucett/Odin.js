@@ -84,7 +84,6 @@ define([
                 i, il;
 
             for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
-            for (i = 0, il = guiObjects.length; i < il; i++) guiObjects[i].emit("update");
         };
 
 

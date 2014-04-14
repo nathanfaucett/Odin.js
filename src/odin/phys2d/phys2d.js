@@ -9,6 +9,7 @@ define(
         function Phys2D() {
 
             this.P2Broadphase = require("odin/phys2d/collision/p2broadphase");
+            this.P2BroadphaseSpatialHash = require("odin/phys2d/collision/p2broadphase_spatialhash");
             this.P2Nearphase = require("odin/phys2d/collision/p2nearphase");
 
             this.P2Circle = require("odin/phys2d/objects/p2circle");
