@@ -38,7 +38,10 @@ define([
             var gameObject = other.gameObject;
             if (!gameObject || gameObject.hasTag("Player") || gameObject.hasTag("Bullet")) return;
 
-            if (gameObject.hasTag("Enemy")) this.bullet.owner.attack(gameObject.character);
+            if (gameObject.hasTag("Enemy")) {
+                this.bullet.owner.attack(gameObject.character);
+                return;
+            }
             if (gameObject.hasTag("Wall")) {
                 this.remove();
                 return;

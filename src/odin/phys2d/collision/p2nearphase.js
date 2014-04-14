@@ -157,7 +157,7 @@ define([
                 bj = sj.body,
                 i = bi._index,
                 j = bj._index,
-                space = bi.space;
+                space = bi.space || bj.space;
 
             if (!space) return false;
             space.collisionMatrixSet(i, j, 1, true);
@@ -169,6 +169,9 @@ define([
                 bi.emit("collide", bj, si, sj);
                 bj.emit("collide", bi, sj, si);
             } else {
+                bi.wake();
+                bj.wake();
+
                 bi.emit("colliding", bj, si, sj);
                 bj.emit("colliding", bi, sj, si);
             }

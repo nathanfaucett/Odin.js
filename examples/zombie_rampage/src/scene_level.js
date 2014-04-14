@@ -4,6 +4,7 @@ define([
         "components/level"
     ],
     function(Odin, CameraControl, Level) {
+        //Odin.Phys2D.P2Space.DefaultBroadPhase = Odin.Phys2D.P2BroadphaseSpatialHash;
 
         var sceneLevel = new Odin.Scene({
             name: "Level",

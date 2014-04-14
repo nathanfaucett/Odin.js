@@ -82,11 +82,13 @@ define([
 
         Scene.prototype.update = function() {
             var componentManagerTypes = this._componentManagerTypes,
-                i, il;
+                componentManagerType, i, il;
 
             this.world && this.world.update();
 
-            for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
+            for (i = 0, il = componentManagerTypes.length; i < il; i++) {
+                if ((componentManagerType = componentManagerTypes[i])) componentManagerType.update();
+            }
         };
 
 

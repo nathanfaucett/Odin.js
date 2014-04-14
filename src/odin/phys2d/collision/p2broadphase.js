@@ -17,7 +17,7 @@ define([
 
         P2Broadphase.prototype.collisions = function(bodies, pairsi, pairsj) {
             var length = bodies.length,
-                bi, bj, shapesi, shapesj, shapesNumi, shapesNumj, si, sj,
+                bi, bj, shapesi, shapesj, length, si, sj,
                 i = length,
                 j, k, l;
 
@@ -30,40 +30,49 @@ define([
                     bj = bodies[j];
                     j++;
 
-                    if (!(!(bi.motionState !== MotionState.Dynamic && bj.motionState !== MotionState.Dynamic) || !(bi.sleepState === SleepState.Sleeping && bj.sleepState === SleepState.Sleeping) || !(bi.aabb && bj.aabb && !bi.aabb.intersects(bj.aabb)))) {
+                    if ((bi.motionState !== MotionState.Dynamic && bj.motionState !== MotionState.Dynamic) || (bi.sleepState === SleepState.Sleeping && bj.sleepState === SleepState.Sleeping)) {
                         continue;
                     }
 
                     shapesi = bi.shapes;
                     shapesj = bj.shapes;
-                    shapesNumi = shapesi.length;
-                    shapesNumj = shapesj.length;
 
-                    k = shapesNumi;
-                    while (k--) {
-                        l = shapesNumj;
-                        while (l--) {
-                            si = shapesi[k];
-                            sj = shapesj[l];
+                    if (shapesi && shapesj) {
+                        if (!bi.aabb.intersects(bj.aabb)) continue;
 
-                            if (!si && !sj) continue;
-                            if (!si) {
-                                pairsi.push(bi);
-                                pairsj.push(sj);
-                                continue;
-                            }
-                            if (!sj) {
-                                pairsi.push(si);
-                                pairsj.push(bj);
-                                continue;
-                            }
-                            if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) continue;
+                        k = shapesi.length;
+                        length = shapesj.length;
+                        while (k--) {
+                            l = length;
+                            while (l--) {
+                                si = shapesi[k];
+                                sj = shapesj[l];
+                                if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) continue;
 
-                            if (si.aabb.intersects(sj.aabb)) {
-                                pairsi.push(si);
-                                pairsj.push(sj);
+                                if (si.aabb.intersects(sj.aabb)) {
+                                    pairsi.push(si);
+                                    pairsj.push(sj);
+                                }
                             }
                         }
+                    } else if (shapesi && !shapesj) {
+                        k = shapesi.length;
+                        while (k--) {
+                            si = shapesi[k];
+
+                            pairsi.push(si);
+                            pairsj.push(bj);
+                        }
+                    } else if (!shapesi && shapesj) {
+                        k = shapesj.length;
+                        while (k--) {
+                            sj = shapesj[k];
+                            pairsi.push(bi);
+                            pairsj.push(sj);
+                        }
+                    } else {
+                        pairsi.push(bi);
+                        pairsj.push(bj);
                     }
                 }
             }

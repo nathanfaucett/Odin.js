@@ -6,10 +6,7 @@ require({
         "scene_level"
     ],
     function(Odin, assets, sceneLevel) {
-
-        Odin.Phys2D.P2Space.DefaultBroadPhase = Odin.Phys2D.P2BroadphaseSpatialHash;
-
-        game = new Odin.Game({
+        var game = new Odin.Game({
             debug: true,
             canvas: {
                 width: 960,

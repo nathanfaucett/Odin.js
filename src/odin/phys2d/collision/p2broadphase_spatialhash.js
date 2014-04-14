@@ -54,7 +54,7 @@ define([
                 cellDeathFrameCount = this.cellDeathFrameCount,
                 inverseCellSize = this._inverseCellSize,
                 aabb, min, max, minx, miny, body, position, shapes, shape, x, y,
-                cell, key, bi, bj, i, j, k, l;
+                cell, key, si, sj, bi, bj, i, j, k, l;
 
             for (key in cells) {
                 cell = cells[key];
@@ -109,19 +109,24 @@ define([
                 while (i--) {
                     j = 0;
                     while (j !== i) {
-                        bi = cell[i];
-                        bj = cell[j];
+                        si = cell[i];
+                        sj = cell[j];
                         j++;
 
-                        if (!(!(bi.motionState !== MotionState.Dynamic && bj.motionState !== MotionState.Dynamic) || !(bi.sleepState === SleepState.Sleeping && bj.sleepState === SleepState.Sleeping))) {
-                            continue;
-                        }
-                        if ((bi.filterGroup & bj.filterMask) === 0 || (bj.filterGroup & bi.filterMask) === 0) {
-                            continue;
+                        bi = si.body;
+                        bj = sj.body;
+
+                        if (bi && bj) {
+                            if (!bi.aabb.intersects(bj.aabb)) continue;
+
+                            if ((bi.motionState !== MotionState.Dynamic && bj.motionState !== MotionState.Dynamic) || (bi.sleepState === SleepState.Sleeping && bj.sleepState === SleepState.Sleeping)) {
+                                continue;
+                            }
+                            if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) continue;
                         }
 
-                        pairsi.push(bi);
-                        pairsj.push(bj);
+                        pairsi.push(si);
+                        pairsj.push(sj);
                     }
                 }
             }
