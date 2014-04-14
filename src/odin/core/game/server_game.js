@@ -164,8 +164,8 @@ define([
             return this._clientHash[id];
         };
 
-		
-		var lastUpdate = 0;
+
+        var lastUpdate = 0;
         ServerGame.prototype.loop = function() {
             var clients = this.clients,
                 scenes = this.scenes,
@@ -174,8 +174,8 @@ define([
                 MIN_DELTA = Config.MIN_DELTA,
                 MAX_DELTA = Config.MAX_DELTA,
                 i;
-			
-			Time.update();
+
+            Time.update();
 
             lastUpdate += Time.delta;
             if (lastUpdate > Config.SCENE_SYNC_RATE) {

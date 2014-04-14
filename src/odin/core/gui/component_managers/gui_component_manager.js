@@ -70,7 +70,7 @@ define([
 
         GUIComponentManager.prototype.sortFunction = function(a, b) {
 
-            return 0;
+            return a._id - b._id;
         };
 
 

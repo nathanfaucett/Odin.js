@@ -2,10 +2,9 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
-        "odin/core/renderer/render_target",
-        "odin/core/enums"
+        "odin/core/renderer/render_target"
     ],
-    function(RenderTarget, Enums) {
+    function(RenderTarget) {
         "use strict";
 
         /**
@@ -38,8 +37,10 @@ define([
         };
 
 
-        RenderTargetCube.prototype.toJSON = function(json, pack) {
+        RenderTargetCube.prototype.toJSON = function(json) {
             json = RenderTarget.prototype.toJSON.call(this, json);
+
+            json.activeCubeFace = this.activeCubeFace;
 
             return json;
         };
@@ -47,6 +48,8 @@ define([
 
         RenderTargetCube.prototype.fromJSON = function(json) {
             RenderTarget.prototype.fromJSON.call(this, json);
+
+            this.activeCubeFace = json.activeCubeFace;
 
             return this;
         };

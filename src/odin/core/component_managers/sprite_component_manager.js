@@ -120,7 +120,7 @@ define([
             }
             var layers = this.layers,
                 componentLayer = (component.layer = clamp(component.layer || 0, 0, 20)),
-                components = this.layers[componentLayer] || (this.layers[componentLayer] = []),
+                components = layers[componentLayer] || (layers[componentLayer] = []),
                 index = components.indexOf(component);
 
             if (index === -1) {
@@ -138,7 +138,7 @@ define([
             }
             var layers = this.layers,
                 componentLayer = (component.layer = clamp(component.layer || 0, 0, 20)),
-                components = this.layers[componentLayer] || (this.layers[componentLayer] = []),
+                components = layers[componentLayer] || (layers[componentLayer] = []),
                 index = components.indexOf(component);
 
             if (index !== -1) {

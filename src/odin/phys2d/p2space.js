@@ -310,6 +310,7 @@ define([
 
             json.useGravity = this.useGravity;
             json.gravity = this.gravity.toJSON(json.gravity);
+            json.broadphase = this.broadphase.toJSON(json.broadphase);
 
             return json;
         };
@@ -320,6 +321,7 @@ define([
 
             this.useGravity = json.useGravity;
             this.gravity.fromJSON(json.gravity);
+            this.broadphase.fromJSON(json.broadphase);
 
             return this;
         };

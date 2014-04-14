@@ -82,7 +82,6 @@ define([
 
         Scene.prototype.update = function() {
             var componentManagerTypes = this._componentManagerTypes,
-                gameObjects = this.gameObjects,
                 i, il;
 
             this.world && this.world.update();

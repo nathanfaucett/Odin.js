@@ -12,8 +12,7 @@ define([
         "use strict";
 
 
-        function BaseGame(opts) {
-            opts || (opts = {});
+        function BaseGame() {
 
             Class.call(this);
 

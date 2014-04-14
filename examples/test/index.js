@@ -89,12 +89,17 @@ require({
             }
         });
 
+        Phys2D.P2Space.DefaultBroadPhase = Phys2D.P2BroadphaseSpatialHash;
+
         var scene = new Scene({
             name: "PlayGround",
             world: new World2D({
                 space: {
                     useGravity: true,
-                    gravity: new Vec2(0, -9.801)
+                    gravity: new Vec2(0, -9.801),
+                    broadphase: {
+                        cellSize: 1
+                    }
                 }
             })
         });

@@ -56,9 +56,11 @@ define([
         ComponentManager.prototype.update = function() {
             var components = this.components,
                 i = 0,
-                il = components.length;
+                il = components.length,
+                component;
 
-            for (; i < il; i++) components[i].update();
+            for (; i < il; i++)
+                if ((component = components[i])) component.update();
         };
 
 
@@ -70,7 +72,7 @@ define([
 
         ComponentManager.prototype.sortFunction = function(a, b) {
 
-            return 0;
+            return a._id - b._id;
         };
 
 

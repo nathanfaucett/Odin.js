@@ -249,7 +249,7 @@ define([
                 if (texture) {
 
                 } else if (text) {
-                    texture = createTextTexture(guiContent, innerRect, text, style);
+                    texture = createTextTexture(guiContent, innerRect, text, style, state);
                     outerRect.copy(innerRect);
                 } else {
                     return;
@@ -280,7 +280,7 @@ define([
             }
 
 
-            function createTextTexture(guiContent, innerRect, text, style) {
+            function createTextTexture(guiContent, innerRect, text, style, state) {
                 var texture = _textTextures[guiContent._id];
                 if (!guiContent._needsUpdate) {
                     innerRect.width = texture.width;
@@ -326,6 +326,7 @@ define([
                 canvas.height = style.fixedHeight || height;
 
                 _ctx.font = ctxStyle;
+                _ctx.fillStyle = state.text.toRGB();
                 _ctx.textAlign = "left";
                 _ctx.textBaseline = "top";
 

@@ -3,10 +3,9 @@ if (typeof define !== "function") {
 }
 define([
         "odin/base/class",
-        "odin/base/object_pool",
-        "odin/core/game/log"
+        "odin/base/object_pool"
     ],
-    function(Class, ObjectPool, Log) {
+    function(Class, ObjectPool) {
         "use strict";
 
 

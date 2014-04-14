@@ -12,9 +12,7 @@ define([
             SleepState = P2Enums.SleepState;
 
 
-        function P2Broadphase(opts) {
-
-        }
+        function P2Broadphase() {}
 
 
         P2Broadphase.prototype.collisions = function(bodies, pairsi, pairsj) {
@@ -69,6 +67,19 @@ define([
                     }
                 }
             }
+        };
+
+
+        P2Broadphase.prototype.toJSON = function(json) {
+            json || (json = {});
+
+            return json;
+        };
+
+
+        P2Broadphase.prototype.fromJSON = function() {
+
+            return this;
         };
 
 

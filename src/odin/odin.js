@@ -51,6 +51,7 @@ define(
             this.Camera2DComponentManager = require("odin/core/component_managers/camera_2d_component_manager");
             this.CameraComponentManager = require("odin/core/component_managers/camera_component_manager");
             this.ComponentManager = require("odin/core/component_managers/component_manager");
+            this.LightComponentManager = require("odin/core/component_managers/light_component_manager");
             this.MeshAnimationComponentManager = require("odin/core/component_managers/mesh_animation_component_manager");
             this.MeshFilterComponentManager = require("odin/core/component_managers/mesh_filter_component_manager");
             this.SpriteComponentManager = require("odin/core/component_managers/sprite_component_manager");

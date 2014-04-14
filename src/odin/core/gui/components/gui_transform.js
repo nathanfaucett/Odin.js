@@ -52,7 +52,7 @@ define([
             this.scale.copy(other.scale);
             this.rotation = other.rotation;
 
-            while (i--) this.addChild(children[i].guiObject.clone().transform);
+            while (i--) this.addChild(children[i].guiObject.clone().guiTransform);
             if (other.parent) other.parent.addChild(this);
 
             this._matricesNeedsUpdate = true;

@@ -18,7 +18,6 @@ define([
             CANVAS_ID = 0,
             SCALE_REG = /-scale\s *=\s*[.0-9]+/g,
             CANVAS_STYLE = [
-                "background: #000000;",
                 "position: fixed;",
                 "top: 50%;",
                 "left: 50%;",
@@ -36,7 +35,7 @@ define([
         VIEWPORT_HEIGHT = document.getElementById("viewport-height");
         VIEWPORT_SCALE = VIEWPORT.getAttribute("content");
 
-        function windowOnResize(e) {
+        function windowOnResize() {
             VIEWPORT.setAttribute("content", VIEWPORT_SCALE.replace(SCALE_REG, "-scale=" + Device.invPixelRatio));
             VIEWPORT_WIDTH.setAttribute("content", "width=" + window.innerWidth);
             VIEWPORT_HEIGHT.setAttribute("content", "height=" + window.innerHeight);

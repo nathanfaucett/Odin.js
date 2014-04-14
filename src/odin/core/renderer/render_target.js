@@ -125,7 +125,7 @@ define([
         };
 
 
-        RenderTarget.prototype.toJSON = function(json, pack) {
+        RenderTarget.prototype.toJSON = function(json) {
             json = Class.prototype.toJSON.call(this, json);
 
             json.width = this.width;

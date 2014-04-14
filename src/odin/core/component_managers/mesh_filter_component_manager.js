@@ -23,7 +23,7 @@ define([
 
 
         MeshFilterComponentManager.prototype.update = function() {
-			
+
         };
 
 

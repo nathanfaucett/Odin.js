@@ -25,7 +25,7 @@ define([
             opts || (opts = {});
             Config.fromJSON(opts);
 
-            BaseGame.call(this, opts);
+            BaseGame.call(this);
 
             this._handler = Handler;
             this.input = Input;

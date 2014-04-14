@@ -25,8 +25,7 @@ define([
         World2D.prototype.init = function() {
             var space = this.space,
                 scene = this.scene,
-                RigidBodies = scene.componentManagers.RigidBody2D,
-                i = RigidBodies.length;
+                RigidBodies = scene.componentManagers.RigidBody2D;
 
             function addBody(component) {
 

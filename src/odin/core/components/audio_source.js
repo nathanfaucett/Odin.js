@@ -57,7 +57,7 @@ define([
 
                 _this.playing = false;
                 _this.time = 0;
-				_this.emit("end");
+                _this.emit("end");
             };
         }
 

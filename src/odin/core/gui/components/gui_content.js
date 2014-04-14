@@ -47,10 +47,6 @@ define([
         };
 
 
-        var ACTIVE = "active",
-            HOVER = "hover",
-            NORMAL = "normal",
-            VEC = new Vec2;
         GUIContent.prototype.update = function() {
 
         };

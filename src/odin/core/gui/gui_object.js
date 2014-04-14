@@ -333,7 +333,7 @@ define([
 
 
         GUIObject.prototype.find = function(name) {
-            var transform = this.transform || this.transform2d,
+            var transform = this.guiTransform,
                 children, child, i;
 
             if (!transform) return undefined;

@@ -270,9 +270,50 @@ define([
         };
 
 
+        Mesh.prototype.transformMat3 = function(m) {
+            var vertices = this.vertices,
+                normals = this.normals,
+                i;
+
+            if (vertices) {
+                i = vertices.length;
+                while (i--) vertices[i].transformMat3(m);
+                this.verticesNeedUpdate = true;
+            }
+            if (normals) {
+                i = normals.length;
+                while (i--) normals[i].transformMat3(m);
+                this.normalsNeedUpdate = true;
+            }
+
+            return this;
+        };
+
+
+        Mesh.prototype.transformMat4 = function(m) {
+            var vertices = this.vertices,
+                normals = this.normals,
+                i;
+
+            if (vertices) {
+                i = vertices.length;
+                while (i--) vertices[i].transformMat4(m);
+                this.verticesNeedUpdate = true;
+            }
+            if (normals) {
+                i = normals.length;
+                while (i--) normals[i].transformMat4Rotation(m);
+                this.normalsNeedUpdate = true;
+            }
+
+            return this;
+        };
+
+
         Mesh.prototype.calculateAABB = function() {
 
             this.aabb.fromPoints(this.vertices);
+            return this;
         };
 
 

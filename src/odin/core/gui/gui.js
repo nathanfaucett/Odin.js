@@ -80,7 +80,6 @@ define([
 
         GUI.prototype.update = function() {
             var componentManagerTypes = this._componentManagerTypes,
-                guiObjects = this.guiObjects,
                 i, il;
 
             for (i = 0, il = componentManagerTypes.length; i < il; i++) componentManagerTypes[i].update();
@@ -131,7 +130,7 @@ define([
                 i = components.length;
                 while (i--) this._addGUIComponent(components[i]);
 
-                if ((transform = guiObject.transform || guiObject.transform2d)) {
+                if ((transform = guiObject.guiTransform)) {
                     i = (children = transform.children).length;
 
                     while (i--) {
@@ -219,7 +218,7 @@ define([
                 i = components.length;
                 while (i--) this._removeGUIComponent(components[i], clear);
 
-                if ((transform = guiObject.transform || guiObject.transform2d)) {
+                if ((transform = guiObject.guiTransform)) {
                     i = (children = transform.children).length;
 
                     while (i--) {

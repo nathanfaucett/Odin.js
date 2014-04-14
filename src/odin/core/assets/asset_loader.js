@@ -43,7 +43,7 @@ define([
                     if (count <= 0) _this.emit("load");
                 };
 
-            if (!count) _this.emit("load");
+            if (!count) this.emit("load");
             while (i--) this.loadAsset(Assets[i], fn, reload, true);
         };
 
