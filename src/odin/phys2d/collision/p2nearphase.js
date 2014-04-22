@@ -91,46 +91,6 @@ define([
             );
         }
 
-        function circle2CircleParticle(si, sj, xix, xiy, ri, xjx, xjy, rj, contacts) {
-            var dx = xjx - xix,
-                dy = xjy - xiy,
-                dist = dx * dx + dy * dy,
-                invDist, separation = 0.0,
-                r = ri + rj,
-                nx, ny;
-
-            if (dist > r * r) return;
-            if (!collideParticle(si, sj)) return;
-
-            if (dist < EPSILON) {
-                nx = 0.0;
-                ny = 1.0;
-                invDist = 0.0;
-                separation = -r;
-            } else {
-                dist = sqrt(dist);
-                invDist = 1 / dist;
-
-                nx = dx * invDist;
-                ny = dy * invDist;
-
-                separation = dist - r;
-            }
-
-            createContact(
-                si.body,
-                sj,
-                1.0 + si.elasticity,
-                si.friction,
-                nx,
-                ny,
-                xjx - rj * nx,
-                xjy - rj * ny,
-                separation,
-                contacts
-            );
-        }
-
         function P2Nearphase() {}
 
         P2Nearphase.CONTACT_POOL = CONTACT_POOL;
@@ -182,32 +142,6 @@ define([
         }
 
 
-        function collideParticle(si, bj) {
-            var bi = si.body,
-                i = bi._index,
-                j = bj._index,
-                space = bi.space;
-
-            if (!space) return false;
-            space.collisionMatrixSet(i, j, 1, true);
-
-            if (space.collisionMatrixGet(i, j, true) !== space.collisionMatrixGet(i, j, false)) {
-                bi.wake();
-                bj.wake();
-
-                bi.emit("collideParticle", bj, si);
-                bj.emit("collideParticle", bi, si);
-            } else {
-                bi.emit("collidingParticle", bj, si);
-                bj.emit("collidingParticle", bi, si);
-            }
-
-            if (si.isTrigger) return false;
-
-            return true;
-        }
-
-
         function circleCircle(si, sj, contacts) {
             var xi = si.position,
                 xj = sj.position;
@@ -217,95 +151,6 @@ define([
                 sj,
                 xi.x, xi.y, si.radius,
                 xj.x, xj.y, sj.radius,
-                contacts
-            );
-        }
-
-
-        function circleParticle(si, sj, contacts) {
-            var xi = si.position,
-                xj = sj.position;
-
-            circle2CircleParticle(
-                si,
-                sj,
-                xi.x, xi.y, si.radius,
-                xj.x, xj.y, 0.0,
-                contacts
-            );
-        }
-
-
-        function segmentParticle(si, sj, contacts) {
-            var r = si.radius,
-                a = si._a,
-                b = si._b,
-                n = si._normal,
-                ax = a.x,
-                ay = a.y,
-                bx = b.x,
-                by = b.y,
-                nx = n.x,
-                ny = n.y,
-
-                xj = sj.position,
-                xjx = xj.x,
-                xjy = xj.y,
-
-                dn = (nx * xjx + ny * xjy) - (ax * nx + ay * ny),
-                dist = abs(dn),
-                dt, dta, dtb, dx, dy, invDist;
-
-            if (dist > r) return;
-
-            dt = xjx * ny - xjy * nx;
-            dta = ax * ny - ay * nx;
-            dtb = bx * ny - by * nx;
-
-            if (dt <= dta) {
-                if (dt < dta - r) return;
-
-                dx = xjx - ax;
-                dy = xjy - ay;
-
-                dist = dx * dx + dy * dy;
-                if (dist > r * r) return;
-
-                dist = dist === 0.0 ? 0.0 : sqrt(dist);
-                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
-
-                nx = dx * invDist;
-                ny = dy * invDist;
-            } else if (dt > dtb) {
-                if (dt > dtb + r) return;
-
-                dx = xjx - bx;
-                dy = xjy - by;
-
-                dist = dx * dx + dy * dy;
-                if (dist > r * r) return;
-
-                dist = dist === 0.0 ? 0.0 : sqrt(dist);
-                invDist = dist === 0.0 ? 0.0 : 1.0 / dist;
-
-                nx = dx * invDist;
-                ny = dy * invDist;
-            } else if (dn < 0.0) {
-                nx = -nx;
-                ny = -ny;
-            }
-            if (!collideParticle(si, sj)) return;
-
-            createContact(
-                si.body,
-                sj.body,
-                1 + si.elasticity,
-                si.friction,
-                nx,
-                ny,
-                xjx - r * nx,
-                xjy - r * ny,
-                dist - r,
                 contacts
             );
         }
@@ -618,102 +463,6 @@ define([
         }
 
 
-        function convexParticle(si, sj, contacts) {
-            var vertices = si._vertices,
-                normals = si._normals,
-                xj = sj.position,
-                xjx = xj.x,
-                xjy = xj.y,
-
-                vertex, normal, s, separation = -Infinity,
-                index = -1,
-                v1, v2, v1x, v1y, v2x, v2y, ex, ey, dx, dy, u, dist, invDist,
-
-                nx, ny,
-                i = vertices.length;
-
-            while (i--) {
-                vertex = vertices[i];
-                normal = normals[i];
-                s = normal.x * (xjx - vertex.x) + normal.y * (xjy - vertex.y);
-
-                if (s > EPSILON) return;
-
-                if (s > separation) {
-                    separation = s;
-                    index = i;
-                }
-            }
-
-            if (index === -1) return;
-
-            normal = normals[index];
-            nx = normal.x;
-            ny = normal.y;
-
-            v1 = vertices[index];
-            v1x = v1.x;
-            v1y = v1.y;
-            v2 = vertices[index + 1] || vertices[0];
-            v2x = v2.x;
-            v2y = v2.y;
-
-            ex = v2x - v1x;
-            ey = v2y - v1y;
-
-            dx = xjx - v1x;
-            dy = xjy - v1y;
-
-            u = (ex * dx + ey * dy) / (ex * ex + ey * ey);
-
-            if (u < 0.0) {
-                dx = xjx - v1x;
-                dy = xjy - v1y;
-
-                dist = dx * dx + dy * dy;
-                if (dist > EPSILON) return;
-
-                dist = sqrt(dist);
-                invDist = dist > 0.0 ? 1.0 / dist : 0.0;
-
-                nx = dx * invDist;
-                ny = dy * invDist;
-            } else if (u > 1.0) {
-                dx = xjx - v2x;
-                dy = xjy - v2y;
-
-                dist = dx * dx + dy * dy;
-                if (dist > EPSILON) return;
-
-                dist = sqrt(dist);
-                invDist = dist > 0.0 ? 1.0 / dist : 0.0;
-
-                nx = dx * invDist;
-                ny = dy * invDist;
-            } else {
-                normal = normals[index];
-                nx = normal.x;
-                ny = normal.y;
-
-                dist = separation;
-            }
-            if (!collideParticle(si, sj)) return;
-
-            createContact(
-                si.body,
-                sj,
-                1.0 + si.elasticity,
-                si.friction,
-                nx,
-                ny,
-                xjx,
-                xjy,
-                dist,
-                contacts
-            );
-        }
-
-
         function convexCircle(si, sj, contacts) {
             var vertices = si._vertices,
                 normals = si._normals,
@@ -958,54 +707,32 @@ define([
             var siType = si.type,
                 sjType = sj.type;
 
-            if (siType === BodyType.Particle && sjType === BodyType.Particle) return;
-
-            if (siType === BodyType.Particle && sjType !== BodyType.Particle) {
+            if (siType === ShapeType.Circle) {
 
                 if (sjType === ShapeType.Circle) {
-                    circleParticle(sj, si, contacts);
+                    circleCircle(si, sj, contacts);
                 } else if (sjType === ShapeType.Segment) {
-                    segmentParticle(sj, si, contacts);
+                    segmentCircle(sj, si, contacts);
                 } else if (sjType === ShapeType.Convex) {
-                    convexParticle(sj, si, contacts);
+                    convexCircle(sj, si, contacts);
                 }
-            } else if (sjType === BodyType.Particle && siType !== BodyType.Particle) {
+            } else if (siType === ShapeType.Convex) {
 
-                if (siType === ShapeType.Circle) {
-                    circleParticle(si, sj, contacts);
-                } else if (siType === ShapeType.Segment) {
-                    segmentParticle(si, sj, contacts);
-                } else if (siType === ShapeType.Convex) {
-                    convexParticle(si, sj, contacts);
+                if (sjType === ShapeType.Circle) {
+                    convexCircle(si, sj, contacts);
+                } else if (sjType === ShapeType.Segment) {
+                    convexSegment(si, sj, contacts);
+                } else if (sjType === ShapeType.Convex) {
+                    convexConvex(si, sj, contacts);
                 }
-            } else {
-                if (siType === ShapeType.Circle) {
+            } else if (siType === ShapeType.Segment) {
 
-                    if (sjType === ShapeType.Circle) {
-                        circleCircle(si, sj, contacts);
-                    } else if (sjType === ShapeType.Segment) {
-                        segmentCircle(sj, si, contacts);
-                    } else if (sjType === ShapeType.Convex) {
-                        convexCircle(sj, si, contacts);
-                    }
-                } else if (siType === ShapeType.Convex) {
-
-                    if (sjType === ShapeType.Circle) {
-                        convexCircle(si, sj, contacts);
-                    } else if (sjType === ShapeType.Segment) {
-                        convexSegment(si, sj, contacts);
-                    } else if (sjType === ShapeType.Convex) {
-                        convexConvex(si, sj, contacts);
-                    }
-                } else if (siType === ShapeType.Segment) {
-
-                    if (sjType === ShapeType.Circle) {
-                        segmentCircle(si, sj, contacts);
-                    } else if (sjType === ShapeType.Segment) {
-                        segmentSegment(si, sj, contacts);
-                    } else if (sjType === ShapeType.Convex) {
-                        convexSegment(sj, si, contacts);
-                    }
+                if (sjType === ShapeType.Circle) {
+                    segmentCircle(si, sj, contacts);
+                } else if (sjType === ShapeType.Segment) {
+                    segmentSegment(si, sj, contacts);
+                } else if (sjType === ShapeType.Convex) {
+                    convexSegment(sj, si, contacts);
                 }
             }
         }

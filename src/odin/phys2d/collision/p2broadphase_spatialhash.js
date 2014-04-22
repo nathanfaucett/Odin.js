@@ -71,34 +71,24 @@ define([
             while (i--) {
                 body = bodies[i];
                 shapes = body.shapes;
+                j = shapes.length;
+                while (j--) {
+                    shape = shapes[j];
+                    aabb = shape.aabb;
+                    min = aabb.min;
+                    max = aabb.max;
+                    minx = (min.x * inverseCellSize | 0) * cellSize;
+                    miny = (min.y * inverseCellSize | 0) * cellSize;
 
-                if (shapes) {
-                    j = shapes.length;
-                    while (j--) {
-                        shape = shapes[j];
-                        aabb = shape.aabb;
-                        min = aabb.min;
-                        max = aabb.max;
-                        minx = (min.x * inverseCellSize | 0) * cellSize;
-                        miny = (min.y * inverseCellSize | 0) * cellSize;
+                    x = minx + ((max.x - min.x) * inverseCellSize | 0) * cellSize;
+                    y = miny + ((max.y - min.y) * inverseCellSize | 0) * cellSize;
 
-                        x = minx + ((max.x - min.x) * inverseCellSize | 0) * cellSize;
-                        y = miny + ((max.y - min.y) * inverseCellSize | 0) * cellSize;
-
-                        for (k = minx; k <= x; k += cellSize) {
-                            for (l = miny; l <= y; l += cellSize) {
-                                key = k + ":" + l;
-                                (cells[key] || (cells[key] = new Cell(cellDeathFrameCount))).push(shape);
-                            }
+                    for (k = minx; k <= x; k += cellSize) {
+                        for (l = miny; l <= y; l += cellSize) {
+                            key = k + ":" + l;
+                            (cells[key] || (cells[key] = new Cell(cellDeathFrameCount))).push(shape);
                         }
                     }
-                } else {
-                    position = body.position;
-                    x = (position.x * inverseCellSize | 0) * cellSize;
-                    y = (position.y * inverseCellSize | 0) * cellSize;
-                    key = x + ":" + y;
-
-                    (cells[key] || (cells[key] = new Cell(cellDeathFrameCount))).push(body);
                 }
             }
 

@@ -27,6 +27,15 @@
 			}
 		</style>
 		
+		<script type="text/javascript">
+			var isMobile = /android|webos|iphone|ipad|ipod|blackberry/i.test(navigator.userAgent.toLowerCase());
+			
+			if (isMobile) {
+				window.onerror = function(message, page, line) {
+					alert("line: " + line + ", page: " + page + "\nmessage: " + message);
+				};
+			}
+		</script>
         <script type="text/javascript" src="../require.js" data-main="index.js"></script>
         
     </head>

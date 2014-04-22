@@ -37,19 +37,19 @@ define([
 
         ComponentManager.prototype.start = function() {
             var components = this.components,
-                i = 0,
-                il = components.length;
+                i, il;
 
-            for (; i < il; i++) components[i].start();
+            for (i = 0, il = components.length; i < il; i++) components[i].start();
+            for (i = 0, il = components.length; i < il; i++) components[i].emit("start");
         };
 
 
         ComponentManager.prototype.init = function() {
             var components = this.components,
-                i = 0,
-                il = components.length;
+                i, il;
 
-            for (; i < il; i++) components[i].init();
+            for (i = 0, il = components.length; i < il; i++) components[i].init();
+            for (i = 0, il = components.length; i < il; i++) components[i].emit("init");
         };
 
 

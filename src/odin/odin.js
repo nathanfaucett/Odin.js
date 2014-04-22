@@ -6,13 +6,21 @@ define(
         "use strict";
 
 
-        var Time = require("odin/base/time"),
+        var Device = require("odin/base/device"),
+            Time = require("odin/base/time"),
             now = Time.now,
 
             IS_SERVER = !(typeof(window) !== "undefined" && window.document),
             IS_CLIENT = !IS_SERVER,
 
             defineProperty = Object.defineProperty;
+
+
+        if (Device.mobile) {
+            window.onerror = function(message, page, line) {
+                alert("line: " + line + ", page: " + page + "\nmessage: " + message);
+            };
+        }
 
 
         /**
@@ -122,12 +130,6 @@ define(
             this.Vec2 = require("odin/math/vec2");
             this.Vec3 = require("odin/math/vec3");
             this.Vec4 = require("odin/math/vec4");
-
-            if (this.Device.mobile) {
-                window.onerror = function(message, page, line) {
-                    alert("line: " + line + ", page: " + page + "\nmessage: " + message);
-                };
-            }
         }
 
 

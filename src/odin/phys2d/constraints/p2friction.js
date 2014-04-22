@@ -92,18 +92,18 @@ define([
                 ty = t.y,
 
                 vi = bi.velocity,
-                wi = bi.angularVelocity || 0,
+                wi = bi.angularVelocity,
                 fi = bi.force,
-                ti = bi.torque || 0,
+                ti = bi.torque,
                 invMi = bi.invMass,
-                invIi = bi.invInertia || 0,
+                invIi = bi.invInertia,
 
                 vj = bj.velocity,
-                wj = bj.angularVelocity || 0,
+                wj = bj.angularVelocity,
                 fj = bj.force,
-                tj = bj.torque || 0,
+                tj = bj.torque,
                 invMj = bj.invMass,
-                invIj = bj.invInertia || 0,
+                invIj = bj.invInertia,
 
                 ri = this.ri,
                 rix = ri.x,
@@ -133,10 +133,10 @@ define([
                 rixt = this.rixt,
                 rjxt = this.rjxt,
 
-                invIi = bi.invInertia || 0,
-                invIj = bj.invInertia || 0,
+                invIi = bi.invInertia,
+                invIj = bj.invInertia,
 
-                C = bi.invMass + bj.invMass + this.eps + invIi * rixt * rixt + invIj * rjxt * rjxt;
+                C = bi.invMass + bj.invMass + this.epsilon + invIi * rixt * rixt + invIj * rjxt * rjxt;
 
             this.invC = C === 0 ? 0 : 1 / C;
         };
@@ -149,9 +149,9 @@ define([
                 t = this.t,
 
                 vlambdai = bi.vlambda,
-                wlambdai = bi.wlambda || 0,
+                wlambdai = bi.wlambda,
                 vlambdaj = bj.vlambda,
-                wlambdaj = bj.wlambda || 0,
+                wlambdaj = bj.wlambda,
 
                 ulambdax = vlambdaj.x - vlambdai.x,
                 ulambday = vlambdaj.y - vlambdai.y,

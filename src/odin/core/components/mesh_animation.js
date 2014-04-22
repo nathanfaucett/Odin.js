@@ -39,7 +39,6 @@ define([
         }
 
         Component.extend(MeshAnimation);
-        MeshAnimation.order = -1000000;
 
 
         MeshAnimation.prototype.copy = function(other) {

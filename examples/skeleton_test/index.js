@@ -9,7 +9,17 @@ require({
 
         Assets.addAssets(
             new ShaderLib.Unlit,
+            new ShaderLib.Diffuse,
+            new ShaderLib.NormalSpecular,
 
+            new Texture({
+                name: "tex_marine_dif",
+                src: "../content/images/marine_dif_spec.png"
+            }),
+            new Texture({
+                name: "tex_marine_nor",
+                src: "../content/images/marine_nor.jpg"
+            }),
             new Texture({
                 name: "tex_marine_spec",
                 src: "../content/images/marine_spec.jpg"
@@ -62,15 +72,19 @@ require({
                 radius: 0.1
             }),
             new Material({
-                name: "mat_wireframe",
+                name: "mat_diffuse",
 
-                wireframe: true,
+                //wireframe: true,
 
                 uniforms: {
-                    diffuseMap: Assets.get("tex_marine_spec")
+                    diffuseMap: Assets.get("tex_marine_spec"),
+                    normalMap: Assets.get("tex_marine_nor"),
+                    specularMap: Assets.get("tex_marine_spec"),
+                    normalScale: 1,
+                    shininess: 30
                 },
 
-                shader: Assets.get("shader_unlit")
+                shader: Assets.get("shader_normal_specular")
             }),
             new Material({
                 name: "mat_default",
@@ -137,7 +151,7 @@ require({
                 }),
                 new MeshFilter({
                     mesh: Assets.get("mesh_finger"),
-                    material: Assets.get("mat_wireframe")
+                    material: Assets.get("mat_diffuse")
                 }),
                 new MeshAnimation
             ],
@@ -202,8 +216,19 @@ require({
                 "Plane"
             ]
         });
+        light = new GameObject({
+            components: [
+                new Transform({
+                    position: new Vec3(5, 5, 5)
+                }),
+                new Light
+            ],
+            tags: [
+                "Light"
+            ]
+        });
 
-        scene.addGameObjects(camera, camera2, sphere, sphere2, plane, finger);
+        scene.addGameObjects(camera, camera2, sphere, sphere2, plane, finger, light);
         game.addScene(scene);
 
         game.on("lateUpdate", function() {

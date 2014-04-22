@@ -2,12 +2,13 @@ if (typeof define !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/util",
         "odin/base/time",
         "odin/math/color",
         "odin/core/world/world",
         "odin/phys2d/phys2d"
     ],
-    function(Time, Color, World, Phys2D) {
+    function(util, Time, Color, World, Phys2D) {
         "use strict";
 
 

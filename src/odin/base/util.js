@@ -10,6 +10,7 @@ define(
             random = Math.random,
 
             isServer = typeof(window) === "undefined",
+            cwd = isServer ? process.cwd() : window.location.href.match(/.*\//)[0],
 
             ObjectProto = Object.prototype,
             toString = ObjectProto.toString,
@@ -302,11 +303,63 @@ define(
         util.each = each;
 
 
+        function normalizePath(path) {
+            var parts = path.split("/"),
+                directories = [],
+                i = 0,
+                il = parts.length,
+                prev, directory;
+
+            for (; i < il; i++) {
+                directory = parts[i];
+
+                if (directory === "" && i !== 0 && i !== il) continue;
+                if (directory === "." && prev !== undefined) continue;
+                if (directories.length === 1 && directories[0] === "" && (directory === "." || directory === "..")) continue;
+
+                if (directory === ".." && directories.length && prev !== ".." && prev !== "." && prev !== undefined && (prev !== "")) {
+                    directories.pop();
+                    prev = directories[0];
+                } else {
+                    if (prev === ".") directories.pop();
+                    directories.push(directory);
+                    prev = directory;
+                }
+            }
+            if ((path = directories[0]) && path.indexOf(":") === path.length - 1) directories[0] += "/";
+
+            return directories.join("/");
+        }
+        util.normalizePath = normalizePath;
+
+
+        function relativePath(path) {
+            path || (path = "./");
+            return normalizePath(require.toUrl(path));
+        }
+        util.relativePath = relativePath;
+
+
+        function absolutePath(path) {
+            path || (path = "./");
+            return normalizePath(cwd + require.toUrl(path));
+        }
+        util.absolutePath = absolutePath;
+
+
         if (!isServer) {
             util.createWorker = function(fn) {
-                var blobURL = URL.createObjectURL(new Blob(["(" + fn.toString() + ")()"], {
-                    type: "application/javascript"
-                })),
+                var blobURL = URL.createObjectURL(
+                    new Blob([
+                        "(function() {\n" +
+                        "importScripts(\"" + absolutePath("odin/require.js") + "\");\n" +
+                        "require.config({baseUrl: \"" + absolutePath("./") + "\"});\n" +
+                        "(" + fn.toString() + ").call(this);\n" +
+                        "}).call(this);"
+                    ], {
+                        type: "application/javascript"
+                    })
+                ),
                     worker = new Worker(blobURL);
 
                 URL.revokeObjectURL(blobURL);

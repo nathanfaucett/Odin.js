@@ -125,7 +125,7 @@ require({
         var camera = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0.0, 3.0)
+                    position: new Vec2(0.0, -3.0)
                 }),
                 new Camera2D({
                     orthographicSize: 4
@@ -157,10 +157,10 @@ require({
                 })
             ]
         });
-        var segment = new GameObject({
+        var obj = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0.0, -0.5)
+                    position: new Vec2(0.0, 0.5)
                 }),
                 new Sprite({
                     material: Assets.get("mat_player"),
@@ -169,24 +169,23 @@ require({
                     w: 64,
                     h: 64,
                     width: 1.0,
-                    height: 3.0
+                    height: 1.0
                 }),
-                new Control,
                 new RigidBody2D({
-                    motionState: Phys2D.P2Enums.MotionState.Kinematic,
+                    motionState: Phys2D.P2Enums.MotionState.Static,
                     linearDamping: 0.9,
-                    shape: new Phys2D.P2Segment({
-                        radius: 0.5,
-                        a: new Vec2(0.0, -1.0),
-                        b: new Vec2(0.0, 1.0)
+                    shape: new Phys2D.P2Rect({
+                        extents: new Vec2(0.5, 0.5),
+                        radius: 0.5
                     })
                 })
-            ]
+            ],
+            tag: "obj"
         });
-        var segment2 = new GameObject({
+        var obj2 = new GameObject({
             components: [
                 new Transform2D({
-                    position: new Vec2(0.0, 15.0)
+                    position: new Vec2(0.0, -3)
                 }),
                 new Sprite({
                     material: Assets.get("mat_player"),
@@ -195,19 +194,18 @@ require({
                     w: 64,
                     h: 64,
                     width: 1.0,
-                    height: 3.0
+                    height: 1.0
                 }),
                 new Control,
                 new RigidBody2D({
                     motionState: Phys2D.P2Enums.MotionState.Dynamic,
-                    //linearDamping: 0.999999,
-                    shape: new Phys2D.P2Segment({
-                        radius: 0.5,
-                        a: new Vec2(0.0, -1.0),
-                        b: new Vec2(0.0, 1.0)
+                    shape: new Phys2D.P2Circle({
+                        extents: new Vec2(0.5, 0.5),
+                        radius: 0.5
                     })
                 })
-            ]
+            ],
+            tag: "obj2"
         });
         var bottom = new GameObject({
             components: [
@@ -231,7 +229,7 @@ require({
             ]
         });
 
-        scene.addGameObjects(camera, segment2, bottom);
+        scene.addGameObjects(camera, obj, obj2);
 
 
         function TEST(opts) {
@@ -285,6 +283,11 @@ require({
             game.setGUI("Level");
             game.setScene("PlayGround");
             game.setCamera(game.scene.findByTagFirst("Camera"));
+
+            var obj = game.scene.findByTagFirst("obj").rigidBody2d.body,
+                obj2 = game.scene.findByTagFirst("obj2").rigidBody2d.body;
+
+            game.scene.world.space.addConstraint(new Phys2D.P2DistanceConstraint(obj, obj2, 2));
         }
 
         function restart() {

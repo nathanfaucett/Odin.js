@@ -39,7 +39,7 @@ define([
 
             this.pitch = opts.pitch != undefined ? opts.pitch : 0;
 
-            this.playOnInit = opts.playOnInit != undefined ? !! opts.playOnInit : false;
+            this.playOnStart = opts.playOnStart != undefined ? !! opts.playOnStart : false;
 
             this.spread = opts.spread != undefined ? opts.spread : 0;
 
@@ -101,7 +101,7 @@ define([
 
             this.pitch = other.pitch;
 
-            this.playOnInit = other.playOnInit;
+            this.playOnStart = other.playOnStart;
 
             this.spread = other.spread;
 
@@ -127,9 +127,9 @@ define([
         };
 
 
-        AudioSource.prototype.init = function() {
+        AudioSource.prototype.start = function() {
 
-            if (this.playOnInit) this.play();
+            if (this.playOnStart) this.play();
         };
 
 
@@ -163,10 +163,26 @@ define([
         };
 
 
-        AudioSource.prototype.play = function(delay, offset) {
-            if (!AudioCtx || !this.clip || !this.clip.raw) return this;
+        AudioSource.prototype.play = function(delay, offset, duration) {
+            if (!AudioCtx) return this;
+            if (!AudioCtx.UNLOCKED && this._loop) {
+                var _this = this,
+                    listener = function(e) {
+                        _this.play();
+                        window.removeEventListener("audiocontextunlock", listener, false);
+                    };
+
+                window.addEventListener("audiocontextunlock", listener, false);
+            }
+            if (!this.clip || !this.clip.raw) return this;
+            var time = this.time,
+                clipLength = this.clip.length,
+                maxLength = clipLength - time;
+
             delay || (delay = 0);
-            offset || (offset = this.time);
+            offset || (offset = time);
+            duration || (duration = clipLength);
+            duration = duration > maxLength ? maxLength : duration;
 
             this._refresh();
 
@@ -176,7 +192,7 @@ define([
             this._startTime = now();
 
             this.time = offset;
-            this._source.start(delay, this.time);
+            this._source.start(delay, offset, duration);
 
             return this;
         };
@@ -230,7 +246,7 @@ define([
             source.onended = this._onended;
 
             gain.gain.value = this.volume;
-            source.loop = this.loop;
+            source.loop = this._loop;
 
             return this;
         };
@@ -252,7 +268,7 @@ define([
 
             json.pitch = this.pitch;
 
-            json.playOnInit = this.playOnInit;
+            json.playOnStart = this.playOnStart;
 
             json.spread = this.spread;
 
@@ -279,7 +295,7 @@ define([
 
             this.pitch = json.pitch;
 
-            this.playOnInit = json.playOnInit;
+            this.playOnStart = json.playOnStart;
 
             this.spread = json.spread;
 

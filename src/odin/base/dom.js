@@ -22,6 +22,8 @@ define(
         function Dom() {}
 
 
+        var EVENT_CALLBACK_ID = 0,
+            EVENT_CALLBACKS = {};
         Dom.prototype.addEvent = function(obj, name, callback, ctx) {
             var names = name.split(SPLITER),
                 i = names.length,
@@ -29,6 +31,8 @@ define(
                 afn = function(e) {
                     callback.call(scope, e || window.event);
                 };
+
+            EVENT_CALLBACKS[(callback.__EVENT_CALLBACK_ID__ = EVENT_CALLBACK_ID++)] = afn;
 
             while (i--) {
                 name = names[i];
@@ -46,9 +50,10 @@ define(
             var names = name.split(SPLITER),
                 i = names.length,
                 scope = ctx || obj,
-                afn = function(e) {
-                    if (callback) callback.call(scope, e || window.event);
-                };
+                id = callback.__EVENT_CALLBACK_ID__,
+                afn = EVENT_CALLBACKS[id];
+
+            EVENT_CALLBACKS[id] = null;
 
             while (i--) {
                 name = names[i];

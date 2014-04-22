@@ -37,42 +37,22 @@ define([
                     shapesi = bi.shapes;
                     shapesj = bj.shapes;
 
-                    if (shapesi && shapesj) {
-                        if (!bi.aabb.intersects(bj.aabb)) continue;
+                    if (!bi.aabb.intersects(bj.aabb)) continue;
 
-                        k = shapesi.length;
-                        length = shapesj.length;
-                        while (k--) {
-                            l = length;
-                            while (l--) {
-                                si = shapesi[k];
-                                sj = shapesj[l];
-                                if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) continue;
+                    k = shapesi.length;
+                    length = shapesj.length;
+                    while (k--) {
+                        l = length;
+                        while (l--) {
+                            si = shapesi[k];
+                            sj = shapesj[l];
+                            if ((si.filterGroup & sj.filterMask) === 0 || (sj.filterGroup & si.filterMask) === 0) continue;
 
-                                if (si.aabb.intersects(sj.aabb)) {
-                                    pairsi.push(si);
-                                    pairsj.push(sj);
-                                }
+                            if (si.aabb.intersects(sj.aabb)) {
+                                pairsi.push(si);
+                                pairsj.push(sj);
                             }
                         }
-                    } else if (shapesi && !shapesj) {
-                        k = shapesi.length;
-                        while (k--) {
-                            si = shapesi[k];
-
-                            pairsi.push(si);
-                            pairsj.push(bj);
-                        }
-                    } else if (!shapesi && shapesj) {
-                        k = shapesj.length;
-                        while (k--) {
-                            sj = shapesj[k];
-                            pairsi.push(bi);
-                            pairsj.push(sj);
-                        }
-                    } else {
-                        pairsi.push(bi);
-                        pairsj.push(bj);
                     }
                 }
             }

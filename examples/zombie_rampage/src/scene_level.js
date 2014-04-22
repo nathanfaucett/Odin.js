@@ -42,9 +42,10 @@ define([
                     layer: 0
                 }),
                 new Odin.AudioSource({
-                    playOnInit: true,
+                    playOnStart: true,
                     loop: true,
                     dopplerLevel: 0,
+                    volume: 0.1,
                     clip: Odin.Assets.get("snd_sure_shot")
                 }),
                 new Level

@@ -10,7 +10,7 @@ define([
 
         function BoneComponentManager() {
 
-            ComponentManager.call(this, 1000001);
+            ComponentManager.call(this, 1000000);
         }
 
         ComponentManager.extend(BoneComponentManager);

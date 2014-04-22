@@ -46,6 +46,7 @@ define([
 
             this.contacts = [];
             this.frictions = [];
+            this.constraints = [];
 
             this._collisionMatrix = [];
             this._collisionMatrixPrevious = [];
@@ -141,7 +142,7 @@ define([
         };
 
 
-        P2Space.prototype.add = function() {
+        P2Space.prototype.addBodies = function() {
             var i = arguments.length;
 
             while (i--) this.addBody(arguments[i]);
@@ -167,10 +168,38 @@ define([
         };
 
 
-        P2Space.prototype.remove = function() {
+        P2Space.prototype.removeBodies = function() {
             var i = arguments.length;
 
             while (i--) this.removeBody(arguments[i]);
+            return this;
+        };
+
+
+        P2Space.prototype.addConstraint = function(constraint) {
+            var constraints = this.constraints,
+                index = constraints.indexOf(constraint);
+
+            if (index === -1) {
+                constraints.push(constraint);
+            } else {
+                Log.error("P2Space.addConstraint: Constraint already member of P2Space");
+            }
+
+            return this;
+        };
+
+
+        P2Space.prototype.removeConstraint = function(constraint) {
+            var constraints = this.constraints,
+                index = constraints.indexOf(constraint);
+
+            if (index !== -1) {
+                constraints.splice(index, 1);
+            } else {
+                Log.error("P2Space.removeConstraint: Constraint not a member of P2Space");
+            }
+
             return this;
         };
 
@@ -213,11 +242,13 @@ define([
                 gy = g.y,
                 bodies = this.bodies,
                 numBodies = bodies.length,
+                solver = this.solver,
+                constraints = this.constraints,
                 pairsi = this._pairsi,
                 pairsj = this._pairsj,
                 contacts = this.contacts,
                 frictions = this.frictions,
-                time, start, body, force, mass,
+                constraint, time, start, body, force, mass,
                 bi, bj, c, cp, cn, u, slipForce, fc, fcp, fct,
                 i;
 
@@ -249,7 +280,7 @@ define([
             stats.nearphase = now() - start;
 
             start = now();
-            this.solver.solve(dt, contacts);
+            solver.solve(dt, contacts);
 
             FRICTION_POOL.clear();
             frictions.length = 0;
@@ -287,7 +318,14 @@ define([
                 }
             }
 
-            this.solver.solve(dt, frictions);
+            solver.solve(dt, frictions);
+
+            i = constraints.length;
+            while (i--) {
+                constraint = constraints[i];
+                constraint.update();
+                solver.solve(dt, constraint.equations);
+            }
             stats.solve = now() - start;
 
             start = now();

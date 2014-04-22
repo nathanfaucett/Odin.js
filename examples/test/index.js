@@ -1,4 +1,5 @@
 require({
+        waitSeconds: 100,
         baseUrl: "../../src"
     }, [
         "odin/odin"

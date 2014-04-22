@@ -47,6 +47,7 @@ define(
 
             this.audioMpeg = !! audio.canPlayType("audio/mpeg");
             this.audioOgg = !! audio.canPlayType("audio/ogg");
+            this.audioMp3 = !! audio.canPlayType("audio/mp3");
             this.audioMp4 = !! audio.canPlayType("audio/mp4");
 
             this.videoWebm = !! video.canPlayType("video/webm");

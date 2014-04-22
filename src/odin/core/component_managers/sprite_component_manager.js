@@ -56,6 +56,7 @@ define([
                 if (!components) continue;
 
                 for (j = 0, jl = components.length; j < jl; j++) components[j].init();
+                for (j = 0, jl = components.length; j < jl; j++) components[j].emit("init");
             }
         };
 
@@ -69,6 +70,7 @@ define([
                 if (!components) continue;
 
                 for (j = 0, jl = components.length; j < jl; j++) components[j].start();
+                for (j = 0, jl = components.length; j < jl; j++) components[j].emit("start");
             }
         };
 

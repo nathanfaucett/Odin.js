@@ -7,10 +7,9 @@ define([
         "odin/math/vec2",
         "odin/math/mat32",
         "odin/core/game/log",
-        "odin/phys2d/p2enums",
-        "odin/phys2d/objects/p2particle"
+        "odin/phys2d/p2enums"
     ],
-    function(Class, AABB2, Vec2, Mat32, Log, P2Enums, P2Particle) {
+    function(Class, AABB2, Vec2, Mat32, Log, P2Enums) {
         "use strict";
 
 
@@ -25,43 +24,78 @@ define([
         function P2Rigidbody(opts) {
             opts || (opts = {});
 
-            P2Particle.call(this, opts);
+            Class.call(this, opts);
 
             this.type = BodyType.RigidBody;
+            this._index = -1;
+
+            this.space = undefined;
+
+            this.position = opts.position != undefined ? opts.position : new Vec2;
+            this.velocity = opts.velocity != undefined ? opts.velocity : new Vec2;
+            this.force = new Vec2;
 
             this.rotation = opts.rotation != undefined ? opts.rotation : 0;
             this.angularVelocity = opts.angularVelocity != undefined ? opts.angularVelocity : 0;
             this.torque = 0;
 
+            this.linearDamping = opts.linearDamping != undefined ? opts.linearDamping : 0.01;
             this.angularDamping = opts.angularDamping != undefined ? opts.angularDamping : TWO_PI * 0.01;
 
             this.matrix = new Mat32();
+            this.aabb = new AABB2;
+
+            this.mass = opts.mass != undefined ? opts.mass : 0.0;
+            this.invMass = this.mass > 0.0 ? 1.0 / this.mass : 0.0;
 
             this.inertia = 0;
             this.invInertia = 0;
 
             this.shapes = [];
-            this._shapeHash = {};
 
-            this.aabb = new AABB2;
+            this.motionState = opts.motionState != undefined ? opts.motionState : MotionState.Static;
 
+            this.allowSleep = opts.allowSleep != undefined ? !! opts.allowSleep : true;
+            this.sleepState = SleepState.Awake;
+
+            this.sleepVelocityLimit = opts.sleepVelocityLimit != undefined ? !! opts.sleepVelocityLimit : 0.01;
+            this.sleepTimeLimit = opts.sleepTimeLimit != undefined ? !! opts.sleepTimeLimit : 1.0;
             this.sleepAngularVelocityLimit = opts.sleepAngularVelocityLimit != undefined ? !! opts.sleepAngularVelocityLimit : TWO_PI * 0.01;
 
+            this.userData = undefined;
+
+            this._sleepTime = 0.0;
+            this._lastSleepyTime = 0.0;
+
+            this.vlambda = new Vec2;
             this.wlambda = 0;
 
             if (opts.shape) this.addShape(opts.shape);
             if (opts.shapes) this.addShapes.apply(this, opts.shapes);
         }
 
-        P2Particle.extend(P2Rigidbody);
+        Class.extend(P2Rigidbody);
 
 
         P2Rigidbody.prototype.copy = function(other) {
-            P2Particle.prototype.copy.call(this, other);
             var shapes = other.shapes,
                 i = shapes.length;
 
             this.clear();
+
+            this.motionState = other.motionState;
+
+            this.position.copy(other.position);
+            this.velocity.copy(other.velocity);
+            this.force.copy(other.force);
+
+            this.linearDamping = other.linearDamping;
+
+            this.mass = other.mass;
+            this.invMass = other.invMass;
+
+            this.allowSleep = other.allowSleep;
+            this.sleepState = other.sleepState;
 
             this.rotation = other.rotation;
             this.angularVelocity = other.angularVelocity;
@@ -222,14 +256,13 @@ define([
         var totalCentroid = new Vec2,
             centroid = new Vec2;
         P2Rigidbody.prototype.resetMassData = function() {
+            if (this.motionState !== MotionState.Dynamic) return;
             var shapes = this.shapes,
                 shape,
                 totalMass = 0,
                 totalInertia = 0,
                 mass, inertia,
                 i;
-
-            if (this.motionState !== MotionState.Dynamic) return;
 
             totalCentroid.x = totalCentroid.y = 0;
 
@@ -269,7 +302,64 @@ define([
         P2Rigidbody.prototype.setInertia = function(inertia) {
 
             this.inertia = inertia;
-            this.invInertia = inertia > 0 ? 1 / inertia : 0;
+            this.invInertia = inertia > 0.0 ? 1.0 / inertia : 0.0;
+        };
+
+
+        P2Rigidbody.prototype.setMass = function(mass) {
+
+            this.mass = mass;
+            this.invMass = mass > 0.0 ? 1.0 / mass : 0.0;
+        };
+
+
+        P2Rigidbody.prototype.isAwake = function() {
+
+            return this.sleepState === SleepState.Awake;
+        };
+
+
+        P2Rigidbody.prototype.isSleepy = function() {
+
+            return this.sleepState === SleepState.Sleepy;
+        };
+
+
+        P2Rigidbody.prototype.isSleeping = function() {
+
+            return this.sleepState === SleepState.Sleeping;
+        };
+
+
+        P2Rigidbody.prototype.isStatic = function() {
+
+            return this.motionState === MotionState.Static;
+        };
+
+
+        P2Rigidbody.prototype.isDynamic = function() {
+
+            return this.motionState === MotionState.Dynamic;
+        };
+
+
+        P2Rigidbody.prototype.isKinematic = function() {
+
+            return this.motionState === MotionState.Kinematic;
+        };
+
+
+        P2Rigidbody.prototype.wake = function() {
+
+            if (this.sleepState === SleepState.Sleeping) this.emit("wake");
+            this.sleepState = SleepState.Awake;
+        };
+
+
+        P2Rigidbody.prototype.sleep = function() {
+
+            if (this.sleepState !== SleepState.Sleeping) this.emit("sleep");
+            this.sleepState = SleepState.Sleeping;
         };
 
 
@@ -281,7 +371,6 @@ define([
                 shape.body = this;
 
                 shapes.push(shape);
-                this._shapeHash[shape._id] = shape;
 
                 if (this.space) {
                     shape.update(this.matrix);
@@ -310,7 +399,6 @@ define([
                 shape.body = undefined;
 
                 shapes.splice(index, 1);
-                this._shapeHash[shape._id] = undefined;
 
                 if (this.space) this.resetMassData();
             } else {
@@ -368,14 +456,28 @@ define([
 
 
         P2Rigidbody.prototype.toJSON = function(json) {
-            json = P2Particle.prototype.toJSON.call(this, json);
+            json = Class.prototype.toJSON.call(this, json);
             var shapes = this.shapes,
                 jsonShapes = json.shapes || (json.shapes = []),
                 i = shapes.length;
 
+            json.position = this.position.toJSON(json.position);
+            json.velocity = this.velocity.toJSON(json.velocity);
+            json.force = this.force.toJSON(json.force);
+
             json.rotation = this.rotation;
             json.angularVelocity = this.angularVelocity;
             json.torque = this.torque;
+
+            json.motionState = this.motionState;
+
+            json.linearDamping = this.linearDamping;
+
+            json.mass = this.mass;
+            json.invMass = this.invMass;
+
+            json.allowSleep = this.allowSleep;
+            json.sleepState = this.sleepState;
 
             json.angularDamping = this.angularDamping;
 
@@ -386,13 +488,27 @@ define([
 
 
         P2Rigidbody.prototype.fromJSON = function(json) {
-            P2Particle.prototype.fromJSON.call(this, json);
+            Class.prototype.fromJSON.call(this, json);
             var jsonShapes = json.shapes || (json.shapes = []),
                 i = jsonShapes.length;
+
+            this.position.fromJSON(json.position);
+            this.velocity.fromJSON(json.velocity);
+            this.force.fromJSON(json.force);
 
             this.rotation = json.rotation;
             this.angularVelocity = json.angularVelocity;
             this.torque = json.torque;
+
+            this.motionState = json.motionState;
+
+            this.linearDamping = json.linearDamping;
+
+            this.mass = json.mass;
+            this.invMass = json.invMass;
+
+            this.allowSleep = json.allowSleep;
+            this.sleepState = json.sleepState;
 
             this.angularDamping = json.angularDamping;
 

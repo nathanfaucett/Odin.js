@@ -10,7 +10,7 @@ define([
 
         function MeshAnimationComponentManager() {
 
-            ComponentManager.call(this, 1000000);
+            ComponentManager.call(this, -999999);
         }
 
         ComponentManager.extend(MeshAnimationComponentManager);

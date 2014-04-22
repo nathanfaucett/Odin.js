@@ -34,24 +34,24 @@ define([
             this._spawnTime = 0;
             this.spawnTime = 2.5 * (1 / this.wave) + (random() * 5 * (1 / this.wave));
 
-            var self = this;
+            var _this = this;
             this.onRemoveEnemy = function() {
-                self.enemies -= 1;
+                _this.enemies -= 1;
             };
             this.onRemovePlayer = function(gameObject) {
-                self.playerLives -= 1;
-                self.playerLevel = gameObject.character.level;
+                _this.playerLives -= 1;
+                _this.playerLevel = gameObject.character.level;
 
-                if (self.playerLives <= 0) {
-                    self.gameOver = true;
+                if (_this.playerLives <= 0) {
+                    _this.gameOver = true;
                     return;
                 }
                 var instance = player.create();
 
-                instance.on("remove", self.onRemovePlayer, this);
-                instance.character.setLevel(self.playerLevel);
+                instance.on("remove", _this.onRemovePlayer, this);
+                instance.character.setLevel(_this.playerLevel);
 
-                self.gameObject.scene.addGameObject(instance);
+                _this.gameObject.scene.addGameObject(instance);
             };
         }
 

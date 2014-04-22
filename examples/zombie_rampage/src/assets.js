@@ -58,7 +58,10 @@ define([
 
             new Odin.AudioClip({
                 name: "snd_sure_shot",
-                src: "content/audio/sure_shot.ogg"
+                src: [
+                    "content/audio/sure_shot.ogg",
+                    "content/audio/sure_shot.mp3"
+                ]
             }),
             new Odin.AudioClip({
                 name: "snd_fire",

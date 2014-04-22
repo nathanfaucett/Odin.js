@@ -71,7 +71,7 @@ define([
 
                         GWlambda = eq.calculateGWlambda();
                         lambda = eq.lambda;
-                        deltaLambda = eq.invC * (eq.B - GWlambda - eq.eps * lambda);
+                        deltaLambda = eq.invC * (eq.B - GWlambda - eq.epsilon * lambda);
 
                         eq.lambda = clamp(lambda + deltaLambda, eq.minForce, eq.maxForce);
                         deltaLambda = eq.lambda - lambda;

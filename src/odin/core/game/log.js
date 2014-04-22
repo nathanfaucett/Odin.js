@@ -2,10 +2,11 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/device",
         "odin/base/util",
         "odin/core/game/config"
     ],
-    function(util, Config) {
+    function(Device, util, Config) {
         "use strict";
 
 
@@ -15,25 +16,39 @@ define([
         function Log() {}
 
 
-        Log.prototype.debug = Log.prototype.info = Log.prototype.log = function() {
-            if (!Config.debug) return;
+        if (Device.mobile) {
+            var slice = Array.prototype.slice;
 
-            console.log.apply(console, arguments);
-        };
+            Log.prototype.debug = Log.prototype.info = Log.prototype.log = function() {
+                if (!Config.debug) return;
+                alert(slice.call(arguments, 0));
+            };
 
+            Log.prototype.warn = function() {
+                if (!(Config.debug || Config.warn)) return;
+                alert(slice.call(arguments, 0));
+            };
 
-        Log.prototype.warn = function() {
-            if (!(Config.debug || Config.warn)) return;
+            Log.prototype.error = function() {
+                if (!(Config.debug || Config.error)) return;
+                alert(slice.call(arguments, 0));
+            };
+        } else {
+            Log.prototype.debug = Log.prototype.info = Log.prototype.log = function() {
+                if (!Config.debug) return;
+                console.log.apply(console, arguments);
+            };
 
-            console.warn.apply(console, arguments);
-        };
+            Log.prototype.warn = function() {
+                if (!(Config.debug || Config.warn)) return;
+                console.warn.apply(console, arguments);
+            };
 
-
-        Log.prototype.error = function() {
-            if (!(Config.debug || Config.error)) return;
-
-            console.error.apply(console, arguments);
-        };
+            Log.prototype.error = function() {
+                if (!(Config.debug || Config.error)) return;
+                console.error.apply(console, arguments);
+            };
+        }
 
 
         var CACHE = {};
@@ -41,8 +56,9 @@ define([
             if (!(Config.debug || Config.error) || CACHE[cacheKey(arguments)]) return;
 
             CACHE[cacheKey(arguments)] = true;
-            console.error.apply(console, arguments);
+            this.error.apply(this, arguments);
         };
+
 
 
         function cacheKey(args) {

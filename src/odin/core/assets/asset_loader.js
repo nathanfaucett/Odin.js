@@ -2,6 +2,7 @@ if (typeof(define) !== "function") {
     var define = require("amdefine")(module);
 }
 define([
+        "odin/base/device",
         "odin/base/util",
         "odin/base/event_emitter",
         "odin/base/audio_ctx",
@@ -9,7 +10,7 @@ define([
         "odin/core/assets/assets",
         "odin/core/game/log"
     ],
-    function(util, EventEmitter, AudioCtx, Asset, Assets, Log) {
+    function(Device, util, EventEmitter, AudioCtx, Asset, Assets, Log) {
         "use strict";
 
 
@@ -20,13 +21,20 @@ define([
 
         function getExt(src) {
 
-            return src ? src.split(".").pop() : "none";
+            return src ? (src.split(".").pop()).toLowerCase() : "none";
         };
 
 
         function AssetLoader() {
 
             EventEmitter.call(this);
+
+            var supports = this.supports = ["json", "jpeg", "jpg", "png", "gif"];
+
+            if (Device.audioMpeg) supports.push("mpeg");
+            if (Device.audioOgg || Device.videoOgg) supports.push("ogg");
+            if (Device.audioMp3) supports.push("mp3");
+            if (Device.audioMp4 || Device.videoMp4) supports.push("mp4");
         }
 
         EventEmitter.extend(AssetLoader);
@@ -50,6 +58,7 @@ define([
 
         AssetLoader.prototype.loadAsset = function(asset, callback, reload, known) {
             var _this = this,
+                supports = this.supports,
                 src = asset.src;
 
             if (!known || Assets.indexOf(asset) === -1) Assets.addAsset(asset);
@@ -62,13 +71,16 @@ define([
 
             if (isArray(src)) {
                 var raw = [],
-                    loaded = src.length;
+                    exts = [],
+                    loaded = src.length,
+                    hasExt = false;
 
                 each(src, function(s, i) {
                     var ext = getExt(s);
+                    exts.push(ext);
 
                     if (!this[ext]) {
-                        callback && callback(new Error("AssetLoader.load: has no loader named " + ext));
+                        callback && callback(new Error("AssetLoader.load: has no loader for " + src + " of type " + ext));
                         return false;
                     }
 
@@ -79,6 +91,18 @@ define([
                         if (err) Log.error(err);
 
                         if (loaded <= 0) {
+                            for (var j = exts.length; j--;) {
+                                if (supports.indexOf(exts[i]) !== -1) {
+                                    hasExt = true;
+                                    break;
+                                }
+                            }
+
+                            if (!hasExt) {
+                                callback && callback(new Error("AssetLoader.load: device does not support any of the given file types " + exts));
+                                return;
+                            }
+
                             asset._loaded = true;
                             asset.parse(raw);
                             asset.emit("load", raw);
@@ -93,7 +117,11 @@ define([
                 var ext = getExt(src);
 
                 if (!this[ext]) {
-                    callback && callback(new Error("AssetLoader.load: has no loader named " + ext));
+                    callback && callback(new Error("AssetLoader.load: has no loader file " + src + " of type " + ext));
+                    return;
+                }
+                if (supports.indexOf(ext) === -1) {
+                    callback && callback(new Error("AssetLoader.load: device does not support file " + src + " of type " + ext));
                     return;
                 }
 
